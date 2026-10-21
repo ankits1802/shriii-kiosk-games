@@ -9,7 +9,6 @@ from typing import Any
 
 import pytest
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
-
 from shriii_session_crypto import (
     DecryptionError,
     decrypt_chunk_with_dek,

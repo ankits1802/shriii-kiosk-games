@@ -125,13 +125,17 @@ def _fit(
     kind: str = "fresh",
 ) -> list[PreparedBatch]:
     """Build one batch, or halve it (order kept) until each body is within ``max_body_bytes``."""
-    batch = build_batch(kiosk, slices, kiosk_t_wall=wall, encryption=opts.encryption, public_key=opts.public_key, kind=kind)
+    batch = build_batch(
+        kiosk, slices, kiosk_t_wall=wall, encryption=opts.encryption, public_key=opts.public_key, kind=kind
+    )
     if opts.max_body_bytes is None or batch.size_bytes <= opts.max_body_bytes or batch.event_count == 1:
         return [batch]
     flat = [(s, [e]) for s, events in slices for e in events]
     half = len(flat) // 2
 
-    def regroup(part: list[tuple[OutboxSession, list[dict[str, Any]]]]) -> list[tuple[OutboxSession, list[dict[str, Any]]]]:
+    def regroup(
+        part: list[tuple[OutboxSession, list[dict[str, Any]]]],
+    ) -> list[tuple[OutboxSession, list[dict[str, Any]]]]:
         out: list[tuple[OutboxSession, list[dict[str, Any]]]] = []
         for s, evs in part:
             if out and out[-1][0] is s:
@@ -162,7 +166,9 @@ def _outbox(
     return sessions
 
 
-def _batches_for(kiosk: KioskIdentity, outbox: list[OutboxSession], opts: PlanOptions, wall: datetime) -> list[PreparedBatch]:
+def _batches_for(
+    kiosk: KioskIdentity, outbox: list[OutboxSession], opts: PlanOptions, wall: datetime
+) -> list[PreparedBatch]:
     out: list[PreparedBatch] = []
     for slices in pack_outbox(outbox, opts.max_events):
         out.extend(_fit(kiosk, slices, wall, opts))
@@ -280,7 +286,9 @@ def plan_out_of_order(corpus: Corpus, kiosks: list[KioskIdentity], opts: PlanOpt
         boxes.append(box)
         steps: list[Step] = []
         for session in box:
-            batches = [b for slices in pack_outbox([session], opts.max_events) for b in _fit(kiosk, slices, clock, opts)]
+            batches = [
+                b for slices in pack_outbox([session], opts.max_events) for b in _fit(kiosk, slices, clock, opts)
+            ]
             batches.reverse()  # consent (seq 3) is in the first batch, which now arrives last
             for b in batches:
                 b.kind = "out_of_order"
@@ -295,7 +303,9 @@ def plan_reconnect(corpus: Corpus, kiosks: list[KioskIdentity], opts: PlanOption
     boxes: list[list[OutboxSession]] = []
     offline_since = _now() - timedelta(hours=26)
     for kiosk in _kiosks(kiosks, opts.kiosks):
-        box = _outbox(corpus, kiosk, opts.sessions_per_kiosk, rng, offline_since + timedelta(minutes=rng.uniform(0, 600)))
+        box = _outbox(
+            corpus, kiosk, opts.sessions_per_kiosk, rng, offline_since + timedelta(minutes=rng.uniform(0, 600))
+        )
         boxes.append(box)
         steps = [Step(batch=b) for b in _batches_for(kiosk, box, opts, _now())]
         for s in steps:

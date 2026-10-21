@@ -33,8 +33,8 @@ def summarise(lines: list[str]) -> tuple[int, Counter[str], Counter[str]]:
     total = 0
     self_c: Counter[str] = Counter()
     incl: Counter[str] = Counter()
-    for line in lines:
-        line = line.rstrip()
+    for raw in lines:
+        line = raw.rstrip()
         if not line:
             continue
         stack, _, count_s = line.rpartition(" ")

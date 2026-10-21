@@ -76,17 +76,17 @@ def _write(value: Any, out: list[str]) -> None:
         raise TypeError(f"cannot canonicalise {type(value).__name__}")
 
 
-class _SlowPath(Exception):
+class _SlowPathError(Exception):
     pass
 
 
 def _prepare(value: Any) -> Any:
-    """Normalise so that ``json.dumps(sort_keys=True)`` equals JCS, or raise ``_SlowPath``."""
+    """Normalise so that ``json.dumps(sort_keys=True)`` equals JCS, or raise ``_SlowPathError``."""
     if isinstance(value, dict):
         prepared: dict[str, Any] = {}
         for key, item in value.items():
             if not isinstance(key, str) or any(ord(c) >= 0xD800 for c in key):
-                raise _SlowPath
+                raise _SlowPathError
             prepared[key] = _prepare(item)
         return prepared
     if isinstance(value, (list, tuple)):
@@ -98,14 +98,14 @@ def _prepare(value: Any) -> Any:
             return int(value)
         text = repr(value)
         if value.is_integer() or "e" in text or "E" in text:
-            raise _SlowPath
+            raise _SlowPathError
     return value
 
 
 def canonical_json(value: Any) -> str:
     try:
         prepared = _prepare(value)
-    except _SlowPath:
+    except _SlowPathError:
         out: list[str] = []
         _write(value, out)
         return "".join(out)

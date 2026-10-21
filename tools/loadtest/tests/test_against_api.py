@@ -12,7 +12,6 @@ from typing import Any
 import httpx
 import pytest
 from fastapi.testclient import TestClient
-
 from shriii_loadtest.corpus import Corpus
 from shriii_loadtest.provision import Fleet, provision_fleet
 from shriii_loadtest.report import evaluate, load_targets, summarise_run
@@ -42,8 +41,11 @@ def test_dup_storm_stores_each_event_once(api_app: tuple[Any, str], fleet: Fleet
     assert verification["duplicate_rows"] == 0 and verification["stored_rows"] == plan.unique_events
     # A replayed batch_id returns the *stored* result (duplicate_batch=true, original statuses), so only
     # first-time processing counts towards "accepted".
-    storm = [s for s in result.samples if s.kind in ("storm", "storm_repacked") and s.http_status == 200
-             and not s.duplicate_batch]
+    storm = [
+        s
+        for s in result.samples
+        if s.kind in ("storm", "storm_repacked") and s.http_status == 200 and not s.duplicate_batch
+    ]
     accepted = sum(s.statuses.get("accepted", 0) for s in storm)
     assert accepted == sum(k.steps[0].batch.event_count for k in plan.scripts)
 
@@ -72,8 +74,15 @@ def test_sealed_batches_with_research_reads(api_app: tuple[Any, str], fleet: Fle
     app, _ = api_app
     with TestClient(app, base_url="http://api") as client:
         token = client.post("/api/v1/auth/dev-login", json={"sub": "r", "roles": ["researcher"]}).json()["access_token"]
-    opts = PlanOptions(kiosks=2, sessions_per_kiosk=1, encryption="sealed", public_key=fleet.public_key_bytes,
-                       max_body_bytes=1_048_576, think_s=0.05, seed=13)
+    opts = PlanOptions(
+        kiosks=2,
+        sessions_per_kiosk=1,
+        encryption="sealed",
+        public_key=fleet.public_key_bytes,
+        max_body_bytes=1_048_576,
+        think_s=0.05,
+        seed=13,
+    )
     plan = build_plan("steady", corpus, fleet.kiosks, opts)
     result, verification = _run(api_app, plan, ResearchOptions(users=2, token=token, think_s=0.05))
     assert verification["passed"], verification

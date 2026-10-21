@@ -37,7 +37,6 @@ from typing import Any
 import gevent
 from locust import HttpUser, between, events, task
 from locust.exception import StopUser
-
 from shriii_loadtest.batches import KioskIdentity, OutboxSession, PreparedBatch, build_batch, pack_outbox
 from shriii_loadtest.corpus import Corpus, default_cache_dir, load_or_build_corpus, retarget
 from shriii_loadtest.provision import Fleet, load_fleet
@@ -85,9 +84,11 @@ class KioskUser(HttpUser):
             raise StopUser("no free kiosk identity; provision more kiosks") from exc
         self.rng = random.Random(hash(self.kiosk.kiosk_id))
         self.corpus = corpus
-        self.opts = PlanOptions(encryption=ENCRYPTION,  # type: ignore[arg-type]
-                                public_key=fleet.public_key_bytes if ENCRYPTION == "sealed" else None,
-                                max_body_bytes=MAX_BODY)
+        self.opts = PlanOptions(
+            encryption=ENCRYPTION,  # type: ignore[arg-type]
+            public_key=fleet.public_key_bytes if ENCRYPTION == "sealed" else None,
+            max_body_bytes=MAX_BODY,
+        )
         self.pending: deque[PreparedBatch] = deque()
 
     def on_stop(self) -> None:
@@ -96,20 +97,31 @@ class KioskUser(HttpUser):
 
     def _refill(self) -> None:
         template = self.rng.choice(self.corpus.sessions)
-        sid, evs = retarget(template.events, kiosk_id=self.kiosk.kiosk_id, site_id=self.kiosk.site_id,
-                            started_at=datetime.now(UTC) - timedelta(minutes=25), rng=self.rng)
+        sid, evs = retarget(
+            template.events,
+            kiosk_id=self.kiosk.kiosk_id,
+            site_id=self.kiosk.site_id,
+            started_at=datetime.now(UTC) - timedelta(minutes=25),
+            rng=self.rng,
+        )
         session = OutboxSession(session_id=sid, events=evs)
         for slices in pack_outbox([session]):
-            batch = build_batch(self.kiosk, slices, kiosk_t_wall=datetime.now(UTC), encryption=self.opts.encryption,
-                                public_key=self.opts.public_key)
+            batch = build_batch(
+                self.kiosk,
+                slices,
+                kiosk_t_wall=datetime.now(UTC),
+                encryption=self.opts.encryption,
+                public_key=self.opts.public_key,
+            )
             self.pending.append(batch)
 
     def _send(self, batch: PreparedBatch, label: str) -> dict[str, Any] | None:
         size = "500" if batch.event_count == 500 else "<500"
         name = f"batch[{size}] {label}" if label == "fresh" else f"batch {label}"
         headers = {"Authorization": f"Bearer {self.kiosk.token}", "Content-Type": "application/json"}
-        with self.client.post("/api/v1/events/batch", data=batch.body, headers=headers, name=name,
-                              catch_response=True) as resp:
+        with self.client.post(
+            "/api/v1/events/batch", data=batch.body, headers=headers, name=name, catch_response=True
+        ) as resp:
             if resp.status_code != 200:
                 resp.failure(f"HTTP {resp.status_code}: {resp.text[:120]}")
                 return None
@@ -147,8 +159,9 @@ class ResearcherUser(HttpUser):
     wait_time = between(0.5, 2.0)
 
     def on_start(self) -> None:
-        resp = self.client.post("/api/v1/auth/dev-login", json={"sub": "locust-researcher", "roles": ["researcher"]},
-                                name="auth dev-login")
+        resp = self.client.post(
+            "/api/v1/auth/dev-login", json={"sub": "locust-researcher", "roles": ["researcher"]}, name="auth dev-login"
+        )
         resp.raise_for_status()
         self.headers = {"Authorization": f"Bearer {resp.json()['access_token']}"}
 
@@ -169,30 +182,37 @@ class ResearcherUser(HttpUser):
     def session_events(self) -> None:
         sid = self._session()
         if sid:
-            self.client.get(f"/api/v1/sessions/{sid}/events?limit=500", headers=self.headers,
-                            name="GET /sessions/{id}/events")
+            self.client.get(
+                f"/api/v1/sessions/{sid}/events?limit=500", headers=self.headers, name="GET /sessions/{id}/events"
+            )
 
     @task(2)
     def quality_flags(self) -> None:
         sid = self._session()
         if sid:
-            self.client.get(f"/api/v1/sessions/{sid}/quality-flags", headers=self.headers,
-                            name="GET /sessions/{id}/quality-flags")
+            self.client.get(
+                f"/api/v1/sessions/{sid}/quality-flags", headers=self.headers, name="GET /sessions/{id}/quality-flags"
+            )
 
     @task(1)
     def feature_matrix(self) -> None:
-        self.client.get(f"/api/v1/features/matrix?study_id={STUDY_ID}", headers=self.headers,
-                        name="GET /features/matrix")
+        self.client.get(
+            f"/api/v1/features/matrix?study_id={STUDY_ID}", headers=self.headers, name="GET /features/matrix"
+        )
 
     @task(1)
     def datasets(self) -> None:
-        self.client.get(f"/api/v1/validation/datasets?study_id={STUDY_ID}", headers=self.headers,
-                        name="GET /validation/datasets")
+        self.client.get(
+            f"/api/v1/validation/datasets?study_id={STUDY_ID}", headers=self.headers, name="GET /validation/datasets"
+        )
 
     @task(1)
     def scores(self) -> None:
-        self.client.get(f"/api/v1/assessment-responses/scores?study_id={STUDY_ID}", headers=self.headers,
-                        name="GET /assessment-responses/scores")
+        self.client.get(
+            f"/api/v1/assessment-responses/scores?study_id={STUDY_ID}",
+            headers=self.headers,
+            name="GET /assessment-responses/scores",
+        )
 
 
 if __name__ == "__main__":  # pragma: no cover - convenience for a quick syntax/self check

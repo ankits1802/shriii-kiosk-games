@@ -15,7 +15,6 @@ from typing import Any
 
 import psycopg
 import pytest
-
 from shriii_loadtest.batches import KioskIdentity
 from shriii_loadtest.corpus import Corpus, load_or_build_corpus
 
@@ -40,8 +39,12 @@ def kiosks() -> list[KioskIdentity]:
 
 def _candidates() -> list[str]:
     urls = [os.environ["LOADTEST_TEST_DATABASE_URL"]] if os.environ.get("LOADTEST_TEST_DATABASE_URL") else []
-    return [*urls, "postgresql://load:load@localhost:55442/postgres", "postgresql://dev:dev@localhost:5432/postgres",
-            "postgresql://dev:dev@localhost:55432/postgres"]
+    return [
+        *urls,
+        "postgresql://load:load@localhost:55442/postgres",
+        "postgresql://dev:dev@localhost:5432/postgres",
+        "postgresql://dev:dev@localhost:55432/postgres",
+    ]
 
 
 def _server() -> str | None:

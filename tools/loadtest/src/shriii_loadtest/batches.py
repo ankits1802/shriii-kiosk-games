@@ -106,7 +106,9 @@ def _seal(public_key: bytes, dek: bytes) -> str:
     return base64.b64encode(SealedBox(PublicKey(public_key)).encrypt(dek)).decode()
 
 
-def _chunk(session: OutboxSession, events: Sequence[dict[str, Any]], encryption: Encryption, public_key: bytes | None) -> dict[str, Any]:
+def _chunk(
+    session: OutboxSession, events: Sequence[dict[str, Any]], encryption: Encryption, public_key: bytes | None
+) -> dict[str, Any]:
     chunk: dict[str, Any] = {
         "session_id": session.session_id,
         "first_seq": events[0]["seq"],

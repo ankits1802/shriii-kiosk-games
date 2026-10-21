@@ -32,8 +32,13 @@ def _batches(n: int, kiosk: KioskIdentity, seed: int) -> list[bytes]:
     bodies: list[bytes] = []
     start = datetime.now(UTC) - timedelta(hours=2)
     while len(bodies) < n:
-        sid, events = retarget(rng.choice(corpus.sessions).events, kiosk_id=kiosk.kiosk_id, site_id=kiosk.site_id,
-                               started_at=start, rng=rng)
+        sid, events = retarget(
+            rng.choice(corpus.sessions).events,
+            kiosk_id=kiosk.kiosk_id,
+            site_id=kiosk.site_id,
+            started_at=start,
+            rng=rng,
+        )
         for slices in pack_outbox([OutboxSession(sid, events)], 500):
             if sum(len(e) for _, e in slices) == 500:
                 bodies.append(build_batch(kiosk, slices, kiosk_t_wall=datetime.now(UTC)).body)
@@ -62,8 +67,9 @@ def main(argv: list[str] | None = None) -> int:
     with session_scope() as db:
         ensure_kiosk(db, args.kiosk, "site-load-01")
     kiosk = KioskIdentity(args.kiosk, "site-load-01", "")
-    principal = Principal(sub=f"kiosk:{args.kiosk}", roles=frozenset({Role.KIOSK_DEVICE}), kind="device",
-                          kiosk_id=args.kiosk)
+    principal = Principal(
+        sub=f"kiosk:{args.kiosk}", roles=frozenset({Role.KIOSK_DEVICE}), kind="device", kiosk_id=args.kiosk
+    )
     bodies = _batches(args.batches + args.warmup, kiosk, args.seed)
 
     def ingest(body: bytes) -> dict[str, Any]:

@@ -39,5 +39,6 @@ pnpm --filter @shriii/session-crypto test:python   # Python reference (pytest vi
 
 ```python
 from shriii_session_crypto import decrypt_session_chunk
+
 events = decrypt_session_chunk(chunk_dict, private_keys_by_kid.get)
 ```

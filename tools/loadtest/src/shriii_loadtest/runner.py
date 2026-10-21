@@ -118,10 +118,31 @@ class _Driver:
             latency = (time.perf_counter() - start) * 1000
         except (httpx.TransportError, httpx.TimeoutException) as exc:
             latency = (time.perf_counter() - start) * 1000
-            return Sample(batch.kind, batch.kiosk_id, batch.batch_id, batch.event_count, batch.size_bytes, attempt,
-                          t_start, latency, None, "transport_error", error=type(exc).__name__)
-        sample = Sample(batch.kind, batch.kiosk_id, batch.batch_id, batch.event_count, batch.size_bytes, attempt,
-                        t_start, latency, resp.status_code, "ok")
+            return Sample(
+                batch.kind,
+                batch.kiosk_id,
+                batch.batch_id,
+                batch.event_count,
+                batch.size_bytes,
+                attempt,
+                t_start,
+                latency,
+                None,
+                "transport_error",
+                error=type(exc).__name__,
+            )
+        sample = Sample(
+            batch.kind,
+            batch.kiosk_id,
+            batch.batch_id,
+            batch.event_count,
+            batch.size_bytes,
+            attempt,
+            t_start,
+            latency,
+            resp.status_code,
+            "ok",
+        )
         if resp.status_code == 200:
             doc = json.loads(body)
             sample.duplicate_batch = bool(doc.get("duplicate_batch"))
@@ -164,10 +185,15 @@ class _Driver:
                     await asyncio.sleep(self._backoff(attempt, 0.25))
                 continue
             break
-        self.failures.append({
-            "batch_id": batch.batch_id, "kiosk_id": batch.kiosk_id, "kind": batch.kind,
-            "http_status": self.samples[-1].http_status, "error": self.samples[-1].error,
-        })
+        self.failures.append(
+            {
+                "batch_id": batch.batch_id,
+                "kiosk_id": batch.kiosk_id,
+                "kind": batch.kind,
+                "http_status": self.samples[-1].http_status,
+                "error": self.samples[-1].error,
+            }
+        )
         return False
 
     async def run_kiosk(self, script: KioskScript) -> None:
@@ -185,6 +211,7 @@ class _Driver:
 async def _researcher(
     client: httpx.AsyncClient,
     opts: ResearchOptions,
+    *,
     driver: _Driver,
     stop: asyncio.Event,
     rng: random.Random,
@@ -239,7 +266,16 @@ async def run_plan(
         if research and research.users > 0 and research.token:
             rng = random.Random(seed + 1)
             research_tasks = [
-                asyncio.create_task(_researcher(client, research, driver, stop, random.Random(rng.random()), research_samples))
+                asyncio.create_task(
+                    _researcher(
+                        client,
+                        research,
+                        driver=driver,
+                        stop=stop,
+                        rng=random.Random(rng.random()),
+                        out=research_samples,
+                    )
+                )
                 for _ in range(research.users)
             ]
         await asyncio.gather(*(driver.run_kiosk(script) for script in plan.scripts))

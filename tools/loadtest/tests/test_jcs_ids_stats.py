@@ -9,13 +9,28 @@ import numpy as np
 import pytest
 from shriii_api.canonical import canonical_json as server_canonical_json
 from shriii_api.security import is_valid_code
-
 from shriii_loadtest.ids import pseudonymous_pid, uuid7, uuid7_from
 from shriii_loadtest.jcs import canonical_json, canonical_sha256, format_number
 from shriii_loadtest.stats import percentile, summarise
 
-EDGE_NUMBERS = [0.0, -0.0, 1.0, 60.0, 0.1, 1e21, 1e20, 123456789012345680000.0, 1e-7, 1e-6, 5e-324,
-                1.7976931348623157e308, -2.5, 3.14159, 1234.5678, 2**53 + 0.0]
+EDGE_NUMBERS = [
+    0.0,
+    -0.0,
+    1.0,
+    60.0,
+    0.1,
+    1e21,
+    1e20,
+    123456789012345680000.0,
+    1e-7,
+    1e-6,
+    5e-324,
+    1.7976931348623157e308,
+    -2.5,
+    3.14159,
+    1234.5678,
+    2**53 + 0.0,
+]
 
 
 @pytest.mark.parametrize("value", EDGE_NUMBERS)
@@ -23,8 +38,9 @@ def test_number_formatting_matches_server(value: float) -> None:
     assert canonical_json(value) == server_canonical_json(value)
 
 
-@pytest.mark.parametrize(("value", "expected"), [(1e21, "1e+21"), (1e-7, "1e-7"), (0.000001, "0.000001"),
-                                                  (100.0, "100"), (-0.5, "-0.5")])
+@pytest.mark.parametrize(
+    ("value", "expected"), [(1e21, "1e+21"), (1e-7, "1e-7"), (0.000001, "0.000001"), (100.0, "100"), (-0.5, "-0.5")]
+)
 def test_ecmascript_number_strings(value: float, expected: str) -> None:
     assert format_number(value) == expected
 

@@ -60,7 +60,9 @@ def summarise_run(result: RunResult, full_batch: int = 500) -> dict[str, Any]:
         "wall_s": round(result.wall_s, 2),
         "requests": len(samples),
         "throughput": {
-            "unique_events_per_s": round(result.plan["unique_events"] / result.wall_s, 1) if result.wall_s else math.nan,
+            "unique_events_per_s": round(result.plan["unique_events"] / result.wall_s, 1)
+            if result.wall_s
+            else math.nan,
             "requests_per_s": round(len(samples) / result.wall_s, 2) if result.wall_s else math.nan,
             "events_per_s": round(events_ok / result.wall_s, 1) if result.wall_s else math.nan,
         },
@@ -84,7 +86,7 @@ def evaluate(summary: dict[str, Any], verification: dict[str, Any] | None, targe
             "observed_ms": p95,
             "n": summary["ing02_full_batches_first_attempt"]["n"],
             "kiosks": summary["plan"]["kiosks"],
-            "passed": bool(p95 == p95 and p95 < ing["p95_ms"]),
+            "passed": bool(not math.isnan(p95) and p95 < ing["p95_ms"]),
         },
         "terminal_failures": {
             "target": ing["terminal_failures"],
@@ -120,18 +122,24 @@ def evaluate(summary: dict[str, Any], verification: dict[str, Any] | None, targe
 
 def _fmt(v: Any) -> str:
     if isinstance(v, float):
-        return "n/a" if v != v else f"{v:,.1f}"
+        return "n/a" if math.isnan(v) else f"{v:,.1f}"
     return str(v)
 
 
-def render_markdown(name: str, summary: dict[str, Any], checks: dict[str, Any], verification: dict[str, Any] | None,
-                    meta: dict[str, Any]) -> str:
+def render_markdown(
+    name: str,
+    summary: dict[str, Any],
+    checks: dict[str, Any],
+    verification: dict[str, Any] | None,
+    meta: dict[str, Any],
+) -> str:
     lines = [f"# Load run: {name}", ""]
     lines += [f"- {k}: `{v}`" for k, v in meta.items()]
     p = summary["plan"]
     lines += [
         f"- plan: {p['kiosks']} kiosks, {p['sessions']} sessions, {p['unique_events']} unique events, "
-        f"{p['requests']} planned requests, batch bytes mean {p['batch_bytes']['mean']:,} (max {p['batch_bytes']['max']:,})",
+        f"{p['requests']} planned requests, "
+        f"batch bytes mean {p['batch_bytes']['mean']:,} (max {p['batch_bytes']['max']:,})",
         f"- wall time {summary['wall_s']} s, {summary['throughput']['requests_per_s']} req/s, "
         f"{summary['throughput'].get('unique_events_per_s', 'n/a')} unique events/s stored "
         f"(responses reported {summary['throughput']['events_per_s']} new events/s)",
@@ -145,8 +153,13 @@ def render_markdown(name: str, summary: dict[str, Any], checks: dict[str, Any], 
         target = c.get("target_ms", c.get("target", ""))
         observed = c.get("observed_ms", c.get("observed", ""))
         lines.append(f"| {key} | {_fmt(target)} | {_fmt(observed)} | {'PASS' if c['passed'] else 'FAIL'} |")
-    lines += ["", "## Latency by request kind (HTTP 200 only, ms)", "",
-              "| Kind | Requests | p50 | p95 | p99 | max | retryable | dup-batch | errors |", "|---|---|---|---|---|---|---|---|---|"]
+    lines += [
+        "",
+        "## Latency by request kind (HTTP 200 only, ms)",
+        "",
+        "| Kind | Requests | p50 | p95 | p99 | max | retryable | dup-batch | errors |",
+        "|---|---|---|---|---|---|---|---|---|",
+    ]
     for kind, k in summary["by_kind"].items():
         errors = sum(k["http_errors"].values()) + k["transport_errors"]
         lines.append(
@@ -154,13 +167,26 @@ def render_markdown(name: str, summary: dict[str, Any], checks: dict[str, Any], 
             f"{_fmt(k['max_ms'])} | {k['retryable_responses']} | {k['duplicate_batch_responses']} | {errors} |"
         )
     f = summary["ing02_full_batches_first_attempt"]
-    lines += ["", f"Full 500-event batches, first attempt: n={f['n']}, p50 {_fmt(f['p50_ms'])}, p95 {_fmt(f['p95_ms'])}, "
-              f"p99 {_fmt(f['p99_ms'])} ms.", "", f"Per-event statuses: `{summary['event_statuses']}`"]
+    lines += [
+        "",
+        f"Full 500-event batches, first attempt: n={f['n']}, p50 {_fmt(f['p50_ms'])}, p95 {_fmt(f['p95_ms'])}, "
+        f"p99 {_fmt(f['p99_ms'])} ms.",
+        "",
+        f"Per-event statuses: `{summary['event_statuses']}`",
+    ]
     if summary["research"]:
-        lines += ["", "## Research API (ms)", "", "| Route | Requests | p50 | p95 | p99 | errors |", "|---|---|---|---|---|---|"]
+        lines += [
+            "",
+            "## Research API (ms)",
+            "",
+            "| Route | Requests | p50 | p95 | p99 | errors |",
+            "|---|---|---|---|---|---|",
+        ]
         for kind, k in summary["research"].items():
-            lines.append(f"| {kind.removeprefix('research:')} | {k['requests']} | {_fmt(k['p50_ms'])} | {_fmt(k['p95_ms'])} | "
-                         f"{_fmt(k['p99_ms'])} | {k['errors']} |")
+            lines.append(
+                f"| {kind.removeprefix('research:')} | {k['requests']} | {_fmt(k['p50_ms'])} | {_fmt(k['p95_ms'])} | "
+                f"{_fmt(k['p99_ms'])} | {k['errors']} |"
+            )
     if verification is not None:
         lines += ["", "## Database verification", "", "```", *(f"{k}: {v}" for k, v in verification.items()), "```"]
     if summary["terminal_failures"]:

@@ -7,7 +7,6 @@ import json
 from collections import Counter
 
 import httpx
-
 from shriii_loadtest.batches import KioskIdentity
 from shriii_loadtest.corpus import Corpus
 from shriii_loadtest.report import evaluate, load_targets, render_markdown, summarise_run
@@ -39,18 +38,24 @@ class FakeIngest:
             return httpx.Response(503, json={"detail": {"code": "unavailable"}})
         events = [e for c in doc["session_chunks"] for e in c["events"]]
         if self.attempts[bid] == 2:
-            return httpx.Response(200, json={"duplicate_batch": False,
-                                             "summary": {"accepted": len(events) - 1, "retryable": 1}})
+            return httpx.Response(
+                200, json={"duplicate_batch": False, "summary": {"accepted": len(events) - 1, "retryable": 1}}
+            )
         new = [e for e in events if e["event_id"] not in self.seen]
         self.seen.update(e["event_id"] for e in events)
         self.final.add(bid)
-        return httpx.Response(200, json={"duplicate_batch": False,
-                                         "summary": {"accepted": len(new), "duplicate": len(events) - len(new)}})
+        return httpx.Response(
+            200, json={"duplicate_batch": False, "summary": {"accepted": len(new), "duplicate": len(events) - len(new)}}
+        )
 
 
 def test_retry_policy_and_reporting(corpus: Corpus, kiosks: list[KioskIdentity]) -> None:
-    plan = build_plan("retry", corpus, kiosks, PlanOptions(kiosks=3, sessions_per_kiosk=1, think_s=0.01,
-                                                           retry_same_id_p=1.0, repack_p=1.0))
+    plan = build_plan(
+        "retry",
+        corpus,
+        kiosks,
+        PlanOptions(kiosks=3, sessions_per_kiosk=1, think_s=0.01, retry_same_id_p=1.0, repack_p=1.0),
+    )
     fake = FakeIngest()
     research = ResearchOptions(users=2, token="jwt", think_s=0.01)
     result = asyncio.run(run_plan(plan, "http://test", transport=httpx.MockTransport(fake), research=research, seed=3))

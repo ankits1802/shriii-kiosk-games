@@ -12,7 +12,6 @@ from nacl.public import PrivateKey
 from shriii_api.canonical import canonical_sha256 as server_sha256
 from shriii_api.security import decrypt_chunk, unseal_dek
 from shriii_contracts import EVENT_ADAPTER, UploadBatch
-
 from shriii_loadtest.batches import KioskIdentity, OutboxSession, build_batch, pack_outbox
 from shriii_loadtest.corpus import Corpus, retarget
 from shriii_loadtest.scenarios import PlanOptions, build_plan
@@ -22,8 +21,13 @@ NOW = datetime(2026, 10, 21, 6, 0, tzinfo=UTC)
 
 
 def _session(corpus: Corpus, seed: int = 1) -> OutboxSession:
-    sid, events = retarget(corpus.sessions[0].events, kiosk_id=KIOSK.kiosk_id, site_id=KIOSK.site_id,
-                           started_at=NOW, rng=random.Random(seed))
+    sid, events = retarget(
+        corpus.sessions[0].events,
+        kiosk_id=KIOSK.kiosk_id,
+        site_id=KIOSK.site_id,
+        started_at=NOW,
+        rng=random.Random(seed),
+    )
     return OutboxSession(session_id=sid, events=events)
 
 
@@ -68,8 +72,13 @@ def test_plain_batch_validates_against_contract_and_server_checksum(corpus: Corp
 def test_sealed_batch_round_trips_with_server_crypto(corpus: Corpus) -> None:
     private = PrivateKey.generate()
     session = _session(corpus)
-    batch = build_batch(KIOSK, [(session, session.events[:50])], kiosk_t_wall=NOW, encryption="sealed",
-                        public_key=bytes(private.public_key))
+    batch = build_batch(
+        KIOSK,
+        [(session, session.events[:50])],
+        kiosk_t_wall=NOW,
+        encryption="sealed",
+        public_key=bytes(private.public_key),
+    )
     doc = json.loads(batch.body)
     UploadBatch.model_validate(doc)
     chunk = doc["session_chunks"][0]
@@ -130,7 +139,9 @@ def test_dup_storm_fires_copies_and_siblings(corpus: Corpus, kiosks: list[KioskI
 
 
 def test_out_of_order_sends_consent_last_and_skews_clocks(corpus: Corpus, kiosks: list[KioskIdentity]) -> None:
-    plan = build_plan("out_of_order", corpus, kiosks, PlanOptions(kiosks=20, sessions_per_kiosk=1, clock_skew_share=0.5))
+    plan = build_plan(
+        "out_of_order", corpus, kiosks, PlanOptions(kiosks=20, sessions_per_kiosk=1, clock_skew_share=0.5)
+    )
     years = set()
     for script in plan.scripts:
         batches = [s.batch for s in script.steps]
