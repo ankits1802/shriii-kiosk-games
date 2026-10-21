@@ -143,6 +143,8 @@ def load_games(root: Path) -> dict[str, dict[str, Any]]:
         if path.name == "session-plan.json":
             continue
         data = _json(path)
+        if "module_id" not in data:
+            continue  # shared rule documents (e.g. shared/calibration.json) are not game modules
         games[data["module_id"]] = data
     return games
 

@@ -139,9 +139,8 @@ def test_all_scenarios_present() -> None:
 def test_scenario_sheet_structure(path: Path, catalogue: Catalogue) -> None:
     sheet = _yaml(path)
     regions = _yaml(ADAPT / "regions.yaml")["languages"]
-    modules = {
-        json.loads(p.read_text(encoding="utf-8"))["module_id"] for p in (ROOT / "content/games").glob("*/*.json")
-    }
+    docs = [json.loads(p.read_text(encoding="utf-8")) for p in (ROOT / "content/games").glob("*/*.json")]
+    modules = {d["module_id"] for d in docs if "module_id" in d}  # shared rule documents have no module_id
     assert path.stem == sheet["scenario_id"].replace("_", "-")
     assert set(sheet["appears_in"]) <= modules | SESSION_STAGES
     assert set(sheet["lines"]) <= set(catalogue.by_id()), set(sheet["lines"]) - set(catalogue.by_id())
