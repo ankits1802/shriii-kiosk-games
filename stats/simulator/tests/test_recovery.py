@@ -75,6 +75,11 @@ KNOWN_LOW_SIGNAL = {
     "stability.shift_slope_reversal",
     "response_consistency.choice_entropy_repeats",
     "judgement.consistency_across_dilemmas",
+    # Scorable since the 2026-10 indicator review (docs/science/indicator-review.md). The simulator plants no
+    # restraint effect on inter-tap-interval variability, and the rude-run shift slope contrasts tone under
+    # rude vs calm customers, which the generative model drives by emotional regulation, not stability.
+    "expressive_restraint.iti_rvi",
+    "stability.shift_slope_rude_run",
 }
 
 

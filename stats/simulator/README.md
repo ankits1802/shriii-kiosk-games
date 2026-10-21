@@ -32,3 +32,19 @@ report = run_recovery(400, "A", seed=11)  # parameter-recovery harness
   not evidence that the games measure the traits.
 
 All generative coefficients live in `data/simulator.yaml` (override with `SimParams.with_overrides`).
+
+## Measurement-science studies (VAL-02)
+
+* **Design knobs** (`data/simulator.yaml` `design`): block lengths of the scalable modules mirror the L2 schedules in
+  `content/games`; `design.scale` lengthens them all, `design.wait_or_now.effort_design` switches the effort block
+  between the v0 fixed amounts and an adjusting-amount staircase.
+* **Study engine** (`studies.py`): the real indicator engine with block truncation (first `fraction` of each scored
+  block), an indicator subset, `min_valid_trials` lowered to 1 and scoring-parameter overrides; `parallel_stats`
+  gives r with the planted latent, parallel-form reliability, model reliability and the strongest other latent.
+* **VAL-02** (`val02.py`, `data/val02.yaml`): reliability vs valid units, Spearman-Brown projection, minimum units for
+  the target reliabilities and the implied L2 session time, plus estimator comparisons
+  (`uv run python -m shriii_simulator.val02 --profile local`). The full profile runs in
+  `.github/workflows/measurement-science.yml`. Results: `docs/science/VAL-02-trial-requirements.md`.
+* **Effort-discounting designs** (`discounting_design.py`): fixed vs titrated schedules scored with the engine's
+  hierarchical estimator (`shriii_scoring.formulas.models.fit_discounting_eb`).
+
