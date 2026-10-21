@@ -1,0 +1,33 @@
+{
+  "name": "@shriii/outbox-sqlite",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Encrypted, crash-safe SQLite (node:sqlite, WAL) kiosk outbox implementing the kiosk-game Outbox contract: gapless seq, consent-first batches, capacity policy",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./config/*": "./config/*"
+  },
+  "scripts": {
+    "build": "tsc --noEmit -p tsconfig.json",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run",
+    "lint": "biome check ."
+  },
+  "dependencies": {
+    "@shriii/contracts": "workspace:*",
+    "@shriii/kiosk-game": "workspace:*",
+    "@shriii/session-crypto": "workspace:*",
+    "yaml": "2.9.1"
+  },
+  "devDependencies": {
+    "@types/node": "^24.19.2",
+    "fast-check": "4.10.2",
+    "typescript": "7.0.2",
+    "vitest": "5.0.5"
+  }
+}

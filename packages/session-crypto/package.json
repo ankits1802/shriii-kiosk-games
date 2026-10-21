@@ -1,0 +1,28 @@
+{
+  "name": "@shriii/session-crypto",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Per-session envelope encryption for kiosk events: DEK sealed to the backend X25519 key (RFC 9180 HPKE), AES-256-GCM gzip NDJSON chunks, key rotation, Python reference decryptor",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./test-vectors/*": "./test-vectors/*"
+  },
+  "scripts": {
+    "build": "tsc --noEmit -p tsconfig.json",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run",
+    "test:python": "cd python && python -m uv run --isolated --no-project --with-editable . --with pytest pytest",
+    "fixtures": "node scripts/make-fixtures.ts",
+    "lint": "biome check ."
+  },
+  "devDependencies": {
+    "@types/node": "^24.19.2",
+    "typescript": "7.0.2",
+    "vitest": "5.0.5"
+  }
+}
