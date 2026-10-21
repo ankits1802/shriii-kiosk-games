@@ -1,0 +1,16 @@
+# Test conditions applied to every clean utterance. Noise is mixed at each SNR with a seeded offset
+# so every engine hears exactly the same mixtures.
+schema_version: '1.0'
+seed: 20261021
+snr_db: [clean, 10, 5, 0]
+noise:
+  # Directory of recorded market noise (WAV, any rate; resampled to 16 kHz). When empty or missing,
+  # the synthetic market-noise generator is used and the report says so.
+  recordings_dir: data/noise
+  synthetic_fallback: true
+negatives:
+  # Keyword-free trials per prompt per SNR condition: pure market noise windows, and out-of-vocabulary
+  # speech (other words from the same speakers) mixed into noise.
+  noise_only_per_prompt: 40
+  oov_per_prompt: 40
+  window_s: 3.0

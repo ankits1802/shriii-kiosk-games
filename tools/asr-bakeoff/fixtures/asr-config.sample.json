@@ -1,0 +1,37 @@
+{
+  "schema_version": "1.0",
+  "language": "hi-IN",
+  "grammar_version": "0.2.0",
+  "engine": "sherpa-onnx-kws",
+  "model_id": "kws-model",
+  "keywords": {
+    "no": { "phrases": [{ "tokens": "▁NA HII N", "text": "नहीं" }] },
+    "share": { "phrases": [{ "tokens": "▁BAA N TO", "text": "बाँटो" }] },
+    "wait": { "phrases": [{ "tokens": "▁RU KO", "text": "रुको" }] },
+    "yes": { "phrases": [{ "tokens": "▁HAA N", "text": "हाँ" }] }
+  },
+  "tiers": [
+    { "keywords_threshold": 0.2, "confidence": 0.9 },
+    { "keywords_threshold": 0.35, "confidence": 0.98 }
+  ],
+  "prompts": {
+    "generic.yes_no": { "vocabulary": ["yes", "no"], "voice_enabled": true },
+    "generic.wait": { "vocabulary": ["wait"], "voice_enabled": false },
+    "stall.share_offer": { "vocabulary": ["share", "no"], "voice_enabled": false }
+  },
+  "policy": {
+    "min_propose_confidence": 0.85,
+    "min_commit_confidence": 0.97,
+    "noise_max_dbfs": -35.0,
+    "max_listen_ms": 6000.0,
+    "vad_preroll_ms": 300.0,
+    "settle_ms": 250.0
+  },
+  "provenance": {
+    "bakeoff_run_id": "20261021T000000Z-fixture",
+    "dataset_id": "synthetic.placeholder.3",
+    "dataset_kind": "synthetic_placeholder",
+    "policy_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+    "winner_engine_id": "kws"
+  }
+}

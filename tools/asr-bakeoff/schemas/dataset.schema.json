@@ -1,0 +1,110 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://shriii.local/tools/asr-bakeoff/dataset.schema.json",
+  "title": "AsrEvalDataset",
+  "description": "Closed-vocabulary ASR evaluation dataset manifest (VOX-06). Real recordings are collected only under the supervised asr_eval consent (PRV-05): pseudonymous speakers, encrypted at rest, deletion timer. Synthetic placeholder sets carry kind=synthetic_placeholder.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "dataset_id",
+    "kind",
+    "created_at",
+    "sample_rate_hz",
+    "consent",
+    "speakers",
+    "utterances"
+  ],
+  "properties": {
+    "schema_version": { "const": "1.0" },
+    "dataset_id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9_.:-]{0,127}$" },
+    "kind": { "enum": ["synthetic_placeholder", "asr_eval"] },
+    "created_at": { "type": "string", "format": "date-time" },
+    "sample_rate_hz": { "const": 16000 },
+    "consent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind"],
+      "properties": {
+        "kind": { "enum": ["synthetic", "asr_eval"] },
+        "protocol_id": { "type": "string" },
+        "retention_days": { "type": "integer", "minimum": 1, "maximum": 365 },
+        "deletion_due": { "type": "string", "format": "date" }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "kind": { "const": "asr_eval" } } },
+          "then": { "required": ["kind", "protocol_id", "retention_days", "deletion_due"] }
+        }
+      ]
+    },
+    "speakers": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["speaker_id", "language", "age_band", "gender", "split"],
+        "properties": {
+          "speaker_id": { "type": "string", "pattern": "^[A-Za-z0-9_-]{1,64}$" },
+          "language": { "type": "string", "pattern": "^[a-z]{2,3}-[A-Z]{2}$" },
+          "age_band": { "enum": ["18-29", "30-44", "45-59", "60+"] },
+          "gender": { "enum": ["female", "male", "other", "undisclosed"] },
+          "split": { "enum": ["enroll", "heldout"] },
+          "consent_id": { "type": "string", "minLength": 1, "maxLength": 128 }
+        }
+      }
+    },
+    "utterances": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "utterance_id",
+          "speaker_id",
+          "language",
+          "kind",
+          "code",
+          "file",
+          "duration_ms"
+        ],
+        "properties": {
+          "utterance_id": { "type": "string", "pattern": "^[A-Za-z0-9_.:-]{1,128}$" },
+          "speaker_id": { "type": "string" },
+          "language": { "type": "string", "pattern": "^[a-z]{2,3}-[A-Z]{2}$" },
+          "kind": { "enum": ["keyword", "oov"] },
+          "code": {
+            "anyOf": [
+              { "type": "string", "pattern": "^[a-z0-9][a-z0-9_.-]{0,63}$" },
+              { "type": "null" }
+            ]
+          },
+          "phrase_index": { "type": "integer", "minimum": 0 },
+          "text": { "type": "string" },
+          "file": { "type": "string", "pattern": "^[A-Za-z0-9_./-]+\\.wav$" },
+          "duration_ms": { "type": "number", "minimum": 0 }
+        },
+        "allOf": [
+          {
+            "if": { "properties": { "kind": { "const": "keyword" } } },
+            "then": { "properties": { "code": { "type": "string" } } },
+            "else": { "properties": { "code": { "type": "null" } } }
+          }
+        ]
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "kind": { "const": "asr_eval" } } },
+      "then": {
+        "properties": {
+          "consent": { "properties": { "kind": { "const": "asr_eval" } } },
+          "speakers": { "items": { "required": ["consent_id"] } }
+        }
+      }
+    }
+  ]
+}

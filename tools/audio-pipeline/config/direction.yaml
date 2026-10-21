@@ -1,0 +1,34 @@
+# Direction notes printed on the voice-actor recording scripts (VOX-07 recording sheets).
+# Keyed by the `tone` and `speaker_role` enums of content/i18n/lines.yaml.
+schema_version: '1.0'
+
+general:
+  - Record in a treated, quiet room. Mouth 15-20 cm from the microphone, slightly off-axis.
+  - 48 kHz (or 44.1 kHz), 24-bit, mono WAV. Peaks around -6 dBFS; never touch 0 dBFS.
+  - Leave about one second of room tone before and after every line; the pipeline trims it.
+  - Speak for a listener who may not read and may be hearing the game for the first time. Clear, unhurried.
+  - Never read numbers as digits or spell letters; speak the line exactly as approved in the ITC sheet.
+  - Save each take as <line_id>.<lang>.wav (the best take) or <line_id>.<lang>.take<N>.wav.
+
+tone:
+  warm: Friendly and welcoming, like greeting a neighbour at the fair. Smile in the voice.
+  neutral: Plain and even. No emotion added; let the words carry the meaning.
+  encouraging: Gently positive and supportive, never patronising. No exaggerated praise.
+  calm: Slow, low and reassuring. Leave small pauses between phrases.
+  firm: Clear and steady, with authority but without anger.
+  hostile: Annoyed, impatient customer. Raised but controlled; never shout or insult. Stays believable.
+  playful: Light and lively, a hint of fun. Keep it short and bright.
+  urgent: Quick and alert, but still clear and easy to follow. Do not rush the key words.
+
+speaker_role:
+  guide: The single friendly guide character who accompanies the player across the whole game.
+  narrator: Off-screen storyteller; slightly more distant than the guide.
+  customer: A market customer in a scene; stay in character.
+  assistant: The stall assistant character.
+  partner: A co-player partner character.
+  inspector: The weighing-post inspector character.
+  system: Short system prompt; neutral delivery.
+
+voice_forbidden_note: >-
+  NEVER-VOICE LINE: this line is never played on the kiosk speakers (headset-only or private context).
+  Record it the same way, but expect it to be played privately.
