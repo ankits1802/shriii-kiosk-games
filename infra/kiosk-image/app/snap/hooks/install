@@ -4,6 +4,7 @@ set -eu
 umask 077
 mkdir -p "$SNAP_COMMON/provision" "$SNAP_COMMON/secrets" "$SNAP_COMMON/tls" "$SNAP_COMMON/userdata" "$SNAP_COMMON/home"
 chmod 700 "$SNAP_COMMON/provision" "$SNAP_COMMON/secrets" "$SNAP_COMMON/userdata" "$SNAP_COMMON/home"
-chmod 755 "$SNAP_COMMON" "$SNAP_COMMON/tls"
+# $SNAP_COMMON itself is owned by snapd (0755); confinement does not allow changing its mode.
+chmod 755 "$SNAP_COMMON/tls"
 
 [ -n "$(snapctl get netguard.enforce)" ] || snapctl set netguard.enforce=true
