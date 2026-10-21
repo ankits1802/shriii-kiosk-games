@@ -79,11 +79,7 @@ def _labeled_expand(suite_id: bytes, prk: bytes, label: str, info: bytes, length
 
 
 def public_from_private(sk: bytes) -> bytes:
-    return (
-        X25519PrivateKey.from_private_bytes(sk)
-        .public_key()
-        .public_bytes(Encoding.Raw, PublicFormat.Raw)
-    )
+    return X25519PrivateKey.from_private_bytes(sk).public_key().public_bytes(Encoding.Raw, PublicFormat.Raw)
 
 
 def derive_key_pair(ikm: bytes) -> tuple[bytes, bytes]:
@@ -97,9 +93,7 @@ def derive_key_pair(ikm: bytes) -> tuple[bytes, bytes]:
 
 def _dh(sk: bytes, pk: bytes) -> bytes:
     try:
-        shared = X25519PrivateKey.from_private_bytes(sk).exchange(
-            X25519PublicKey.from_public_bytes(pk)
-        )
+        shared = X25519PrivateKey.from_private_bytes(sk).exchange(X25519PublicKey.from_public_bytes(pk))
     except ValueError as exc:  # cryptography rejects the all-zero shared secret
         raise DecryptionError("X25519: low-order public key") from exc
     if shared == bytes(len(shared)):
@@ -184,5 +178,5 @@ def setup_base_r(aead: int, enc: bytes, sk_r: bytes, info: bytes) -> HpkeContext
     return HpkeContext(aead, key_schedule(aead, decap(enc, sk_r), info))
 
 
-def open_base(aead: int, enc: bytes, sk_r: bytes, info: bytes, aad: bytes, ciphertext: bytes) -> bytes:
+def open_base(aead: int, enc: bytes, sk_r: bytes, *, info: bytes, aad: bytes, ciphertext: bytes) -> bytes:
     return setup_base_r(aead, enc, sk_r, info).open(aad, ciphertext)

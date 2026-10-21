@@ -1,12 +1,8 @@
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import {
-  generateKek,
-  generateRecipientKeyPair,
-  RecipientKeyRing,
-} from '@shriii/session-crypto';
-import { parseOutboxPolicy, loadOutboxPolicy, type OutboxPolicy } from '../src/policy.ts';
+import { generateKek, generateRecipientKeyPair, RecipientKeyRing } from '@shriii/session-crypto';
+import { loadOutboxPolicy, type OutboxPolicy, parseOutboxPolicy } from '../src/policy.ts';
 import { SqliteOutbox, type SqliteOutboxOptions } from '../src/sqlite-outbox.ts';
 import { uuidv7 } from '../src/util.ts';
 
@@ -55,7 +51,9 @@ export function harness(): Harness {
   };
 }
 
-export function policyWith(patch: (p: Record<string, Record<string, unknown>>) => void): OutboxPolicy {
+export function policyWith(
+  patch: (p: Record<string, Record<string, unknown>>) => void,
+): OutboxPolicy {
   const base = loadOutboxPolicy();
   const raw: Record<string, Record<string, unknown>> = {
     capacity: {

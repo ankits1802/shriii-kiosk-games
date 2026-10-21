@@ -62,13 +62,21 @@ function decryptBatch(batch: UploadBatch, keys: (kid: string) => Uint8Array | un
     const dek = openDek({ sealed: c.sealed_dek, sessionId: c.session_id, privateKeys: keys });
     return decryptChunk(
       dek,
-      { sessionId: c.session_id, firstSeq: c.first_seq, lastSeq: c.last_seq, eventCount: c.event_count },
+      {
+        sessionId: c.session_id,
+        firstSeq: c.first_seq,
+        lastSeq: c.last_seq,
+        eventCount: c.event_count,
+      },
       c,
     ) as { seq: number; event_type: string; session_id: string }[];
   });
 }
 
-function ackAll(batch: UploadBatch, status: 'accepted' | 'retryable' = 'accepted'): UploadBatchResult {
+function ackAll(
+  batch: UploadBatch,
+  status: 'accepted' | 'retryable' = 'accepted',
+): UploadBatchResult {
   const results = decryptBatchIds(batch).map(({ sessionId, seq }) => ({
     event_id: '01928c6e-7d3a-7b2c-8f00-000000000000',
     session_id: sessionId,
@@ -90,7 +98,8 @@ function ackAll(batch: UploadBatch, status: 'accepted' | 'retryable' = 'accepted
 function decryptBatchIds(batch: UploadBatch): { sessionId: string; seq: number }[] {
   const out: { sessionId: string; seq: number }[] = [];
   for (const c of batch.session_chunks as unknown as EncryptedChunk[]) {
-    for (let s = c.first_seq; s <= c.last_seq; s += 1) out.push({ sessionId: c.session_id, seq: s });
+    for (let s = c.first_seq; s <= c.last_seq; s += 1)
+      out.push({ sessionId: c.session_id, seq: s });
   }
   return out;
 }
@@ -168,7 +177,9 @@ describe('storage basics', () => {
       }),
     ).rejects.toThrow('boom');
     await appendMany(outbox, sid, 1);
-    expect(((await outbox.sessionEvents(sid)) as { seq: number }[]).map((e) => e.seq)).toEqual([0, 1]);
+    expect(((await outbox.sessionEvents(sid)) as { seq: number }[]).map((e) => e.seq)).toEqual([
+      0, 1,
+    ]);
   });
 
   it('also runs unencrypted in none_dev mode', async () => {
@@ -353,7 +364,7 @@ describe('purge rules', () => {
     const stats = await outbox.stats();
     expect(stats.openBatches).toBe(0);
     expect(stats.inflightEvents).toBe(0);
-    expect(((await outbox.sessionEvents(a)) as { seq: number; event_type: string }[])).toMatchObject([
+    expect((await outbox.sessionEvents(a)) as { seq: number; event_type: string }[]).toMatchObject([
       { seq: 5, event_type: 'session_tombstone' },
     ]);
     const next = await outbox.nextBatch();
@@ -409,7 +420,9 @@ describe('capacity and sync health', () => {
     const health = outbox.healthSync();
     expect(health.alerts).toContain('capacity_full');
     expect(outbox.canStartSession()).toBe(false);
-    await expect(outbox.append(uuidv7(), (s) => ev('x', s))).rejects.toBeInstanceOf(OutboxFullError);
+    await expect(outbox.append(uuidv7(), (s) => ev('x', s))).rejects.toBeInstanceOf(
+      OutboxFullError,
+    );
     await appendMany(outbox, sid, 1);
     expect(await outbox.nextSeq(sid)).toBe(31);
   });
@@ -436,8 +449,18 @@ describe('key rotation', () => {
     const rotateAt = T0 + DAY_MS;
     outbox.setRecipients(
       new RecipientKeyRing([
-        { kid: 'backend-1', publicKey: h.backend.publicKey, notBefore: T0 - 1000, notAfter: rotateAt },
-        { kid: 'backend-2', publicKey: next.publicKey, notBefore: rotateAt - HOUR_MS, notAfter: null },
+        {
+          kid: 'backend-1',
+          publicKey: h.backend.publicKey,
+          notBefore: T0 - 1000,
+          notAfter: rotateAt,
+        },
+        {
+          kid: 'backend-2',
+          publicKey: next.publicKey,
+          notBefore: rotateAt - HOUR_MS,
+          notAfter: null,
+        },
       ]),
     );
     // New sessions use the newest valid key once it is valid.
@@ -482,6 +505,8 @@ describe('key rotation', () => {
       t.cleanup();
     });
     expect(outbox.healthSync().alerts).toContain('no_recipient_key');
-    await expect(outbox.append(uuidv7(), (s) => ev('x', s))).rejects.toBeInstanceOf(OutboxFullError);
+    await expect(outbox.append(uuidv7(), (s) => ev('x', s))).rejects.toBeInstanceOf(
+      OutboxFullError,
+    );
   });
 });

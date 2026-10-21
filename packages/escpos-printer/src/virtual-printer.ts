@@ -88,7 +88,12 @@ export class VirtualPrinter implements PrinterTransport {
   }
 
   private canPrint(): boolean {
-    return this.state.online && !this.state.coverOpen && !this.state.paperOut && !this.state.unrecoverableError;
+    return (
+      this.state.online &&
+      !this.state.coverOpen &&
+      !this.state.paperOut &&
+      !this.state.unrecoverableError
+    );
   }
 
   private emitRow(row: Uint8Array): void {
@@ -105,7 +110,9 @@ export class VirtualPrinter implements PrinterTransport {
   private cut(): void {
     if (this.rows.length === 0) return;
     const page = createBitmap(this.widthDots, this.rows.length);
-    this.rows.forEach((r, y) => page.data.set(r.subarray(0, page.bytesPerRow), y * page.bytesPerRow));
+    this.rows.forEach((r, y) => {
+      page.data.set(r.subarray(0, page.bytesPerRow), y * page.bytesPerRow);
+    });
     this.rows = [];
     this.pages.push(page);
     if (this.outputDir) {
@@ -122,7 +129,11 @@ export class VirtualPrinter implements PrinterTransport {
       this.protocolErrors.push(`raster ${imgWidth} dots wider than paper ${this.widthDots}`);
     }
     const offset =
-      this.align === 1 ? Math.max(0, Math.floor((this.widthDots - imgWidth) / 2)) : this.align === 2 ? Math.max(0, this.widthDots - imgWidth) : 0;
+      this.align === 1
+        ? Math.max(0, Math.floor((this.widthDots - imgWidth) / 2))
+        : this.align === 2
+          ? Math.max(0, this.widthDots - imgWidth)
+          : 0;
     for (let y = 0; y < rows; y += 1) {
       const row = createBitmap(this.widthDots, 1);
       for (let x = 0; x < imgWidth; x += 1) {

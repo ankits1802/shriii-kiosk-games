@@ -106,7 +106,10 @@ describe('ThermalPrinter on the virtual printer', () => {
     expect(vp.received.filter((b) => b === 0x76)).toHaveLength(0); // no GS v sent
     vp.loadPaper();
     vp.setState({ coverOpen: true });
-    expect(await printer.printReport({ qrUrl: URL_ })).toMatchObject({ ok: false, reason: 'cover_open' });
+    expect(await printer.printReport({ qrUrl: URL_ })).toMatchObject({
+      ok: false,
+      reason: 'cover_open',
+    });
     vp.setState({ coverOpen: false });
     expect((await printer.printReport({ qrUrl: URL_ })).ok).toBe(true);
   });
@@ -129,7 +132,10 @@ describe('ThermalPrinter on the virtual printer', () => {
   it('reports an unresponsive printer instead of hanging', async () => {
     const vp = new VirtualPrinter({ unresponsive: true });
     const printer = new ThermalPrinter(vp, { statusTimeoutMs: 30 });
-    expect(await printer.printReport({ qrUrl: URL_ })).toMatchObject({ ok: false, reason: 'no_status' });
+    expect(await printer.printReport({ qrUrl: URL_ })).toMatchObject({
+      ok: false,
+      reason: 'no_status',
+    });
     await expect(printer.status()).rejects.toThrow(StatusError);
   });
 
@@ -189,7 +195,10 @@ describe('transports', () => {
     const printer = new ThermalPrinter(
       new NetworkTransport({ host: '127.0.0.1', port: 1, connectTimeoutMs: 500 }),
     );
-    expect(await printer.printReport({ qrUrl: URL_ })).toMatchObject({ ok: false, reason: 'no_status' });
+    expect(await printer.printReport({ qrUrl: URL_ })).toMatchObject({
+      ok: false,
+      reason: 'no_status',
+    });
   });
 
   it('prints over a generic duplex stream (serial port)', async () => {
@@ -222,8 +231,8 @@ describe('transports', () => {
     expect(r.length).toBeLessThanOrEqual(1);
     await t.close();
     expect([...readFileSync(path)]).toEqual([0x1b, 0x40]);
-    await expect(new DeviceFileTransport({ path: join(dir, 'missing', 'lp9') }).open()).rejects.toThrow(
-      /cannot open/,
-    );
+    await expect(
+      new DeviceFileTransport({ path: join(dir, 'missing', 'lp9') }).open(),
+    ).rejects.toThrow(/cannot open/);
   });
 });

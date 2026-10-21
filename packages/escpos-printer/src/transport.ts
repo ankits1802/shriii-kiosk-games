@@ -10,7 +10,7 @@
  * - {@link StreamTransport}: wraps any Duplex (e.g. a `serialport` instance) for platforms where a
  *   device file is not available.
  */
-import { open as openFile, type FileHandle } from 'node:fs/promises';
+import { type FileHandle, open as openFile } from 'node:fs/promises';
 import { connect, type Socket } from 'node:net';
 import type { Duplex } from 'node:stream';
 
@@ -128,7 +128,9 @@ export class NetworkTransport implements PrinterTransport {
     const socket = this.socket;
     if (!socket) return Promise.reject(new TransportError('not connected'));
     return new Promise((resolve, reject) => {
-      socket.write(data, (err) => (err ? reject(new TransportError('write failed', { cause: err })) : resolve()));
+      socket.write(data, (err) =>
+        err ? reject(new TransportError('write failed', { cause: err })) : resolve(),
+      );
     });
   }
 
@@ -170,7 +172,9 @@ export class StreamTransport implements PrinterTransport {
 
   write(data: Uint8Array): Promise<void> {
     return new Promise((resolve, reject) => {
-      this.stream.write(data, (err) => (err ? reject(new TransportError('write failed', { cause: err })) : resolve()));
+      this.stream.write(data, (err) =>
+        err ? reject(new TransportError('write failed', { cause: err })) : resolve(),
+      );
     });
   }
 

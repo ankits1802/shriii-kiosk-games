@@ -82,7 +82,7 @@ def open_dek(sealed: str, session_id: str, private_keys: PrivateKeyLookup) -> by
     sk = private_keys(kid)
     if sk is None:
         raise DecryptionError(f"no private key for kid {kid}")
-    dek = open_base(AEAD_AES_256_GCM, enc, sk, DEK_INFO, header + session_id.encode(), ciphertext)
+    dek = open_base(AEAD_AES_256_GCM, enc, sk, info=DEK_INFO, aad=header + session_id.encode(), ciphertext=ciphertext)
     if len(dek) != DEK_BYTES:
         raise DecryptionError("DEK has the wrong length")
     return dek

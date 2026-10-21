@@ -178,7 +178,11 @@ export function wrapDekLocal(kek: Uint8Array, sessionId: string, dek: Uint8Array
   return boxSeal(kek, localAad(sessionId), dek);
 }
 
-export function unwrapDekLocal(kek: Uint8Array, sessionId: string, wrapped: Uint8Array): Uint8Array {
+export function unwrapDekLocal(
+  kek: Uint8Array,
+  sessionId: string,
+  wrapped: Uint8Array,
+): Uint8Array {
   const dek = boxOpen(kek, localAad(sessionId), wrapped);
   if (dek.length !== DEK_BYTES) throw new DecryptionError('DEK has the wrong length');
   return dek;

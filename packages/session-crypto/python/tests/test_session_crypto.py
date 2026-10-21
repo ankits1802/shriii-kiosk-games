@@ -85,7 +85,7 @@ def test_every_sealed_dek_byte_is_authenticated() -> None:
 
 
 @pytest.mark.parametrize(
-    "field,value",
+    ("field", "value"),
     [
         ("session_id", "01928c6e-7d3a-7b2c-8f00-ffffffffffff"),
         ("first_seq", 1),
@@ -115,7 +115,7 @@ def test_ciphertext_nonce_tamper_and_unknown_kid() -> None:
 
 
 def test_wrong_private_key_fails() -> None:
-    wrong = {kid: KEYS["backend-2027-01"] for kid in KEYS}
+    wrong = dict.fromkeys(KEYS, KEYS["backend-2027-01"])
     with pytest.raises(DecryptionError):
         decrypt_session_chunk(FIXTURE["chunk"], wrong.get)
 

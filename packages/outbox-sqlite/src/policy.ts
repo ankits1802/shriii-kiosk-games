@@ -108,7 +108,9 @@ export function quotaBytes(policy: OutboxPolicy): number {
   const c = policy.capacity;
   return (
     c.maxDbBytes ??
-    Math.round(c.designDays * c.expectedSessionsPerDay * c.expectedBytesPerSession * c.headroomFactor)
+    Math.round(
+      c.designDays * c.expectedSessionsPerDay * c.expectedBytesPerSession * c.headroomFactor,
+    )
   );
 }
 
@@ -159,7 +161,8 @@ export function evaluateHealth(
   const qb = quotaBytes(policy);
   const qs = quotaSessions(policy);
   const alerts: OutboxAlert[] = [];
-  const age = inputs.oldestUnsyncedAt === null ? null : Math.max(0, nowMs - inputs.oldestUnsyncedAt);
+  const age =
+    inputs.oldestUnsyncedAt === null ? null : Math.max(0, nowMs - inputs.oldestUnsyncedAt);
   if (age !== null && age >= policy.alerts.unsyncedAgeDays * DAY_MS) {
     alerts.push('unsynced_age_exceeded');
   }

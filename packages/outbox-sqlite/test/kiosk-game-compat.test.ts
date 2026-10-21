@@ -133,14 +133,29 @@ describe('kiosk-game integration on the SQLite outbox', () => {
       const results: UploadBatchResult['results'] = [];
       for (const c of batch.session_chunks) {
         if (c.encryption !== 'x25519_sealed_aes256gcm') throw new Error('expected encryption');
-        const dek = openDek({ sealed: c.sealed_dek, sessionId: c.session_id, privateKeys: h.privateKeys });
+        const dek = openDek({
+          sealed: c.sealed_dek,
+          sessionId: c.session_id,
+          privateKeys: h.privateKeys,
+        });
         const events = decryptChunk(
           dek,
-          { sessionId: c.session_id, firstSeq: c.first_seq, lastSeq: c.last_seq, eventCount: c.event_count },
+          {
+            sessionId: c.session_id,
+            firstSeq: c.first_seq,
+            lastSeq: c.last_seq,
+            eventCount: c.event_count,
+          },
           c,
         ) as EventEnvelope[];
         for (const e of events) {
-          results.push({ event_id: e.event_id, session_id: e.session_id, seq: e.seq, status: 'accepted', reason_code: null });
+          results.push({
+            event_id: e.event_id,
+            session_id: e.session_id,
+            seq: e.seq,
+            status: 'accepted',
+            reason_code: null,
+          });
         }
       }
       const body: UploadBatchResult = {
@@ -150,9 +165,18 @@ describe('kiosk-game integration on the SQLite outbox', () => {
         clock_offset_estimate_ms: 0,
         duplicate_batch: false,
         results,
-        summary: { accepted: results.length, duplicate: 0, parked: 0, rejected_terminal: 0, retryable: 0 },
+        summary: {
+          accepted: results.length,
+          duplicate: 0,
+          parked: 0,
+          rejected_terminal: 0,
+          retryable: 0,
+        },
       };
-      return new Response(JSON.stringify(body), { status: 200, headers: { 'content-type': 'application/json' } });
+      return new Response(JSON.stringify(body), {
+        status: 200,
+        headers: { 'content-type': 'application/json' },
+      });
     };
     const uploader = new BatchUploader({ outbox: k, apiBase: 'http://api.test', fetch: fakeFetch });
     const outcome = await uploader.uploadOnce();
@@ -164,10 +188,19 @@ describe('kiosk-game integration on the SQLite outbox', () => {
     expect(validateUploadBatch(batch)).toBe(true);
 
     const chunk = batch.session_chunks[0];
-    if (!chunk || chunk.encryption !== 'x25519_sealed_aes256gcm') throw new Error('chunk');
+    if (chunk?.encryption !== 'x25519_sealed_aes256gcm') throw new Error('chunk');
     const events = decryptChunk(
-      openDek({ sealed: chunk.sealed_dek, sessionId: chunk.session_id, privateKeys: h.privateKeys }),
-      { sessionId: chunk.session_id, firstSeq: chunk.first_seq, lastSeq: chunk.last_seq, eventCount: chunk.event_count },
+      openDek({
+        sealed: chunk.sealed_dek,
+        sessionId: chunk.session_id,
+        privateKeys: h.privateKeys,
+      }),
+      {
+        sessionId: chunk.session_id,
+        firstSeq: chunk.first_seq,
+        lastSeq: chunk.last_seq,
+        eventCount: chunk.event_count,
+      },
       chunk,
     ) as EventEnvelope[];
     expect(events.map((e) => e.event_type).slice(-2)).toEqual(['session.abandoned', 'session_end']);

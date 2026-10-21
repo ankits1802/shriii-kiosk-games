@@ -12,7 +12,13 @@ import { type DitherOptions, dither } from './dither.ts';
 import { cmd, concatBytes, DOTS_80MM, rasterBands } from './escpos.ts';
 import { fitToWidth, type RgbaImage, type ToneOptions, toGray } from './image.ts';
 import { type QrOptions, qrBitmap } from './qr.ts';
-import { decodeStatus, type PrintBlocker, type PrinterStatus, printBlocker, StatusError } from './status.ts';
+import {
+  decodeStatus,
+  type PrintBlocker,
+  type PrinterStatus,
+  printBlocker,
+  StatusError,
+} from './status.ts';
 import type { PrinterTransport } from './transport.ts';
 
 export interface ThermalPrinterOptions {
@@ -42,7 +48,11 @@ export interface ReportPrintRequest {
   readonly feedLines?: number;
 }
 
-export type PrintFailure = PrintBlocker | 'no_status' | 'paper_out_during_print' | 'transport_error';
+export type PrintFailure =
+  | PrintBlocker
+  | 'no_status'
+  | 'paper_out_during_print'
+  | 'transport_error';
 
 export type PrintResult =
   | {

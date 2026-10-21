@@ -70,7 +70,8 @@ export function stackCentered(parts: readonly MonoBitmap[], width: number, gap =
 
 /** Integer nearest-neighbour upscale (QR modules, icons). */
 export function scaleBitmap(src: MonoBitmap, factor: number): MonoBitmap {
-  if (!Number.isInteger(factor) || factor < 1) throw new RangeError('factor must be an integer >= 1');
+  if (!Number.isInteger(factor) || factor < 1)
+    throw new RangeError('factor must be an integer >= 1');
   const out = createBitmap(src.width * factor, src.height * factor);
   for (let y = 0; y < out.height; y += 1) {
     for (let x = 0; x < out.width; x += 1) {

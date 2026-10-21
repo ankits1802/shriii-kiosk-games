@@ -44,7 +44,8 @@ export function dither(img: GrayImage, options: DitherOptions = {}): MonoBitmap 
   const { width, height } = img;
   const out = createBitmap(width, height);
   const lum = Float32Array.from(img.data);
-  const taps = algorithm === 'floyd-steinberg' ? FLOYD_STEINBERG : algorithm === 'atkinson' ? ATKINSON : [];
+  const taps =
+    algorithm === 'floyd-steinberg' ? FLOYD_STEINBERG : algorithm === 'atkinson' ? ATKINSON : [];
   const serpentine = algorithm === 'floyd-steinberg' && options.serpentine !== false;
   for (let y = 0; y < height; y += 1) {
     const reverse = serpentine && y % 2 === 1;

@@ -56,9 +56,7 @@ describe('sealed DEK', () => {
     for (let i = 0; i < sealed.length; i += 1) {
       const t = sealed.slice();
       t[i] = (t[i] ?? 0) ^ 0x01;
-      expect(() =>
-        openDek({ sealed: toBase64(t), sessionId: SID, privateKeys: lookup }),
-      ).toThrow();
+      expect(() => openDek({ sealed: toBase64(t), sessionId: SID, privateKeys: lookup })).toThrow();
     }
   });
 
@@ -235,7 +233,9 @@ describe('recipient key rotation', () => {
     ).toThrow(/duplicate/);
     expect(
       () =>
-        new RecipientKeyRing([{ kid: 'a', publicKey: new Uint8Array(31), notBefore: t0, notAfter: null }]),
+        new RecipientKeyRing([
+          { kid: 'a', publicKey: new Uint8Array(31), notBefore: t0, notAfter: null },
+        ]),
     ).toThrow(/length/);
   });
 

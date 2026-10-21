@@ -45,16 +45,21 @@ for (;;) {
     // Upload cycle: build a batch and acknowledge half of it (exercises the other transactions).
     const batch = outbox.nextBatchSync();
     if (batch) {
-      const results = (batch.session_chunks as unknown as { session_id: string; first_seq: number; last_seq: number }[])
-        .flatMap((c) =>
-          Array.from({ length: c.last_seq - c.first_seq + 1 }, (_, i) => ({
-            event_id: '01928c6e-7d3a-7b2c-8f00-000000000000',
-            session_id: c.session_id,
-            seq: c.first_seq + i,
-            status: rand() < 0.5 ? ('accepted' as const) : ('retryable' as const),
-            reason_code: null,
-          })),
-        );
+      const results = (
+        batch.session_chunks as unknown as {
+          session_id: string;
+          first_seq: number;
+          last_seq: number;
+        }[]
+      ).flatMap((c) =>
+        Array.from({ length: c.last_seq - c.first_seq + 1 }, (_, i) => ({
+          event_id: '01928c6e-7d3a-7b2c-8f00-000000000000',
+          session_id: c.session_id,
+          seq: c.first_seq + i,
+          status: rand() < 0.5 ? ('accepted' as const) : ('retryable' as const),
+          reason_code: null,
+        })),
+      );
       outbox.applyResultSync({
         schema_version: '1.0',
         batch_id: batch.batch_id,

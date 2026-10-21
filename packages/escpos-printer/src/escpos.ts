@@ -20,7 +20,8 @@ export const cmd = {
   /** ESC @: initialise (clears buffer and modes). */
   init: (): Uint8Array => Uint8Array.of(ESC, 0x40),
   /** ESC a n: justification. */
-  align: (a: Align): Uint8Array => Uint8Array.of(ESC, 0x61, a === 'left' ? 0 : a === 'center' ? 1 : 2),
+  align: (a: Align): Uint8Array =>
+    Uint8Array.of(ESC, 0x61, a === 'left' ? 0 : a === 'center' ? 1 : 2),
   /** ESC d n: print and feed n lines. */
   feedLines: (n: number): Uint8Array => Uint8Array.of(ESC, 0x64, clampByte(n)),
   /** ESC J n: print and feed n dots (motion units). */
@@ -34,7 +35,16 @@ export const cmd = {
     if (bytesPerRow < 1 || bytesPerRow > 0xffff || rows < 1 || rows > 0xffff) {
       throw new RangeError('raster dimensions out of range');
     }
-    return Uint8Array.of(GS, 0x76, 0x30, 0, bytesPerRow & 0xff, bytesPerRow >> 8, rows & 0xff, rows >> 8);
+    return Uint8Array.of(
+      GS,
+      0x76,
+      0x30,
+      0,
+      bytesPerRow & 0xff,
+      bytesPerRow >> 8,
+      rows & 0xff,
+      rows >> 8,
+    );
   },
 } as const;
 

@@ -6,7 +6,12 @@
 import { spawn } from 'node:child_process';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { generateKek, generateRecipientKeyPair, RecipientKeyRing, toHex } from '@shriii/session-crypto';
+import {
+  generateKek,
+  generateRecipientKeyPair,
+  RecipientKeyRing,
+  toHex,
+} from '@shriii/session-crypto';
 import { afterAll, describe, expect, it } from 'vitest';
 import { openNodeSqlite } from '../src/driver.ts';
 import { SqliteOutbox } from '../src/sqlite-outbox.ts';

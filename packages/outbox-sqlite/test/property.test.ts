@@ -12,7 +12,11 @@ const SESSIONS = [uuidv7(), uuidv7(), uuidv7()];
 
 const op = fc.oneof(
   fc.record({ kind: fc.constant('append' as const), s: fc.nat(2) }),
-  fc.record({ kind: fc.constant('appendAt' as const), s: fc.nat(2), delta: fc.integer({ min: -1, max: 1 }) }),
+  fc.record({
+    kind: fc.constant('appendAt' as const),
+    s: fc.nat(2),
+    delta: fc.integer({ min: -1, max: 1 }),
+  }),
   fc.record({ kind: fc.constant('consent' as const), s: fc.nat(2) }),
   fc.record({ kind: fc.constant('batch' as const), ackMask: fc.nat(255) }),
   fc.record({ kind: fc.constant('close' as const), s: fc.nat(2) }),
@@ -56,7 +60,7 @@ describe('outbox invariants (property)', () => {
                 for (const c of batch.session_chunks) {
                   expect(consented.has(c.session_id)).toBe(true);
                   for (let s = c.first_seq; s <= c.last_seq; s += 1) {
-                    const accepted = ((o.ackMask >> bit % 8) & 1) === 1;
+                    const accepted = ((o.ackMask >> (bit % 8)) & 1) === 1;
                     bit += 1;
                     results.push({
                       event_id: '01928c6e-7d3a-7b2c-8f00-000000000000',
@@ -74,7 +78,13 @@ describe('outbox invariants (property)', () => {
                   clock_offset_estimate_ms: null,
                   duplicate_batch: false,
                   results,
-                  summary: { accepted: 0, duplicate: 0, parked: 0, rejected_terminal: 0, retryable: 0 },
+                  summary: {
+                    accepted: 0,
+                    duplicate: 0,
+                    parked: 0,
+                    rejected_terminal: 0,
+                    retryable: 0,
+                  },
                 });
                 break;
               }

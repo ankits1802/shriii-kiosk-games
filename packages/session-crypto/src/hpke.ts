@@ -7,6 +7,8 @@
  * Only single-shot use is needed (seal one DEK per session), but the context keeps the RFC sequence
  * number semantics so the KAT encryptions at seq 0..n can be checked.
  */
+
+import { Buffer } from 'node:buffer';
 import {
   createCipheriv,
   createDecipheriv,
@@ -17,7 +19,6 @@ import {
   type KeyObject,
   randomBytes,
 } from 'node:crypto';
-import { Buffer } from 'node:buffer';
 import { concat, i2osp, utf8, wipe } from './bytes.ts';
 
 export const KEM_X25519_HKDF_SHA256 = 0x0020;
@@ -71,11 +72,7 @@ export function hkdfExpand(prk: Uint8Array, info: Uint8Array, length: number): U
   let offset = 0;
   for (let i = 1; offset < length; i += 1) {
     previous = new Uint8Array(
-      createHmac('sha256', prk)
-        .update(previous)
-        .update(info)
-        .update(Uint8Array.of(i))
-        .digest(),
+      createHmac('sha256', prk).update(previous).update(info).update(Uint8Array.of(i)).digest(),
     );
     out.set(previous.subarray(0, Math.min(N_H, length - offset)), offset);
     offset += N_H;
@@ -280,7 +277,8 @@ export class HpkeContext {
   private nonce(): Uint8Array {
     const seqBytes = i2osp(this.seq, N_N);
     const out = new Uint8Array(N_N);
-    for (let i = 0; i < N_N; i += 1) out[i] = (this.schedule.baseNonce[i] ?? 0) ^ (seqBytes[i] ?? 0);
+    for (let i = 0; i < N_N; i += 1)
+      out[i] = (this.schedule.baseNonce[i] ?? 0) ^ (seqBytes[i] ?? 0);
     return out;
   }
 
@@ -314,7 +312,11 @@ export function setupBaseS(
   ikmE?: Uint8Array,
 ): { enc: Uint8Array; context: HpkeContext; sharedSecret: Uint8Array } {
   const { sharedSecret, enc } = encap(pkR, ikmE);
-  return { enc, sharedSecret, context: new HpkeContext(aead, keySchedule(aead, sharedSecret, info)) };
+  return {
+    enc,
+    sharedSecret,
+    context: new HpkeContext(aead, keySchedule(aead, sharedSecret, info)),
+  };
 }
 
 export function setupBaseR(

@@ -54,8 +54,14 @@ export function encodeStatus(s: PrinterStatus): [number, number, number, number]
   const offline = !s.online || s.coverOpen || s.paperOut || s.unrecoverableError || s.cutterError;
   return [
     FIXED_VALUE | (offline ? 0x08 : 0),
-    FIXED_VALUE | (s.coverOpen ? 0x04 : 0) | (s.paperOut ? 0x20 : 0) | (s.unrecoverableError || s.cutterError || s.recoverableError ? 0x40 : 0),
-    FIXED_VALUE | (s.cutterError ? 0x04 : 0) | (s.unrecoverableError ? 0x08 : 0) | (s.recoverableError ? 0x20 : 0),
+    FIXED_VALUE |
+      (s.coverOpen ? 0x04 : 0) |
+      (s.paperOut ? 0x20 : 0) |
+      (s.unrecoverableError || s.cutterError || s.recoverableError ? 0x40 : 0),
+    FIXED_VALUE |
+      (s.cutterError ? 0x04 : 0) |
+      (s.unrecoverableError ? 0x08 : 0) |
+      (s.recoverableError ? 0x20 : 0),
     FIXED_VALUE | (s.paperNearEnd || s.paperOut ? 0x0c : 0) | (s.paperOut ? 0x60 : 0),
   ];
 }

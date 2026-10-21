@@ -46,7 +46,10 @@ export function pictureReport(width = 900, height = 1200): RgbaImage {
 }
 
 /** Expand a mono bitmap to RGBA (for QR decoding with jsQR). */
-export function monoToRgba(bmp: MonoBitmap, pad = 0): { data: Uint8ClampedArray; width: number; height: number } {
+export function monoToRgba(
+  bmp: MonoBitmap,
+  pad = 0,
+): { data: Uint8ClampedArray; width: number; height: number } {
   const width = bmp.width + 2 * pad;
   const height = bmp.height + 2 * pad;
   const data = new Uint8ClampedArray(width * height * 4).fill(255);
@@ -60,6 +63,7 @@ export function monoToRgba(bmp: MonoBitmap, pad = 0): { data: Uint8ClampedArray;
 
 export function blackFractionInColumns(bmp: MonoBitmap, x0: number, x1: number): number {
   let black = 0;
-  for (let y = 0; y < bmp.height; y += 1) for (let x = x0; x < x1; x += 1) if (getDot(bmp, x, y)) black += 1;
+  for (let y = 0; y < bmp.height; y += 1)
+    for (let x = x0; x < x1; x += 1) if (getDot(bmp, x, y)) black += 1;
   return black / ((x1 - x0) * bmp.height);
 }

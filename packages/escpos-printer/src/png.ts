@@ -30,7 +30,12 @@ export function encodePng(bmp: MonoBitmap): Uint8Array {
       raw[y * (bmp.bytesPerRow + 1) + 1 + i] = ~(bmp.data[y * bmp.bytesPerRow + i] ?? 0) & 0xff;
     }
   }
-  const parts = [SIGNATURE, chunk('IHDR', ihdr), chunk('IDAT', new Uint8Array(deflateSync(raw))), chunk('IEND', new Uint8Array(0))];
+  const parts = [
+    SIGNATURE,
+    chunk('IHDR', ihdr),
+    chunk('IDAT', new Uint8Array(deflateSync(raw))),
+    chunk('IEND', new Uint8Array(0)),
+  ];
   const out = new Uint8Array(parts.reduce((n, p) => n + p.length, 0));
   let o = 0;
   for (const p of parts) {
@@ -58,7 +63,8 @@ export function decodePng(png: Uint8Array): MonoBitmap {
     if (type === 'IHDR') {
       width = view.getUint32(offset + 8);
       height = view.getUint32(offset + 12);
-      if (data[8] !== 1 || data[9] !== 0 || data[12] !== 0) throw new Error('unsupported PNG format');
+      if (data[8] !== 1 || data[9] !== 0 || data[12] !== 0)
+        throw new Error('unsupported PNG format');
     } else if (type === 'IDAT') {
       idat.push(data);
     }

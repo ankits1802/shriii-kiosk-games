@@ -386,7 +386,8 @@ export class SqliteOutbox implements KioskOutboxApi {
   appendAtSync(sessionId: string, expectedSeq: number, event: unknown): number {
     return this.tx(() => {
       const s = this.session(sessionId) ?? this.createSession(sessionId);
-      if (s.next_seq !== expectedSeq) throw new SeqConflictError(sessionId, s.next_seq, expectedSeq);
+      if (s.next_seq !== expectedSeq)
+        throw new SeqConflictError(sessionId, s.next_seq, expectedSeq);
       this.insertEvent(s, expectedSeq, event);
       return expectedSeq;
     });
@@ -464,7 +465,11 @@ export class SqliteOutbox implements KioskOutboxApi {
     return runs;
   }
 
-  private decodePayload(s: { session_id: string; encryption: string }, seq: number, payload: Uint8Array): string {
+  private decodePayload(
+    s: { session_id: string; encryption: string },
+    seq: number,
+    payload: Uint8Array,
+  ): string {
     return s.encryption === 'sealed'
       ? decryptRecord(this.dekFor(s.session_id), s.session_id, seq, payload)
       : new TextDecoder().decode(payload);
@@ -479,7 +484,9 @@ export class SqliteOutbox implements KioskOutboxApi {
       first,
       last,
     );
-    return rows.map((r) => JSON.parse(this.decodePayload(s, r.seq, new Uint8Array(r.payload))) as unknown);
+    return rows.map(
+      (r) => JSON.parse(this.decodePayload(s, r.seq, new Uint8Array(r.payload))) as unknown,
+    );
   }
 
   nextBatchSync(): UploadBatch | null {
@@ -569,7 +576,8 @@ export class SqliteOutbox implements KioskOutboxApi {
       const now = this.nowMs();
       let acked = 0;
       for (const r of rows) {
-        const status = statuses.get(`${r.session_id}#${r.seq}`) ?? (wholeDuplicate ? 'duplicate' : undefined);
+        const status =
+          statuses.get(`${r.session_id}#${r.seq}`) ?? (wholeDuplicate ? 'duplicate' : undefined);
         if (status !== undefined && TERMINAL_STATUSES.has(status)) {
           this.run(
             `UPDATE events SET status = 'acked', ack_status = ?, acked_at = ?, batch_id = NULL
@@ -635,7 +643,11 @@ export class SqliteOutbox implements KioskOutboxApi {
     if (tombstone && s.consent === 'granted') {
       const seq = s.next_seq;
       this.insertEvent(s, seq, tombstone(seq));
-      this.run('UPDATE sessions SET closed = 1, closed_at = ? WHERE session_id = ?', this.nowMs(), sessionId);
+      this.run(
+        'UPDATE sessions SET closed = 1, closed_at = ? WHERE session_id = ?',
+        this.nowMs(),
+        sessionId,
+      );
       return;
     }
     // Nothing of this session was ever uploadable (or the caller wants no trace): crypto-shred.
@@ -645,6 +657,21 @@ export class SqliteOutbox implements KioskOutboxApi {
 
   async purgeSession(sessionId: string, tombstone?: EventBuilder): Promise<void> {
     this.tx(() => this.purgeSessionInTx(sessionId, tombstone));
+  }
+
+  /**
+   * Purge with a tombstone pre-built by a remote caller for `tombstone.seq` (IPC). Throws
+   * {@link SeqConflictError} unless that is the session's next seq, so the tombstone keeps the
+   * sequence gapless.
+   */
+  purgeSessionAtSync(sessionId: string, tombstone: { seq: number; event: unknown } | null): void {
+    this.tx(() => {
+      const s = this.session(sessionId);
+      if (tombstone && s && s.consent === 'granted' && s.next_seq !== tombstone.seq) {
+        throw new SeqConflictError(sessionId, s.next_seq, tombstone.seq);
+      }
+      this.purgeSessionInTx(sessionId, tombstone ? () => tombstone.event : undefined);
+    });
   }
 
   /**
@@ -669,7 +696,9 @@ export class SqliteOutbox implements KioskOutboxApi {
   }
 
   async recordDecline(): Promise<void> {
-    this.tx(() => this.setMeta('declined_count', String(Number(this.meta('declined_count') ?? '0') + 1)));
+    this.tx(() =>
+      this.setMeta('declined_count', String(Number(this.meta('declined_count') ?? '0') + 1)),
+    );
   }
 
   /** Delete acknowledged rows older than the grace period and finished sessions with no rows. */
@@ -723,8 +752,9 @@ export class SqliteOutbox implements KioskOutboxApi {
 
   async pendingCount(): Promise<number> {
     return (
-      this.get<{ n: number }>("SELECT COUNT(*) AS n FROM events WHERE status IN ('pending', 'inflight')")
-        ?.n ?? 0
+      this.get<{ n: number }>(
+        "SELECT COUNT(*) AS n FROM events WHERE status IN ('pending', 'inflight')",
+      )?.n ?? 0
     );
   }
 
@@ -736,7 +766,9 @@ export class SqliteOutbox implements KioskOutboxApi {
       inflightEvents: count("SELECT COUNT(*) AS n FROM events WHERE status = 'inflight'"),
       acknowledgedEvents: count("SELECT COUNT(*) AS n FROM events WHERE status = 'acked'"),
       sessions: count('SELECT COUNT(*) AS n FROM sessions'),
-      sessionsAwaitingConsent: count("SELECT COUNT(*) AS n FROM sessions WHERE consent = 'pending'"),
+      sessionsAwaitingConsent: count(
+        "SELECT COUNT(*) AS n FROM sessions WHERE consent = 'pending'",
+      ),
       openBatches: count('SELECT COUNT(*) AS n FROM batches'),
       declinedCount: Number(this.meta('declined_count') ?? '0'),
       lastAckAt: lastAck === undefined ? null : Number(lastAck),

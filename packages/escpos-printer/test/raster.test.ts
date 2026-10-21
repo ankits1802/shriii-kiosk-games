@@ -68,7 +68,9 @@ describe('dithering', () => {
 
   it('Floyd–Steinberg preserves mean tone', () => {
     for (const v of [64, 128, 192]) {
-      const r = blackRatio(dither(toGray(solid(128, 128, v), flat), { algorithm: 'floyd-steinberg' }));
+      const r = blackRatio(
+        dither(toGray(solid(128, 128, v), flat), { algorithm: 'floyd-steinberg' }),
+      );
       expect(r).toBeCloseTo(1 - v / 255, 1);
     }
   });
@@ -82,7 +84,9 @@ describe('dithering', () => {
 
   it('a gradient produces monotonically decreasing dot density', () => {
     const bmp = dither(toGray(gradient(512, 64), flat), { algorithm: 'floyd-steinberg' });
-    const bands = Array.from({ length: 8 }, (_, i) => blackFractionInColumns(bmp, i * 64, (i + 1) * 64));
+    const bands = Array.from({ length: 8 }, (_, i) =>
+      blackFractionInColumns(bmp, i * 64, (i + 1) * 64),
+    );
     for (let i = 1; i < bands.length; i += 1) expect(bands[i]).toBeLessThan(bands[i - 1] ?? 1);
     expect(bands[0]).toBeGreaterThan(0.85);
     expect(bands[7]).toBeLessThan(0.15);
@@ -151,7 +155,8 @@ describe('raster QR', () => {
     expect(bmp.width % modules).toBe(0);
     expect(bmp.width).toBeLessThanOrEqual(384);
     const dots = bmp.width / modules;
-    for (let x = 0; x < 4 * dots; x += 1) expect(getDot(bmp, x, Math.floor(bmp.height / 2))).toBe(false);
+    for (let x = 0; x < 4 * dots; x += 1)
+      expect(getDot(bmp, x, Math.floor(bmp.height / 2))).toBe(false);
     const img = monoToRgba(bmp);
     expect(jsQR(img.data, img.width, img.height)?.data).toBe(url);
   });
@@ -168,6 +173,8 @@ describe('PNG', () => {
     for (let i = 0; i < 13; i += 2) setDot(b, i, i % 5, true);
     const back = decodePng(encodePng(b));
     expect(bitmapsEqual(back, b)).toBe(true);
-    expect([...encodePng(b).subarray(1, 4)].map((c) => String.fromCharCode(c)).join('')).toBe('PNG');
+    expect([...encodePng(b).subarray(1, 4)].map((c) => String.fromCharCode(c)).join('')).toBe(
+      'PNG',
+    );
   });
 });
