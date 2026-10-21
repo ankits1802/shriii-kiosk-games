@@ -13,7 +13,10 @@ dependencies = [
 
 [project.optional-dependencies]
 # Real engines. Installed by default in the dev group so the harness can run them when models exist.
-engines = ["sherpa-onnx>=1.13.8", "onnxruntime>=1.22", "sentencepiece>=0.2"]
+# sherpa-onnx-core (the native libonnxruntime / sherpa libraries) is listed explicitly: every sherpa-onnx wheel
+# requires it except the linux_armv7l one, and uv's universal lock takes that wheel's metadata, so without
+# this entry the lock drops it and `import sherpa_onnx` fails on x86-64 Linux. Keep both on the same version.
+engines = ["sherpa-onnx>=1.13.8", "sherpa-onnx-core>=1.13.8", "onnxruntime>=1.22", "sentencepiece>=0.2"]
 
 [project.scripts]
 shriii-asr-bakeoff = "shriii_asr_bakeoff.cli:main"
@@ -26,6 +29,7 @@ dev = [
   "types-PyYAML",
   "types-psutil",
   "sherpa-onnx>=1.13.8",
+  "sherpa-onnx-core>=1.13.8",
   "onnxruntime>=1.22",
   "sentencepiece>=0.2",
 ]
