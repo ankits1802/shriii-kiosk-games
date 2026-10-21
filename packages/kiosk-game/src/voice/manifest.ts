@@ -7,6 +7,7 @@
  * line is treated as missing (production builds are expected to fail earlier on missing keys).
  */
 import type { ContentManifest, ItcState, LanguageTag } from '@shriii/contracts';
+import { trimLeadingSlashes, trimTrailingSlashes } from '../core/url.ts';
 
 export type PackKind = 'production' | 'pilot' | 'dev';
 
@@ -59,7 +60,7 @@ export function loudnessGain(lufs: number | null): number {
 
 function joinUrl(base: string, file: string): string {
   if (/^[a-z]+:\/\//i.test(file) || file.startsWith('/')) return file;
-  return `${base.replace(/\/+$/, '')}/${file.replace(/^\/+/, '')}`;
+  return `${trimTrailingSlashes(base)}/${trimLeadingSlashes(file)}`;
 }
 
 /** Build the runtime manifest from a validated content manifest. */

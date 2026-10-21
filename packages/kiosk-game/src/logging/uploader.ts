@@ -11,6 +11,7 @@
  */
 import type { UploadBatchResult } from '@shriii/contracts';
 import { validateUploadBatchResult } from '@shriii/contracts/validators/upload-batch-result';
+import { trimTrailingSlashes } from '../core/url.ts';
 import type { KioskOutbox } from './outbox/types.ts';
 
 export type UploaderState =
@@ -86,7 +87,7 @@ export interface BatchUploaderOptions {
 /** Build the batch endpoint from an API base. */
 export function batchEndpoint(apiBase: string | null | undefined): string | null {
   if (!apiBase || apiBase.trim() === '') return null;
-  return `${apiBase.replace(/\/+$/, '')}/api/v1/events/batch`;
+  return `${trimTrailingSlashes(apiBase)}/api/v1/events/batch`;
 }
 
 export class BatchUploader {
