@@ -1,0 +1,176 @@
+{#- Shared report blocks. Format-neutral: everything goes through the format macro set `m`. -#}
+{% import macros as m with context %}
+
+{% macro header(kind_label) -%}
+{{ m.h(1, report.title) }}
+{{ m.kv([
+  ('Report', kind_label),
+  ('Study', report.study_id),
+  ('Stage', report.stage),
+  ('Wave', report.wave or '-'),
+  ('Languages', report.languages | join(', ') or '-'),
+  ('Pathways', report.pathways | join(', ') or '-'),
+  ('Site mode', report.site_mode or '-'),
+  ('Data cut-off', report.data_cutoff or '-'),
+  ('Pre-registration', prov.prereg_id or 'none recorded'),
+  ('Analysis run', prov.analysis_run_id),
+  ('Status', report.status),
+]) }}
+{% if report.status != 'final' %}
+{{ m.callout('draft', 'Not a final report', 'This report is ' ~ report.status ~ '. It must not be distributed outside the research team, and no participant-facing claim may be made from it.') }}
+{% endif %}
+{% for w in integrity_warnings %}
+{{ m.callout('integrity', 'Provenance / registration check', w) }}
+{% endfor %}
+{% if classification_warnings %}
+{{ m.callout('warning', 'Result classification changed during rendering', 'The following results were shown as exploratory or secondary because their registration could not be confirmed: ' ~ (classification_warnings | join(' | '))) }}
+{% endif %}
+{% if report.summary %}
+{{ m.h(2, 'Summary') }}
+{{ m.p(report.summary) }}
+{{ m.review('Research Lead', 'The summary is written by the analyst and must be checked against the tables below before sign-off.') }}
+{% endif %}
+{{ m.p('Result counts: ' ~ tier_counts.confirmatory ~ ' confirmatory, ' ~ tier_counts.secondary ~ ' secondary (registered), ' ~ tier_counts.exploratory ~ ' exploratory. Confirmatory results cite a hypothesis in the registered primary family; anything not in the registry is labelled exploratory. Estimates are observed values; disattenuated statistics never feed gates.') }}
+{% endmacro %}
+
+{% macro sample_block() -%}
+{{ m.table(['Enrolled', 'Consented (core)', 'Withdrawn', 'Analysed'], [[sample.enrolled, sample.consented, sample.withdrawn, sample.analysed]]) }}
+{% if sample_cells %}
+{{ m.table(['Cell', 'N', 'Target'], sample_cells | rows(['group', 'n', 'target'])) }}
+{% endif %}
+{% endmacro %}
+
+{% macro exclusions_block() -%}
+{% if exclusions %}
+{{ m.table(['Rule', 'Description', 'Sessions excluded', 'Participants excluded', '% of enrolled'], exclusions | rows(['rule_id', 'description', 'n_sessions', 'n_participants', 'pct'])) }}
+{% else %}
+{{ m.p('No exclusions were recorded in this bundle.') }}
+{% endif %}
+{% if differential_exclusion %}
+{{ m.h(3, 'Differential exclusion by group') }}
+{{ m.table(['Rule', 'Grouping', 'Exclusion rate by group', 'Spread (pp)', 'Limit (pp, gates.yaml)', 'Within limit'], differential_exclusion | rows(['rule_id', 'grouping', 'rates', 'spread_pp', 'limit_pp', 'within'])) }}
+{% endif %}
+{% endmacro %}
+
+{% macro targets_block() -%}
+{% if targets %}
+{{ m.table(['Metric', 'Group', 'Observed', 'Target', 'N', 'Met'], targets | rows(['metric', 'group', 'observed', 'target', 'n', 'met'])) }}
+{% else %}
+{{ m.p('No completion or play-again figures in this bundle.') }}
+{% endif %}
+{% endmacro %}
+
+{% macro result_table(rows_) -%}
+{{ m.table(['Subject', 'Metric', 'Pathway', 'Language', 'Group', 'Hypothesis', 'Estimate', 'CI', 'N', 'p', 'Threshold', 'Decision', 'Method'],
+  rows_ | rows(['subject', 'metric', 'pathway', 'language', 'group', 'hypothesis_id', 'estimate', 'ci', 'n', 'p', 'threshold', 'decision', 'method'])) }}
+{% endmacro %}
+
+{% macro section(key, level=3, intro=none) -%}
+{% if key in section_map %}
+{% set s = section_map[key] %}
+{{ m.h(level, s.title) }}
+{% if intro %}{{ m.p(intro) }}{% endif %}
+{% for tier, label in [('confirmatory', 'Confirmatory (registered primary family)'), ('secondary', 'Secondary (registered, corrected within family)'), ('exploratory', 'Unregistered: descriptive or exploratory (no registered hypothesis)')] %}
+{% if s.by_tier[tier] %}
+{{ m.h(level + 1, label) }}
+{{ result_table(s.by_tier[tier]) }}
+{% endif %}
+{% endfor %}
+{% endif %}
+{% endmacro %}
+
+{% macro remaining_sections(used, level=3) -%}
+{% for s in sections if s.key not in used %}
+{{ section(s.key, level) }}
+{% endfor %}
+{% endmacro %}
+
+{% macro missing_sections(expected) -%}
+{% set absent = expected | reject('in', section_map) | list %}
+{% if absent %}
+{{ m.callout('note', 'Analyses not in this bundle', 'No results were supplied for: ' ~ (absent | map('section_title') | join(', ')) ~ '. These sections must be completed or explicitly marked as not run before sign-off.') }}
+{% endif %}
+{% endmacro %}
+
+{% macro flagged_block() -%}
+{% if flagged %}
+{{ m.table(['Subject', 'Metric', 'Group', 'Failed assumption checks', 'Warnings'], flagged | flagged_rows) }}
+{% else %}
+{{ m.p('No assumption failures or analysis warnings were reported.') }}
+{% endif %}
+{% endmacro %}
+
+{% macro trait_gates_block() -%}
+{% if trait_gates %}
+{{ m.table(['Trait', 'Language', 'Pathway', 'Status', 'Evaluated status', 'Rules', 'Capped', 'Evaluate only', 'Reasons'], trait_gates | rows(['trait', 'language', 'pathway', 'status', 'evaluated', 'rules', 'capped', 'evaluate_only', 'reasons'])) }}
+{% else %}
+{{ m.p('No trait-gate evaluations in this bundle.') }}
+{% endif %}
+{% endmacro %}
+
+{% macro battery_gates_block() -%}
+{% if battery_gates %}
+{{ m.table(['Language', 'Pathway', 'Site mode', 'Status', 'Rules', 'Qualifying languages', 'Reasons'], battery_gates | rows(['language', 'pathway', 'site_mode', 'status', 'rules', 'qualifying', 'reasons'])) }}
+{% else %}
+{{ m.p('No battery-gate evaluations in this bundle. The battery gate stays closed (fail closed).') }}
+{% endif %}
+{% endmacro %}
+
+{% macro decisions_block() -%}
+{% if indicator_decisions %}
+{{ m.table(['Indicator', 'Pathway', 'Decision', 'Flags', 'Rationale', 'Signers'], indicator_decisions | rows(['indicator', 'pathway', 'decision', 'flags', 'rationale', 'signers'])) }}
+{% else %}
+{{ m.p('No indicator decisions in this bundle.') }}
+{% endif %}
+{% endmacro %}
+
+{% macro norms_block() -%}
+{% for nt in norm_tables %}
+{{ m.h(3, 'Norm table ' ~ nt.trait ~ ' (' ~ nt.language_group ~ ', v' ~ nt.version ~ ')' ~ (' - PROVISIONAL' if nt.provisional else '')) }}
+{{ m.p('Method: ' ~ nt.method ~ '; weights: ' ~ nt.weights_scheme ~ '. Cells with n below ' ~ (min_cell_n if min_cell_n is not none else 'the disclosure minimum') ~ ' are suppressed.') }}
+{{ m.table(['Cell', 'N', 'Effective n', 'Provisional'] + nt.percentile_keys, nt.cells | norm_rows) }}
+{% else %}
+{{ m.p('No norm tables in this bundle.') }}
+{% endfor %}
+{% endmacro %}
+
+{% macro notes_block() -%}
+{% if notes %}
+{{ m.ul(notes) }}
+{% endif %}
+{% endmacro %}
+
+{% macro provenance_block() -%}
+{{ m.h(2, 'Provenance') }}
+{{ m.p('Every coefficient in this report traces to the analysis run, the snapshot manifest and its partitions. Reruns are reproducible modulo erasures (counted below); numeric reproducibility is checked with tolerances, not byte equality.') }}
+{{ m.kv([
+  ('Analysis run id', prov.analysis_run_id),
+  ('Snapshot id', prov.snapshot_id),
+  ('Snapshot sha256', prov.snapshot_sha256),
+  ('Scoring run id', prov.scoring_run_id or '-'),
+  ('Pre-registration id', prov.prereg_id or '-'),
+  ('Protocol version', prov.protocol_version or '-'),
+  ('hypotheses.yaml sha256 (analysis)', prov.hypotheses_sha256 or '-'),
+  ('hypotheses.yaml sha256 (rendering)', registry_sha.hypotheses or 'not supplied'),
+  ('gates.yaml sha256 (analysis)', prov.gates_sha256 or '-'),
+  ('gates.yaml sha256 (rendering)', registry_sha.gates or 'not supplied'),
+  ('Dictionary sha256', prov.dictionary_sha256 | dictsort | map('join', ': ') | join('; ') or '-'),
+  ('Validation algorithm version', prov.validation_algorithm_version or '-'),
+  ('Git sha', prov.git_sha or '-'),
+  ('Image digest', prov.image_digest or '-'),
+  ('Seeds', prov.seeds | dictsort | map('join', '=') | join('; ') or '-'),
+  ('Erasures applied before snapshot', prov.erasures_applied),
+  ('Generated at', prov.generated_at or '-'),
+  ('Report bundle sha256 (canonical JSON)', bundle_sha256),
+]) }}
+{% if results %}
+{{ m.h(3, 'Per-result provenance') }}
+{{ m.table(['Result', 'Section', 'Subject', 'Metric', 'Run', 'Algorithm version', 'Inputs sha256'], results | provenance_rows) }}
+{% endif %}
+{% endmacro %}
+
+{% macro review_footer(roles) -%}
+{{ m.h(2, 'Sign-off') }}
+{{ m.review(roles | join(', '), 'Interpretation, limitations and any decision drawn from this report require sign-off by the named roles, recorded as a PLT-09 governance record. Tables are generated; narrative sections are not.') }}
+{{ m.table(['Role', 'Name', 'Decision', 'Date', 'Governance record'], roles | map('signoff_row') | list) }}
+{% endmacro %}

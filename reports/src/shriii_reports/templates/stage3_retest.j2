@@ -1,0 +1,54 @@
+{#- Stage 3 retest (plan section 7.5). -#}
+{% import macros as m with context %}
+{% import '_blocks.j2' as b with context %}
+{% set rt = gates.get('trait_gate', {}).get('retest', {}) %}
+{% set q = gates.get('quality', {}) %}
+{{ m.doc_start() }}
+{{ b.header('Stage 3 retest') }}
+
+{{ m.h(2, '1. Purpose and design') }}
+{{ m.p('Opt-in participants from Stage 2 were retested 14-28 days after T1 in the same frozen wave, on a parallel form at the T1 calibration level, with a short criterion block. Reminders defaulted to pre-recorded native-speaker IVR calls. Out-of-window pairs are flagged and excluded from the primary analysis.') }}
+{% if rt %}
+{{ m.p('Registered retest rule (gates.yaml trait_gate.retest, rule B1): ' ~ rt.statistic ~ ' point >= ' ~ (rt.point_min | num) ~ ' and ' ~ (rt.ci_level | pct) ~ ' lower bound >= ' ~ (rt.lower_bound_min | num) ~ ' per language, or pooled across languages where invariance holds with language-specific point >= ' ~ (rt.pooled_language_point_min | num) ~ '; at least ' ~ rt.min_pairs_per_cell ~ ' pairs per cell. Pearson r is ' ~ ('accepted' if rt.pearson_allowed else 'not accepted') ~ ' as retest evidence.') }}
+{% endif %}
+{% if q.practice_effect_d_flag is defined %}
+{{ m.p('Practice effects with |d| >= ' ~ (q.practice_effect_d_flag | num) ~ ' are flagged (gates.yaml quality.practice_effect_d_flag).') }}
+{% endif %}
+{{ m.callout('note', 'Stage 3 exit rule', 'Stage 3 ends with final retain / revise / drop decisions per indicator (retest is the primary stability evidence), followed by the dictionary v2 freeze for wave 2. Constructs failing trait rules B1-B3 follow the registered research-only path.') }}
+
+{{ m.h(2, '2. Sample, retention and attrition') }}
+{{ b.sample_block() }}
+{{ b.section('attrition', level=3, intro='Attrition analysis includes literacy band and reminder channel (CRT-10).') }}
+
+{{ m.h(2, '3. Exclusions') }}
+{{ b.exclusions_block() }}
+
+{{ m.h(2, '4. Results') }}
+{% set expected = ['retest', 'practice_effects', 'reliability', 'nomological'] %}
+{{ b.missing_sections(expected) }}
+{{ b.section('retest', intro='ICC(A,1) is primary and ICC(C,1) secondary; SEM and smallest detectable change are reported in the details of each result.') }}
+{{ b.section('practice_effects', intro='Pre-registered practice and form effects (parallel forms are modelled).') }}
+{{ b.section('reliability') }}
+{{ b.section('nomological', intro='Style constructs are evaluated against their pre-registered nomological predictions.') }}
+{{ b.remaining_sections(expected + ['attrition']) }}
+
+{{ m.h(2, '5. Indicator retention decisions (final)') }}
+{{ b.decisions_block() }}
+
+{{ m.h(2, '6. Gate evaluations') }}
+{{ m.h(3, 'Trait gates') }}
+{{ b.trait_gates_block() }}
+{{ m.h(3, 'Battery release gate') }}
+{{ b.battery_gates_block() }}
+
+{{ m.h(2, '7. Assumption checks and analysis warnings') }}
+{{ b.flagged_block() }}
+
+{{ m.h(2, '8. Interpretation, research-only constructs and stakeholder memo') }}
+{{ m.review('PI, Research Lead and stakeholders', 'The memo to stakeholders listing the reportable subset of constructs is a separate, signed document. This report must not be read as releasing any participant-facing band.') }}
+{{ m.placeholder('Analyst narrative: stability by construct and language, constructs moving to research_only, wave-2 redesign recommendations (ENG-13), and deviations from the pre-registration.') }}
+{{ b.notes_block() }}
+
+{{ b.review_footer(['PI or Research Lead', 'Ethics Officer']) }}
+{{ b.provenance_block() }}
+{{ m.doc_end() }}

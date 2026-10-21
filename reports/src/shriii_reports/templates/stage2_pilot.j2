@@ -1,0 +1,56 @@
+{#- Stage 2 pilot with criterion battery (plan section 7.4). -#}
+{% import macros as m with context %}
+{% import '_blocks.j2' as b with context %}
+{% set tg = gates.get('trait_gate', {}) %}
+{{ m.doc_start() }}
+{{ b.header('Stage 2 pilot with criterion battery') }}
+
+{{ m.h(2, '1. Purpose and design') }}
+{{ m.p('Stage 2 compares the two randomised pilot arms (B_fixed: micro-game carousel; A_narrative: three linked episodes), randomised 1:1 within quota cells (language x age band x gender x education band x literacy band). Both arms complete criterion block X plus one rotating block, the performance tasks, at fixed calibration level L2. The live-dyad substudy and the forced-level subsample run in parallel.') }}
+{{ m.p('Analysis order: descriptives and data quality; reliability by indicator kind; criterion-scale invariance across languages and modes (before any game-criterion correlation is interpreted); convergent lower-bound tests and discriminant pattern statistics on observed r; the B vs A comparison; completion and play-again against targets.') }}
+{% if tg %}
+{{ m.p('Registered decision thresholds used in this report (gates.yaml): convergent lower bound > ' ~ (tg.convergent.lower_bound_gt | num) ~ ' (' ~ tg.convergent.correction ~ '-corrected for the primary family, observed r only, correct sign required); composite reliability point >= ' ~ (tg.reliability.point_min | num) ~ ' with lower bound >= ' ~ (tg.reliability.lower_bound_min | num) ~ '.') }}
+{% endif %}
+{{ m.callout('note', 'Stage 2 exit rule', 'Stage 2 produces provisional indicator flags only. There are no drops and no dictionary v2 freeze; Stage 3 runs on the same frozen v1 build.') }}
+
+{{ m.h(2, '2. Sample and targets') }}
+{{ b.sample_block() }}
+{{ m.h(3, 'Completion and play-again against targets') }}
+{{ b.targets_block() }}
+
+{{ m.h(2, '3. Exclusions') }}
+{{ b.exclusions_block() }}
+
+{{ m.h(2, '4. Results') }}
+{% set expected = ['descriptives', 'reliability', 'criterion_invariance', 'convergent', 'discriminant_pattern', 'nomological', 'pathway_comparison'] %}
+{{ b.missing_sections(expected) }}
+{{ b.section('descriptives') }}
+{{ b.section('reliability', intro='Reliability method follows the indicator kind (permutation split-half with Spearman-Brown for exchangeable trials, model-based for staircase, slope and model-parameter indicators, composite omega for composites). Single-event indicators are not individually scorable.') }}
+{{ b.section('criterion_invariance', intro='Criterion-scale invariance must hold before pooled game-criterion correlations are interpreted (VAL-08a).') }}
+{{ b.section('convergent', intro='Observed correlations between the construct-keyed indicator composite and the criterion scale. A pass requires the correct sign and a lower CI bound above the registered r0; there is no upper bound.') }}
+{{ b.section('discriminant_pattern') }}
+{{ b.section('nomological') }}
+{{ b.section('pathway_comparison', intro='Shared-paradigm indicator ids are identical across arms; differences are reported with CIs and equivalence tests where registered. Non-significant differences are not evidence of equivalence.') }}
+{{ b.remaining_sections(expected) }}
+
+{{ m.h(2, '5. Provisional indicator flags') }}
+{{ b.decisions_block() }}
+
+{{ m.h(2, '6. Gate evaluations (evaluate-only at Stage 2)') }}
+{{ m.p('Gate evaluations at Stage 2 are informative only: retest evidence (rule B1) does not exist yet, so no trait can reach a validated status and the battery gate stays closed.') }}
+{{ m.h(3, 'Trait gates') }}
+{{ b.trait_gates_block() }}
+{{ m.h(3, 'Battery release gate') }}
+{{ b.battery_gates_block() }}
+
+{{ m.h(2, '7. Assumption checks and analysis warnings') }}
+{{ b.flagged_block() }}
+
+{{ m.h(2, '8. Interpretation and limitations') }}
+{{ m.review('Research Lead and Ethics Officer', 'Interpretation must state that task-questionnaire correlations in the literature are typically about .05-.20, that only a subset of constructs is expected to become reportable, and that no result here supports any individual-level or high-stakes use.') }}
+{{ m.placeholder('Analyst narrative: main findings per registered hypothesis, deviations from the pre-registration (with amendment ids), and implications for the Stage 3 retest.') }}
+{{ b.notes_block() }}
+
+{{ b.review_footer(['PI or Research Lead', 'Ethics Officer']) }}
+{{ b.provenance_block() }}
+{{ m.doc_end() }}
