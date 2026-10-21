@@ -10,9 +10,7 @@
 name: Deploy
 
 on:
-  push:
-    branches: [main]
-    paths-ignore: ["docs/**", "**/*.md"]
+  # Manual only until the AWS environment exists (push-to-main deploy re-enabled later).
   workflow_dispatch:
     inputs:
       environment:
