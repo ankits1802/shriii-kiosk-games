@@ -1,0 +1,23 @@
+#!/bin/sh
+# Device registration with the brand's serial vault / model service (KSK-09). The serial assertion signed
+# by the brand is the hardware identity the fleet sees; the kiosk id and mTLS certificate come later from
+# enrolment (KSK-10). No-op unless the release pipeline injected MODEL_APIKEY.
+set -eu
+
+if [ -z "${MODEL_APIKEY:-}" ]; then
+  exit 0
+fi
+
+exec >>"$SNAP_COMMON/prepare-device-hook.log" 2>&1
+
+serial=""
+if [ -r /sys/class/dmi/id/product_serial ]; then
+  serial=$(tr -cd 'A-Za-z0-9._-' </sys/class/dmi/id/product_serial)
+fi
+if [ -z "$serial" ] || [ "$serial" = "ToBeFilledByOEM" ]; then
+  serial="shriii-$(cat /proc/sys/kernel/random/uuid)"
+fi
+
+snapctl set registration.proposed-serial="\"$serial\""
+snapctl set device-service.url="https://api.snapcraft.io/v1/"
+snapctl set device-service.headers="{\"api-key\": \"$MODEL_APIKEY\"}"
