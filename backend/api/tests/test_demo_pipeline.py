@@ -11,9 +11,7 @@ import pytest
 def test_demo_pipeline_runs_end_to_end(settings: Any) -> None:
     from shriii_api.services.demo_pipeline import DemoConfig, render_summary, run_demo_pipeline  # noqa: PLC0415
 
-    config = DemoConfig(
-        participants_per_language=8, retests=4, seed=424242, workers=1, models=("ridge",), n_boot=50
-    )
+    config = DemoConfig(participants_per_language=8, retests=4, seed=424242, workers=1, models=("ridge",), n_boot=50)
     summary = run_demo_pipeline(settings, config, migrate_first=False)
     assert summary["failed_jobs"] == []
     assert summary["ingestion"]["events"].get("accepted", 0) == summary["simulated"]["events"]
