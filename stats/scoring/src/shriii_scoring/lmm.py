@@ -127,7 +127,7 @@ def fit_random_slope_lmm(
         return np.array([math.log(l11), l21, math.log(l22), math.log(max(s2, 1e-12))])
 
     # Multi-start: fixed fractions of the OLS residual variance plus a moment-based start from per-person
-    # OLS lines; each start is refined by L-BFGS-B then polished by Nelder-Mead; the best criterion wins.
+    # OLS lines.
     beta0, *_ = np.linalg.lstsq(x, y, rcond=None)
     resid = y - x @ beta0
     v0 = max(float(np.var(resid)), 1e-8)
@@ -149,17 +149,21 @@ def fit_random_slope_lmm(
     if len(coefs) >= 3:
         cov_b = np.cov(np.asarray(coefs), rowvar=False)
         starts.append(theta_of(0.5 * cov_b + np.diag([1e-6 * v0, 1e-6 * v0]), float(np.mean(res_vars))))
+    # Every start is refined by L-BFGS-B; only the best candidate is polished by Nelder-Mead (polishing
+    # every start cost ~4x the time for the same optimum).
     best: optimize.OptimizeResult | None = None
     with np.errstate(all="ignore"):
         for theta0 in starts:
             res = optimize.minimize(reml, theta0, method="L-BFGS-B", options={"maxiter": maxiter})
-            polish = optimize.minimize(
-                reml, res.x, method="Nelder-Mead", options={"maxiter": maxiter * 4, "xatol": 1e-8, "fatol": 1e-10}
-            )
-            cand = polish if polish.fun <= res.fun else res
-            if best is None or cand.fun < best.fun:
-                best = cand
-    assert best is not None
+            if best is None or res.fun < best.fun:
+                best = res
+        assert best is not None
+        polish = optimize.minimize(
+            reml, best.x, method="Nelder-Mead", options={"maxiter": maxiter * 4, "xatol": 1e-8, "fatol": 1e-10}
+        )
+        if polish.fun <= best.fun:
+            polish.success = bool(polish.success or best.success)
+            best = polish
     res = best
     _, xvx, xvy, a, _ = pieces(res.x)
     beta = np.linalg.solve(xvx, xvy)

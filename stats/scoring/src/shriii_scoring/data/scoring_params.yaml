@@ -68,6 +68,18 @@ models:
   min_persons: 20                 # fewer persons in a partition -> model not estimated (status model_failed)
   min_trials_per_cell: 2          # each person needs >= this many trials on each side of a contrast
   location_scale_min_trials: 10
+  # Binary-outcome slopes (pressure accuracy): logistic_glmm (Laplace logistic mixed model, logit scale;
+  # glmmTMB/glmer design in stats/r-psychometrics) or lpm (linear-probability REML model, the v0 method).
+  # The LPM recovered the planted composure effect at r ~ .30 (B) because the near-ceiling go trials get
+  # full weight; docs/science/indicator-review.md has the comparison.
+  binary_outcome_model: logistic_glmm
+  # Trial types entering the pressure-accuracy slope (trial type is a fixed effect when both are listed).
+  pressure_accuracy_trial_types: [go, nogo]
+  # Trial type (no-go = 1) as a fixed effect when both types enter (false reproduces the v0 model).
+  pressure_accuracy_trial_type_effect: true
+  # Stability shift slopes: null = every post-shift trial is "post" (v0); an integer keeps only the first
+  # N trials after each context shift (early-window contrast). See docs/science/indicator-review.md.
+  shift_window_trials: null
 
 # Delay / effort discounting (hyperbolic, penalised likelihood with an empirical-Bayes population prior).
 discounting:
