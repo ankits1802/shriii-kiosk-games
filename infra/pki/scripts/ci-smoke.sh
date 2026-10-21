@@ -74,14 +74,20 @@ if step ca certificate kiosk-ci-002 "$work/replay.crt" "$work/replay.key" --toke
   echo "replayed token was accepted"; exit 1
 fi
 bad=$(prov token --ca-url "$CA_URL" --provisioner-key "$PROV" --subject kiosk-ci-003 --san api.shriii.internal)
+# A token carrying a foreign SAN (only a provisioner-key holder can mint one) still yields only the kiosk
+# identity: the device template rebuilds the SANs from the subject, so api.shriii.internal never appears.
 if step ca certificate kiosk-ci-003 "$work/bad.crt" "$work/bad.key" --token "$bad" --ca-url "$CA_URL" --root "$ROOT" --force 2>/dev/null; then
-  echo "token with foreign SANs was accepted"; exit 1
+  sans=$(openssl x509 -in "$work/bad.crt" -noout -ext subjectAltName)
+  echo "$sans"
+  if echo "$sans" | grep -q "api.shriii.internal"; then echo "foreign SAN reached a certificate"; exit 1; fi
+  echo "$sans" | grep -q "DNS:kiosk-ci-003.kiosk.shriii.internal, URI:spiffe://shriii.internal/kiosk/kiosk-ci-003" \
+    || { echo "template did not enforce the kiosk identity"; exit 1; }
 fi
 bad=$(prov token --ca-url "$CA_URL" --provisioner-key "$PROV" --subject "Kiosk_Bad" --san Kiosk_Bad.kiosk.shriii.internal)
 if step ca certificate "Kiosk_Bad" "$work/bad2.crt" "$work/bad2.key" --token "$bad" --ca-url "$CA_URL" --root "$ROOT" --force 2>/dev/null; then
   echo "invalid kiosk id was accepted"; exit 1
 fi
-echo "ok: replay, foreign SANs and invalid kiosk ids refused"
+echo "ok: replay and invalid kiosk ids refused; foreign SANs never reach a certificate"
 
 echo "== 5. renewal over mTLS"
 before=$(jq -r .certificate_serial "$work/device/device.json")
