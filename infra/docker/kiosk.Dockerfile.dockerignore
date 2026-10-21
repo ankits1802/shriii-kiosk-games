@@ -13,9 +13,13 @@
 **/.mypy_cache
 **/.ruff_cache
 docs/reference
-python
-apps/api
-apps/web
+contracts/python
+stats/scoring
+stats/validation
+stats/simulator
+stats/rbridge
+backend/api
+frontend/apps/web
 infra/tofu
 *.log
 .env

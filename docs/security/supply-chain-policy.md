@@ -1,6 +1,6 @@
 # Dependency and supply-chain policy
 
-Applies to every package in the monorepo (`apps/*`, `packages/*`, `python/*`, `tools/*`), the kiosk image,
+Applies to every package in the monorepo (`frontend/apps/*`, `frontend/packages/*`, `contracts`, `backend/api`, `stats/*`, `tools/*`, `cicd/*`), the kiosk image,
 container images and CI. Supports PRV-09 ("dependency, SAST and container scans"), PLT-04 (CI/CD), PLT-08
 (version verification), KSK-11 (signed OTA) and PRV-11 (deployed-artefact hashes in the IRB pack). SLSA
 provenance is listed as deferred (P2) in the plan; this policy sets the baseline now and the provenance
@@ -52,7 +52,7 @@ record.
 | JS vulnerabilities | `pnpm audit --audit-level=moderate` | every PR + nightly | Same |
 | Cross-ecosystem | `osv-scanner --lockfile=uv.lock --lockfile=pnpm-lock.yaml` | nightly | Same |
 | SAST | `semgrep` with `p/default p/owasp-top-ten p/python p/typescript p/jwt p/sql-injection p/secrets` plus repo rules (§7) | every PR | Fail on new ERROR findings; triage file `docs/security/scans/semgrep-triage.md` for accepted ones |
-| Python lint security | `ruff` with the `S` (bandit) rule set enabled for `apps/api` and `python/*` | every PR | Fail on new findings |
+| Python lint security | `ruff` with the `S` (bandit) rule set enabled for `backend/api`, `contracts/python` and `stats/*` | every PR | Fail on new findings |
 | Secrets | `gitleaks` (pre-commit + CI) and GitHub secret scanning with push protection | every push | Block |
 | Containers | `trivy image` (or `grype`) on API/worker images | build + nightly | Fail on fixable HIGH/CRITICAL |
 | IaC | `checkov` / `tfsec` on OpenTofu (PLT-05) | every PR | Fail on HIGH |
@@ -80,8 +80,8 @@ record.
 
 - Branch protection on `main`: required reviews (2 for paths in §7 "sensitive paths", 1 otherwise), required
   status checks, no force pushes, linear history, signed commits for release tags.
-- `CODEOWNERS` for sensitive paths: `apps/api/src/shriii_api/{auth,security.py,settings.py,services/ingestion.py,services/erasure.py,services/consent.py,audit.py,migrations*}`,
-  `packages/contracts/schemas`, `scoring/*.yaml`, `packages/kiosk-game/src/logging`, `apps/kiosk/electron`,
+- `CODEOWNERS` for sensitive paths: `backend/api/src/shriii_api/{auth,security.py,settings.py,services/ingestion.py,services/erasure.py,services/consent.py,audit.py,migrations*}`,
+  `contracts/schemas`, `stats/measurement-model/*.yaml`, `frontend/packages/kiosk-game/src/logging`, `frontend/apps/kiosk/electron`,
   CI workflows, Dockerfiles, `docs/security`.
 - CI tokens: `permissions: contents: read` by default; publish jobs get only what they need; no long-lived
   cloud keys (OIDC federation to AWS).

@@ -37,7 +37,10 @@ def instruments() -> dict[str, dict[str, Any]]:
 
 
 def game_files() -> list[Path]:
-    return sorted(p for p in (content_dir() / "games").rglob("*.json") if p.name != "session-plan.json")
+    """Game module configs: every JSON under content/games with a module_id. The session plan and shared rule
+    documents (e.g. shared/calibration.json, checked by the kiosk engine's own validator) are not modules."""
+    paths = sorted(p for p in (content_dir() / "games").rglob("*.json") if p.name != "session-plan.json")
+    return [p for p in paths if "module_id" in _json(p)]
 
 
 def games() -> dict[str, dict[str, Any]]:

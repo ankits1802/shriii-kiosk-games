@@ -1,0 +1,378 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://shriii.local/contracts/scoring-dictionary-pathway.v1.schema.json",
+  "title": "ScoringDictionaryPathway",
+  "description": "stats/measurement-model/dictionary/dictionary.{A,B}.yaml: per-pathway indicator definitions, frozen per pathway (SCR-01).",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "$ref": "common.v1.schema.json#/$defs/minor_schema_version"
+    },
+    "document": {
+      "const": "pathway"
+    },
+    "dictionary_id": {
+      "$ref": "common.v1.schema.json#/$defs/identifier"
+    },
+    "pathway": {
+      "$ref": "common.v1.schema.json#/$defs/pathway"
+    },
+    "shared_version": {
+      "$ref": "common.v1.schema.json#/$defs/semver"
+    },
+    "version": {
+      "$ref": "common.v1.schema.json#/$defs/semver"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["draft", "frozen", "amended"]
+    },
+    "frozen_at": {
+      "anyOf": [
+        {
+          "$ref": "common.v1.schema.json#/$defs/date_time"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "sha256": {
+      "anyOf": [
+        {
+          "$ref": "common.v1.schema.json#/$defs/sha256"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "governance_record": {
+      "anyOf": [
+        {
+          "$ref": "common.v1.schema.json#/$defs/identifier"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "modules": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "title": "DictionaryModule",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "$ref": "common.v1.schema.json#/$defs/identifier"
+          },
+          "kind": {
+            "type": "string",
+            "enum": ["micro", "episode"]
+          },
+          "config": {
+            "type": "string",
+            "pattern": "^content/games/[a-z0-9_./-]+\\.json$"
+          },
+          "slot": {
+            "type": "boolean"
+          },
+          "order": {
+            "type": ["integer", "null"],
+            "minimum": 1
+          }
+        },
+        "required": ["id", "kind", "config", "slot", "order"]
+      },
+      "minItems": 1
+    },
+    "indicators": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "title": "IndicatorDefinition",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z_]+\\.[a-z0-9_]+$",
+            "description": "Indicator id: <construct_id>.<name>."
+          },
+          "construct": {
+            "$ref": "common.v1.schema.json#/$defs/construct_id"
+          },
+          "role": {
+            "type": "string",
+            "enum": ["primary", "secondary", "exploratory"]
+          },
+          "tier": {
+            "type": "integer",
+            "enum": [1, 2]
+          },
+          "status": {
+            "type": "string",
+            "enum": ["provisional", "validated", "dropped", "research_only"]
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "raw",
+              "difference_slope",
+              "model_parameter",
+              "composite",
+              "group_only",
+              "single_event_unscorable"
+            ]
+          },
+          "source": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "module_id": {
+                "$ref": "common.v1.schema.json#/$defs/identifier"
+              },
+              "episode_id": {
+                "anyOf": [
+                  {
+                    "$ref": "common.v1.schema.json#/$defs/identifier"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "task": {
+                "$ref": "common.v1.schema.json#/$defs/identifier"
+              },
+              "phases": {
+                "type": "array",
+                "items": {
+                  "$ref": "common.v1.schema.json#/$defs/phase"
+                },
+                "minItems": 1,
+                "uniqueItems": true
+              },
+              "slot": {
+                "type": "boolean"
+              }
+            },
+            "required": ["module_id", "episode_id", "task", "phases", "slot"]
+          },
+          "event_inputs": {
+            "type": "array",
+            "items": {
+              "$ref": "event-envelope.v1.schema.json#/$defs/event_type"
+            },
+            "minItems": 1,
+            "uniqueItems": true
+          },
+          "required_fields": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z_]+(\\.[a-z_]+)*$"
+            },
+            "minItems": 1,
+            "uniqueItems": true
+          },
+          "formula": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "ref": {
+                "type": "string",
+                "pattern": "^[a-z_]+\\.[a-z0-9_]+$"
+              },
+              "description": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4000
+              }
+            },
+            "required": ["ref", "description"]
+          },
+          "unit": {
+            "type": "string",
+            "enum": [
+              "proportion",
+              "count",
+              "ms",
+              "seconds",
+              "tokens",
+              "pumps",
+              "moves",
+              "log_k",
+              "slope",
+              "correlation",
+              "index",
+              "entropy_bits",
+              "drift_rate",
+              "ordinal"
+            ]
+          },
+          "direction": {
+            "type": "string",
+            "enum": ["higher_more", "higher_less"],
+            "description": "higher_more: a higher indicator value means more of the construct; higher_less: the reverse."
+          },
+          "transformation": {
+            "$ref": "common.v1.schema.json#/$defs/identifier"
+          },
+          "aggregation": {
+            "type": "string",
+            "enum": [
+              "proportion",
+              "mean",
+              "median",
+              "sum",
+              "count",
+              "slope",
+              "model_parameter",
+              "correlation",
+              "entropy",
+              "rvi",
+              "residual_sd",
+              "group_estimator"
+            ]
+          },
+          "reliability_method": {
+            "type": "string",
+            "enum": [
+              "split_half_permutation",
+              "model_based",
+              "model_based_slope",
+              "composite_omega",
+              "not_computed"
+            ]
+          },
+          "level_rule": {
+            "type": "string",
+            "enum": ["fixed_level_only", "anchor_linked", "level_covariate"]
+          },
+          "min_valid_trials": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "count": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "unit": {
+                "type": "string",
+                "enum": [
+                  "trials",
+                  "nogo_trials",
+                  "post_switch_trials",
+                  "segments",
+                  "choices",
+                  "balloons",
+                  "rounds",
+                  "problems",
+                  "unsolvable_items",
+                  "dilemmas",
+                  "decisions",
+                  "maps",
+                  "turns",
+                  "reports",
+                  "events"
+                ]
+              },
+              "basis": {
+                "type": "string",
+                "enum": ["plan_ac", "literature_prior", "val02_pending"]
+              }
+            },
+            "required": ["count", "unit", "basis"]
+          },
+          "exclusions": {
+            "type": "array",
+            "items": {
+              "$ref": "common.v1.schema.json#/$defs/identifier"
+            },
+            "uniqueItems": true
+          },
+          "missing_data": {
+            "$ref": "common.v1.schema.json#/$defs/identifier"
+          },
+          "group_only": {
+            "type": "boolean"
+          },
+          "gate_eligible": {
+            "type": "boolean"
+          },
+          "timing_sensitive": {
+            "type": "boolean"
+          },
+          "sensitivity": {
+            "type": "string",
+            "enum": ["standard", "high"]
+          },
+          "expected_r_lower_bound": {
+            "type": ["number", "null"],
+            "minimum": 0,
+            "maximum": 1
+          },
+          "convergent_criteria": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z0-9_]+(\\.[a-z0-9_]+)?$",
+              "description": "Criterion reference <instrument_id>.<scale_id> (or a bare instrument id for single-score criteria)."
+            },
+            "uniqueItems": true
+          },
+          "notes": {
+            "type": ["string", "null"],
+            "minLength": 1,
+            "maxLength": 4000
+          }
+        },
+        "required": [
+          "id",
+          "construct",
+          "role",
+          "tier",
+          "status",
+          "kind",
+          "source",
+          "event_inputs",
+          "required_fields",
+          "formula",
+          "unit",
+          "direction",
+          "transformation",
+          "aggregation",
+          "reliability_method",
+          "level_rule",
+          "min_valid_trials",
+          "exclusions",
+          "missing_data",
+          "group_only",
+          "gate_eligible",
+          "timing_sensitive",
+          "sensitivity",
+          "expected_r_lower_bound",
+          "convergent_criteria",
+          "notes"
+        ]
+      },
+      "minItems": 1
+    }
+  },
+  "required": [
+    "schema_version",
+    "document",
+    "dictionary_id",
+    "pathway",
+    "shared_version",
+    "version",
+    "status",
+    "frozen_at",
+    "sha256",
+    "governance_record",
+    "modules",
+    "indicators"
+  ]
+}

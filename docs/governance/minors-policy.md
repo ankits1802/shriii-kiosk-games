@@ -13,7 +13,7 @@
    **Implementation status (2026-10-21):** the deployment-policy validator (PRV-01) is not built yet, and no
    `allow_minors` configuration key exists in code. Until it exists there is no way to enable minors at all:
    the kiosk has no guardian branch, and an under-18 band ends the session with nothing persisted
-   (`packages/kiosk-game/src/onboarding/screens/bands.ts`).
+   (`frontend/packages/kiosk-game/src/onboarding/screens/bands.ts`).
 
 ## 2. Why
 

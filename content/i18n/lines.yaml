@@ -3382,7 +3382,7 @@ lines:
   category: report
   module_id: null
   speaker_role: guide
-  context: Strengths-framed band phrase (integrity, pole A). No band may imply that a person is more or less honest (BUILD_DECISIONS #6); integrity is also withheld from player reports by apps/api config/report_policy.yaml.
+  context: Strengths-framed band phrase (integrity, pole A). No band may imply that a person is more or less honest (BUILD_DECISIONS #6); integrity is also withheld from player reports by backend/api config/report_policy.yaml.
   reference_text: You speak up for what you need.
   target_duration_ms: 2920
   tone: warm
@@ -3404,7 +3404,7 @@ lines:
   category: report
   module_id: null
   speaker_role: guide
-  context: Strengths-framed band phrase (integrity, centre). No band may imply that a person is more or less honest (BUILD_DECISIONS #6); integrity is also withheld from player reports by apps/api config/report_policy.yaml.
+  context: Strengths-framed band phrase (integrity, centre). No band may imply that a person is more or less honest (BUILD_DECISIONS #6); integrity is also withheld from player reports by backend/api config/report_policy.yaml.
   reference_text: "You weigh your needs and other people's needs."
   target_duration_ms: 2920
   tone: warm
@@ -3426,7 +3426,7 @@ lines:
   category: report
   module_id: null
   speaker_role: guide
-  context: Strengths-framed band phrase (integrity, pole B). No band may imply that a person is more or less honest (BUILD_DECISIONS #6); integrity is also withheld from player reports by apps/api config/report_policy.yaml.
+  context: Strengths-framed band phrase (integrity, pole B). No band may imply that a person is more or less honest (BUILD_DECISIONS #6); integrity is also withheld from player reports by backend/api config/report_policy.yaml.
   reference_text: You like to share things out so that everyone gets a turn.
   target_duration_ms: 5020
   tone: warm

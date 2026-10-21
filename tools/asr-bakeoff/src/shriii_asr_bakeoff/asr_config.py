@@ -1,7 +1,7 @@
 """Write the language pack's ASR config (``asr-config.<lang>.json``) from bake-off results (VOX-06 AC:
 "the policy is written into the ASR config of the language pack").
 
-The format is the ``AsrGrammar`` consumed by ``packages/asr-sherpa`` (validated here against
+The format is the ``AsrGrammar`` consumed by ``frontend/packages/asr-sherpa`` (validated here against
 schemas/asr-config.schema.json, which mirrors the adapter's ``parseGrammar``). Only a sherpa-onnx KWS
 engine can drive the kiosk adapter; when no such engine passes for a language, a touch-only config is
 written (every prompt ``voice_enabled: false``), so the pilot runs touch only with no code change.

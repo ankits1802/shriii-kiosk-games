@@ -39,12 +39,12 @@ latency:
   max_rtf: 0.5
 
 confidence_tiers:
-  # Calibrated precision targets used to place the adapter's propose/commit tiers (packages/asr-sherpa).
+  # Calibrated precision targets used to place the adapter's propose/commit tiers (frontend/packages/asr-sherpa).
   propose_min_precision: 0.85
   commit_min_precision: 0.97
 
 runtime:
-  # Written verbatim into the language pack's asr-config (AsrRuntimePolicy in packages/asr-sherpa).
+  # Written verbatim into the language pack's asr-config (AsrRuntimePolicy in frontend/packages/asr-sherpa).
   noise_max_dbfs: -35
   max_listen_ms: 6000
   vad_preroll_ms: 300

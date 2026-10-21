@@ -15,15 +15,15 @@
 | Consent | Immutable consent artefacts | PostgreSQL `consent` | Several per participant |
 | Analysis snapshots | De-identified participant x occasion tables | Parquet with a manifest (sha256 per partition) | Per study and wave |
 | Validation results | Estimates with CI, n, method, provenance | PostgreSQL `validation`; report bundles (JSON) | Per analysis run |
-| Reports | Stage reports, technical manual | Markdown, HTML, Quarto (`reports/`) | Per stage |
+| Reports | Stage reports, technical manual | Markdown, HTML, Quarto (`stats/reports/`) | Per stage |
 | Research audio, ASR clips | Think-aloud and closed-vocabulary recordings | Encrypted files with deletion timers | Small; short-lived |
 
 ## 2. Documentation and metadata
 
-- **Scoring dictionary** (`scoring/dictionary/*.yaml`): every indicator's definition, formula reference,
+- **Scoring dictionary** (`stats/measurement-model/dictionary/*.yaml`): every indicator's definition, formula reference,
   exclusions, transformation, reliability method and minimum trials; frozen per pathway with a sha256.
-- **Event contract** (`packages/contracts/schemas/*.json`, JSON Schema 2020-12) with generated types.
-- **Pre-registration** generated from `scoring/hypotheses.yaml` and `scoring/gates.yaml` by `tools/prereg`,
+- **Event contract** (`contracts/schemas/*.json`, JSON Schema 2020-12) with generated types.
+- **Pre-registration** generated from `stats/measurement-model/hypotheses.yaml` and `stats/measurement-model/gates.yaml` by `stats/prereg`,
   with the sha256 of every input embedded.
 - **Codebook** for every export (variables, codes, missing-data codes, transformations).
 - **Instrument registry** with licences; licensed item wording is not stored in the repository.
@@ -34,7 +34,7 @@
 - Every scoring run writes a manifest (dictionary sha per pathway, git sha, image digest, lock hashes,
   partition hashes, seeds, BLAS and thread settings, erasure receipts).
 - Every coefficient traces to `analysis_run_id` -> snapshot manifest -> partitions; report footers carry these
-  hashes (`reports/`).
+  hashes (`stats/reports/`).
 - Numeric reproducibility is checked with tolerances (1e-8), not byte equality. Reruns after erasures are
   "reproducible modulo erasures", with erasures counted in each manifest.
 

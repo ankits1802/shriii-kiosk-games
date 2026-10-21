@@ -150,7 +150,7 @@ def test_signed_manifests(batch: BatchResult, signing_key: tuple[SigningKey, Pat
 def test_kiosk_manifest_shape_matches_voice_service(
     batch: BatchResult, signing_key: tuple[SigningKey, Path], tmp_path: Path
 ) -> None:
-    """The fields buildVoiceManifest() reads (packages/kiosk-game/src/voice/manifest.ts) are all present."""
+    """The fields buildVoiceManifest() reads (frontend/packages/kiosk-game/src/voice/manifest.ts) are all present."""
     key, _ = signing_key
     manifest.build_manifests(batch, tmp_path / "out", key, pack_version="0.2.0")
     data = json.loads((tmp_path / "out" / "packs" / "manifest.en-IN.json").read_text(encoding="utf-8"))

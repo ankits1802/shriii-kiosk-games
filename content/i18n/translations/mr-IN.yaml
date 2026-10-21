@@ -1694,35 +1694,35 @@ entries:
     record_note: ''
     history: []
   - id: report.integrity.pole_a
-    source_text: You think carefully about tricky offers.
-    source_hash: 37960e9fb14ae1b0
+    source_text: You speak up for what you need.
+    source_hash: 8721c0c63f54a865
     status: draft_machine_needs_native_review
-    text: अवघड ऑफर समोर आली की तुम्ही नीट विचार करता.
-    back_translation: When a tricky offer comes up, you think properly.
+    text: तुम्हाला जे हवं, त्यासाठी तुम्ही स्पष्टपणे बोलता.
+    back_translation: For what you need, you speak up clearly.
     register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
-    translator_note: 'Strengths-framed band phrase: must sound positive and non-judgemental; no numbers, no comparison with others. This pole corresponds to more accepting of tricky offers in the bribe dilemmas; reviewers must check it carries no accusation.'
+    translator_note: 'Strengths-framed band phrase: must sound positive and non-judgemental; no numbers, no comparison with others. Machine re-draft after the English reference text was reworded; needs native review.'
     record: true
     record_note: ''
     history: []
   - id: report.integrity.centre
-    source_text: You usually choose the fair path.
-    source_hash: aad28ce1e09c9f6c
+    source_text: You weigh your needs and other people's needs.
+    source_hash: 74d890a9a48590e0
     status: draft_machine_needs_native_review
-    text: तुम्ही बहुतेक वेळा न्यायाचा मार्ग निवडता.
-    back_translation: Most of the time you choose the path of fairness.
+    text: तुम्ही स्वतःच्या आणि इतरांच्या गरजा दोन्ही तोलून बघता.
+    back_translation: 'You weigh both your own needs and other people''s needs.'
     register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
-    translator_note: 'Strengths-framed band phrase: must sound positive and non-judgemental; no numbers, no comparison with others.'
+    translator_note: 'Strengths-framed band phrase: must sound positive and non-judgemental; no numbers, no comparison with others. Machine re-draft after the English reference text was reworded; needs native review.'
     record: true
     record_note: ''
     history: []
   - id: report.integrity.pole_b
-    source_text: You choose the fair path even when no one is watching.
-    source_hash: 4a84e11820a1eeba
+    source_text: You like to share things out so that everyone gets a turn.
+    source_hash: f2dcec4880697367
     status: draft_machine_needs_native_review
-    text: कोणी बघत नसलं, तरी तुम्ही न्यायाचा मार्ग निवडता.
-    back_translation: Even when nobody is watching, you choose the path of fairness.
+    text: सगळ्यांना संधी मिळावी म्हणून तुम्हाला वाटून द्यायला आवडतं.
+    back_translation: You like to share things out so that everyone gets a turn.
     register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
-    translator_note: 'Strengths-framed band phrase: must sound positive and non-judgemental; no numbers, no comparison with others.'
+    translator_note: 'Strengths-framed band phrase: must sound positive and non-judgemental; no numbers, no comparison with others. Machine re-draft after the English reference text was reworded; needs native review.'
     record: true
     record_note: ''
     history: []

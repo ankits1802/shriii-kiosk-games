@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1.7
-# SHRIII kiosk static build (apps/kiosk, Vite) served by unprivileged nginx. This is the browser build used
+# SHRIII kiosk static build (frontend/apps/kiosk, Vite) served by unprivileged nginx. This is the browser build used
 # for pilots and E2E tests; the Electron artefacts are built by .github/workflows/kiosk-release.yml.
 #
 #   docker build -f infra/docker/kiosk.Dockerfile --build-arg VITE_API_BASE_URL=http://localhost:8000 -t shriii/kiosk .
@@ -35,17 +35,17 @@ ENV VITE_API_BASE_URL=${VITE_API_BASE_URL} \
 RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store \
     pnpm install --store-dir /pnpm/store --offline --frozen-lockfile --filter "@shriii/kiosk..." \
  && pnpm --filter "@shriii/kiosk..." run build \
- && test -f apps/kiosk/dist/index.html
+ && test -f frontend/apps/kiosk/dist/index.html
 
 FROM scratch AS dist
-COPY --from=build /repo/apps/kiosk/dist /
+COPY --from=build /repo/frontend/apps/kiosk/dist /
 
 # -------------------------------------------------------------------------------------------- runtime
 FROM ${NGINX_IMAGE} AS runtime
 LABEL org.opencontainers.image.title="shriii-kiosk" \
       org.opencontainers.image.description="SHRIII kiosk browser build (static)"
 COPY infra/docker/nginx/kiosk.conf /etc/nginx/conf.d/default.conf
-COPY --from=build /repo/apps/kiosk/dist /usr/share/nginx/html
+COPY --from=build /repo/frontend/apps/kiosk/dist /usr/share/nginx/html
 EXPOSE 8080
 HEALTHCHECK --interval=15s --timeout=3s --start-period=5s --retries=3 \
     CMD ["wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8080/healthz"]

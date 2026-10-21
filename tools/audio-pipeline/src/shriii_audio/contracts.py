@@ -1,4 +1,4 @@
-"""Validate data against the canonical JSON Schemas in ``packages/contracts/schemas`` (read-only)."""
+"""Validate data against the canonical JSON Schemas in ``contracts/schemas`` (read-only)."""
 
 from __future__ import annotations
 

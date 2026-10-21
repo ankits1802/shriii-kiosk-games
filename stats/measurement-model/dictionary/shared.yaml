@@ -1,0 +1,595 @@
+# SHRIII scoring dictionary — shared competency model (SCR-01, plan section 4).
+#
+# Layer 2 of the five data layers: behavioural indicators are defined here and in
+# dictionary.{A,B}.yaml. Nothing in this file is a validated trait score.
+#
+# Conventions
+# - Construct ids are stable and must match contracts (CONSTRUCT_IDS).
+# - criterion ids are <instrument_id>.<scale_id> and must resolve to content/instruments/*.yaml.
+# - expected_sign is the sign of the correlation between the construct-keyed indicator composite
+#   (higher = more of the construct, after applying each indicator's `direction`) and the criterion
+#   scale *as scored* (e.g. higher DERS-16 = more difficulty, so emotional regulation expects negative).
+# - expected_r_low/high are literature expectations (.10–.30), NOT acceptance thresholds. Gates use
+#   observed r lower bounds from gates.yaml; there is no upper bound.
+# - All thresholds live in YAML (gates.yaml, hypotheses.yaml). Status v0 = draft (not frozen).
+schema_version: "1.0"
+document: shared
+dictionary_id: shriii-scoring
+version: 0.1.0
+status: draft
+frozen_at: null
+sha256: null
+governance_record: null
+construct_count: 17
+
+exclusion_rules:
+  - id: not_scorable
+    applies_to: event
+    description: Practice, warm-up and onboarding events (scorable=false) never reach indicators.
+    when: [{ field: timing.scorable, op: eq, value: false }]
+  - id: invalid_placeholder
+    applies_to: event
+    description: Logger placeholders written when an event failed validation (seq kept gapless).
+    when: [{ field: event_type, op: eq, value: invalid }]
+  - id: interrupted_trial
+    applies_to: trial
+    description: Trials paused by idle/walkaway handling are excluded from latency indicators (KSK-04).
+    when: [{ field: timing.interrupted, op: eq, value: true }]
+  - id: timing_flagged
+    applies_to: trial
+    description: Trials whose timing is not ok (frame drop beyond one frame, late onset, underrun, degrade mode, uncertified profile) are excluded from timing-sensitive indicators (KSK-14, ENG-02).
+    when: [{ field: timing.timing_flag, op: ne, value: ok }]
+  - id: voice_latency
+    applies_to: trial
+    description: Voice-answered trials are excluded from latency indicators; choice indicators keep them with input_mode as a covariate (VOX-04).
+    when: [{ field: payload.input_mode, op: in, value: [voice, voice_then_touch_confirm] }]
+  - id: timeout_latency
+    applies_to: trial
+    description: Timeouts have no latency (latency_ms is null) and are excluded from latency aggregates; they still count as omissions where relevant.
+    when: [{ field: payload.input_mode, op: eq, value: timeout }]
+  - id: anticipatory_response
+    applies_to: trial
+    description: Responses faster than 150 ms after the anchor are anticipatory and excluded from RT-based indicators (they are counted by restraint indicators instead).
+    when: [{ field: payload.latency_ms, op: lt, value: 150 }]
+  - id: self_paced_outlier
+    applies_to: trial
+    description: Self-paced decisions longer than 30 s (distraction) are excluded from decision-time indicators.
+    when: [{ field: payload.latency_ms, op: gt, value: 30000 }]
+  - id: multi_touch_interference
+    applies_to: event
+    description: Taps classified as multi-touch interference or palm are not responses (ENG-06).
+    when: [{ field: payload.classification, op: in, value: [multi_touch_interference, filtered_palm] }]
+  - id: prompted_optional_action
+    applies_to: trial
+    description: Optional actions taken within 2 s of a prompt that mentions them are not unprompted (SCR-07).
+    when: [{ field: derived.ms_since_mentioning_prompt, op: lt, value: 2000 }]
+  - id: session_quality_exclude
+    applies_to: session
+    description: Sessions graded exclude by the data-quality flag engine (SCR-12).
+    when: [{ field: session.quality_grade, op: eq, value: exclude }]
+  - id: synthetic_session
+    applies_to: session
+    description: Simulator data (context.synthetic=true) never enters real analyses (QA-02).
+    when: [{ field: context.synthetic, op: eq, value: true }]
+  - id: level_not_fixed_l2
+    applies_to: session
+    description: For level_rule=fixed_level_only, sessions not at L2 are analysed separately (SCR-11).
+    when: [{ field: condition.calibration_level, op: ne, value: L2 }]
+  - id: missing_context_shift
+    applies_to: indicator
+    description: Shift-based indicators require the context_shift event; a missing shift is an error, never inferred (SCR-06).
+    when: [{ field: derived.context_shift_present, op: eq, value: false }]
+
+missing_data_policies:
+  - id: insufficient_trials_na
+    method: indicator_na
+    description: Fewer valid trials than min_valid_trials yields null with flag insufficient_trials; never imputed at the indicator level.
+  - id: planned_missing_slot
+    method: planned_missing_mcar
+    description: Slot-module indicators are missing completely at random by design (seeded 4-form slot assignment); analyses use FIML or multiple imputation.
+  - id: abandoned_module_na
+    method: indicator_na
+    description: Modules ended by walkaway, withdrawal or hard cap before the minimum yield null with flag module_incomplete.
+  - id: model_partial_pooling
+    method: indicator_na
+    description: Hierarchical/model-based person estimates are written with posterior SD; below the minimum the estimate is null (no shrinkage-only estimates).
+  - id: substudy_only
+    method: indicator_na
+    description: Indicators that exist only in a substudy (live dyads) are null outside it and analysed within the substudy.
+  - id: group_level_only
+    method: not_applicable
+    description: Group-level estimators have no individual value; never imputed and never joined to individual tables.
+
+transformations:
+  - id: none
+    description: Value used as computed.
+  - id: log
+    description: Natural log of a strictly positive value (times in ms or s).
+  - id: log1p
+    description: log(1 + x) for counts with zeros.
+  - id: logit_corrected
+    description: Logit of (k + 0.5) / (n + 1) for proportions (avoids infinite values at 0 and 1).
+  - id: fisher_z
+    description: atanh(r) for correlation-type indicators before averaging or modelling.
+  - id: z_within_level_language
+    description: Standardised within calibration level x language for composites (parameters from the release pack).
+
+constructs:
+  - id: self_control
+    number: 1
+    name: Self-control
+    kind: E
+    tier: 1
+    restricted: false
+    modelled_as: trait_indicator
+    definition: The capacity to inhibit a prepotent or tempting response in favour of a goal-consistent one, including withholding action and choosing larger-later over smaller-sooner rewards.
+    theoretical_justification: Response inhibition (go/no-go commission errors, diffusion drift on no-go) and delay/effort discounting are the standard behavioural operationalisations of trait self-control (Tangney et al., 2004; Duckworth & Kern, 2011), though task-questionnaire convergence is modest.
+    ecd:
+      claim: The player withholds prepotent actions and resists immediate rewards.
+      evidence: Commission errors on no-go items, diffusion drift on no-go trials, discounting rate and choice consistency.
+      tasks: [Don't-Tap go/no-go, Wait-or-Now delay and effort choices, Stall don't-serve items]
+    pathways:
+      A: { status: scored, reason: null }
+      B: { status: scored, reason: null }
+    criterion_relations:
+      convergent:
+        - { criterion: bscs.total, block: X, expected_sign: positive, expected_r_low: 0.10, expected_r_high: 0.30, hypothesis_id: h1.self_control, note: null }
+        - { criterion: bfi2_xs.conscientiousness, block: X, expected_sign: positive, expected_r_low: 0.10, expected_r_high: 0.30, hypothesis_id: h2.self_control.conscientiousness, note: null }
+      discriminant:
+        - { criterion: bfi2_xs.extraversion, block: X, expected_sign: null, hypothesis_id: hp.self_control, note: null }
+        - { criterion: gdms.spontaneous, block: C, expected_sign: null, hypothesis_id: hp.self_control, note: null }
+      nomological: []
+    report:
+      max_status: validated_banded
+      phrase_keys: { pole_a: report.self_control.pole_a, centre: report.self_control.centre, pole_b: report.self_control.pole_b }
+    notes: null
+
+  - id: emotional_regulation
+    number: 2
+    name: Emotional regulation
+    kind: E
+    tier: 1
+    restricted: false
+    modelled_as: trait_indicator
+    definition: Maintaining goal-appropriate, non-escalating responses when provoked, and recovering response quality after frustration or negative feedback.
+    theoretical_justification: Process models of emotion regulation (Gross, 1998) predict that better regulators show less tone mirroring and faster recovery after provocation; DERS-16 (difficulties) and ERQ reappraisal are the standard criteria.
+    ecd:
+      claim: The player keeps a calm, constructive tone with hostile customers and recovers after setbacks.
+      evidence: Chosen tone after provocations, tone mirroring slope on customer tone level, drift over the difficult run, accuracy recovery after negative feedback.
+      tasks: [Stall rude-customer run, Stall feedback recovery]
+    pathways:
+      A: { status: scored, reason: null }
+      B: { status: withheld, reason: "Permanently withheld for Pathway B: no provocation paradigm fits the 60-120 s module budget; only the exploratory tone_after_unfair_loss_B indicator is collected (plan section 4.2)." }
+    criterion_relations:
+      convergent:
+        - { criterion: ders16.total, block: X, expected_sign: negative, expected_r_low: 0.10, expected_r_high: 0.30, hypothesis_id: h1.emotional_regulation, note: Higher DERS-16 means more difficulty. }
+        - { criterion: erq.reappraisal, block: A, expected_sign: positive, expected_r_low: 0.10, expected_r_high: 0.25, hypothesis_id: h2.emotional_regulation.reappraisal, note: Rotating block A (planned missing). }
+      discriminant:
+        - { criterion: cfi.total, block: B, expected_sign: null, hypothesis_id: hp.emotional_regulation, note: null }
+        - { criterion: hexaco_hh.honesty_humility, block: X, expected_sign: null, hypothesis_id: hp.emotional_regulation, note: null }
+      nomological: []
+    report:
+      max_status: validated_banded
+      phrase_keys: { pole_a: report.emotional_regulation.pole_a, centre: report.emotional_regulation.centre, pole_b: report.emotional_regulation.pole_b }
+    notes: Pathway A only for gates and reports.
+
+  - id: composure
+    number: 3
+    name: Composure under pressure
+    kind: E
+    tier: 2
+    restricted: false
+    modelled_as: trait_indicator
+    definition: Stability of accuracy and speed when time pressure, noise or distraction is added, relative to the same person's unpressured performance.
+    theoretical_justification: Attentional control theory predicts performance decrements under stress that are larger for anxious individuals (Eysenck et al., 2007); modelled as person-level random slopes, which may have limited reliability.
+    ecd:
+      claim: The player's accuracy and speed hold up when pressure is added.
+      evidence: Person random slopes of accuracy and RT on pressure on/off, shift in error type, distractor slope.
+      tasks: [Don't-Tap pressure block, Steady Hands distractors, Stall timed rush]
+    pathways:
+      A: { status: scored, reason: null }
+      B: { status: scored, reason: null }
+    criterion_relations:
+      convergent:
+        - { criterion: bfi2_xs.negative_emotionality, block: X, expected_sign: negative, expected_r_low: 0.05, expected_r_high: 0.20, hypothesis_id: h2.composure, note: null }
+        - { criterion: ders16.total, block: X, expected_sign: negative, expected_r_low: 0.05, expected_r_high: 0.20, hypothesis_id: h2.composure.ders, note: null }
+      discriminant:
+        - { criterion: hexaco_hh.honesty_humility, block: X, expected_sign: null, hypothesis_id: hp.composure, note: null }
+        - { criterion: grit_s.total, block: X, expected_sign: null, hypothesis_id: hp.composure, note: null }
+      nomological: []
+    report:
+      max_status: validated_banded
+      phrase_keys: { pole_a: report.composure.pole_a, centre: report.composure.centre, pole_b: report.composure.pole_b }
+    notes: Difference-based; may remain research_only (pre-registered).
+
+  - id: response_consistency
+    number: 4
+    name: Response consistency
+    kind: S
+    tier: 2
+    restricted: false
+    modelled_as: repeated_measure_property
+    definition: Low within-person variability of responding across equivalent trials, adjusted for the person's mean level.
+    theoretical_justification: Intra-individual variability is a stable person characteristic when indexed by mean-adjusted measures (relative variability index, Mestdagh et al., 2018) or location-scale residual SD rather than raw CV.
+    ecd:
+      claim: The player responds similarly to equivalent situations.
+      evidence: RVI of RTs and pumps, location-scale person residual SD, choice entropy on repeated identical situations.
+      tasks: [Don't-Tap go trials, Balloon pumps, Four Stalls repeats, cross-module and cross-episode probes]
+    pathways:
+      A: { status: scored, reason: null }
+      B: { status: scored, reason: null }
+    criterion_relations:
+      convergent: []
+      discriminant:
+        - { criterion: bfi2_xs.open_mindedness, block: X, expected_sign: null, hypothesis_id: hp.response_consistency, note: null }
+      nomological:
+        - { id: hn.response_consistency.1, prediction: "RT location-scale sigma correlates negatively with BFI-2 Conscientiousness (more variability, lower conscientiousness).", criterion: bfi2_xs.conscientiousness, expected_sign: positive }
+    report:
+      max_status: validated_broad_style
+      phrase_keys: { pole_a: report.response_consistency.pole_a, centre: report.response_consistency.centre, pole_b: report.response_consistency.pole_b }
+    notes: Repeated-measure property, not an independent personality dimension; validated through retest ICC plus nomological predictions. Capped at broad style by design decision.
+
+  - id: task_organisation
+    number: 5
+    name: Task organisation
+    kind: E
+    tier: 2
+    restricted: false
+    modelled_as: trait_indicator
+    definition: Ordering and executing multi-part tasks efficiently, with few revisits, little idle time and sensible allocation of limited resources.
+    theoretical_justification: Multiple-errands paradigms index real-world organisation (Shallice & Burgess, 1991); expected to relate to BFI-2 Organization and rational decision style.
+    ecd:
+      claim: The player sequences errands efficiently and allocates fuel sensibly.
+      evidence: Edit distance of errand order to the solver optimum, revisits, idle proportion, fuel allocation efficiency, illegal move attempts.
+      tasks: [Road Home multi-errand, Road Home limited-resource planning, Tower illegal moves]
+    pathways:
+      A: { status: scored, reason: null }
+      B: { status: withheld, reason: Only one indicator (Tower illegal move attempts) from one task in Pathway B; collected as exploratory. }
+    criterion_relations:
+      convergent:
+        - { criterion: bfi2_s.organization, block: C, expected_sign: positive, expected_r_low: 0.05, expected_r_high: 0.20, hypothesis_id: h2.task_organisation, note: Facet from BFI-2-S items in rotating block C. }
+        - { criterion: gdms.rational, block: X, expected_sign: positive, expected_r_low: 0.05, expected_r_high: 0.20, hypothesis_id: h2.task_organisation.rational, note: null }
+      discriminant:
+        - { criterion: erq.suppression, block: A, expected_sign: null, hypothesis_id: hp.task_organisation, note: null }
+      nomological: []
+    report:
+      max_status: validated_banded
+      phrase_keys: { pole_a: report.task_organisation.pole_a, centre: report.task_organisation.centre, pole_b: report.task_organisation.pole_b }
+    notes: null
+
+  - id: decisiveness
+    number: 6
+    name: Decisiveness
+    kind: E
+    tier: 1
+    restricted: false
+    modelled_as: trait_indicator
+    definition: Committing to choices promptly without excessive reversal or information seeking, given adequate information.
+    theoretical_justification: Decision avoidance and procrastination are captured by GDMS avoidant style (Scott & Bruce, 1995); behavioural time-to-commit and reversals index the same tendency. Scored as E (has a standard criterion), with exploratory within-person variability (plan section 4.1).
+    ecd:
+      claim: The player commits to decisions without undue delay or reversal.
+      evidence: Time to commit, reversals before confirming, extra information gathered.
+      tasks: [Balloon time-to-collect, Share-the-Pot contribution revisions, Four Stalls choices, Weighing Post decisions]
+    pathways:
+      A: { status: scored, reason: null }
+      B: { status: scored, reason: null }
+    criterion_relations:
+      convergent:
+        - { criterion: gdms.avoidant, block: X, expected_sign: negative, expected_r_low: 0.10, expected_r_high: 0.25, hypothesis_id: h1.decisiveness, note: null }
+        - { criterion: gdms.rational, block: X, expected_sign: null, expected_r_low: null, expected_r_high: null, hypothesis_id: h3.decisiveness.rational, note: Direction not pre-specified; exploratory. }
+      discriminant:
+        - { criterion: ders16.total, block: X, expected_sign: null, hypothesis_id: hp.decisiveness, note: null }
+      nomological: []
+    report:
+      max_status: validated_banded
+      phrase_keys: { pole_a: report.decisiveness.pole_a, centre: report.decisiveness.centre, pole_b: report.decisiveness.pole_b }
+    notes: null
+
+  - id: adaptability
+    number: 7
+    name: Adaptability / flexibility
+    kind: E
+    tier: 1
+    restricted: false
+    modelled_as: trait_indicator
+    definition: Detecting that a rule has changed and switching to the new rule quickly, with few perseverative errors.
+    theoretical_justification: Set-shifting (card sorting, reversal learning) is the core executive flexibility paradigm (Miyake et al., 2000); the criterion card sort and CFI provide performance and self-report anchors.
+    ecd:
+      claim: The player adjusts quickly when the rule changes without being told.
+      evidence: Perseverative errors, trials to reacquire, person switch-cost slope, rule compliance after a new rule.
+      tasks: [Card Sort unannounced switch and reversal, Road Home rule reversal, Weighing Post new market rule]
+    pathways:
+      A: { status: scored, reason: null }
+      B: { status: scored, reason: null }
+    criterion_relations:
+      convergent:
+        - { criterion: card_sort_criterion.perseverative_errors, block: performance, expected_sign: negative, expected_r_low: 0.15, expected_r_high: 0.35, hypothesis_id: h1.adaptability, note: Performance criterion (WCST-64-style). }
+        - { criterion: cfi.total, block: B, expected_sign: positive, expected_r_low: 0.05, expected_r_high: 0.20, hypothesis_id: h2.adaptability.cfi, note: Rotating block B. }
+      discriminant:
+        - { criterion: hexaco_hh.honesty_humility, block: X, expected_sign: null, hypothesis_id: hp.adaptability, note: null }
+        - { criterion: grit_s.total, block: X, expected_sign: null, hypothesis_id: hp.adaptability, note: null }
+      nomological: []
+    report:
+      max_status: validated_banded
+      phrase_keys: { pole_a: report.adaptability.pole_a, centre: report.adaptability.centre, pole_b: report.adaptability.pole_b }
+    notes: null
+
+  - id: persistence_of_style
+    number: 8
+    name: Persistence of response style
+    kind: S
+    tier: 2
+    restricted: false
+    modelled_as: repeated_measure_property
+    definition: The degree to which a person's response style (speed, caution, revision rate, risk) is maintained across comparable segments of play.
+    theoretical_justification: Stable individual differences in response style across tasks are a precondition for trait inference; estimated from per-segment style vectors (requires at least 4 comparable segments).
+    ecd:
+      claim: The player keeps a recognisable style across games.
+      evidence: Cross-segment correlation of the style vector, lag-1 autocorrelation, post-loss adjustment.
+      tasks: [Probe segments in every module and episode, Balloon post-explosion trials]
+    pathways:
+      A: { status: scored, reason: null }
+      B: { status: scored, reason: null }
+    criterion_relations:
+      convergent: []
+      discriminant: []
+      nomological:
+        - { id: hn.persistence_of_style.1, prediction: Cross-segment style stability correlates positively with BFI-2 Conscientiousness., criterion: bfi2_xs.conscientiousness, expected_sign: positive }
+    report:
+      max_status: validated_broad_style
+      phrase_keys: { pole_a: report.persistence_of_style.pole_a, centre: report.persistence_of_style.centre, pole_b: report.persistence_of_style.pole_b }
+    notes: Repeated-measure property; validated through retest ICC and nomological predictions only.
+
+  - id: stability
+    number: 9
+    name: Stability under situational change
+    kind: S
+    tier: 2
+    restricted: false
+    modelled_as: repeated_measure_property
+    definition: Small within-person change in performance when the situation changes in a controlled way (rule switch, pressure, provocation, new rule, reversal).
+    theoretical_justification: Person-by-situation profiles (Mischel & Shoda, 1995) are estimated as person random slopes on shift indicators, standardised within person and detrended on trial index.
+    ecd:
+      claim: The player's performance changes little when the situation changes.
+      evidence: Hierarchical shift slopes across all controlled context shifts.
+      tasks: [Card Sort switch, Don't-Tap pressure block, Stall rude run, Weighing new rule, Road Home reversal]
+    pathways:
+      A: { status: scored, reason: null }
+      B: { status: scored, reason: null }
+    criterion_relations:
+      convergent:
+        - { criterion: bfi2_xs.negative_emotionality, block: X, expected_sign: negative, expected_r_low: 0.05, expected_r_high: 0.20, hypothesis_id: h2.stability, note: null }
+      discriminant:
+        - { criterion: bfi2_xs.open_mindedness, block: X, expected_sign: null, hypothesis_id: hp.stability, note: null }
+      nomological:
+        - { id: hn.stability.1, prediction: Larger shift slopes (less stability) correlate positively with BFI-2 Negative Emotionality., criterion: bfi2_xs.negative_emotionality, expected_sign: negative }
+    report:
+      max_status: validated_broad_style
+      phrase_keys: { pole_a: report.stability.pole_a, centre: report.stability.centre, pole_b: report.stability.pole_b }
+    notes: Difference-based repeated-measure property; may remain research_only.
+
+  - id: expressive_restraint
+    number: 10
+    name: Expressive restraint vs spontaneity
+    kind: E
+    tier: 2
+    restricted: false
+    modelled_as: trait_indicator
+    definition: The tendency to hold back unnecessary or premature actions (restraint) versus acting spontaneously.
+    theoretical_justification: Premature and extra responses index motor impulsivity; ERQ suppression and low Extraversion provide criteria. Scored as E with exploratory inter-tap variability (plan section 4.1).
+    ecd:
+      claim: The player avoids premature and unnecessary taps.
+      evidence: Premature taps, extra taps, held-vs-free slope.
+      tasks: [Don't-Tap, Steady Hands, Stall premature serves]
+    pathways:
+      A: { status: scored, reason: null }
+      B: { status: scored, reason: null }
+    criterion_relations:
+      convergent:
+        - { criterion: erq.suppression, block: A, expected_sign: positive, expected_r_low: 0.05, expected_r_high: 0.20, hypothesis_id: h2.expressive_restraint, note: null }
+        - { criterion: bfi2_xs.extraversion, block: X, expected_sign: negative, expected_r_low: 0.05, expected_r_high: 0.20, hypothesis_id: h2.expressive_restraint.extraversion, note: null }
+      discriminant:
+        - { criterion: cfi.total, block: B, expected_sign: null, hypothesis_id: hp.expressive_restraint, note: null }
+      nomological: []
+    report:
+      max_status: validated_banded
+      phrase_keys: { pole_a: report.expressive_restraint.pole_a, centre: report.expressive_restraint.centre, pole_b: report.expressive_restraint.pole_b }
+    notes: Both poles are strengths-framed (restrained / spontaneous).
+
+  - id: teamwork
+    number: 11
+    name: Teamwork
+    kind: M
+    tier: 1
+    restricted: false
+    modelled_as: trait_indicator
+    definition: Contributing to shared goals, sustaining cooperation when a partner defects or errs, and coordinating turns with a partner.
+    theoretical_justification: Public-goods contributions and conditional cooperation (Fischbacher et al., 2001) index cooperative disposition; partner ratings after co-play are the preferred criterion, with a provisional interim criterion until available.
+    ecd:
+      claim: The player shares resources and keeps cooperating with partners.
+      evidence: Mean contribution, response to partner defection and error, turn-waiting, interruptions, co-play credit share.
+      tasks: [Share-the-Pot with scripted partners, Road Home shared fuel pot, Pathway D live dyads]
+    pathways:
+      A: { status: scored, reason: null }
+      B: { status: scored, reason: null }
+    criterion_relations:
+      convergent:
+        - { criterion: bfi2_xs.agreeableness, block: X, expected_sign: positive, expected_r_low: 0.10, expected_r_high: 0.25, hypothesis_id: h1.teamwork, note: Provisional interim criterion (gate exception). }
+        - { criterion: observed_cooperation.total, block: teamwork, expected_sign: positive, expected_r_low: 0.10, expected_r_high: 0.30, hypothesis_id: h2.teamwork.observed, note: Administrator-rated observed cooperation task. }
+        - { criterion: partner_rating.total, block: teamwork, expected_sign: positive, expected_r_low: 0.10, expected_r_high: 0.30, hypothesis_id: h2.teamwork.partner, note: Live-dyad substudy only (EPI-06). }
+      discriminant:
+        - { criterion: bscs.total, block: X, expected_sign: null, hypothesis_id: hp.teamwork, note: null }
+      nomological: []
+    report:
+      max_status: validated_broad_style
+      phrase_keys: { pole_a: report.teamwork.pole_a, centre: report.teamwork.centre, pole_b: report.teamwork.pole_b }
+    notes: Capped at validated_broad_style until partner-rating evidence passes (hypotheses.yaml exception teamwork_provisional_criterion).
+
+  - id: judgement
+    number: 12
+    name: Judgement / accountability
+    kind: M
+    tier: 2
+    restricted: false
+    modelled_as: trait_indicator
+    definition: Accepting appropriate responsibility for outcomes (not taking undue credit or shifting blame) consistently across dilemmas.
+    theoretical_justification: Self-serving attribution in credit/blame allocation is a behavioural marker of accountability; relates to Honesty-Humility and moral identity internalisation.
+    ecd:
+      claim: The player accepts fair responsibility for successes and mistakes.
+      evidence: Credit-taking, blame-shifting and cross-dilemma consistency (at least 3 dilemmas per type).
+      tasks: [Weighing Post assistant mistake, Weighing Post fraud found]
+    pathways:
+      A: { status: scored, reason: null }
+      B: { status: withheld, reason: Permanently withheld for Pathway B (no credit/blame paradigm in the carousel). }
+    criterion_relations:
+      convergent:
+        - { criterion: hexaco_hh.honesty_humility, block: X, expected_sign: positive, expected_r_low: 0.05, expected_r_high: 0.20, hypothesis_id: h2.judgement, note: null }
+        - { criterion: moral_identity.internalization, block: A, expected_sign: positive, expected_r_low: 0.05, expected_r_high: 0.20, hypothesis_id: h2.judgement.moral_identity, note: null }
+      discriminant:
+        - { criterion: gdms.spontaneous, block: C, expected_sign: null, hypothesis_id: hp.judgement, note: null }
+      nomological: []
+    report:
+      max_status: validated_banded
+      phrase_keys: { pole_a: report.judgement.pole_a, centre: report.judgement.centre, pole_b: report.judgement.pole_b }
+    notes: Pathway A only. Never reported as a moral judgement of the person.
+
+  - id: problem_solving
+    number: 13
+    name: Problem solving
+    kind: E
+    tier: 1
+    restricted: false
+    modelled_as: trait_indicator
+    definition: Finding efficient solutions to novel planning problems and recovering after a failed attempt or blocked plan.
+    theoretical_justification: Tower of London excess moves and route-planning efficiency are standard planning measures (Shallice, 1982); the physical ToL board provides a performance criterion.
+    ecd:
+      claim: The player solves planning problems efficiently and recovers from failure.
+      evidence: Excess moves, planning time, recovery after failure, excess route cost, replan latency.
+      tasks: [Tower Puzzle, Road Home route planning, Road Home blocked-route replanning]
+    pathways:
+      A: { status: scored, reason: null }
+      B: { status: scored, reason: null }
+    criterion_relations:
+      convergent:
+        - { criterion: tol_board.excess_moves, block: performance, expected_sign: negative, expected_r_low: 0.15, expected_r_high: 0.35, hypothesis_id: h1.problem_solving, note: Fewer excess moves on the physical board = better planning. }
+        - { criterion: bfi2_s.intellectual_curiosity, block: C, expected_sign: positive, expected_r_low: 0.05, expected_r_high: 0.20, hypothesis_id: h2.problem_solving.intellect, note: null }
+      discriminant:
+        - { criterion: erq.suppression, block: A, expected_sign: null, hypothesis_id: hp.problem_solving, note: null }
+        - { criterion: erq.reappraisal, block: A, expected_sign: null, hypothesis_id: hp.problem_solving, note: null }
+      nomological: []
+    report:
+      max_status: validated_banded
+      phrase_keys: { pole_a: report.problem_solving.pole_a, centre: report.problem_solving.centre, pole_b: report.problem_solving.pole_b }
+    notes: null
+
+  - id: integrity
+    number: 14
+    name: Integrity
+    kind: M
+    tier: 2
+    restricted: true
+    modelled_as: trait_indicator
+    definition: Choosing honest, rule-consistent actions when a temptation offers a private benefit.
+    theoretical_justification: Behavioural honesty is observable in bribe and overpayment dilemmas; private-report (dice) tasks identify dishonesty only statistically at group level (Fischbacher & Follmi-Heusi, 2013), so dice never yields individual scores.
+    ecd:
+      claim: The player declines bribes and returns overpayments.
+      evidence: Individual - bribe acceptance and overpayment return (at least 3 each). Group only - dice over-report rate and distribution skew.
+      tasks: [Weighing Post bribe, Weighing Post overpayment, Private Dice (group level only), Luck tokens (group level only)]
+    pathways:
+      A: { status: scored, reason: null }
+      B: { status: group_only, reason: "Pathway B has only Private Dice, which is group level only; no individual integrity indicator exists in B." }
+    criterion_relations:
+      convergent:
+        - { criterion: hexaco_hh.honesty_humility, block: X, expected_sign: positive, expected_r_low: 0.05, expected_r_high: 0.20, hypothesis_id: h2.integrity, note: Individual MTMM uses Weighing indicators only. }
+      discriminant:
+        - { criterion: bscs.total, block: X, expected_sign: null, hypothesis_id: hp.integrity, note: null }
+        - { criterion: cfi.total, block: B, expected_sign: null, hypothesis_id: hp.integrity, note: null }
+      nomological: []
+    report:
+      max_status: validated_broad_style
+      phrase_keys: { pole_a: report.integrity.pole_a, centre: report.integrity.centre, pole_b: report.integrity.pole_b }
+    notes: Restricted. Capped at broad style with a stricter flag, or withheld. A participant is never classified as dishonest.
+
+  - id: initiative
+    number: 15
+    name: Initiative and planning/organising
+    kind: E
+    tier: 2
+    restricted: false
+    modelled_as: trait_indicator
+    definition: Taking useful optional actions without being prompted and planning before acting.
+    theoretical_justification: Proactive behaviour (Frese & Fay, 2001) shows as unprompted optional actions and pre-action planning; related to Conscientiousness/assertiveness and grit.
+    ecd:
+      claim: The player acts proactively and plans ahead.
+      evidence: Unprompted optional actions, unprompted sharing, planning time before the first move.
+      tasks: [Road Home optional actions, Share-the-Pot unprompted share, Tower planning before acting]
+    pathways:
+      A: { status: scored, reason: null }
+      B: { status: scored, reason: null }
+    criterion_relations:
+      convergent:
+        - { criterion: bfi2_xs.conscientiousness, block: X, expected_sign: positive, expected_r_low: 0.05, expected_r_high: 0.20, hypothesis_id: h2.initiative, note: null }
+        - { criterion: bfi2_s.assertiveness, block: C, expected_sign: positive, expected_r_low: 0.05, expected_r_high: 0.20, hypothesis_id: h2.initiative.assertiveness, note: null }
+        - { criterion: grit_s.total, block: X, expected_sign: positive, expected_r_low: 0.05, expected_r_high: 0.20, hypothesis_id: h2.initiative.grit, note: null }
+      discriminant:
+        - { criterion: ders16.total, block: X, expected_sign: null, hypothesis_id: hp.initiative, note: null }
+      nomological: []
+    report:
+      max_status: validated_banded
+      phrase_keys: { pole_a: report.initiative.pole_a, centre: report.initiative.centre, pole_b: report.initiative.pole_b }
+    notes: initiative.planning_time_before_first_move shares Tower planning time with problem_solving.planning_time; their correlation is reported and the shared method variance is modelled.
+
+  - id: risk_preference
+    number: 16
+    name: Risk preference
+    kind: E
+    tier: 1
+    restricted: true
+    modelled_as: trait_indicator
+    definition: Willingness to accept variability and potential loss for a larger expected or possible reward.
+    theoretical_justification: BART adjusted pumps (Lejuez et al., 2002) and high-variance option choice index behavioural risk taking; the general risk-taking item (Dohmen et al., 2011) is the criterion.
+    ecd:
+      claim: The player accepts risk for larger rewards.
+      evidence: Adjusted pumps, explosion rate, high-variance stall share, gamble rate.
+      tasks: [Balloon Pump, Four Stalls, Weighing Post gamble inspection]
+    pathways:
+      A: { status: withheld, reason: Only one indicator (gamble_rate) in Pathway A; collected as exploratory. }
+      B: { status: scored, reason: null }
+    criterion_relations:
+      convergent:
+        - { criterion: general_risk.risk_willingness, block: X, expected_sign: positive, expected_r_low: 0.10, expected_r_high: 0.25, hypothesis_id: h1.risk_preference, note: null }
+        - { criterion: bscs.total, block: X, expected_sign: negative, expected_r_low: 0.00, expected_r_high: 0.15, hypothesis_id: h3.risk_preference.bscs, note: Weak expected relation; exploratory. }
+      discriminant:
+        - { criterion: hexaco_hh.honesty_humility, block: X, expected_sign: null, hypothesis_id: hp.risk_preference, note: null }
+      nomological: []
+    report:
+      max_status: validated_broad_style
+      phrase_keys: { pole_a: report.risk_preference.pole_a, centre: report.risk_preference.centre, pole_b: report.risk_preference.pole_b }
+    notes: Restricted; capped at broad style or withheld. Not one of the 15 note traits (supplementary construct).
+
+  - id: persistence
+    number: 17
+    name: Persistence (executive)
+    kind: E
+    tier: 1
+    restricted: false
+    modelled_as: trait_indicator
+    definition: Continuing effortful attempts on difficult or blocked tasks rather than giving up quickly.
+    theoretical_justification: Time on unsolvable items and effort completion are established behavioural persistence measures (Ventura et al., 2013); Grit-S is the criterion.
+    ecd:
+      claim: The player keeps trying on hard problems and completes effortful actions.
+      evidence: Time on unsolvable items, give-up rate, effort completion, retries on blocked routes.
+      tasks: [Tower unsolvable items, Wait-or-Now effort holds, Road Home blocked-road retries, Road Home uphill effort]
+    pathways:
+      A: { status: scored, reason: null }
+      B: { status: scored, reason: null }
+    criterion_relations:
+      convergent:
+        - { criterion: grit_s.total, block: X, expected_sign: positive, expected_r_low: 0.10, expected_r_high: 0.25, hypothesis_id: h1.persistence, note: null }
+      discriminant:
+        - { criterion: erq.suppression, block: A, expected_sign: null, hypothesis_id: hp.persistence, note: null }
+      nomological: []
+    report:
+      max_status: validated_banded
+      phrase_keys: { pole_a: report.persistence.pole_a, centre: report.persistence.centre, pole_b: report.persistence.pole_b }
+    notes: Supplementary construct (executive persistence) added to the 15 note traits.

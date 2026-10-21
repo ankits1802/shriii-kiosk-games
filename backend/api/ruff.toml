@@ -1,0 +1,11 @@
+# backend/api inherits the workspace ruff settings and adds API-specific ignores.
+extend = "../../pyproject.toml"
+
+[lint.per-file-ignores]
+# SQLAlchemy declarative ``__table_args__`` is a class-level mapping by design.
+"src/shriii_api/db/models/*.py" = ["RUF012"]
+# Alembic revisions are generated and reviewed, not hand-formatted.
+"src/shriii_api/migrations*/versions/*.py" = ["E501", "W291"]
+# FastAPI endpoints take their dependencies as parameters.
+"src/shriii_api/api/v1/*.py" = ["PLR0917"]
+"tests/**" = ["PLR2004", "S101", "PLR0917"]

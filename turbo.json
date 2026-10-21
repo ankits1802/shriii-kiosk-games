@@ -1,7 +1,8 @@
 {
   "$schema": "https://turborepo.com/schema.json",
   "ui": "stream",
-  "globalDependencies": ["tsconfig.base.json"],
+  "cacheDir": ".cache/turbo",
+  "globalDependencies": ["config/tsconfig.base.json"],
   "tasks": {
     "generate": {
       "inputs": ["schemas/**", "scripts/**"],

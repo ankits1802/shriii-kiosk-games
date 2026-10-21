@@ -188,7 +188,7 @@ def test_mfcc_dtw_separates_words() -> None:
 
 
 def test_contract_fixture_is_valid() -> None:
-    """fixtures/asr-config.sample.json is also parsed by packages/asr-sherpa's tests (shared contract)."""
+    """fixtures/asr-config.sample.json is also parsed by frontend/packages/asr-sherpa's tests (shared contract)."""
     import json  # noqa: PLC0415
 
     from shriii_asr_bakeoff.config import TOOL_ROOT  # noqa: PLC0415

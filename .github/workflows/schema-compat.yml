@@ -1,5 +1,5 @@
 # Contract compatibility (PLT-02 policy, PLT-04 AC "an incompatible schema PR fails unless it bumps the major
-# version and includes migration notes"). Compares packages/contracts/schemas on the PR head with the merge base
+# version and includes migration notes"). Compares contracts/schemas on the PR head with the merge base
 # on main: breaking changes inside an existing *.vN.schema.json fail; forward changes (new enum values or event
 # types) pass with a warning because the backend must deploy before kiosks send them.
 name: Schema compatibility
@@ -7,14 +7,14 @@ name: Schema compatibility
 on:
   pull_request:
     paths:
-      - packages/contracts/schemas/**
-      - packages/contracts/migrations/**
-      - .github/scripts/schema_compat.py
+      - contracts/schemas/**
+      - contracts/migrations/**
+      - cicd/scripts/schema_compat.py
       - .github/workflows/schema-compat.yml
   push:
     branches: [main]
     paths:
-      - packages/contracts/schemas/**
+      - contracts/schemas/**
   merge_group:
   workflow_dispatch:
     inputs:
@@ -68,25 +68,33 @@ jobs:
       - name: Extract base schemas
         run: |
           mkdir -p "$RUNNER_TEMP/base"
-          if git cat-file -e "${{ steps.base.outputs.sha }}:packages/contracts/schemas" 2>/dev/null; then
-            git archive "${{ steps.base.outputs.sha }}" packages/contracts/schemas | tar -x -C "$RUNNER_TEMP/base"
-          fi
-          mkdir -p "$RUNNER_TEMP/base/packages/contracts/schemas"
+          # Schemas moved from packages/contracts/schemas to contracts/schemas in the repository restructure;
+          # read whichever path the base commit has and normalise it to $RUNNER_TEMP/base/contracts/schemas.
+          for p in contracts/schemas packages/contracts/schemas; do
+            if git cat-file -e "${{ steps.base.outputs.sha }}:$p" 2>/dev/null; then
+              git archive "${{ steps.base.outputs.sha }}" "$p" | tar -x -C "$RUNNER_TEMP/base"
+              if [ "$p" != contracts/schemas ]; then
+                mkdir -p "$RUNNER_TEMP/base/contracts" && mv "$RUNNER_TEMP/base/$p" "$RUNNER_TEMP/base/contracts/schemas"
+              fi
+              break
+            fi
+          done
+          mkdir -p "$RUNNER_TEMP/base/contracts/schemas"
       - name: Compare
         id: compare
         run: |
           set +e
-          python .github/scripts/schema_compat.py \
-            --base "$RUNNER_TEMP/base/packages/contracts/schemas" \
-            --head packages/contracts/schemas \
-            --migrations packages/contracts/migrations \
+          python cicd/scripts/schema_compat.py \
+            --base "$RUNNER_TEMP/base/contracts/schemas" \
+            --head contracts/schemas \
+            --migrations contracts/migrations \
             --out schema-compat.md
           status=$?
           cat schema-compat.md >> "$GITHUB_STEP_SUMMARY"
-          python .github/scripts/schema_compat.py \
-            --base "$RUNNER_TEMP/base/packages/contracts/schemas" \
-            --head packages/contracts/schemas \
-            --migrations packages/contracts/migrations --json > schema-compat.json
+          python cicd/scripts/schema_compat.py \
+            --base "$RUNNER_TEMP/base/contracts/schemas" \
+            --head contracts/schemas \
+            --migrations contracts/migrations --json > schema-compat.json
           if grep -q '"severity": "forward"' schema-compat.json; then
             echo "::warning title=Forward-incompatible contract change::Deploy the backend before any kiosk release that emits the new values (see job summary)."
           fi

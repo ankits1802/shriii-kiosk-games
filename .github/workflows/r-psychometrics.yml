@@ -1,6 +1,6 @@
 # R psychometrics backend (VAL-01): build the pinned shriiipsy image (infra/docker/r-psychometrics.Dockerfile,
 # renv-restored from a dated Posit Package Manager snapshot) with a BuildKit layer cache, run the testthat
-# suite inside it, then run the python/shriii_rbridge tests marked `r` against that image. The `r` tests skip
+# suite inside it, then run the stats/rbridge tests marked `r` against that image. The `r` tests skip
 # themselves when no backend is available, so this job fails if any of them skipped.
 # Runs when the R package, the bridge, the validation layer it implements, or the thresholds change, and on
 # every push to main.
@@ -11,11 +11,11 @@ on:
     branches: [main]
   pull_request:
     paths:
-      - r/**
+      - stats/r-psychometrics/**
       - infra/docker/r-psychometrics.Dockerfile
-      - python/shriii_rbridge/**
-      - python/shriii_validation/**
-      - scoring/gates.yaml
+      - stats/rbridge/**
+      - stats/validation/**
+      - stats/measurement-model/gates.yaml
       - "**/validation_params.yaml"
       - uv.lock
       - .github/workflows/r-psychometrics.yml
@@ -44,7 +44,7 @@ jobs:
       - name: Build image (BuildKit cache in GitHub Actions cache)
         uses: docker/build-push-action@v6
         with:
-          context: r/psychometrics
+          context: stats/r-psychometrics
           file: infra/docker/r-psychometrics.Dockerfile
           tags: ${{ env.R_IMAGE }}
           load: true
@@ -62,7 +62,7 @@ jobs:
         env:
           SHRIII_R_RUNNER: docker
           SHRIII_R_IMAGE: ${{ env.R_IMAGE }}
-        run: uv run pytest python/shriii_rbridge/tests -m r -q --junitxml=r-bridge-report.xml
+        run: uv run pytest stats/rbridge/tests -m r -q --junitxml=r-bridge-report.xml
       - name: No R test may skip
         run: |
           python3 - <<'EOF'

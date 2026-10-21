@@ -1,0 +1,80 @@
+# shriiipsy analysis thresholds and conventions (defaults).
+# Gate thresholds live in stats/measurement-model/gates.yaml and analysis conventions in
+# stats/validation/src/shriii_validation/data/validation_params.yaml; the Python bridge
+# (stats/rbridge) sends those values in every request under `thresholds`, which override the
+# defaults below key by key. These defaults mirror those files so that a direct CLI run behaves the same.
+schema: shriiipsy-thresholds
+version: 0.1.0
+status: draft
+
+invariance:
+  # Chen (2007); Cheung & Rensvold (2002). Change-in-fit criteria between nested steps.
+  delta_cfi_max_drop: 0.010          # non-invariance when CFI drops by more than this
+  delta_rmsea_max_increase: 0.015    # non-invariance when RMSEA rises by more than this
+  delta_srmr_metric_max: 0.030       # loadings step
+  delta_srmr_scalar_max: 0.010       # thresholds, intercepts and residuals steps
+  # "all": every available change-in-fit criterion must hold (conservative, fail closed).
+  # "chen2007": non-invariance only when the CFI drop is supplemented by the RMSEA or SRMR change.
+  decision_rule: all
+  # Configural model acceptability (Marsh, Hau & Wen 2004 "acceptable" region).
+  configural_cfi_min: 0.90
+  configural_rmsea_max: 0.10
+  configural_srmr_max: 0.08
+  required_level: scalar             # VAL-08a: scalar (or partial scalar) invariance needed downstream
+  max_freed_parameter_share: 0.20    # stats/measurement-model/gates.yaml trait_gate.invariance.max_freed_parameter_share
+  partial_search_alpha: 0.05         # a constraint is only released when its score test p < alpha
+  small_group_n: 200                 # stats/measurement-model/gates.yaml: below this, Bayesian approximate invariance
+
+bayesian_invariance:
+  wiggle_sd: 0.05                    # prior SD of group differences in approximately equal parameters
+  ppp_min: 0.05                      # posterior predictive p below this signals misfit
+  rhat_max: 1.05
+  chains: 3
+  burnin: 1000
+  sample: 1000
+
+irt:
+  min_category_n: 5                  # categories rarer than this are collapsed before fitting (warning)
+  marginal_reliability_min: 0.70     # informational flag only
+  m2_p_min: 0.05                     # M2/C2 exact-fit p (Maydeu-Olivares & Joe 2006)
+  m2_rmsea_max: 0.06                 # RMSEA2 close-fit bound (Maydeu-Olivares & Joe 2014)
+
+dif:
+  fdr_alpha: 0.05                    # Benjamini-Hochberg across tested items
+  anchor_share: 0.20                 # Woods (2009): 10-20% of items as anchors when none are given
+  min_anchors: 4
+  purification_max_iter: 10
+  effect_ci_level: 0.95              # Wald CI level for GLMM DIF effects
+  # lordif (Choi, Gibbons & Crane 2011) ordinal logistic DIF.
+  lordif_criterion: Chisqr           # Chisqr | R2 | Beta
+  lordif_alpha: 0.01
+  lordif_r2_change: 0.02
+  lordif_beta_change: 0.10
+  lordif_pseudo_r2: McFadden         # McFadden | Nagelkerke | CoxSnell
+  lordif_min_cell: 5
+  # ETS-style classification of logit-scale GLMM DIF effects, |2.35 * log-odds| (Holland & Thayer 1988).
+  ets_delta_moderate: 1.0
+  ets_delta_large: 1.5
+  # Standardised (effect / residual SD) classification for continuous outcomes (draft convention).
+  gaussian_d_moderate: 0.20
+  gaussian_d_large: 0.50
+
+slopes:
+  bootstrap_n: 200                   # parametric bootstrap draws for the reliability CI (0 = no CI)
+  ci_level: 0.95
+  ceiling_accuracy: 0.95             # person-condition accuracy at or above this counts as at ceiling
+  ceiling_share_flag: 0.15           # VAL-03: floor/ceiling above 15% is flagged
+  reliability_min: 0.70              # informational flag (stats/measurement-model/gates.yaml B2 point_min)
+
+norming:
+  weight_trim_ratio: 5.0             # weights trimmed at this multiple of the median weight
+  provisional_effective_n: 200
+  final_min_effective_n: 1500        # plan VAL-11: 1,500-2,000 per language for final norms
+  percentiles: [5, 10, 25, 50, 75, 90, 95]
+  age_grid_points: 25
+  cnorm_k: 4
+  cnorm_t: 3
+  gamlss_family: BCTo                # used when all scores are positive, otherwise SHASHo
+
+icc:
+  ci_level: 0.95

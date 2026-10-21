@@ -1,4 +1,4 @@
-# Electron kiosk runtime (KSK-01): typecheck and unit tests for apps/kiosk-electron and the packages it ships
+# Electron kiosk runtime (KSK-01): typecheck and unit tests for frontend/apps/kiosk-electron and the packages it ships
 # (outbox-sqlite, session-crypto TS + Python reference, escpos-printer), the real-Electron self-test under Xvfb,
 # then an unsigned electron-builder pack for Linux (`--linux dir`) and the same self-test against the packed
 # binary. Runs when the runtime or one of its packages changes, and on every push to main.
@@ -9,17 +9,16 @@ on:
     branches: [main]
   pull_request:
     paths:
-      - apps/kiosk-electron/**
-      - apps/kiosk/**
-      - packages/contracts/**
-      - packages/kiosk-game/**
-      - packages/outbox-sqlite/**
-      - packages/session-crypto/**
-      - packages/escpos-printer/**
+      - frontend/apps/kiosk-electron/**
+      - frontend/apps/kiosk/**
+      - contracts/**
+      - frontend/packages/kiosk-game/**
+      - frontend/packages/outbox-sqlite/**
+      - frontend/packages/session-crypto/**
+      - frontend/packages/escpos-printer/**
       - package.json
       - pnpm-lock.yaml
       - pnpm-workspace.yaml
-      - .nvmrc
       - .github/workflows/kiosk-electron.yml
   workflow_dispatch:
 
@@ -47,7 +46,7 @@ jobs:
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v5
         with:
-          node-version-file: .nvmrc
+          node-version-file: package.json
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - name: Typecheck (kiosk-electron and its workspace dependencies)
@@ -60,7 +59,7 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_VERSION }}
       - name: session-crypto Python reference decryptor (shared test vectors)
-        working-directory: packages/session-crypto/python
+        working-directory: frontend/packages/session-crypto/python
         run: uv run --isolated --no-project --with-editable . --with pytest pytest -q
       - name: Electron runtime libraries and Xvfb
         run: |
@@ -76,20 +75,20 @@ jobs:
       - name: Download Electron binary
         run: pnpm --filter @shriii/kiosk-electron electron:install
       - name: Self-test (unpacked, real Electron under Xvfb)
-        working-directory: apps/kiosk-electron
+        working-directory: frontend/apps/kiosk-electron
         run: |
           node scripts/build.mjs
           xvfb-run -a -s "-screen 0 1280x800x24" node scripts/smoke.mjs -- --no-sandbox
       - name: Pack (electron-builder --linux dir, unsigned)
-        working-directory: apps/kiosk-electron
+        working-directory: frontend/apps/kiosk-electron
         run: |
           node scripts/build.mjs --with-renderer
           pnpm exec electron-builder --linux dir --x64 --config electron-builder.yml --publish never
       - name: Self-test (packed binary under Xvfb)
-        working-directory: apps/kiosk-electron
+        working-directory: frontend/apps/kiosk-electron
         run: xvfb-run -a -s "-screen 0 1280x800x24" node scripts/smoke.mjs --exe release/linux-unpacked/shriii-kiosk -- --no-sandbox
       - name: Archive packed app (keeps executable bits)
-        run: tar -C apps/kiosk-electron/release -czf kiosk-electron-linux-unpacked.tar.gz linux-unpacked
+        run: tar -C frontend/apps/kiosk-electron/release -czf kiosk-electron-linux-unpacked.tar.gz linux-unpacked
       - uses: actions/upload-artifact@v4
         with:
           name: kiosk-electron-linux-unpacked

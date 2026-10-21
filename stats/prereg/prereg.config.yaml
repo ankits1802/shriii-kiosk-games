@@ -1,0 +1,90 @@
+# SHRIII pre-registration generator configuration (CRT-11, VAL-02).
+#
+# This file holds study metadata and the PLANNING assumptions used for the sample-size section.
+# It contains no gate thresholds or hypothesis content: those are read only from stats/measurement-model/hypotheses.yaml,
+# stats/measurement-model/gates.yaml and stats/measurement-model/dictionary/*.yaml. Its SHA-256 is embedded in the generated document
+# alongside theirs.
+#
+# Values marked review: stakeholder / review: legal must be confirmed by the named role before the
+# registration is submitted. The planning numbers are the plan defaults (IMPLEMENTATION_PLAN VAL-02)
+# and stay status: pending_val02 until the VAL-02 power report confirms or revises them.
+schema: shriii-prereg-config
+version: 0.1.0
+status: draft
+
+study:
+  title: "SHRIII Kiosk Behavioural Games: validation of game-based behavioural indicators against a psychometric criterion battery (Stages 2-3)"
+  short_title: SHRIII Stage 2-3 pre-registration
+  registry: OSF Registries
+  template: OSF Preregistration (Bowman et al., 2020)
+  prereg_id: null              # assigned by the registry after submission
+  protocol_id: null            # IEC/IRB protocol number (docs/governance/irb-protocol.md)
+  review: stakeholder
+  contributors:
+    - { role: Principal Investigator, name: "[to be confirmed]", affiliation: "[to be confirmed]" }
+    - { role: Research Lead (psychometrics), name: "[to be confirmed]", affiliation: "[to be confirmed]" }
+    - { role: Ethics Officer, name: "[to be confirmed]", affiliation: "[to be confirmed]" }
+  funding: "[to be confirmed by the sponsor]"
+  conflicts_of_interest: "[to be declared by each contributor]"
+  description: >-
+    A battery of linked behavioural games delivered on public-style touch kiosks in India (no reading
+    or keyboard required; pre-recorded native-speaker audio) produces behavioural indicators for 17
+    constructs. Stage 2 compares two randomised pathways (B_fixed: micro-game carousel; A_narrative:
+    three linked village-fair episodes) with a standard psychometric criterion battery completed by
+    every randomised participant. Stage 3 re-tests opt-in participants after 14-28 days on a parallel
+    form. This registration fixes the hypotheses, thresholds, multiplicity corrections, exclusion
+    rules and planned sample sizes before Stage 2 unblinding.
+  intended_use: >-
+    Research on measurement properties only. Game scores are not used for diagnosis, hiring or any
+    other high-stakes decision. Participant-facing reports remain disabled until the battery release
+    gate passes in at least two language groups.
+
+design:
+  study_type: Observational validation study with an embedded randomised comparison of two task pathways
+  arms: [B_fixed, A_narrative]
+  allocation_ratio: "1:1"
+  randomisation: Block randomisation within quota cells (language x age band x gender x education band x literacy band); seeded offline fallback list.
+  blinding: >-
+    Participants are not told which pathway they play. Field administrators do not see game scores.
+    Analysts run confirmatory analyses on a frozen snapshot after this registration is time-stamped;
+    no game-criterion correlations are inspected before registration.
+  languages:
+    values: [hi-IN, mr-IN, ta-IN]
+    review: stakeholder        # placeholders until stakeholders confirm the three pilot languages
+  site_mode: supervised
+  calibration_level: L2        # fixed level for the criterion cohort (plan section 1.4)
+  stages:
+    - { id: S2, name: Stage 2 pilot with criterion battery, description: "Both arms complete criterion block X plus one rotating block (A/B/C), performance tasks, at fixed level L2. Live-dyad substudy (S2-D) and forced-level subsample run in parallel." }
+    - { id: S3, name: Stage 3 retest, description: "Opt-in participants retested 14-28 days after T1 in the same frozen wave on a parallel form at the T1 level, with a short criterion block." }
+
+sampling:
+  existing_data: >-
+    Registration before creation of Stage 2 data. Stage 1/1b think-aloud data (n of about 30-40 per
+    pathway) were used only for comprehension and content revision and are not part of any
+    confirmatory analysis.
+  stopping_rule: >-
+    Recruitment in a quota cell stops when the cell target is met; a language stops when its total
+    target is met or at the end of the Stage 2 window, whichever comes first. No interim
+    game-criterion analyses are run.
+  retest_window_days: [14, 28]
+
+power:
+  status: pending_val02        # pending_val02 | confirmed_val02
+  review: stakeholder
+  target_power: 0.80
+  r_true: 0.25                 # planning value for the true observed correlation
+  sides: one_sided             # lower-bound tests are one-sided
+  planned:
+    per_language: 450
+    per_arm_per_language: 225
+    retest_pairs_per_language: 100
+    retest_invitations_per_language: 160
+    live_dyads_pooled: 120
+    unattended_sessions_per_language: 300
+  retest_icc_planning_value: 0.60
+  per_language_sign_r0: 0.0    # per-language consistency check: sign with lower bound > 0
+  per_language_alpha: 0.05
+  fallback_options:
+    - Pool shared-paradigm indicators across arms (identical indicator ids across pathways).
+    - Raise n per language.
+    - Demote constructs from the primary family to exploratory before the protocol is frozen.

@@ -2,7 +2,7 @@
 
 **Version:** 0.1 DRAFT, 2026-10-21. **Owner:** PI. **Approvers:** PI, Ethics Officer, legal counsel.
 **Config key:** `report_use_statement_key = report_use.personal_reflection_v1` (DeploymentPolicy, plan 1.4).
-**Related:** REP-01 to REP-03, `scoring/gates.yaml` (`display_rule`, `report`), plan 1.3.
+**Related:** REP-01 to REP-03, `stats/measurement-model/gates.yaml` (`display_rule`, `report`), plan 1.3.
 
 > **[STAKEHOLDER REVIEW] [LEGAL REVIEW]** The default use is "personal reflection only". Any other use
 > needs a stakeholder decision, a DPIA update, new consent wording, IEC approval and new validation evidence
@@ -53,4 +53,4 @@ use would require:
 - The end of the spoken summary and the footer of the printed picture page (pictograms plus a short line
   read aloud).
 - The study information sheet given at supervised sites.
-- The Stage 5 report and the technical manual (the `reports/` templates mark this as a review item).
+- The Stage 5 report and the technical manual (the `stats/reports/` templates mark this as a review item).

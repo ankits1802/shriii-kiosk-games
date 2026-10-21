@@ -3,7 +3,7 @@
 # packages restored with renv from a dated Posit Package Manager snapshot (Ubuntu 24.04 binaries).
 #
 # Build (the context is the R package directory, so the image never sees the rest of the monorepo):
-#   docker build -f infra/docker/r-psychometrics.Dockerfile -t shriii/r-psychometrics:0.1.0 r/psychometrics
+#   docker build -f infra/docker/r-psychometrics.Dockerfile -t shriii/r-psychometrics:0.1.0 stats/r-psychometrics
 # Run the test suite inside the image:
 #   docker run --rm --entrypoint shriiipsy-test shriii/r-psychometrics:0.1.0
 # Run an analysis (JSON in / JSON out; the bridge mounts a work directory at /work):

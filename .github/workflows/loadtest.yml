@@ -13,7 +13,7 @@ on:
   pull_request:
     paths:
       - tools/loadtest/**
-      - .github/scripts/loadtest_summary.py
+      - cicd/scripts/loadtest_summary.py
       - .github/workflows/loadtest.yml
   schedule:
     - cron: "47 21 * * *" # 03:17 IST
@@ -85,7 +85,9 @@ jobs:
         run: |
           uv run shriii-api migrate
           uv run shriii-api seed --demo > /dev/null
-          nohup uv run shriii-api serve --host 127.0.0.1 --port 8077 > api.log 2>&1 &
+          # Run the venv entry point, not `uv run`: a long-lived `uv run` holds the uv cache lock, so the
+          # setup-uv post step (cache prune) waits on it and fails after 300 s.
+          nohup .venv/bin/shriii-api serve --host 127.0.0.1 --port 8077 > api.log 2>&1 &
           for _ in $(seq 1 60); do curl -fsS "$LOADTEST_BASE_URL/readyz" > /dev/null && break; sleep 1; done
           curl -fsS "$LOADTEST_BASE_URL/readyz"
       - name: Provision fleet and build corpus
@@ -109,7 +111,7 @@ jobs:
         run: |
           results="tools/loadtest/results/$LABEL"
           if [ ! -f "$results/index.json" ]; then echo "::error title=Load test::no suite results"; exit 1; fi
-          uv run python .github/scripts/loadtest_summary.py "$results" $ENFORCE --out loadtest-summary.md
+          uv run python cicd/scripts/loadtest_summary.py "$results" $ENFORCE --out loadtest-summary.md
       - name: Job summary
         if: always()
         run: |

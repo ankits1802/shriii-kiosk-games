@@ -12,7 +12,7 @@ threat model ([threat-model.md](threat-model.md)) and the controls matrix
 | pip-audit | 2.x (PyPI advisory DB + OSV) | 100 locked packages of the wave-1 Python workspace (`uv export --frozen --no-emit-workspace`) | `pip-audit -r reqs-wave1.txt --no-deps --disable-pip` | **No known vulnerabilities** ([pip-audit-wave1.json](scans/pip-audit-wave1.json)) |
 | pip-audit | same | All workspace packages including `tools/loadtest` (locust, gevent, py-spy) | same with `--all-packages` export | **No known vulnerabilities** ([pip-audit-all-packages.json](scans/pip-audit-all-packages.json)) |
 | pnpm audit | pnpm 12.10.1 | 256 JS dependencies from `pnpm-lock.yaml` (60 prod, 182 dev, 76 optional) | `pnpm audit --json` | **0 advisories** ([pnpm-audit.json](scans/pnpm-audit.json)) |
-| semgrep | 1.182.0, 543 rules | `apps packages python scoring content tools/loadtest docker-compose.yml` (git-tracked files, 620 targets) | `semgrep scan --config p/default p/owasp-top-ten p/secrets p/python p/typescript p/jwt p/sql-injection p/dockerfile` | 20 findings, **all triaged below as false positives or informational**; no secrets detected ([semgrep.json](scans/semgrep.json)) |
+| semgrep | 1.182.0, 543 rules | `apps packages python scoring content tools/loadtest docker-compose.yml` (git-tracked files, 620 targets; directory names from before the October 2026 layout reorganisation, see docs/ARCHITECTURE.md) | `semgrep scan --config p/default p/owasp-top-ten p/secrets p/python p/typescript p/jwt p/sql-injection p/dockerfile` | 20 findings, **all triaged below as false positives or informational**; no secrets detected ([semgrep.json](scans/semgrep.json)) |
 
 Re-run: see [README.md](README.md#re-running-the-scans).
 
@@ -20,7 +20,7 @@ Re-run: see [README.md](README.md#re-running-the-scans).
 
 | Rule | Location | Verdict | Reasoning |
 |---|---|---|---|
-| `avoid-sqlalchemy-text` (ERROR) | `apps/api/src/shriii_api/db/partitions.py:30` | False positive | f-string DDL built from a `date` object computed server-side from `server_received_at` and a fixed name pattern; no request data reaches it. Keep, but add a `# nosemgrep` with this reason. |
+| `avoid-sqlalchemy-text` (ERROR) | `backend/api/src/shriii_api/db/partitions.py:30` | False positive | f-string DDL built from a `date` object computed server-side from `server_received_at` and a fixed name pattern; no request data reaches it. Keep, but add a `# nosemgrep` with this reason. |
 | `formatted-sql-query`, `sqlalchemy-execute-raw-query` (×6) | `migrations/versions/0002_guards_roles_partitions.py:90,131,132` | False positive | Migration DDL interpolates module-level constant lists of schema/table names. |
 | `avoid-sqlalchemy-text` (×6) | `services/retention.py:79,125,144,145,155,158` | False positive | f-strings interpolate module constants (`_HELD_SESSIONS_SQL`, table and column names from the retention registry); values are bound parameters (`:cutoff`, `:s`). |
 | `avoid-sqlalchemy-text` (×2) | `worker/queue.py:189,197` | False positive | Interpolates a constant predicate string; `:lease` is bound. |
@@ -58,7 +58,7 @@ API does not accept `Content-Encoding: gzip` and the chunk format has no compres
 cannot be compressed after encryption.
 *Proposed fix:* enforce the size limit at the proxy and while streaming (`0003-ingest-gzip-and-streaming-limit.patch`
 accepts gzip transport with a decompressed-size cap); add `compression: "gzip"` to the chunk contract so
-kiosks compress NDJSON **before** encrypting (contract change for `packages/contracts`, not patched here).
+kiosks compress NDJSON **before** encrypting (contract change for `contracts`, not patched here).
 
 ### SF-03 · Medium · Report bearer tokens are persisted in the audit log and access logs
 
@@ -88,7 +88,7 @@ object such as `payload.meta = {"transcript": "..."}` is stored whole in `payloa
 
 ### SF-06 · Low now, High before open-public use · Static admin PIN compiled into the kiosk bundle
 
-`apps/kiosk/src/config.ts` reads `VITE_DEV_PIN` (default `2468`) into the bundle. Today the DevPanel is only
+`frontend/apps/kiosk/src/config.ts` reads `VITE_DEV_PIN` (default `2468`) into the bundle. Today the DevPanel is only
 mounted in development builds, so production exposure is limited, but KSK-13 (rotating picture PIN or NFC,
 lockout, logging) is not implemented and any `VITE_*` value is public in the shipped JavaScript (K-01).
 *Fix:* implement KSK-13; remove the PIN from build-time config; verify the bundle has no PIN (pentest 1.7).

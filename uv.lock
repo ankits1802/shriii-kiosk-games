@@ -3149,7 +3149,7 @@ sdist = { url = "https://files.pythonhosted.org/packages/f2/d5/7cd2dcd8d24670f90
 [[package]]
 name = "shriii-api"
 version = "0.1.0"
-source = { editable = "apps/api" }
+source = { editable = "backend/api" }
 dependencies = [
     { name = "alembic" },
     { name = "cryptography" },
@@ -3206,9 +3206,9 @@ requires-dist = [
     { name = "pyyaml", specifier = ">=6" },
     { name = "scikit-learn", specifier = ">=1.7" },
     { name = "scipy", specifier = ">=1.16" },
-    { name = "shriii-contracts", editable = "python/shriii_contracts" },
-    { name = "shriii-scoring", editable = "python/shriii_scoring" },
-    { name = "shriii-validation", editable = "python/shriii_validation" },
+    { name = "shriii-contracts", editable = "contracts/python" },
+    { name = "shriii-scoring", editable = "stats/scoring" },
+    { name = "shriii-validation", editable = "stats/validation" },
     { name = "sqlalchemy", specifier = ">=2" },
     { name = "uvicorn", extras = ["standard"], specifier = ">=0.38" },
 ]
@@ -3217,7 +3217,7 @@ provides-extras = ["otel"]
 [[package]]
 name = "shriii-contracts"
 version = "0.1.0"
-source = { editable = "python/shriii_contracts" }
+source = { editable = "contracts/python" }
 dependencies = [
     { name = "jsonschema" },
     { name = "pydantic" },
@@ -3283,15 +3283,15 @@ requires-dist = [
     { name = "py-spy", marker = "extra == 'profile'", specifier = ">=0.4" },
     { name = "pynacl", specifier = ">=1.5" },
     { name = "pyyaml", specifier = ">=6" },
-    { name = "shriii-contracts", editable = "python/shriii_contracts" },
-    { name = "shriii-simulator", editable = "python/shriii_simulator" },
+    { name = "shriii-contracts", editable = "contracts/python" },
+    { name = "shriii-simulator", editable = "stats/simulator" },
 ]
 provides-extras = ["profile", "audit"]
 
 [[package]]
 name = "shriii-prereg"
 version = "0.1.0"
-source = { editable = "tools/prereg" }
+source = { editable = "stats/prereg" }
 dependencies = [
     { name = "jinja2" },
     { name = "pyyaml" },
@@ -3303,14 +3303,14 @@ dependencies = [
 requires-dist = [
     { name = "jinja2", specifier = ">=3.1" },
     { name = "pyyaml", specifier = ">=6" },
-    { name = "shriii-scoring", editable = "python/shriii_scoring" },
-    { name = "shriii-validation", editable = "python/shriii_validation" },
+    { name = "shriii-scoring", editable = "stats/scoring" },
+    { name = "shriii-validation", editable = "stats/validation" },
 ]
 
 [[package]]
 name = "shriii-rbridge"
 version = "0.1.0"
-source = { editable = "python/shriii_rbridge" }
+source = { editable = "stats/rbridge" }
 dependencies = [
     { name = "numpy" },
     { name = "pandas" },
@@ -3325,13 +3325,13 @@ requires-dist = [
     { name = "pandas", specifier = ">=2.3" },
     { name = "pyarrow", specifier = ">=21" },
     { name = "pyyaml", specifier = ">=6" },
-    { name = "shriii-validation", editable = "python/shriii_validation" },
+    { name = "shriii-validation", editable = "stats/validation" },
 ]
 
 [[package]]
 name = "shriii-reports"
 version = "0.1.0"
-source = { editable = "reports" }
+source = { editable = "stats/reports" }
 dependencies = [
     { name = "jinja2" },
     { name = "pydantic" },
@@ -3348,7 +3348,7 @@ requires-dist = [
 [[package]]
 name = "shriii-scoring"
 version = "0.1.0"
-source = { editable = "python/shriii_scoring" }
+source = { editable = "stats/scoring" }
 dependencies = [
     { name = "numpy" },
     { name = "pandas" },
@@ -3367,13 +3367,13 @@ requires-dist = [
     { name = "pyarrow", specifier = ">=21" },
     { name = "pyyaml", specifier = ">=6" },
     { name = "scipy", specifier = ">=1.16" },
-    { name = "shriii-contracts", editable = "python/shriii_contracts" },
+    { name = "shriii-contracts", editable = "contracts/python" },
 ]
 
 [[package]]
 name = "shriii-simulator"
 version = "0.1.0"
-source = { editable = "python/shriii_simulator" }
+source = { editable = "stats/simulator" }
 dependencies = [
     { name = "numpy" },
     { name = "pandas" },
@@ -3392,15 +3392,15 @@ requires-dist = [
     { name = "polars", specifier = ">=1.30" },
     { name = "pyyaml", specifier = ">=6" },
     { name = "scipy", specifier = ">=1.16" },
-    { name = "shriii-contracts", editable = "python/shriii_contracts" },
-    { name = "shriii-scoring", editable = "python/shriii_scoring" },
-    { name = "shriii-validation", editable = "python/shriii_validation" },
+    { name = "shriii-contracts", editable = "contracts/python" },
+    { name = "shriii-scoring", editable = "stats/scoring" },
+    { name = "shriii-validation", editable = "stats/validation" },
 ]
 
 [[package]]
 name = "shriii-validation"
 version = "0.1.0"
-source = { editable = "python/shriii_validation" }
+source = { editable = "stats/validation" }
 dependencies = [
     { name = "factor-analyzer" },
     { name = "numpy" },
@@ -3430,8 +3430,8 @@ requires-dist = [
     { name = "scikit-learn", specifier = ">=1.7" },
     { name = "scipy", specifier = ">=1.16" },
     { name = "semopy", specifier = ">=2.3" },
-    { name = "shriii-contracts", editable = "python/shriii_contracts" },
-    { name = "shriii-scoring", editable = "python/shriii_scoring" },
+    { name = "shriii-contracts", editable = "contracts/python" },
+    { name = "shriii-scoring", editable = "stats/scoring" },
     { name = "statsmodels", specifier = ">=0.14" },
     { name = "xgboost", specifier = ">=3" },
 ]
@@ -3466,15 +3466,15 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "shriii-api", editable = "apps/api" },
-    { name = "shriii-contracts", editable = "python/shriii_contracts" },
+    { name = "shriii-api", editable = "backend/api" },
+    { name = "shriii-contracts", editable = "contracts/python" },
     { name = "shriii-i18n", editable = "tools/i18n" },
-    { name = "shriii-prereg", editable = "tools/prereg" },
-    { name = "shriii-rbridge", editable = "python/shriii_rbridge" },
-    { name = "shriii-reports", editable = "reports" },
-    { name = "shriii-scoring", editable = "python/shriii_scoring" },
-    { name = "shriii-simulator", editable = "python/shriii_simulator" },
-    { name = "shriii-validation", editable = "python/shriii_validation" },
+    { name = "shriii-prereg", editable = "stats/prereg" },
+    { name = "shriii-rbridge", editable = "stats/rbridge" },
+    { name = "shriii-reports", editable = "stats/reports" },
+    { name = "shriii-scoring", editable = "stats/scoring" },
+    { name = "shriii-simulator", editable = "stats/simulator" },
+    { name = "shriii-validation", editable = "stats/validation" },
 ]
 
 [package.metadata.requires-dev]

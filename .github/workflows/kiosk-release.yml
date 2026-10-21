@@ -55,12 +55,16 @@ jobs:
             exit 0
           fi
           mkdir -p "$RUNNER_TEMP/prod"
-          git archive "$ref" packages/contracts/schemas | tar -x -C "$RUNNER_TEMP/prod"
+          # Schemas moved from packages/contracts/schemas to contracts/schemas in the repository restructure;
+          # read whichever path the production ref has.
+          prod_schemas=contracts/schemas
+          git cat-file -e "$ref:$prod_schemas" 2>/dev/null || prod_schemas=packages/contracts/schemas
+          git archive "$ref" "$prod_schemas" | tar -x -C "$RUNNER_TEMP/prod"
           # A kiosk may not emit anything the production backend cannot read: forward changes fail here.
           set +e
-          python .github/scripts/schema_compat.py \
-            --base "$RUNNER_TEMP/prod/packages/contracts/schemas" --head packages/contracts/schemas \
-            --migrations packages/contracts/migrations --fail-on forward --out deploy-order.md
+          python cicd/scripts/schema_compat.py \
+            --base "$RUNNER_TEMP/prod/$prod_schemas" --head contracts/schemas \
+            --migrations contracts/migrations --fail-on forward --out deploy-order.md
           status=$?
           cat deploy-order.md >> "$GITHUB_STEP_SUMMARY"
           exit $status
@@ -85,7 +89,7 @@ jobs:
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v5
         with:
-          node-version-file: .nvmrc
+          node-version-file: package.json
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - name: Release configuration
@@ -111,10 +115,10 @@ jobs:
             const tuple = {
               app_version: process.argv[1],
               commit: process.env.GITHUB_SHA,
-              kiosk_package: require("./apps/kiosk/package.json").version,
-              contracts_package: require("./packages/contracts/package.json").version,
+              kiosk_package: require("./frontend/apps/kiosk/package.json").version,
+              contracts_package: require("./contracts/package.json").version,
               content_session_plan: JSON.parse(fs.readFileSync("content/games/session-plan.json", "utf8")).version,
-              scoring_dict_version: { A: yaml("scoring/dictionary/dictionary.A.yaml"), B: yaml("scoring/dictionary/dictionary.B.yaml"), shared: yaml("scoring/dictionary/shared.yaml") },
+              scoring_dict_version: { A: yaml("stats/measurement-model/dictionary/dictionary.A.yaml"), B: yaml("stats/measurement-model/dictionary/dictionary.B.yaml"), shared: yaml("stats/measurement-model/dictionary/shared.yaml") },
               api_base: process.env.VITE_API_BASE || null,
               kiosk_mode: process.env.VITE_KIOSK_MODE,
               site_mode: process.env.VITE_SITE_MODE,
@@ -129,19 +133,19 @@ jobs:
           pnpm --filter @shriii/kiosk run electron:build
       - name: Reproducibility check (same commit, same web-asset hashes)
         run: |
-          (cd apps/kiosk/dist && find . -type f -print0 | sort -z | xargs -0 sha256sum) > first.sha256
-          rm -rf apps/kiosk/dist
+          (cd frontend/apps/kiosk/dist && find . -type f -print0 | sort -z | xargs -0 sha256sum) > first.sha256
+          rm -rf frontend/apps/kiosk/dist
           pnpm --filter @shriii/kiosk exec vite build > /dev/null
-          (cd apps/kiosk/dist && find . -type f -print0 | sort -z | xargs -0 sha256sum) > second.sha256
+          (cd frontend/apps/kiosk/dist && find . -type f -print0 | sort -z | xargs -0 sha256sum) > second.sha256
           diff -u first.sha256 second.sha256
       - name: Package
         run: |
           v="${{ steps.meta.outputs.version }}"
           mkdir -p out
           tarit() { tar --sort=name --mtime="@${SOURCE_DATE_EPOCH}" --owner=0 --group=0 --numeric-owner -czf "$@"; }
-          tarit "out/shriii-kiosk-web-$v.tar.gz" -C apps/kiosk/dist .
-          mkdir -p stage/electron && cp -r apps/kiosk/electron/dist stage/electron/dist && cp -r apps/kiosk/dist stage/renderer
-          cp apps/kiosk/package.json release-tuple.json stage/
+          tarit "out/shriii-kiosk-web-$v.tar.gz" -C frontend/apps/kiosk/dist .
+          mkdir -p stage/electron && cp -r frontend/apps/kiosk/electron/dist stage/electron/dist && cp -r frontend/apps/kiosk/dist stage/renderer
+          cp frontend/apps/kiosk/package.json release-tuple.json stage/
           tarit "out/shriii-kiosk-electron-$v.tar.gz" -C stage .
           cp release-tuple.json out/
           (cd out && sha256sum -- * > SHA256SUMS)

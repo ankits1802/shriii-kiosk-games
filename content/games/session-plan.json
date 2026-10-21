@@ -61,5 +61,5 @@
     "farewell": 15,
     "wipe": 5
   },
-  "notes": "Design targets from plan section 4.4; the tools/trial-budget sheet (SCR-03) becomes the source of truth once measured."
+  "notes": "Design targets from plan section 4.4; the cicd/trial-budget sheet (SCR-03) becomes the source of truth once measured."
 }
