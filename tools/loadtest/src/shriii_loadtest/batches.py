@@ -1,10 +1,10 @@
-"""Kiosk outbox model and ``UploadBatch`` construction (packages/contracts upload-batch.v1).
+"""Kiosk outbox model and ``UploadBatch`` construction (contracts upload-batch.v1).
 
 A kiosk drains its outbox in (session, seq) order and packs at most ``max_events`` events per batch;
 one batch may carry chunks from several sessions (one chunk per session). Each chunk is either
 ``none_dev`` plaintext (accepted by the API only when ENV is dev or test) or
 ``x25519_sealed_aes256gcm``: a per-session 32-byte DEK sealed to the backend X25519 key with libsodium
-``crypto_box_seal`` and AES-256-GCM over NDJSON (12-byte nonce, no AAD), as in apps/api/README.md.
+``crypto_box_seal`` and AES-256-GCM over NDJSON (12-byte nonce, no AAD), as in backend/api/README.md.
 ``sha256`` is the JCS hash of ``session_chunks``.
 """
 

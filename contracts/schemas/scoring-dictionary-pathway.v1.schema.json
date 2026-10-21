@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://shriii.local/contracts/scoring-dictionary-pathway.v1.schema.json",
   "title": "ScoringDictionaryPathway",
-  "description": "scoring/dictionary/dictionary.{A,B}.yaml: per-pathway indicator definitions, frozen per pathway (SCR-01).",
+  "description": "stats/measurement-model/dictionary/dictionary.{A,B}.yaml: per-pathway indicator definitions, frozen per pathway (SCR-01).",
   "type": "object",
   "additionalProperties": false,
   "properties": {

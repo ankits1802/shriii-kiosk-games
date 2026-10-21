@@ -49,7 +49,7 @@ uvx semgrep scan --metrics off \
   --config p/default --config p/owasp-top-ten --config p/secrets --config p/python \
   --config p/typescript --config p/jwt --config p/sql-injection --config p/dockerfile \
   --exclude node_modules --exclude .venv --exclude dist --exclude docs/reference \
-  --json -o docs/security/scans/semgrep.json apps packages python scoring content tools/loadtest docker-compose.yml
+  --json -o docs/security/scans/semgrep.json frontend backend contracts statistics content tools/loadtest infra/compose/docker-compose.yml
 ```
 
 Update [scan-findings.md](scan-findings.md) with any new finding and its triage.

@@ -1,11 +1,11 @@
 # syntax=docker/dockerfile:1.7
-# SHRIII web app (apps/web, Next.js: /kiosk, /research/*, /admin/*) as a Next.js standalone server.
-# Requires `output: "standalone"` in apps/web/next.config.* (and `outputFileTracingRoot` set to the repository
+# SHRIII web app (frontend/apps/web, Next.js: /kiosk, /research/*, /admin/*) as a Next.js standalone server.
+# Requires `output: "standalone"` in frontend/apps/web/next.config.* (and `outputFileTracingRoot` set to the repository
 # root so workspace packages are traced). Build from the repository root:
 #
 #   docker build -f infra/docker/web.Dockerfile --build-arg API_PROXY_TARGET=http://api:8000 -t shriii/web .
 #
-# The pnpm package name is read from apps/web/package.json unless WEB_PACKAGE is given. Next.js bakes rewrite
+# The pnpm package name is read from frontend/apps/web/package.json unless WEB_PACKAGE is given. Next.js bakes rewrite
 # destinations into the build, so API_PROXY_TARGET (the FastAPI origin behind the app's /api/v1, /healthz and
 # /readyz rewrites) is a build argument as well as a runtime variable. NEXT_PUBLIC_* values are inlined into
 # the client bundle at build time.
@@ -35,14 +35,14 @@ ENV NEXT_PUBLIC_API_BASE_URL=${NEXT_PUBLIC_API_BASE_URL} \
     API_PROXY_TARGET=${API_PROXY_TARGET} \
     NODE_ENV=production
 RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store \
-    pkg="${WEB_PACKAGE:-$(node -p 'require("./apps/web/package.json").name')}" \
+    pkg="${WEB_PACKAGE:-$(node -p 'require("./frontend/apps/web/package.json").name')}" \
  && echo "building web package: ${pkg}" \
  && NODE_ENV=development pnpm install --store-dir /pnpm/store --offline --frozen-lockfile --filter "${pkg}..." \
  && pnpm --filter "${pkg}..." run build \
- && if [ ! -f apps/web/.next/standalone/apps/web/server.js ]; then \
-      echo "apps/web must set output: 'standalone' and outputFileTracingRoot (repo root) in next.config" >&2; exit 1; \
+ && if [ ! -f frontend/apps/web/.next/standalone/frontend/apps/web/server.js ]; then \
+      echo "frontend/apps/web must set output: 'standalone' and outputFileTracingRoot (repo root) in next.config" >&2; exit 1; \
     fi \
- && mkdir -p apps/web/public
+ && mkdir -p frontend/apps/web/public
 
 # -------------------------------------------------------------------------------------------- runtime
 FROM node:${NODE_VERSION}-trixie-slim AS runtime
@@ -56,13 +56,13 @@ ENV NODE_ENV=production \
     PORT=3000
 WORKDIR /app
 # Application files stay root-owned (read-only for the runtime user); only the Next.js cache is writable.
-COPY --from=build /repo/apps/web/.next/standalone ./
-COPY --from=build /repo/apps/web/.next/static ./apps/web/.next/static
-COPY --from=build /repo/apps/web/public ./apps/web/public
-RUN mkdir -p apps/web/.next/cache && chown -R node:node apps/web/.next/cache
+COPY --from=build /repo/frontend/apps/web/.next/standalone ./
+COPY --from=build /repo/frontend/apps/web/.next/static ./frontend/apps/web/.next/static
+COPY --from=build /repo/frontend/apps/web/public ./frontend/apps/web/public
+RUN mkdir -p frontend/apps/web/.next/cache && chown -R node:node frontend/apps/web/.next/cache
 # The node image ships an unprivileged `node` user (uid 1000).
 USER node
 EXPOSE 3000
 HEALTHCHECK --interval=15s --timeout=5s --start-period=20s --retries=5 \
     CMD ["node", "-e", "fetch('http://127.0.0.1:'+(process.env.PORT||3000)+'/').then(r=>process.exit(r.status<500?0:1)).catch(()=>process.exit(1))"]
-CMD ["node", "apps/web/server.js"]
+CMD ["node", "frontend/apps/web/server.js"]

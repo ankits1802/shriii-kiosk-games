@@ -6,8 +6,8 @@ writes ``recovery-<pathway>[-<slot>].json`` plus a Markdown summary, and exits 1
 recovery threshold. Thresholds and generative coefficients come from the simulator package
 (``data/simulator.yaml``) and ``run_recovery`` itself; this script only orchestrates and reports.
 
-    uv run python .github/scripts/sim_recovery.py --n 50 --pathways B --out-dir sim-out      # per-PR smoke
-    uv run python .github/scripts/sim_recovery.py --n 400 --pathways A B --slot-forms         # nightly
+    uv run python cicd/scripts/sim_recovery.py --n 50 --pathways B --out-dir sim-out      # per-PR smoke
+    uv run python cicd/scripts/sim_recovery.py --n 400 --pathways A B --slot-forms         # nightly
 """
 
 from __future__ import annotations

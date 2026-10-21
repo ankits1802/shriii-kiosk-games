@@ -1,7 +1,7 @@
 /**
  * Distribution functions needed to draw confidence bands in charts (Student t and normal
  * quantiles). These are display helpers; the psychometric numerics of record are computed server
- * side (python/shriii_validation) and charts prefer server-provided intervals when given.
+ * side (stats/validation) and charts prefer server-provided intervals when given.
  */
 
 const LANCZOS = [

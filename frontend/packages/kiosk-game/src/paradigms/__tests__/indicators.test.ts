@@ -8,7 +8,7 @@ import { loadGameContent } from '../../engine/content.ts';
 import { PARADIGM_INDICATORS } from '../index.ts';
 
 const here = dirname(fileURLToPath(import.meta.url));
-const root = resolve(here, '../../../../..');
+const root = resolve(here, '../../../../../..');
 
 interface DictIndicator {
   readonly id: string;
@@ -18,7 +18,10 @@ interface DictIndicator {
 
 function load(pathway: 'A' | 'B'): Map<string, DictIndicator> {
   const doc = parse(
-    readFileSync(resolve(root, `scoring/dictionary/dictionary.${pathway}.yaml`), 'utf8'),
+    readFileSync(
+      resolve(root, `stats/measurement-model/dictionary/dictionary.${pathway}.yaml`),
+      'utf8',
+    ),
   ) as {
     indicators: DictIndicator[];
   };

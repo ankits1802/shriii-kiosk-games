@@ -1,7 +1,7 @@
 # Voice-over pipeline (VOX-02, VOX-07)
 
 This tool turns native-speaker recordings into signed per-language voice packs for the kiosk's
-`VoiceService` (`packages/kiosk-game/src/voice`). It also writes the voice actors' recording scripts.
+`VoiceService` (`frontend/packages/kiosk-game/src/voice`). It also writes the voice actors' recording scripts.
 `content/i18n/lines.yaml` is read only and never modified.
 
 ```

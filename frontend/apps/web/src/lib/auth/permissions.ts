@@ -1,6 +1,6 @@
 /**
  * Permission and role vocabulary, mirrored from the API's RBAC module
- * (`apps/api/src/shriii_api/auth/rbac.py`, PRV-08). The API is the authority: the UI reads the
+ * (`backend/api/src/shriii_api/auth/rbac.py`, PRV-08). The API is the authority: the UI reads the
  * caller's effective permissions from `GET /api/v1/auth/me` and only uses these names to decide what
  * to show. A unit test (`permissions.test.ts`) fails if this list drifts from rbac.py.
  */

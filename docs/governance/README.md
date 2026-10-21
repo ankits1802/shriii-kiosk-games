@@ -37,11 +37,11 @@ The markers below appear in the text. Each must be resolved, and the marker remo
 
 Related machine-readable sources (these documents must agree with them):
 
-- `apps/api/src/shriii_api/config/retention.yaml`: the retention engine's rule set (PRV-05).
-- `apps/api/src/shriii_api/auth/rbac.py`: the implemented role and permission matrix (PRV-08).
-- `packages/contracts/schemas/consent-artefact.v1.schema.json`: the consent kinds and the consent record.
-- `scoring/gates.yaml`: the report display rule and the battery release gate.
-- `tools/prereg/`: the pre-registration generator (its output is part of the ethics evidence pack, PRV-11).
+- `backend/api/src/shriii_api/config/retention.yaml`: the retention engine's rule set (PRV-05).
+- `backend/api/src/shriii_api/auth/rbac.py`: the implemented role and permission matrix (PRV-08).
+- `contracts/schemas/consent-artefact.v1.schema.json`: the consent kinds and the consent record.
+- `stats/measurement-model/gates.yaml`: the report display rule and the battery release gate.
+- `stats/prereg/`: the pre-registration generator (its output is part of the ethics evidence pack, PRV-11).
 
 ## Evidence pack (PRV-11)
 

@@ -93,7 +93,10 @@ def sync_games(db: Session) -> dict[str, int]:
 
 
 def sync_dictionary(db: Session) -> dict[str, int]:
-    """Trait registry from ``scoring/dictionary``: constructs, indicators, feature definitions, mappings."""
+    """Trait registry from ``stats/measurement-model/dictionary``.
+
+    Constructs, indicators, feature definitions, mappings.
+    """
     shared = content.dictionary_shared()
     version = str(shared.data["version"])
     stats = {"constructs": 0, "indicators": 0, "mappings": 0, "phrases": 0}

@@ -2,7 +2,7 @@
  * Module dev harness (ENG-05 AC "any module runs headlessly with a scripted bot", PLT-01): launch one
  * module standalone, outside a session, for screenshots, bots and module development:
  *
- *   apps/kiosk  ?module=dont_tap&level=L2&lang=en-IN&seed=123[&form=form_1][&bot=1][&pathway=B]
+ *   frontend/apps/kiosk  ?module=dont_tap&level=L2&lang=en-IN&seed=123[&form=form_1][&bot=1][&pathway=B]
  *
  * This file is the DOM-free part: URL parsing, the deterministic seed mapping, and
  * {@link runModuleHarness}, which runs the module through the real {@link ModuleHost} (same context,

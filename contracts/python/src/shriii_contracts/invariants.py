@@ -1,6 +1,6 @@
 """Semantic invariants beyond the restricted JSON Schema profile.
 
-Mirrors ``packages/contracts/src/invariants.ts`` (same codes) so kiosk and backend agree.
+Mirrors ``contracts/src/invariants.ts`` (same codes) so kiosk and backend agree.
 """
 
 from __future__ import annotations

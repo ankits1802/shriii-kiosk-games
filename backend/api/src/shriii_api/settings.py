@@ -1,7 +1,7 @@
 """Service configuration (pydantic-settings). Values come from the environment or ``.env``.
 
-Scientific thresholds never live here: they are read from ``scoring/*.yaml``. This module only holds
-operational settings (connections, keys, timeouts, feature switches).
+Scientific thresholds never live here: they are read from ``stats/measurement-model/*.yaml``. This module
+only holds operational settings (connections, keys, timeouts, feature switches).
 """
 
 from __future__ import annotations
@@ -50,7 +50,7 @@ class Settings(BaseSettings):
     oidc_roles_claim: str = "roles"
     oidc_studies_claim: str = "studies"
 
-    # --- CORS (apps/web and apps/kiosk) ---
+    # --- CORS (frontend/apps/web and frontend/apps/kiosk) ---
     api_cors_origins: Annotated[list[str], NoDecode] = Field(
         default_factory=lambda: ["http://localhost:5173", "http://localhost:3000"]
     )

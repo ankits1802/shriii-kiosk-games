@@ -39,7 +39,10 @@ import {
   SEM_RULE,
 } from '../rules/rules.generated.ts';
 
-const FIXTURE = resolve(process.cwd(), '../contracts/fixtures/valid/release-pack/all_closed.json');
+const FIXTURE = resolve(
+  process.cwd(),
+  '../../../contracts/fixtures/valid/release-pack/all_closed.json',
+);
 const NOW = new Date('2026-10-25T12:00:00Z');
 const TRAITS: ConstructId[] = [
   'persistence',
@@ -255,8 +258,10 @@ describe('report gating: fail closed (REP-01/02/03)', () => {
     expect(lines[lines.length - 1]).toBe('report.disclaimer.snapshot');
   });
 
-  it('generated rules match scoring/gates.yaml', () => {
-    const g = parse(readFileSync(resolve(process.cwd(), '../../scoring/gates.yaml'), 'utf8')) as {
+  it('generated rules match stats/measurement-model/gates.yaml', () => {
+    const g = parse(
+      readFileSync(resolve(process.cwd(), '../../../stats/measurement-model/gates.yaml'), 'utf8'),
+    ) as {
       display_rule: { trait_status_in: string[] };
       report: { max_traits_shown: number };
       battery_gate: { min_language_groups: number };

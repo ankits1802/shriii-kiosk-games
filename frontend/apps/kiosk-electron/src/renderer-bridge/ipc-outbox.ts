@@ -11,7 +11,7 @@
  *   `BatchUploader` (if constructed) is a harmless no-op; `applyResult`/`markBatchFailed`/
  *   `purgeAcknowledged` are no-ops for the same reason.
  *
- * Wiring in `apps/kiosk` (merge step): when `window.shriiiKiosk` exists, construct
+ * Wiring in `frontend/apps/kiosk` (merge step): when `window.shriiiKiosk` exists, construct
  * `new IpcOutbox(window.shriiiKiosk, kioskId)` instead of the Dexie outbox and keep the renderer
  * uploader disabled (`apiBase: null`).
  */

@@ -1,4 +1,4 @@
-"""Tests for tools/plan-lint (PLT-08 acceptance: green on the plan, a cycle makes it fail)."""
+"""Tests for cicd/plan-lint (PLT-08 acceptance: green on the plan, a cycle makes it fail)."""
 
 from __future__ import annotations
 

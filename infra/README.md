@@ -3,8 +3,8 @@
 | Path | What |
 |---|---|
 | `docker/api.Dockerfile` | Backend image: target `api` (FastAPI via uvicorn, default) and target `worker` (job worker). uv, python-slim, non-root uid 10001, healthcheck. |
-| `docker/web.Dockerfile` | `apps/web` as a Next.js standalone server (needs `output: "standalone"` and `outputFileTracingRoot` in `next.config`; the pnpm package name is read from `apps/web/package.json`; `API_PROXY_TARGET` is a build arg because Next.js bakes rewrite destinations into the build). Non-root. |
-| `docker/kiosk.Dockerfile` | `apps/kiosk` static browser build served by unprivileged nginx (strict CSP, no remote origins); `--target dist` exports the bundle. |
+| `docker/web.Dockerfile` | `frontend/apps/web` as a Next.js standalone server (needs `output: "standalone"` and `outputFileTracingRoot` in `next.config`; the pnpm package name is read from `frontend/apps/web/package.json`; `API_PROXY_TARGET` is a build arg because Next.js bakes rewrite destinations into the build). Non-root. |
+| `docker/kiosk.Dockerfile` | `frontend/apps/kiosk` static browser build served by unprivileged nginx (strict CSP, no remote origins); `--target dist` exports the bundle. |
 | `docker/healthcheck.py` | `shriii-healthcheck http <url>` / `db` probes for slim images. |
 | `docker/r-psychometrics.Dockerfile` | R backend image (owned by the psychometrics stream). |
 | `compose/compose.full.yml` | Full local / 2-VM pilot stack: postgres 18, migrate (one-shot), api, worker, web, kiosk, adminer. |
@@ -40,15 +40,15 @@ docker compose -f infra/compose/compose.full.yml down -v
 | Workflow | Purpose |
 |---|---|
 | `ci.yml` | plan-lint + trial budget, Biome / typecheck / Vitest / build, ruff / mypy / pytest with a postgres:18 service, small recovery run, Playwright smoke, compose stack health, OpenTofu validate + region policy |
-| `schema-compat.yml` | contract backward/forward compatibility against the merge base (`.github/scripts/schema_compat.py`) |
+| `schema-compat.yml` | contract backward/forward compatibility against the merge base (`cicd/scripts/schema_compat.py`) |
 | `nightly-sim.yml` | full simulated-player recovery report + slow statistical tests |
 | `kiosk-release.yml` | deploy-order gate, reproducible kiosk build (web bundle + Electron shell), CycloneDX SBOM, cosign signatures, GitHub release with the version tuple |
-| `deploy.yml` | build api / worker / web / kiosk images, push to ECR, cosign-sign, run the `migrate` ECS task (`.github/scripts/ecs_migrate.sh`, must exit 0), then OpenTofu plan and apply |
+| `deploy.yml` | build api / worker / web / kiosk images, push to ECR, cosign-sign, run the `migrate` ECS task (`cicd/scripts/ecs_migrate.sh`, must exit 0), then OpenTofu plan and apply |
 | `codeql.yml`, `osv-scanner.yml` | static analysis and dependency vulnerability scanning |
 
 Repository settings the workflows expect: variables `AWS_ROLE_ARN`, `AWS_REGION`, `ECR_REGISTRY`, `TOFU_STATE_BUCKET`,
 optional `COSIGN_KEYLESS`, `PRODUCTION_CONTRACTS_REF`; secrets `COSIGN_PRIVATE_KEY`, `COSIGN_PASSWORD`
 (placeholders until the signing ceremony; releases fail closed without signing material); GitHub environments
-`staging` and `production` (production requires reviewers). Renovate (`renovate.json`) applies updates after
+`staging` and `production` (production requires reviewers). Renovate (`.github/renovate.json`) applies updates after
 soak periods: 7 days by default, 21 days for the scientific Python stack and the kiosk runtime, 30 days for majors,
 none for security fixes.

@@ -18,7 +18,7 @@
  * | Customer queue          | `stall-queue.ts`    | stall                                    |
  *
  * `PARADIGM_INDICATORS` lists, per paradigm, the scoring-dictionary indicator ids that consume its
- * events and trial params (verified against `scoring/dictionary/*.yaml` by the tests).
+ * events and trial params (verified against `stats/measurement-model/dictionary/*.yaml` by the tests).
  */
 import { BART_INDICATORS } from './bart.ts';
 import { CARD_SORT_INDICATORS } from './card-sort.ts';

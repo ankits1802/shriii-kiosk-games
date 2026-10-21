@@ -20,7 +20,7 @@ _BATCH_SCHEMA = UploadBatch.model_json_schema(ref_template="#/components/schemas
     "/batch",
     summary="Upload an idempotent event batch",
     description=(
-        "Accepts an ``UploadBatch`` (packages/contracts upload-batch.v1). ``sha256`` must equal the "
+        "Accepts an ``UploadBatch`` (contracts upload-batch.v1). ``sha256`` must equal the "
         "SHA-256 of the RFC 8785 (JCS) serialisation of ``session_chunks``. Replays with the same "
         "``batch_id`` return the stored result (``duplicate_batch=true``). Each event gets "
         "``accepted | duplicate | parked | rejected_terminal | retryable``; scorable events wait in "

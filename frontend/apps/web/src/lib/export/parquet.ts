@@ -78,7 +78,7 @@ export function toParquet<T>(
     return { name: column.key, data: raw.map((v) => coerce(v, type)), type };
   });
   const metadata: Record<string, string> = {
-    'shriii.generator': 'apps/web export',
+    'shriii.generator': 'frontend/apps/web export',
     'shriii.exported_at': (options.now ?? new Date()).toISOString(),
     'shriii.row_count': String(rows.length),
     ...options.metadata,

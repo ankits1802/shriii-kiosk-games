@@ -6,27 +6,31 @@
 import type { GameConfig, SessionPlan } from '@shriii/contracts';
 import { validateGameConfig } from '@shriii/contracts/validators/game-config';
 import { validateSessionPlan } from '@shriii/contracts/validators/session-plan';
-import coplay from '../../../../content/games/pathway-a/coplay.json' with { type: 'json' };
-import roadHome from '../../../../content/games/pathway-a/road-home.json' with { type: 'json' };
-import stall from '../../../../content/games/pathway-a/stall.json' with { type: 'json' };
-import weighingPost from '../../../../content/games/pathway-a/weighing-post.json' with {
+import coplay from '../../../../../content/games/pathway-a/coplay.json' with { type: 'json' };
+import roadHome from '../../../../../content/games/pathway-a/road-home.json' with { type: 'json' };
+import stall from '../../../../../content/games/pathway-a/stall.json' with { type: 'json' };
+import weighingPost from '../../../../../content/games/pathway-a/weighing-post.json' with {
   type: 'json',
 };
-import balloon from '../../../../content/games/pathway-b/balloon.json' with { type: 'json' };
-import cardSort from '../../../../content/games/pathway-b/card-sort.json' with { type: 'json' };
-import dontTap from '../../../../content/games/pathway-b/dont-tap.json' with { type: 'json' };
-import fourStalls from '../../../../content/games/pathway-b/four-stalls.json' with { type: 'json' };
-import privateDice from '../../../../content/games/pathway-b/private-dice.json' with {
+import balloon from '../../../../../content/games/pathway-b/balloon.json' with { type: 'json' };
+import cardSort from '../../../../../content/games/pathway-b/card-sort.json' with { type: 'json' };
+import dontTap from '../../../../../content/games/pathway-b/dont-tap.json' with { type: 'json' };
+import fourStalls from '../../../../../content/games/pathway-b/four-stalls.json' with {
   type: 'json',
 };
-import sharePot from '../../../../content/games/pathway-b/share-pot.json' with { type: 'json' };
-import steadyHands from '../../../../content/games/pathway-b/steady-hands.json' with {
+import privateDice from '../../../../../content/games/pathway-b/private-dice.json' with {
   type: 'json',
 };
-import tower from '../../../../content/games/pathway-b/tower.json' with { type: 'json' };
-import waitOrNow from '../../../../content/games/pathway-b/wait-or-now.json' with { type: 'json' };
-import sessionPlan from '../../../../content/games/session-plan.json' with { type: 'json' };
-import warmup from '../../../../content/games/shared/warmup.json' with { type: 'json' };
+import sharePot from '../../../../../content/games/pathway-b/share-pot.json' with { type: 'json' };
+import steadyHands from '../../../../../content/games/pathway-b/steady-hands.json' with {
+  type: 'json',
+};
+import tower from '../../../../../content/games/pathway-b/tower.json' with { type: 'json' };
+import waitOrNow from '../../../../../content/games/pathway-b/wait-or-now.json' with {
+  type: 'json',
+};
+import sessionPlan from '../../../../../content/games/session-plan.json' with { type: 'json' };
+import warmup from '../../../../../content/games/shared/warmup.json' with { type: 'json' };
 import type { ModuleId } from '../core/contracts.ts';
 import { sha256Canonical } from '../logging/hash.ts';
 

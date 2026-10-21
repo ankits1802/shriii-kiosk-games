@@ -8,10 +8,10 @@
 
 ## How to use this plan (for the implementing agent)
 
-1. **Work by milestone, then by feature ID.** Every feature header reads `ID · title — priority · milestone · deps`. Build a feature only once all its `deps` are merged. `tools/plan-lint` (PLT-08) parses these headers and fails CI on a dependency cycle, a dependency on a later milestone, or a dependency on a lower priority.
+1. **Work by milestone, then by feature ID.** Every feature header reads `ID · title — priority · milestone · deps`. Build a feature only once all its `deps` are merged. `cicd/plan-lint` (PLT-08) parses these headers and fails CI on a dependency cycle, a dependency on a later milestone, or a dependency on a lower priority.
 2. **Priorities.** **P0** is needed for Stage 1 (think-aloud) and the MVP Pathway B. **P1** is needed for the Stage 2–3 pilot. **P2** is needed for Stage 4–5 and field use. **PG** means post-grant or optional. It is specified so the design leaves room for it, but it is not built inside P24.
 3. **Acceptance criteria (AC) are the definition of done.** Every AC needs an automated test unless it says *manual*, *drill* or *study*. Statistical ACs use tolerances or equivalence tests, never "p > .05".
-4. **Do not change scientific rules in code.** Thresholds, hypotheses, gate rules, indicator definitions and minimum trial counts live in `scoring/dictionary/*.yaml` and `scoring/hypotheses.yaml`. Once frozen (§7.1), they change only through a signed amendment (PLT-09). If a test fails against a frozen threshold, report it. Do not "fix" the threshold.
+4. **Do not change scientific rules in code.** Thresholds, hypotheses, gate rules, indicator definitions and minimum trial counts live in `stats/measurement-model/dictionary/*.yaml` and `stats/measurement-model/hypotheses.yaml`. Once frozen (§7.1), they change only through a signed amendment (PLT-09). If a test fails against a frozen threshold, report it. Do not "fix" the threshold.
 5. **Fail closed.** If a gate, consent, signature or policy check is missing, expired or unreachable, the safe result applies: no report, no upload of unconsented data, no camera, no mic.
 6. **Versions** are given as major lines. Verify and pin the exact versions in M0 (PLT-08) against official release pages and what AWS RDS actually offers.
 7. **Defaults for open questions** are in §1.4. They are configurable settings. Do not hard-code them.
@@ -212,6 +212,12 @@ Exact patch versions are pinned in M0 (PLT-08).
 
 ## 3. Monorepo layout
 
+> **Layout reorganised (October 2026).** The tree below is the original planning layout and is kept as historical
+> text. The repository is now grouped by responsibility: `frontend/` (kiosk, Electron shell, web app and their
+> packages), `backend/api`, `stats/` (scoring, validation, simulator, R psychometrics, measurement model YAML,
+> reports, pre-registration), `contracts/`, `content/`, `infra/`, `cicd/`, `tools/` and `docs/`. See
+> [ARCHITECTURE.md](ARCHITECTURE.md) for the current layout and the old-to-new path map.
+
 ```
 shriii-kiosk-games/
 ├─ package.json  pnpm-workspace.yaml  turbo.json  pyproject.toml (uv)  renv.lock
@@ -304,9 +310,9 @@ shriii-kiosk-games/
 - The expected convergent r is **.10–.30** (from the literature). There is **no upper bound**. The confirmatory test is that the **lower CI bound exceeds the pre-registered minimum (.10)**, plus the own > discriminant pattern (§7.7).
 - Integrity and risk bands are capped at "broad style" or withheld.
 
-### 4.4 Session time budgets (checked in CI by ONB-08 and the `tools/trial-budget` sheet)
+### 4.4 Session time budgets (checked in CI by ONB-08 and the `cicd/trial-budget` sheet)
 
-Budgets are at L2 and measured in seconds. The **trial-time budget spreadsheet** (`tools/trial-budget`, SCR-03) is built in M0 from measured seconds per trial × the required trials per indicator (from VAL-02). It is the source of truth. The numbers below are design targets.
+Budgets are at L2 and measured in seconds. The **trial-time budget spreadsheet** (`cicd/trial-budget`, SCR-03) is built in M0 from measured seconds per trial × the required trials per indicator (from VAL-02). It is the source of truth. The numbers below are design targets.
 
 | Segment | Pathway B | Pathway A | Scorable? |
 |---|---|---|---|
@@ -340,7 +346,7 @@ Set up pnpm + Turborepo, uv workspaces and renv with the §3 layout. Boundary li
 - AC: A second CI build with no changes is a cache hit and takes under 60 s.
 
 #### PLT-02 · Canonical contracts: restricted JSON Schema profile, Ajv, Pydantic — P0 · M0 · deps: PLT-01 · src: DATA-01, DATA-04, GOV-20
-`packages/contracts` holds JSON Schema 2020-12 for event, batch, session-context, consent, criterion response, content manifest, deployment policy, release pack, report payload and the dictionary schema. A **profile linter** bans keywords outside the supported subset: `$dynamicRef`, `unevaluatedProperties`, `if/then/else` and non-discriminated `oneOf`. Discriminated unions use `event_type` with a `const`. Generated outputs: Ajv standalone validators (canonical in TS), TS types, Zod (ergonomics only) and Pydantic v2.
+`contracts` holds JSON Schema 2020-12 for event, batch, session-context, consent, criterion response, content manifest, deployment policy, release pack, report payload and the dictionary schema. A **profile linter** bans keywords outside the supported subset: `$dynamicRef`, `unevaluatedProperties`, `if/then/else` and non-discriminated `oneOf`. Discriminated unions use `event_type` with a `const`. Generated outputs: Ajv standalone validators (canonical in TS), TS types, Zod (ergonomics only) and Pydantic v2.
 
 **Compatibility policy:**
 - Minor versions add optional fields only.
@@ -393,7 +399,7 @@ Metabase, read-only on `research_views`. Dashboards: recruitment and quota fill,
 - AC: The Metabase DB user can read only `research_views`. A permission test confirms this.
 
 #### PLT-08 · Plan lint, dependency graph and version verification — P0 · M0 · deps: PLT-01 · src: review
-`tools/plan-lint` parses the feature headers in this document (or its `features.yaml` mirror). It fails on unknown IDs, cycles, a dependency whose milestone starts later than the feature's, or a dependency with a lower priority (P0 < P1 < P2 < PG). It also produces a topological build order. **Version verification task:** check every stack entry against official release pages and RDS engine versions, then write `docs/VERSIONS.md` with the exact pins.
+`cicd/plan-lint` parses the feature headers in this document (or its `features.yaml` mirror). It fails on unknown IDs, cycles, a dependency whose milestone starts later than the feature's, or a dependency with a lower priority (P0 < P1 < P2 < PG). It also produces a topological build order. **Version verification task:** check every stack entry against official release pages and RDS engine versions, then write `docs/VERSIONS.md` with the exact pins.
 - AC: The CI job is green on this plan. Introducing a cycle makes it fail.
 - AC: `VERSIONS.md` exists before any M1 feature is merged.
 
@@ -925,7 +931,7 @@ Pure polars functions `(trials, ctx) → IndicatorResult(value, n_valid, se, fla
 - AC: 10k sessions score in under 5 min on a laptop (excluding the hierarchical model step, which is benchmarked separately).
 
 #### SCR-03 · Dictionary v0 content and trial-time budget sheet — P0 · M0 · deps: SCR-01, VAL-02 · src: DATA-13, review
-Populate v0 from §4. Build `tools/trial-budget`: measured seconds per trial (from prototypes or the literature) × required trials per indicator from VAL-02, summed per module and per pathway against §4.4. Where the budget cannot be met, the indicator is demoted (Tier 2, `research_only`) or the trait is withheld for that pathway. **The count is fixed at 17 constructs** across the dictionary, hypotheses and simulator.
+Populate v0 from §4. Build `cicd/trial-budget`: measured seconds per trial (from prototypes or the literature) × required trials per indicator from VAL-02, summed per module and per pathway against §4.4. Where the budget cannot be met, the indicator is demoted (Tier 2, `research_only`) or the trait is withheld for that pathway. **The count is fixed at 17 constructs** across the dictionary, hypotheses and simulator.
 - AC: Each construct has ≥ 2 indicators in at least one pathway, or is withheld for that pathway with a reason.
 - AC: Summed minimum durations fit §4.4 for both pathways.
 - AC: The construct count is 17 in all three files (CI check).
@@ -1110,7 +1116,7 @@ It is frozen with `gates.yaml` before Stage 2 unblinding and exported to OSF. Am
 ### 5.11 VAL: Validation analytics and gates
 
 #### VAL-01 · R psychometrics package and Dagster Pipes — P1 · M2 · deps: ING-06 · src: PSYC-14
-`r/psychometrics` is pinned with renv in a digest-pinned Docker image. Each run writes `analysis_run_id`. A Python sidecar recomputes key coefficients.
+`stats/r-psychometrics` is pinned with renv in a digest-pinned Docker image. Each run writes `analysis_run_id`. A Python sidecar recomputes key coefficients.
 - AC: The pipeline runs on the fixture snapshot in Linux CI.
 - AC: R and Python agree within 1e-6 on alpha, ICC(A,1) and r.
 - AC: With fixed seeds, BLAS and threads, results match within 1e-8.
@@ -1686,7 +1692,7 @@ Each question has a default (§1.4) so work is not blocked.
 
 ## Appendix A: feature counts
 
-(Generated from the headers by `tools/plan-lint`.)
+(Generated from the headers by `cicd/plan-lint`.)
 
 | Area | P0 | P1 | P2 | PG | Total |
 |---|---|---|---|---|---|

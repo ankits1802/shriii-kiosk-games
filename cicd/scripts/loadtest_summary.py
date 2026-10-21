@@ -9,7 +9,7 @@ Gating: data-correctness checks (``terminal_failures``, ``duplicate_rows``, ``st
 client, API and database on one small VM, so latency is reported against the target rather than gating by
 default). Checks whose target is marked ``proposed`` (research API) are reported only.
 
-    python .github/scripts/loadtest_summary.py tools/loadtest/results/ci-123 [--enforce-p95] [--out summary.md]
+    python cicd/scripts/loadtest_summary.py tools/loadtest/results/ci-123 [--enforce-p95] [--out summary.md]
 """
 
 from __future__ import annotations

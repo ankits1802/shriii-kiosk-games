@@ -12,7 +12,7 @@
     "test": "vitest run",
     "test:e2e": "playwright test",
     "lint": "biome check .",
-    "api:generate": "pnpm dlx --package=openapi-typescript@7.13.0 --package=typescript@5.9.3 openapi-typescript ../api/openapi.json -o src/generated/api-schema.ts",
+    "api:generate": "pnpm dlx --package=openapi-typescript@7.13.0 --package=typescript@5.9.3 openapi-typescript ../../../backend/api/openapi.json -o src/generated/api-schema.ts",
     "api:check": "node scripts/check-api-schema.mjs"
   },
   "dependencies": {

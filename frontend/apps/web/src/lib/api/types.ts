@@ -1,6 +1,6 @@
 /**
  * Friendly aliases over the generated OpenAPI types (`src/generated/api-schema.ts`, produced by
- * `pnpm --filter web api:generate` from `apps/api/openapi.json`). Import API shapes from here so a
+ * `pnpm --filter web api:generate` from `backend/api/openapi.json`). Import API shapes from here so a
  * regenerated schema only needs fixing in one place.
  */
 import type { components, operations, paths } from '@/generated/api-schema';

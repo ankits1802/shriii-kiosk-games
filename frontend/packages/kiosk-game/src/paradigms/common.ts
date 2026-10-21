@@ -8,7 +8,7 @@
  *   private-report true outcome (see `private-report.ts`), which must NOT be reproducible from the
  *   logged session seed.
  * - No scientific thresholds in code: thresholds (premature cut-off, reacquisition run, ...) are
- *   arguments read by the caller from YAML (`scoring/**`) or from the module config. Stimulus-design
+ *   arguments read by the caller from YAML (`stats/measurement-model/**`) or from the module config. Stimulus-design
  *   values that the content configs do not (yet) carry are resolved through {@link Resolved} so the
  *   value's source is logged alongside it (see `content-defaults.ts`).
  * - Nothing here produces a player-visible number (ENG-11): quantities are pictured tokens, needles
@@ -51,7 +51,7 @@ export interface Resolved<T> {
 /** Documents which scoring-dictionary indicators consume a paradigm's events/params in one module. */
 export interface IndicatorBinding {
   readonly moduleId: ModuleId;
-  /** Indicator ids exactly as in `scoring/dictionary/dictionary.{A,B}.yaml`. */
+  /** Indicator ids exactly as in `stats/measurement-model/dictionary/dictionary.{A,B}.yaml`. */
   readonly indicators: readonly IndicatorId[];
 }
 

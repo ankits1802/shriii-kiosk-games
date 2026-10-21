@@ -6,7 +6,7 @@ navigation/new-window/zoom blocking, a deny-all permission handler (no camera, e
 blocker and a watchdog that reloads a crashed renderer to attract. `preload.cts` exposes the minimal
 typed `window.shriiiKiosk` bridge (`getAppVersion`, `relaunchToAttract`, `onPowerEvent`).
 
-The renderer is the Vite build of `apps/kiosk` (`dist/`, built with `base: './'` for `file://`). The
+The renderer is the Vite build of `frontend/apps/kiosk` (`dist/`, built with `base: './'` for `file://`). The
 renderer imports `pixi.js/unsafe-eval` so Pixi works under the CSP without `unsafe-eval`.
 
 Electron is an optional dev dependency; pnpm blocks its binary download by default.

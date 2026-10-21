@@ -27,7 +27,7 @@ SCHEMA = "scored"
 
 
 class Construct(Base, CreatedAtMixin):
-    """Trait registry entry (spec section 3); loaded from ``scoring/dictionary/shared.yaml``."""
+    """Trait registry entry (spec section 3); loaded from ``stats/measurement-model/dictionary/shared.yaml``."""
 
     __tablename__ = "constructs"
     __table_args__ = {"schema": SCHEMA}

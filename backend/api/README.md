@@ -5,14 +5,14 @@ This package is the FastAPI service, the PostgreSQL 18 schema with its Alembic m
 ## Run
 
 ```bash
-docker compose up -d postgres                 # this machine maps Postgres to 55432; see note below
+pnpm db:up                                    # docker compose -f infra/compose/docker-compose.yml up -d postgres; this machine maps Postgres to 55432; see note below
 export DATABASE_URL=postgresql+psycopg://dev:dev@localhost:55432/shriii
 uv run shriii-api migrate                     # research DB + identity vault (IDENTITY_DATABASE_URL)
 uv run shriii-api seed --demo                 # instruments, dictionary, games, demo study, dev kiosk token
 uv run shriii-api serve --reload              # http://127.0.0.1:8000/docs
 uv run shriii-api worker                      # job worker (or: worker --once)
 uv run shriii-api ingest-synthetic --participants 20   # end-to-end synthetic data (ENV=dev/test only)
-uv run shriii-api export-openapi              # writes apps/api/openapi.json (OpenAPI 3.1)
+uv run shriii-api export-openapi              # writes backend/api/openapi.json (OpenAPI 3.1)
 uv run shriii-api dev-token --roles researcher
 uv run shriii-api demo-pipeline               # end-to-end synthetic demo (ENV=dev/test only), see below
 ```
@@ -31,7 +31,7 @@ digest (`--json` for everything) and writes the full summary to `DATA_DIR/demo/<
 `--participants-per-language`, `--languages`, `--retests`, `--seed`, `--workers` (processes for upload, criterion and
 jobs), `--models`, `--n-boot`. Point `DATABASE_URL`/`IDENTITY_DATABASE_URL` at a scratch database.
 
-To run the tests: `uv run pytest apps/api/tests`. They need a reachable Postgres, either from `SHRIII_TEST_DATABASE_URL` or found on localhost:5432 or localhost:55432. The tests create their own `shriii_api_test*` databases. If no server is reachable, the tests are skipped, unless `SHRIII_REQUIRE_DB=1` is set.
+To run the tests: `uv run pytest backend/api/tests`. They need a reachable Postgres, either from `SHRIII_TEST_DATABASE_URL` or found on localhost:5432 or localhost:55432. The tests create their own `shriii_api_test*` databases. If no server is reachable, the tests are skipped, unless `SHRIII_REQUIRE_DB=1` is set.
 
 ## Contracts the clients rely on
 

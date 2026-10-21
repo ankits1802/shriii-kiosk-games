@@ -1,6 +1,6 @@
 /**
- * @shriii/kiosk-game — the kiosk game library mounted by `apps/kiosk` (Vite/Electron) and by
- * `apps/web` at `/kiosk` (Next.js).
+ * @shriii/kiosk-game — the kiosk game library mounted by `frontend/apps/kiosk` (Vite/Electron) and by
+ * `frontend/apps/web` at `/kiosk` (Next.js).
  *
  * The shared interfaces in `core/contracts.ts` are the boundary every engine service, micro-game,
  * episode, onboarding screen and report view codes against.

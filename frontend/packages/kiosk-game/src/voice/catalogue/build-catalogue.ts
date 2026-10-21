@@ -35,7 +35,7 @@ interface RawCatalogue {
 }
 
 const here = dirname(fileURLToPath(import.meta.url));
-const yamlPath = resolve(here, '../../../../../content/i18n/lines.yaml');
+const yamlPath = resolve(here, '../../../../../../content/i18n/lines.yaml');
 const linesOut = resolve(here, 'lines.generated.ts');
 const textOut = resolve(here, 'reference-text.generated.ts');
 
@@ -73,11 +73,11 @@ ${textEntries.join('\n')}
 
 /** Format generated TypeScript with the repo's Biome config so the output passes `pnpm lint`. */
 function biomeFormat(source: string, filePath: string): string {
-  const bin = resolve(here, '../../../../../node_modules/@biomejs/biome/bin/biome');
+  const bin = resolve(here, '../../../../../../node_modules/@biomejs/biome/bin/biome');
   return execFileSync(process.execPath, [bin, 'format', `--stdin-file-path=${filePath}`], {
     input: source,
     encoding: 'utf8',
-    cwd: resolve(here, '../../../../..'),
+    cwd: resolve(here, '../../../../../..'),
     maxBuffer: 16 * 1024 * 1024,
   });
 }

@@ -17,7 +17,7 @@ import type {
   GameConfig,
   PracticeSummaryPayload,
 } from '@shriii/contracts';
-import rulesJson from '../../../../content/games/shared/calibration.json' with { type: 'json' };
+import rulesJson from '../../../../../content/games/shared/calibration.json' with { type: 'json' };
 import type { CalibrationDecision } from '../core/contracts.ts';
 
 type Skill = 'tap' | 'hold' | 'choice' | 'drag';

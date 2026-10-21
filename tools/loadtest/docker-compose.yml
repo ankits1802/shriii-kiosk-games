@@ -1,5 +1,5 @@
 # Dedicated PostgreSQL 18 for load tests. It has its own Compose project name, volume and port, so a
-# load run never touches the developer database from the root docker-compose.yml.
+# load run never touches the developer database from infra/compose/docker-compose.yml.
 #   docker compose -f tools/loadtest/docker-compose.yml up -d --wait
 #   docker compose -f tools/loadtest/docker-compose.yml down -v      # drop all load-test data
 name: shriii-loadtest

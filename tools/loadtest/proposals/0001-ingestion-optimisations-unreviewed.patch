@@ -1,13 +1,13 @@
-diff --git a/apps/api/openapi.json b/apps/api/openapi.json
+diff --git a/backend/api/openapi.json b/backend/api/openapi.json
 index 7998df4..b1b1800 100644
---- a/apps/api/openapi.json
-+++ b/apps/api/openapi.json
+--- a/backend/api/openapi.json
++++ b/backend/api/openapi.json
 @@ -906,7 +906,7 @@
            "events"
          ],
          "summary": "Upload an idempotent event batch",
--        "description": "Accepts an ``UploadBatch`` (packages/contracts upload-batch.v1). ``sha256`` must equal the SHA-256 of the RFC 8785 (JCS) serialisation of ``session_chunks``. Replays with the same ``batch_id`` return the stored result (``duplicate_batch=true``). Each event gets ``accepted | duplicate | parked | rejected_terminal | retryable``; scorable events wait in consent parking until core consent arrives; ``server_received_at`` is set by the server.",
-+        "description": "Accepts an ``UploadBatch`` (packages/contracts upload-batch.v1). ``sha256`` must equal the SHA-256 of the RFC 8785 (JCS) serialisation of ``session_chunks``. Replays with the same ``batch_id`` return the stored result (``duplicate_batch=true``). Each event gets ``accepted | duplicate | parked | rejected_terminal | retryable``; scorable events wait in consent parking until core consent arrives; ``server_received_at`` is set by the server. When all processing slots are busy the server answers 503 with ``Retry-After``; kiosks retry the same body later (nothing was stored).",
+-        "description": "Accepts an ``UploadBatch`` (contracts upload-batch.v1). ``sha256`` must equal the SHA-256 of the RFC 8785 (JCS) serialisation of ``session_chunks``. Replays with the same ``batch_id`` return the stored result (``duplicate_batch=true``). Each event gets ``accepted | duplicate | parked | rejected_terminal | retryable``; scorable events wait in consent parking until core consent arrives; ``server_received_at`` is set by the server.",
++        "description": "Accepts an ``UploadBatch`` (contracts upload-batch.v1). ``sha256`` must equal the SHA-256 of the RFC 8785 (JCS) serialisation of ``session_chunks``. Replays with the same ``batch_id`` return the stored result (``duplicate_batch=true``). Each event gets ``accepted | duplicate | parked | rejected_terminal | retryable``; scorable events wait in consent parking until core consent arrives; ``server_received_at`` is set by the server. When all processing slots are busy the server answers 503 with ``Retry-After``; kiosks retry the same body later (nothing was stored).",
          "operationId": "upload_batch_api_v1_events_batch_post",
          "requestBody": {
            "content": {
@@ -21,10 +21,10 @@ index 7998df4..b1b1800 100644
            }
          }
        }
-diff --git a/apps/api/src/shriii_api/api/v1/events.py b/apps/api/src/shriii_api/api/v1/events.py
+diff --git a/backend/api/src/shriii_api/api/v1/events.py b/backend/api/src/shriii_api/api/v1/events.py
 index 5e8e84e..33950d7 100644
---- a/apps/api/src/shriii_api/api/v1/events.py
-+++ b/apps/api/src/shriii_api/api/v1/events.py
+--- a/backend/api/src/shriii_api/api/v1/events.py
++++ b/backend/api/src/shriii_api/api/v1/events.py
 @@ -4,17 +4,31 @@ from __future__ import annotations
  
  from typing import Annotated, Any
@@ -102,10 +102,10 @@ index 5e8e84e..33950d7 100644
      set_audit(
          request,
          action="events.batch",
-diff --git a/apps/api/src/shriii_api/cli.py b/apps/api/src/shriii_api/cli.py
+diff --git a/backend/api/src/shriii_api/cli.py b/backend/api/src/shriii_api/cli.py
 index 88fea2b..6c31b94 100644
---- a/apps/api/src/shriii_api/cli.py
-+++ b/apps/api/src/shriii_api/cli.py
+--- a/backend/api/src/shriii_api/cli.py
++++ b/backend/api/src/shriii_api/cli.py
 @@ -76,6 +76,12 @@ def main(argv: list[str] | None = None) -> int:
      p.add_argument("--host", default="127.0.0.1")
      p.add_argument("--port", type=int, default=8000)
@@ -135,10 +135,10 @@ index 88fea2b..6c31b94 100644
      return 0
  
  
-diff --git a/apps/api/src/shriii_api/services/ingestion.py b/apps/api/src/shriii_api/services/ingestion.py
+diff --git a/backend/api/src/shriii_api/services/ingestion.py b/backend/api/src/shriii_api/services/ingestion.py
 index c7d471c..0314e4e 100644
---- a/apps/api/src/shriii_api/services/ingestion.py
-+++ b/apps/api/src/shriii_api/services/ingestion.py
+--- a/backend/api/src/shriii_api/services/ingestion.py
++++ b/backend/api/src/shriii_api/services/ingestion.py
 @@ -31,7 +31,9 @@ from datetime import UTC, date, datetime, timedelta
  from typing import Any, Literal
  
@@ -244,10 +244,10 @@ index c7d471c..0314e4e 100644
          ).scalars()
      )
      event_rows: list[dict[str, Any]] = []
-diff --git a/apps/api/src/shriii_api/settings.py b/apps/api/src/shriii_api/settings.py
+diff --git a/backend/api/src/shriii_api/settings.py b/backend/api/src/shriii_api/settings.py
 index 0ad9635..34c14d3 100644
---- a/apps/api/src/shriii_api/settings.py
-+++ b/apps/api/src/shriii_api/settings.py
+--- a/backend/api/src/shriii_api/settings.py
++++ b/backend/api/src/shriii_api/settings.py
 @@ -73,6 +73,11 @@ class Settings(BaseSettings):
      accept_plaintext_chunks: bool | None = None
      """``none_dev`` chunks; defaults to True only in dev/test."""
@@ -260,10 +260,10 @@ index 0ad9635..34c14d3 100644
      consent_parking_ttl_hours: int = 72
      clock_offset_anomaly_ms: float = 300_000.0
      """Absolute kiosk clock offset beyond which a session gets a ``clock_offset_anomaly`` flag."""
-diff --git a/python/shriii_contracts/src/shriii_contracts/strictness.py b/python/shriii_contracts/src/shriii_contracts/strictness.py
+diff --git a/contracts/python/src/shriii_contracts/strictness.py b/contracts/python/src/shriii_contracts/strictness.py
 index 57ba4fa..b0e5711 100644
---- a/python/shriii_contracts/src/shriii_contracts/strictness.py
-+++ b/python/shriii_contracts/src/shriii_contracts/strictness.py
+--- a/contracts/python/src/shriii_contracts/strictness.py
++++ b/contracts/python/src/shriii_contracts/strictness.py
 @@ -7,6 +7,7 @@ writer-side rule that our own outgoing records carry no unknown fields.
  
  from __future__ import annotations

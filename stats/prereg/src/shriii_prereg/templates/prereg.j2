@@ -1,0 +1,153 @@
+{#- OSF-style pre-registration. Single source for every output format: the format-specific macro set is
+    imported as `m` (templates/_md.j2 or templates/_html.j2). All values come from the document model. -#}
+{% import macros as m with context %}
+{{ m.doc_start(doc) }}
+{{ m.h(1, doc.meta.title) }}
+{% if doc.meta.status != 'frozen' %}
+{{ m.callout('draft', 'Not for submission', 'One or more inputs are not frozen (status draft). This document shows the registration as it would read today. It may be submitted only after hypotheses.yaml, gates.yaml and both pathway dictionaries are frozen by a signed PLT-09 governance record and this document is regenerated.') }}
+{% endif %}
+{{ m.review('stakeholder and ethics', 'Study metadata (title, contributors, languages, funding, conflicts of interest), the planning sample sizes and the intended-use statement come from stats/prereg/prereg.config.yaml and must be confirmed by the PI, Research Lead and Ethics Officer before submission.') }}
+{{ m.kv([
+  ('Registry / template', doc.meta.registry ~ ' / ' ~ doc.meta.template),
+  ('Registration id', doc.meta.prereg_id or 'not yet assigned'),
+  ('Protocol id (IEC/IRB)', doc.meta.protocol_id or 'not yet assigned'),
+  ('Hypothesis registry', doc.meta.registry_id ~ ' v' ~ doc.meta.hypotheses_version),
+  ('Gate rules', 'v' ~ doc.meta.gates_version),
+  ('Scoring dictionary', 'v' ~ doc.meta.dictionary_version),
+  ('Document status', doc.meta.status),
+  ('Generated', doc.meta.generated_at),
+]) }}
+{{ m.h(3, 'Input documents (SHA-256, CRLF normalised to LF)') }}
+{{ m.table(['Role', 'Path', 'Version', 'Status', 'Frozen at', 'SHA-256'],
+  doc.inputs | rows(['role', 'path', 'version', 'status', 'frozen_at', 'sha256'])) }}
+{% if doc.issues %}
+{{ m.h(3, 'Generator checks') }}
+{{ m.table(['Severity', 'Check', 'Message'], doc.issues | rows(['severity', 'code', 'message'])) }}
+{% endif %}
+
+{{ m.h(2, '1. Study information') }}
+{{ m.h(3, '1.1 Contributors') }}
+{{ m.table(['Role', 'Name', 'Affiliation'], doc.study.contributors | rows(['role', 'name', 'affiliation'])) }}
+{{ m.kv([('Funding', doc.study.funding), ('Conflicts of interest', doc.study.conflicts_of_interest)]) }}
+{{ m.h(3, '1.2 Description') }}
+{{ m.p(doc.study.description) }}
+{{ m.h(3, '1.3 Intended use of the measures') }}
+{{ m.p(doc.study.intended_use) }}
+{{ m.h(3, '1.4 Hypotheses') }}
+{{ m.p('Every confirmatory or secondary result must cite a hypothesis id below; any other result is labelled exploratory. Tests use observed correlations only (estimates: ' ~ doc.defaults.estimates ~ '); disattenuated correlations are reported as secondary information and never feed gates. Default lower bound r0 = ' ~ (doc.defaults.r0 | num) ~ ' at a ' ~ (doc.defaults.ci_level | pct) ~ ' confidence level; ' ~ doc.defaults.correlation ~ ' correlation (Spearman reported alongside); ' ~ doc.defaults.bootstrap_resamples ~ ' bootstrap and ' ~ doc.defaults.permutation_resamples ~ ' permutation resamples.') }}
+{{ m.table(['Family', 'Kind', 'Correction', 'Family alpha', 'Hypotheses', 'Description'],
+  doc.families | rows(['id', 'kind', 'correction_label', 'alpha', 'n_hypotheses', 'description'])) }}
+{% for f in doc.families if f.n_hypotheses %}
+{{ m.h(4, 'Family ' ~ f.id ~ ' (' ~ f.kind ~ ', ' ~ f.correction ~ ', ' ~ f.n_hypotheses ~ ' hypotheses)') }}
+{{ m.table(['Id', 'Construct', 'Pathways', 'Type', 'Indicators', 'Criterion / criteria', 'Expected sign', 'r0', 'Statistic', 'Pooling', 'Notes'],
+  f.hypotheses | hypothesis_rows) }}
+{% endfor %}
+
+{{ m.h(2, '2. Design plan') }}
+{{ m.kv([
+  ('Study type', doc.design.study_type),
+  ('Arms', doc.design.arms),
+  ('Allocation ratio', doc.design.allocation_ratio),
+  ('Randomisation', doc.design.randomisation),
+  ('Blinding', doc.design.blinding),
+  ('Languages', doc.design.languages['values']),
+  ('Site mode', doc.design.site_mode),
+  ('Calibration level (criterion cohort)', doc.design.calibration_level),
+]) }}
+{% if doc.design.languages.review %}
+{{ m.review(doc.design.languages.review, 'Pilot languages are placeholders until stakeholders confirm the final three.') }}
+{% endif %}
+{{ m.h(3, 'Stages covered') }}
+{{ m.table(['Stage', 'Name', 'Description'], doc.design.stages | rows(['id', 'name', 'description'])) }}
+{{ m.h(3, 'Task modules per pathway (from the scoring dictionary)') }}
+{% for p in doc.pathways %}
+{{ m.table(['Pathway', 'Module', 'Kind', 'Order', 'Planned-missingness slot'], doc.modules[p] | module_rows(p)) }}
+{% endfor %}
+
+{{ m.h(2, '3. Sampling plan') }}
+{{ m.h(3, '3.1 Existing data') }}
+{{ m.p(doc.sampling.existing_data) }}
+{{ m.h(3, '3.2 Data collection procedures') }}
+{{ m.p('Supervised sites only for Stages 2-3. Participants are adults (18+, self-declared; an under-18 selection ends the session and nothing is kept). Consent is spoken (pre-recorded) and committed only by a tap; archive and contact opt-ins are separate. Quota cells: language x age band x gender x education band x literacy band. Retest window: ' ~ doc.sampling.retest_window_days[0] ~ '-' ~ doc.sampling.retest_window_days[1] ~ ' days after T1; out-of-window pairs are flagged and excluded from the primary retest analysis.') }}
+{{ m.h(3, '3.3 Sample size') }}
+{{ m.kv(doc.power.planned | dictsort) }}
+{{ m.h(3, '3.4 Sample size rationale') }}
+{% if doc.power.status != 'confirmed_val02' %}
+{{ m.review(doc.power.review or 'stakeholder', 'Planning values are the plan defaults (status ' ~ doc.power.status ~ '). The VAL-02 power report must confirm or revise them, and the protocol must cite the n each gate actually needs, before the protocol is frozen.') }}
+{% endif %}
+{{ m.p('Target power ' ~ (doc.power.target_power | num) ~ '; planning true correlation r = ' ~ (doc.power.r_true | num) ~ '; r0 = ' ~ (doc.power.r0 | num) ~ ' (hypotheses.yaml defaults); ' ~ doc.power.sides | replace('_', '-') ~ ' Fisher-z tests; ' ~ doc.power.n_languages ~ ' language groups; primary family "' ~ doc.power.primary_family ~ '" with ' ~ doc.power.primary_family_size ~ ' hypotheses.') }}
+{{ m.table(['Calculation', 'Required n', 'Planned n', 'Power at planned n', 'CI half-width (per language / pooled)', 'Adequate'], doc.power.rows | power_rows) }}
+{{ m.p('If a planned n is inadequate, one of the following is chosen and stated before the protocol is frozen:') }}
+{{ m.ul(doc.power.fallback_options) }}
+{{ m.ul(doc.power.notes) }}
+{{ m.h(3, '3.5 Stopping rule') }}
+{{ m.p(doc.sampling.stopping_rule) }}
+
+{{ m.h(2, '4. Variables') }}
+{{ m.h(3, '4.1 Manipulated variables') }}
+{{ m.p('Pathway arm (' ~ (doc.design.arms | join(' vs ')) ~ '), randomised ' ~ doc.design.allocation_ratio ~ ' within quota cells. Slot-module assignment (planned missingness, seeded 4-form design) and the rotating criterion block (A/B/C) are randomised and missing completely at random by design.') }}
+{{ m.h(3, '4.2 Constructs and registration status') }}
+{{ m.table(['#', 'Construct', 'Kind', 'Tier', 'Restricted'] + doc.pathways | map('prefix', 'Pathway ') | list + ['Registration (A / B)', 'Report cap'], doc.constructs | construct_rows(doc.pathways, doc.coverage)) }}
+{{ m.h(3, '4.3 Measured variables: behavioural indicators (layer 2)') }}
+{{ m.p('Indicators are defined in the versioned scoring dictionary. min_valid_trials basis: plan_ac = plan acceptance criterion; literature_prior = Spearman-Brown projection from literature priors; val02_pending = placeholder until the VAL-02 report. An indicator with fewer valid trials than its minimum is missing (never imputed at the indicator level).') }}
+{% for p in doc.pathways %}
+{{ m.h(4, 'Pathway ' ~ p ~ ' (' ~ doc.indicators[p] | length ~ ' indicators; min-trial basis: ' ~ (doc.min_trials_basis_counts[p] | basis_summary) ~ ')') }}
+{{ m.table(['Indicator', 'Construct', 'Role', 'Tier', 'Kind', 'Module', 'Direction', 'Transformation', 'Reliability method', 'Level rule', 'Min valid trials', 'Exclusions', 'Gate eligible', 'Group only'], doc.indicators[p] | indicator_rows) }}
+{% endfor %}
+{{ m.h(3, '4.4 Measured variables: criterion scales') }}
+{{ m.p('Criterion scales are administered by trained administrators at supervised sites on administrator devices (never at public kiosks), scored with versioned Python keys. Criterion ids referenced by the registry:') }}
+{{ m.ul(doc.hypotheses | criterion_ids) }}
+
+{{ m.h(2, '5. Analysis plan') }}
+{{ m.h(3, '5.1 Statistical models') }}
+{{ m.ul([
+  'Convergent lower-bound tests: one-sided test that the observed correlation between the construct-keyed indicator composite and the criterion scale exceeds r0, using a ' ~ (doc.defaults.ci_level | pct) ~ ' CI (Fisher z; bootstrap CI as robustness). Correct sign is required; there is no upper bound.',
+  'Discriminant pattern: r_contrast-CV (Westen & Rosenthal, 2003), own > discriminant, with permutation CIs.',
+  'Style constructs (kind S): pre-registered nomological predictions in place of the convergent pattern.',
+  'Retest: ICC(A,1) primary and ICC(C,1) secondary with SEM, SDC, practice effects and form effects; Pearson r is not accepted as retest evidence (pearson_allowed: ' ~ (doc.gates.trait_gate.retest.pearson_allowed | yn) ~ ').',
+  'Reliability by indicator kind: ' ~ (doc.gates.reliability_methods | dictsort | map('join', ' -> ') | join('; ')) ~ '.',
+  'Planned missingness (slot modules, rotating criterion blocks): FIML or multiple imputation.',
+  'Group-level integrity estimators are never computed or reported for an individual.',
+]) }}
+{{ m.h(3, '5.2 Transformations') }}
+{{ m.table(['Id', 'Description'], doc.transformations | rows(['id', 'description'])) }}
+{{ m.h(3, '5.3 Multiplicity') }}
+{{ m.table(['Family', 'Correction', 'Hypotheses (m)', 'Family alpha / q', 'Smallest per-test critical alpha'], doc.families | multiplicity_rows) }}
+{{ m.p('Holm: tests ordered by p-value, the k-th smallest compared with alpha / (m - k + 1). Benjamini-Hochberg: the k-th smallest compared with k q / m. Families with correction "none" are estimation against pre-registered thresholds.') }}
+{{ m.h(3, '5.4 Inference criteria: trait gate (per trait x language x pathway)') }}
+{{ m.table(['Rule', 'Criterion (gates.yaml)'], doc.gates.trait_gate | trait_gate_rows) }}
+{{ m.h(3, '5.5 Inference criteria: battery release gate (per language x pathway x site mode)') }}
+{{ m.table(['Rule', 'Criterion (gates.yaml)'], doc.gates.battery_gate | battery_gate_rows) }}
+{{ m.h(3, '5.6 Caps, withholds and group-only indicators') }}
+{{ m.table(['Construct', 'Maximum status', 'Stricter flag', 'Reason'], doc.gates.caps | rows(['construct', 'max_status', 'stricter_flag', 'reason'])) }}
+{{ m.table(['Construct', 'Pathway', 'Permanently withheld because'], doc.gates.permanent_withhold | rows(['construct', 'pathway', 'reason'])) }}
+{{ m.p('Group-only indicators (never individual, never joined to individual tables): ' ~ (doc.gates.group_only_indicators | join(', ')) ~ '.') }}
+{{ m.kv(doc.gates.rules | dictsort) }}
+{{ m.h(3, '5.7 Exceptions and the research-only path') }}
+{{ m.table(['Exception', 'Construct', 'Description', 'Capped at', 'Lifted when'], doc.exceptions | rows(['id', 'construct', 'description', 'cap_status', 'lifted_when'])) }}
+{{ m.ol(doc.research_only_path | map(attribute='rule') | list) }}
+{{ m.h(3, '5.8 Data exclusion') }}
+{{ m.p('Exclusion rules are defined once in the shared dictionary and referenced by id from each indicator. The count shows how many indicators (both pathways) apply each rule.') }}
+{{ m.table(['Rule', 'Applies to', 'Condition', 'Description', 'Indicators using it'], doc.exclusion_rules | rows(['id', 'applies_to', 'condition', 'description', 'n_indicators'])) }}
+{{ m.p('Data-quality thresholds (gates.yaml quality): ' ~ (doc.gates.quality | dictsort | map('join', ' = ') | join('; ')) ~ '. Differential exclusion between required groups may not exceed ' ~ (doc.gates.battery_gate.differential_exclusion_max_pp | num) ~ ' percentage points (battery gate A3).') }}
+{{ m.h(3, '5.9 Missing data') }}
+{{ m.table(['Policy', 'Method', 'Description'], doc.missing_data_policies | rows(['id', 'method', 'description'])) }}
+{{ m.h(3, '5.10 Targets (descriptive, per ' ~ (doc.targets.per | join(' x ')) ~ ')') }}
+{{ m.kv([('Completion, supervised', doc.targets.completion.supervised | pct), ('Completion, open public', doc.targets.completion.open_public | pct), ('Would play again', doc.targets.play_again | pct)]) }}
+{{ m.h(3, '5.11 Exploratory analyses') }}
+{{ m.p('Everything outside the registry, including the exploratory family, per-language breakdowns not listed above, disattenuated correlations, factor-structure analyses and the B vs A comparison beyond the registered tests, is labelled exploratory in every report.') }}
+
+{{ m.h(2, '6. Other') }}
+{{ m.h(3, '6.1 Amendments') }}
+{{ m.p('After registration, thresholds and hypotheses change only through a timestamped amendment recorded as a signed PLT-09 governance record and filed with the registry. Each amendment regenerates this document; the input hashes above identify exactly which version of each input applied.') }}
+{{ m.h(3, '6.2 Display rule (participant reports)') }}
+{{ m.kv(doc.gates.display_rule | dictsort) }}
+{{ m.h(3, '6.3 Review checklist before submission') }}
+{{ m.ul([
+  'All inputs frozen (status frozen, frozen_at set) by a signed PLT-09 record; regenerate and confirm no generator errors. [Research Lead]',
+  'VAL-02 power report attached; planning values confirmed or revised in stats/prereg/prereg.config.yaml. [Research Lead]',
+  'Contributors, funding and conflicts of interest completed. [PI]',
+  'Protocol id and IEC/IRB approval reference added. [Ethics Officer]',
+  'Pilot languages confirmed. [Stakeholders]',
+]) }}
+{{ m.doc_end(doc) }}

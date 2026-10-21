@@ -10,7 +10,7 @@ Checks that
 Run (Python Playwright, isolated from the workspace lockfile)::
 
     uv run --with playwright python -m playwright install --with-deps chromium
-    uv run --with playwright python .github/e2e/smoke.py --api-url http://127.0.0.1:8000 \
+    uv run --with playwright python cicd/e2e/smoke.py --api-url http://127.0.0.1:8000 \
         --kiosk-url http://127.0.0.1:4173 [--web-url http://127.0.0.1:3000] --artifacts e2e-artifacts
 """
 

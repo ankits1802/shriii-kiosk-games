@@ -1,7 +1,7 @@
 /**
  * Network-level mock of the FastAPI endpoints the shell uses. Tokens are unsigned JWT-shaped
  * strings carrying roles/studies; `/auth/me` answers with the permissions the real RBAC matrix
- * (apps/api rbac.py, executed by Python) grants those roles.
+ * (backend/api rbac.py, executed by Python) grants those roles.
  */
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
@@ -9,7 +9,9 @@ import { test as base, expect, type Page } from '@playwright/test';
 
 export type Role = 'admin' | 'researcher' | 'administrator' | 'analyst';
 
-const RBAC_PY = fileURLToPath(new URL('../../api/src/shriii_api/auth/rbac.py', import.meta.url));
+const RBAC_PY = fileURLToPath(
+  new URL('../../../../backend/api/src/shriii_api/auth/rbac.py', import.meta.url),
+);
 const SCRIPT = `
 import importlib.util, json, sys
 spec = importlib.util.spec_from_file_location("rbac", sys.argv[1])

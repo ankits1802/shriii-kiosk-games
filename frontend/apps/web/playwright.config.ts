@@ -9,7 +9,7 @@ const built = existsSync(`${here}.next/BUILD_ID`);
 /**
  * Smoke tests against the production server (`next start`). The FastAPI backend is mocked at the
  * network layer (see e2e/fixtures.ts) so the suite needs no database; the mock derives each role's
- * permissions from apps/api rbac.py. `PW_DEV=1` runs against `next dev` instead.
+ * permissions from backend/api rbac.py. `PW_DEV=1` runs against `next dev` instead.
  */
 const command = process.env.PW_DEV
   ? `pnpm exec next dev --port ${PORT}`

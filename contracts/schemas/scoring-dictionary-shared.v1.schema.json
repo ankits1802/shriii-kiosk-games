@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://shriii.local/contracts/scoring-dictionary-shared.v1.schema.json",
   "title": "ScoringDictionaryShared",
-  "description": "scoring/dictionary/shared.yaml: the competency model (17 constructs) plus shared exclusion, missing-data and transformation catalogues (SCR-01).",
+  "description": "stats/measurement-model/dictionary/shared.yaml: the competency model (17 constructs) plus shared exclusion, missing-data and transformation catalogues (SCR-01).",
   "type": "object",
   "additionalProperties": false,
   "properties": {

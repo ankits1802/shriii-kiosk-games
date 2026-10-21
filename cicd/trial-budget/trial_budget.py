@@ -397,7 +397,9 @@ def build_report(root: Path = REPO_ROOT, config_path: Path = DEFAULT_CONFIG) -> 
     plan_targets = parse_plan_section_4_4(
         (root / "docs" / "IMPLEMENTATION_PLAN.md").read_text(encoding="utf-8"), cfg["plan_section_4_4"]
     )
-    dictionaries = {p: _yaml(root / "scoring" / "dictionary" / f"dictionary.{p}.yaml") for p in ("A", "B")}
+    dictionaries = {
+        p: _yaml(root / "stats" / "measurement-model" / "dictionary" / f"dictionary.{p}.yaml") for p in ("A", "B")
+    }
     segment_len = int(_dig(_yaml(root / cfg["segment_param"]["file"]), cfg["segment_param"]["path"]))
 
     modules = {m: module_budget(g, levels) for m, g in games.items()}

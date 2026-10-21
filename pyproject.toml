@@ -33,14 +33,14 @@ default-groups = ["dev"]
 
 [tool.uv.workspace]
 members = [
-  "python/shriii_contracts",
-  "python/shriii_scoring",
-  "python/shriii_validation",
-  "python/shriii_simulator",
-  "python/shriii_rbridge",
-  "apps/api",
-  "tools/prereg",
-  "reports",
+  "contracts/python",
+  "stats/scoring",
+  "stats/validation",
+  "stats/simulator",
+  "stats/rbridge",
+  "backend/api",
+  "stats/prereg",
+  "stats/reports",
   "tools/i18n",
   "tools/loadtest",
 ]
@@ -59,16 +59,16 @@ shriii-loadtest = { workspace = true }
 
 [tool.pytest.ini_options]
 testpaths = [
-  "python/shriii_contracts/tests",
-  "python/shriii_scoring/tests",
-  "python/shriii_validation/tests",
-  "python/shriii_simulator/tests",
-  "python/shriii_rbridge/tests",
-  "apps/api/tests",
-  "scoring/tests",
+  "contracts/python/tests",
+  "stats/scoring/tests",
+  "stats/validation/tests",
+  "stats/simulator/tests",
+  "stats/rbridge/tests",
+  "backend/api/tests",
+  "stats/measurement-model/tests",
   "content/tests",
-  "tools/prereg/tests",
-  "reports/tests",
+  "stats/prereg/tests",
+  "stats/reports/tests",
   "tools/i18n/tests",
   "tools/loadtest/tests",
 ]
@@ -83,7 +83,7 @@ filterwarnings = ["error::pytest.PytestUnraisableExceptionWarning"]
 [tool.ruff]
 line-length = 120
 target-version = "py313"
-extend-exclude = ["docs/reference", "node_modules", "python/shriii_contracts/src/shriii_contracts/_generated.py"]
+extend-exclude = ["docs/reference", "node_modules", "contracts/python/src/shriii_contracts/_generated.py"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "B", "UP", "N", "SIM", "RUF", "PT", "C4", "PL"]
@@ -98,25 +98,25 @@ strict = true
 warn_unreachable = true
 plugins = ["pydantic.mypy"]
 files = [
-  "python/shriii_contracts/src",
-  "python/shriii_contracts/tests",
-  "python/shriii_scoring/src",
-  "python/shriii_scoring/tests",
-  "python/shriii_validation/src",
-  "python/shriii_validation/tests",
-  "python/shriii_simulator/src",
-  "python/shriii_simulator/tests",
-  "apps/api/src",
-  "apps/api/tests",
-  "scoring/tests",
+  "contracts/python/src",
+  "contracts/python/tests",
+  "stats/scoring/src",
+  "stats/scoring/tests",
+  "stats/validation/src",
+  "stats/validation/tests",
+  "stats/simulator/src",
+  "stats/simulator/tests",
+  "backend/api/src",
+  "backend/api/tests",
+  "stats/measurement-model/tests",
   "content/tests",
 ]
 mypy_path = [
-  "python/shriii_contracts/src",
-  "python/shriii_scoring/src",
-  "python/shriii_validation/src",
-  "python/shriii_simulator/src",
-  "apps/api/src",
+  "contracts/python/src",
+  "stats/scoring/src",
+  "stats/validation/src",
+  "stats/simulator/src",
+  "backend/api/src",
 ]
 explicit_package_bases = true
 

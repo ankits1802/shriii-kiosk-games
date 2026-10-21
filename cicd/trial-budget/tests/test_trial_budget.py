@@ -1,4 +1,4 @@
-"""Tests for tools/trial-budget (SCR-03 budget sheet, ONB-08 session budget check)."""
+"""Tests for cicd/trial-budget (SCR-03 budget sheet, ONB-08 session budget check)."""
 
 from __future__ import annotations
 
@@ -15,9 +15,9 @@ import yaml
 ROOT = tb.REPO_ROOT
 COPY = [
     "content/games",
-    "scoring/dictionary",
+    "stats/measurement-model/dictionary",
     "docs/IMPLEMENTATION_PLAN.md",
-    "python/shriii_scoring/src/shriii_scoring/data/scoring_params.yaml",
+    "stats/scoring/src/shriii_scoring/data/scoring_params.yaml",
 ]
 
 
@@ -98,7 +98,11 @@ def test_every_dictionary_indicator_has_a_supply_rule() -> None:
     report = tb.build_report()
     assert all(r.verdict != "unmapped" for r in report.supply)
     assert len(report.supply) == sum(
-        len(yaml.safe_load((ROOT / "scoring" / "dictionary" / f"dictionary.{p}.yaml").read_text("utf-8"))["indicators"])
+        len(
+            yaml.safe_load(
+                (ROOT / "stats" / "measurement-model" / "dictionary" / f"dictionary.{p}.yaml").read_text("utf-8")
+            )["indicators"]
+        )
         for p in "AB"
     )
 
@@ -178,7 +182,7 @@ def test_trial_shortfall_on_pending_basis_is_a_warning(repo: Path) -> None:
 
 
 def test_demoted_indicator_shortfall_is_accepted(repo: Path) -> None:
-    path = repo / "scoring/dictionary/dictionary.B.yaml"
+    path = repo / "stats/measurement-model/dictionary/dictionary.B.yaml"
     d = yaml.safe_load(path.read_text(encoding="utf-8"))
     for ind in d["indicators"]:
         if ind["id"] == "self_control.nogo_commission_rate":

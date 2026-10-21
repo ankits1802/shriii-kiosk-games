@@ -1,5 +1,5 @@
 /**
- * Browser launcher for the module dev harness: `apps/kiosk?module=<id>&level=L2&lang=en-IN&seed=123`
+ * Browser launcher for the module dev harness: `frontend/apps/kiosk?module=<id>&level=L2&lang=en-IN&seed=123`
  * starts one module standalone on a full-screen Pixi stage (no onboarding, no session statechart),
  * for screenshots, scripted bots and module development. The module is resolved through the module
  * registry exactly like in the session's play state (placeholder only when nothing is registered).

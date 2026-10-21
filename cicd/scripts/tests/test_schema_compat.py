@@ -1,4 +1,4 @@
-"""Tests for the contract compatibility checker (.github/scripts/schema_compat.py)."""
+"""Tests for the contract compatibility checker (cicd/scripts/schema_compat.py)."""
 
 from __future__ import annotations
 
@@ -12,7 +12,7 @@ import pytest
 import schema_compat as sc
 
 REPO = Path(__file__).resolve().parents[3]
-SCHEMAS = REPO / "packages" / "contracts" / "schemas"
+SCHEMAS = REPO / "contracts" / "schemas"
 
 OBJ: dict[str, Any] = {
     "$schema": "https://json-schema.org/draft/2020-12/schema",

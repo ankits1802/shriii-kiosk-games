@@ -17,7 +17,7 @@
 
 ## 2. Retention schedule
 
-"Engine rule" is the rule id in `apps/api/src/shriii_api/config/retention.yaml`. Rows marked **gap** have no
+"Engine rule" is the rule id in `backend/api/src/shriii_api/config/retention.yaml`. Rows marked **gap** have no
 engine rule yet and must be added before the stage named in the last column.
 
 | Data class | Retention | Trigger for deletion | Mechanism | Engine rule | Needed by |

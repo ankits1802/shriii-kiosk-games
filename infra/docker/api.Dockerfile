@@ -5,7 +5,7 @@
 #   docker build -f infra/docker/api.Dockerfile -t shriii/api .
 #   docker build -f infra/docker/api.Dockerfile --target worker -t shriii/worker .
 #
-# uv installs the locked workspace (apps/api + python/*) non-editable into /opt/venv; the runtime stage is
+# uv installs the locked workspace (backend/api, contracts/python and the stats/* engines) non-editable into /opt/venv; the runtime stage is
 # python-slim with no compiler, runs as an unprivileged user and reads the canonical schemas, scoring
 # dictionary and content from /app (SHRIII_REPO_ROOT). Scientific thresholds stay in those YAML files.
 
@@ -26,18 +26,22 @@ WORKDIR /src
 
 # 1) Third-party dependencies only (cached until the lockfile or a member manifest changes).
 COPY pyproject.toml uv.lock ./
-COPY apps/api/pyproject.toml apps/api/
-COPY python/shriii_contracts/pyproject.toml python/shriii_contracts/
-COPY python/shriii_scoring/pyproject.toml python/shriii_scoring/
-COPY python/shriii_validation/pyproject.toml python/shriii_validation/
-COPY python/shriii_simulator/pyproject.toml python/shriii_simulator/
+COPY backend/api/pyproject.toml backend/api/
+COPY contracts/python/pyproject.toml contracts/python/
+COPY stats/scoring/pyproject.toml stats/scoring/
+COPY stats/validation/pyproject.toml stats/validation/
+COPY stats/simulator/pyproject.toml stats/simulator/
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --frozen --no-dev --no-install-workspace \
         --package shriii-api --package shriii-simulator --extra otel
 
 # 2) Workspace members, installed non-editable so the venv is self-contained.
-COPY apps/api apps/api
-COPY python python
+COPY backend/api backend/api
+COPY contracts/python contracts/python
+COPY stats/scoring stats/scoring
+COPY stats/validation stats/validation
+COPY stats/simulator stats/simulator
+COPY stats/rbridge stats/rbridge
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --frozen --no-dev --no-editable \
         --package shriii-api --package shriii-simulator --extra otel \
@@ -67,8 +71,8 @@ ENV PATH=/opt/venv/bin:$PATH \
 
 COPY --from=build /opt/venv /opt/venv
 # Read-only runtime resources (canonical contracts, scoring dictionary and gates, content).
-COPY packages/contracts/schemas /app/packages/contracts/schemas
-COPY scoring /app/scoring
+COPY contracts/schemas /app/contracts/schemas
+COPY stats/measurement-model /app/stats/measurement-model
 COPY content /app/content
 COPY infra/docker/healthcheck.py /usr/local/bin/shriii-healthcheck
 WORKDIR /app

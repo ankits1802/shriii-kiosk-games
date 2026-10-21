@@ -42,7 +42,7 @@ guidelines:
         feature: CRT-08
       - status: in_repo
         what: Pre-registered nomological network per construct, tested per language in Stage 2.
-        path: scoring/hypotheses.yaml
+        path: stats/measurement-model/hypotheses.yaml
     open_gaps:
       - Construct-overlap judgement by an expert panel per language has not been held yet.
     owner_role: expert_reviewer
@@ -149,7 +149,7 @@ guidelines:
         feature: Stage 1 / Stage 2 (plan sections 7.3-7.4)
       - status: in_repo
         what: Reliability engine (split-half, ICC, alpha/omega) ready for per-language analysis.
-        path: python/shriii_validation/src/shriii_validation/reliability.py
+        path: stats/validation/src/shriii_validation/reliability.py
     open_gaps:
       - Pilot not run.
     owner_role: itc_lead
@@ -181,10 +181,10 @@ guidelines:
         feature: VAL-08a / VAL-08 / VAL-09
       - status: in_repo
         what: Logistic, ordinal and linear DIF and TOST equivalence implemented in Python.
-        path: python/shriii_validation/src/shriii_validation/fairness.py
+        path: stats/validation/src/shriii_validation/fairness.py
       - status: in_repo
         what: Gates require criterion invariance and no unresolved large DIF; invariance groupings include language and variant_form.
-        path: scoring/gates.yaml
+        path: stats/measurement-model/gates.yaml
     open_gaps:
       - R backend (lavaan/semTools/mirt) for multigroup CFA is deferred (BUILD_DECISIONS).
     owner_role: itc_lead
@@ -199,7 +199,7 @@ guidelines:
         feature: VAL-04 / VAL-05 / VAL-06 / VAL-11
       - status: in_repo
         what: 'Battery release gate per language: reports disabled until the gate passes in >= 2 language groups (fail closed).'
-        path: scoring/gates.yaml
+        path: stats/measurement-model/gates.yaml
     open_gaps:
       - No data yet.
     owner_role: itc_lead
@@ -211,7 +211,7 @@ guidelines:
     evidence:
       - status: in_repo
         what: Pooled-language statistics only where invariance holds; small groups use Bayesian approximate invariance or moderated MIMIC.
-        path: scoring/gates.yaml
+        path: stats/measurement-model/gates.yaml
       - status: planned
         what: Anchor trials shared across levels and forms support linking.
         feature: ENG-07 anchor trials
@@ -258,7 +258,7 @@ guidelines:
     evidence:
       - status: in_repo
         what: Required groupings (language, literacy, education, age band, gender, device familiarity, input mode, variant form) enter invariance tests and as covariates.
-        path: scoring/gates.yaml
+        path: stats/measurement-model/gates.yaml
       - status: planned
         what: Player reports are banded and strengths-framed; no cross-group comparison is shown to players.
         feature: REP-01 / REP-02
@@ -272,7 +272,7 @@ guidelines:
     evidence:
       - status: in_repo
         what: Trait gate requires invariance per grouping; reports fail closed until the battery gate passes.
-        path: scoring/gates.yaml
+        path: stats/measurement-model/gates.yaml
     open_gaps: []
     owner_role: itc_lead
     status: met

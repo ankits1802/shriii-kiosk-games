@@ -1,7 +1,7 @@
 name: shriii-codeql
 paths-ignore:
-  - packages/contracts/src/generated
-  - python/shriii_contracts/src/shriii_contracts/_generated.py
+  - contracts/src/generated
+  - contracts/python/src/shriii_contracts/_generated.py
   - docs/reference
   - "**/node_modules"
   - "**/dist"

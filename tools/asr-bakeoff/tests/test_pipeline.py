@@ -23,6 +23,7 @@ from shriii_asr_bakeoff.schema import SchemaError, validate
 
 KWS_DIR = (
     TOOL_ROOT.parent.parent
+    / "frontend"
     / "packages"
     / "asr-sherpa"
     / "models"

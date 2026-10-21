@@ -1,6 +1,6 @@
 /**
  * Kiosk configuration for the `/kiosk` route, from build-time NEXT_PUBLIC_* values. Mirrors
- * apps/kiosk/src/config.ts (VITE_* there). Unknown values fall back to safe defaults and dev-only
+ * frontend/apps/kiosk/src/config.ts (VITE_* there). Unknown values fall back to safe defaults and dev-only
  * switches are forced off in production builds.
  */
 import type {

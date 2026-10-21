@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Contract compatibility check (PLT-02 policy, PLT-04 AC) between two copies of ``packages/contracts/schemas``.
+"""Contract compatibility check (PLT-02 policy, PLT-04 AC) between two copies of ``contracts/schemas``.
 
 Usage::
 
-    python .github/scripts/schema_compat.py --base <dir with base schemas> --head <dir with head schemas>
+    python cicd/scripts/schema_compat.py --base <dir with base schemas> --head <dir with head schemas>
 
 Each schema node is compared structurally (local ``$defs`` by name, discriminated ``oneOf`` branches by their
 ``const`` discriminator value, other arrays by position). Every difference is classified:
@@ -431,7 +431,7 @@ def render_markdown(changes: Sequence[Change], fail_on: str) -> str:
         lines += [
             "",
             "Breaking changes need a new major schema file (`<name>.v<N+1>.schema.json`), a backend upcaster and "
-            "migration notes (`packages/contracts/migrations/<name>.v<N+1>.md`).",
+            "migration notes (`contracts/migrations/<name>.v<N+1>.md`).",
         ]
     if counts["forward"]:
         lines += [

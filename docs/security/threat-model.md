@@ -14,7 +14,7 @@ Read with: [data-flows.md](data-flows.md) (diagrams and trust boundaries),
 
 **In scope:** the kiosk (hardware, OS, Electron app, outbox), the kiosk-to-backend transport, the FastAPI
 service and worker, the PostgreSQL data platform and object storage, the identity vault, the research web
-app (`apps/web`, `/research/*` and `/admin/*`), operators and insiders, and the build and update supply
+app (`frontend/apps/web`, `/research/*` and `/admin/*`), operators and insiders, and the build and update supply
 chain (detail in [supply-chain-policy.md](supply-chain-policy.md)).
 
 **Out of scope:** cloud-provider internals, the OIDC provider's own security, and physical security of
@@ -30,7 +30,7 @@ the hosting region.
 | AS-4 | pid linkage and criterion responses | Links games to psychometric answers (BFI-2, DERS-16: sensitive). | `linkage.*`, `criterion.*` |
 | AS-5 | Derived scores, trait estimates, reports | Could be misused for decisions about people; must stay release-gated. | `scored.*`, `reporting.*`, report tokens |
 | AS-6 | Keys: backend X25519 private key, session-key KEK, vault key, pid pepper, Ed25519 release key, kiosk mTLS keys, device tokens | Compromise defeats encryption, crypto-shredding or authenticity. | Env/KMS (backend), TPM (kiosk) |
-| AS-7 | Scientific integrity: dictionary, gates, release packs, synthetic/real separation | Tampering yields invalid science or premature reports. | `scoring/*.yaml`, `validation.*`, signed packs |
+| AS-7 | Scientific integrity: dictionary, gates, release packs, synthetic/real separation | Tampering yields invalid science or premature reports. | `stats/measurement-model/*.yaml`, `validation.*`, signed packs |
 | AS-8 | Kiosk availability and the participant experience | Field sessions are costly; a broken or hijacked kiosk harms people and the study. | Field sites |
 | AS-9 | Audit trail | Needed to prove access, investigate incidents and meet DPDP duties. | `governance.audit_events` |
 
@@ -125,7 +125,7 @@ noted), **Open** (planned control not yet built), **Accepted** (owner decision r
 | D-08 | E | The application DB role can DELETE guarded tables outside erasure. | 1 | 3 | 3 | Trigger requires `mutation_purpose`; use a separate `shriii_erasure` login for the erasure job only (roles exist in migration 0002) | Partial |
 | D-09 | I | Key compromise: env-var keys readable by anyone with host or container access; one KEK protects both DEKs and DLQ payloads. | 2 | 3 | 6 | C-08 KMS-held keys, key separation per purpose, rotation (`kek_version` column exists), no keys in images or logs | Open (SF-07) |
 
-## 7. Research web app (`apps/web`, TB-6)
+## 7. Research web app (`frontend/apps/web`, TB-6)
 
 | ID | STRIDE | Threat scenario | L | I | Risk | Controls | Status |
 |---|---|---|---|---|---|---|---|

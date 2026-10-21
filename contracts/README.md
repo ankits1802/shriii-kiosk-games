@@ -29,7 +29,7 @@ Shared definitions (UUIDv7, enums, bands, construct ids) are in `common.v1.schem
 The generator also lints the restricted profile (no `if/then/else`, `unevaluated*`, `$dynamicRef`,
 undiscriminated `oneOf`).
 
-The Python mirror lives in `python/shriii_contracts` and validates the same `fixtures/`.
+The Python mirror lives in `contracts/python` and validates the same `fixtures/`.
 
 ## Semantics beyond the schema
 

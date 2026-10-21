@@ -27,7 +27,10 @@ import { makeRig, type TestRig } from './fakes.ts';
 
 const TEMPLATE = JSON.parse(
   readFileSync(
-    resolve(process.cwd(), '../contracts/fixtures/valid/event-envelope/consent_declined.json'),
+    resolve(
+      process.cwd(),
+      '../../../contracts/fixtures/valid/event-envelope/consent_declined.json',
+    ),
     'utf8',
   ),
 ) as EventEnvelope;
@@ -174,7 +177,7 @@ describe('practice config comes from the warm-up game config (ONB-05)', () => {
   it('reads tap window, hold threshold, passes and attempt cap from warmup.json', async () => {
     const { practiceConfigFromWarmup } = await import('../practiceConfig.ts');
     const warmup = JSON.parse(
-      readFileSync(resolve(process.cwd(), '../../content/games/shared/warmup.json'), 'utf8'),
+      readFileSync(resolve(process.cwd(), '../../../content/games/shared/warmup.json'), 'utf8'),
     );
     const p = practiceConfigFromWarmup(warmup, 'L2');
     expect(p.tapWindowMs).toBe(warmup.levels.L2.timing.tap_window_ms);

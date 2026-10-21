@@ -15,13 +15,13 @@ Key documents:
 
 ## Five data layers (never mixed)
 
-1. **Raw events** — append-only, `packages/contracts/schemas/event-envelope.v1.schema.json`.
-2. **Behavioural indicators** — versioned scoring dictionary, `scoring/dictionary/*.yaml`.
+1. **Raw events** — append-only, `contracts/schemas/event-envelope.v1.schema.json`.
+2. **Behavioural indicators** — versioned scoring dictionary, `stats/measurement-model/dictionary/*.yaml`.
 3. **Criterion scale scores** — versioned keys, `content/instruments/*.yaml`.
-4. **Validated trait estimates** — only after the gates in `scoring/gates.yaml` pass.
+4. **Validated trait estimates** — only after the gates in `stats/measurement-model/gates.yaml` pass.
 5. **Participant interpretations** — banded, strengths-framed, release-gated (`ReportArtefact`, `ReleasePack`).
 
-Scientific thresholds live only in YAML (`scoring/*.yaml`); reports stay disabled until the battery gate
+Scientific thresholds live only in YAML (`stats/measurement-model/*.yaml`); reports stay disabled until the battery gate
 passes in at least two language groups (fail closed).
 
 ## Repository layout
@@ -63,8 +63,8 @@ docs/
 pnpm install                 # JS workspace (apps/*, packages/*)
 uv sync                      # Python workspace -> .venv (all members + dev tools)
 cp .env.example .env         # development settings
-docker compose up -d postgres            # PostgreSQL 18 (db shriii, user/password dev)
-docker compose --profile tools up -d     # + Adminer on http://localhost:8080
+docker compose -f infra/compose/docker-compose.yml up -d postgres            # PostgreSQL 18 (or pnpm db:up; (db shriii, user/password dev)
+docker compose -f infra/compose/docker-compose.yml --profile tools up -d     # + Adminer on http://localhost:8080
 ```
 
 ## Everyday commands
@@ -80,7 +80,7 @@ docker compose --profile tools up -d     # + Adminer on http://localhost:8080
 | Python tests | `uv run pytest` (contracts, scoring dictionary, content, member smoke tests) |
 | Python lint / types | `uv run ruff check . && uv run ruff format --check . && uv run mypy` |
 | Regenerate TS contracts | `pnpm contracts:generate` |
-| Regenerate Pydantic models | `uv run python python/shriii_contracts/src/shriii_contracts/codegen.py` |
+| Regenerate Pydantic models | `uv run python contracts/python/src/shriii_contracts/codegen.py` |
 
 Dev-only switches for the kiosk (`.env`, never honoured by production builds):
 `VITE_DEV_VOICE_PLACEHOLDER=true` (Web Speech placeholder with a "DEV VOICE" banner) and
@@ -88,10 +88,10 @@ Dev-only switches for the kiosk (`.env`, never honoured by production builds):
 
 ## Contracts workflow
 
-1. Edit a schema in `packages/contracts/schemas/` (restricted 2020-12 profile: no `if/then/else`,
+1. Edit a schema in `contracts/schemas/` (restricted 2020-12 profile: no `if/then/else`,
    `unevaluated*`, `$dynamicRef`; every `oneOf` needs a `discriminator`).
 2. Minor versions add optional fields only; a breaking change needs a new major file plus an upcaster.
-3. Run both generators (table above), add or adjust fixtures in `packages/contracts/fixtures/`, then run
+3. Run both generators (table above), add or adjust fixtures in `contracts/fixtures/`, then run
    `pnpm test` and `uv run pytest`. Both sides validate the same fixtures (strict writers, tolerant readers).
 
 ## Scientific content workflow

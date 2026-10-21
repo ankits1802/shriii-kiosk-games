@@ -41,7 +41,7 @@ flowchart LR
     V[(identity_vault DB)]
   end
   subgraph TB6["TB-6 Research zone"]
-    WEB[apps/web<br/>/research and /admin]
+    WEB[frontend/apps/web<br/>/research and /admin]
     R[Researcher / analyst]
   end
   IDP[[OIDC provider<br/>Cognito + MFA]]
@@ -103,7 +103,7 @@ flowchart TB
 Wave-1 notes: the browser build uses an IndexedDB (Dexie) outbox and sends `none_dev` plaintext chunks;
 sealing, SQLite and TPM integration are later features (KSK-07 in Electron). The Electron scaffold already
 sets `sandbox`, `contextIsolation`, a strict CSP and a deny-all permission handler
-(`apps/kiosk/electron/main.ts`). The uploader does not attach a device credential yet.
+(`frontend/apps/kiosk/electron/main.ts`). The uploader does not attach a device credential yet.
 
 ## L1: ingestion (TB-3, TB-4)
 
@@ -143,7 +143,7 @@ Raw chunks are stored in `kiosk_raw.batch_chunks` (JSONB), not S3. There is no m
 ```mermaid
 flowchart LR
   subgraph TB6["TB-6 Research zone"]
-    BR[Browser<br/>apps/web /research, /admin]
+    BR[Browser<br/>frontend/apps/web /research, /admin]
     ADM[Tablet: researcher-administered<br/>criterion battery]
   end
   subgraph TB4["TB-4 Backend"]

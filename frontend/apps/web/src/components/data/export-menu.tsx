@@ -35,7 +35,7 @@ import {
 
 /**
  * Where export records go. The default writes a structured console record; deployments wire a
- * sink that posts to the API audit log (see apps/web README, "Export audit").
+ * sink that posts to the API audit log (see frontend/apps/web README, "Export audit").
  */
 const consoleSink: ExportAuditSink = {
   record(entry) {

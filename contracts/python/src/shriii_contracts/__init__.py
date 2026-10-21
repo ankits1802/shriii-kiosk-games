@@ -1,6 +1,6 @@
 """SHRIII contracts for Python: Pydantic v2 models generated from the canonical JSON Schemas.
 
-* ``packages/contracts/schemas/*.v1.schema.json`` are canonical; ``_generated.py`` is produced by
+* ``contracts/schemas/*.v1.schema.json`` are canonical; ``_generated.py`` is produced by
   :mod:`shriii_contracts.codegen` and checked for drift in tests.
 * Models are tolerant readers (unknown minor-N+1 fields are kept in ``model_extra``); use
   :func:`parse_event` with ``strict=True`` or :func:`assert_no_unknown_fields` on the writer side.

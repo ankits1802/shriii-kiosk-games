@@ -1,7 +1,7 @@
 # @shriii/outbox-sqlite
 
 Encrypted, crash-safe kiosk outbox for the Electron main process (KSK-07). It implements the
-kiosk-game `Outbox` contract (`packages/kiosk-game/src/core/contracts.ts`) and the full
+kiosk-game `Outbox` contract (`frontend/packages/kiosk-game/src/core/contracts.ts`) and the full
 `KioskOutbox` surface, so the kiosk-game logger, crash recovery and uploader run on it unchanged
 (see `test/kiosk-game-compat.test.ts`).
 

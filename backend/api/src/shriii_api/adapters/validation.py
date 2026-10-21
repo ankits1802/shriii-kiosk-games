@@ -6,8 +6,9 @@
 
 There is no reference fallback: when the engine is not importable every call raises
 :class:`AdapterUnavailableError` (code ``adapter_unavailable``) and the job fails permanently, so no
-unvalidated number is ever persisted. Thresholds are read by the engine from ``scoring/gates.yaml``, which
-the worker passes in the context together with the dictionary and ``hypotheses.yaml``.
+unvalidated number is ever persisted. Thresholds are read by the engine from
+``stats/measurement-model/gates.yaml``, which the worker passes in the context together with the dictionary
+and ``hypotheses.yaml``.
 """
 
 from __future__ import annotations

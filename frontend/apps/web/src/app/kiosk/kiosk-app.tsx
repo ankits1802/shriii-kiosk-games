@@ -3,7 +3,7 @@
 /**
  * Client-only kiosk root (loaded with `ssr: false`): mounts the @shriii/kiosk-game runtime view,
  * which owns the Pixi stage and the session statechart (attract -> consent -> play -> report ->
- * wipe). Same wiring as apps/kiosk/src/App.tsx; dev-only code is behind NODE_ENV checks so it is
+ * wipe). Same wiring as frontend/apps/kiosk/src/App.tsx; dev-only code is behind NODE_ENV checks so it is
  * dropped from production bundles.
  */
 import type { EventValidator, KioskRuntime } from '@shriii/kiosk-game';

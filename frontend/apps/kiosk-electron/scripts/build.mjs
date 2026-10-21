@@ -3,12 +3,12 @@
  * Build the kiosk runtime into dist/:
  *   dist/main/index.js       ESM bundle of the main process (workspace TS sources inlined)
  *   dist/preload/index.cjs   single-file CommonJS preload (sandboxed preloads cannot import)
- *   dist/renderer/           the built apps/kiosk renderer (or a placeholder when not built)
+ *   dist/renderer/           the built frontend/apps/kiosk renderer (or a placeholder when not built)
  *   dist/static/             shell pages (out-of-service)
  *   dist/config/             outbox policy YAML
  *   dist/build-info.json
  *
- *   node scripts/build.mjs [--with-renderer]   (--with-renderer runs the apps/kiosk Vite build first)
+ *   node scripts/build.mjs [--with-renderer]   (--with-renderer runs the frontend/apps/kiosk Vite build first)
  */
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
@@ -78,7 +78,7 @@ const rendererOut = path.join(dist, 'renderer');
 let rendererSource = 'placeholder';
 if (existsSync(path.join(rendererSrc, 'index.html'))) {
   cpSync(rendererSrc, rendererOut, { recursive: true, filter: (src) => !src.endsWith('.map') });
-  rendererSource = 'apps/kiosk/dist';
+  rendererSource = 'frontend/apps/kiosk/dist';
 } else {
   mkdirSync(rendererOut, { recursive: true });
   writeFileSync(
@@ -86,7 +86,7 @@ if (existsSync(path.join(rendererSrc, 'index.html'))) {
     '<!doctype html><html><head><meta charset="utf-8"><title>SHRIII Kiosk</title></head><body style="background:#b8643c"></body></html>\n',
   );
   console.warn(
-    '[build] apps/kiosk/dist not found: packaged a placeholder renderer (run with --with-renderer)',
+    '[build] frontend/apps/kiosk/dist not found: packaged a placeholder renderer (run with --with-renderer)',
   );
 }
 

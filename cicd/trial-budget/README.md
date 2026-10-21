@@ -6,7 +6,7 @@ The trial-time budget sheet. It reads, and never writes:
   level and bot, intro/outro, soft and hard caps;
 - `content/games/session-plan.json`: the 900 s cap, the 890 s target, segment ceilings, scored-play limits, module
   and episode ranges, the Pathway B core order and slot candidates, the Pathway A order;
-- `scoring/dictionary/dictionary.{A,B}.yaml`: `min_valid_trials` per indicator (fed by VAL-02);
+- `stats/measurement-model/dictionary/dictionary.{A,B}.yaml`: `min_valid_trials` per indicator (fed by VAL-02);
 - `docs/IMPLEMENTATION_PLAN.md` section 4.4: per-segment ceilings, scored-play design targets, total and cap.
 
 It recomputes each module's duration (same model as `content/games/README.md`), sums every session form
@@ -33,11 +33,11 @@ demoted (`research_only`, `withheld`, `retired`). Known shortfalls can be waived
 reason; a waiver that is no longer needed fails the run so it gets removed.
 
 ```bash
-uv run python tools/trial-budget/trial_budget.py                 # Markdown sheet (exit 1 on errors)
-uv run python tools/trial-budget/trial_budget.py --format csv     # one row per indicator (spreadsheet)
-uv run python tools/trial-budget/trial_budget.py --format json    # everything, machine-readable
-uv run python tools/trial-budget/trial_budget.py --strict         # warnings fail too
-uv run pytest tools/trial-budget                                  # tests
+uv run python cicd/trial-budget/trial_budget.py                 # Markdown sheet (exit 1 on errors)
+uv run python cicd/trial-budget/trial_budget.py --format csv     # one row per indicator (spreadsheet)
+uv run python cicd/trial-budget/trial_budget.py --format json    # everything, machine-readable
+uv run python cicd/trial-budget/trial_budget.py --strict         # warnings fail too
+uv run pytest cicd/trial-budget                                  # tests
 ```
 
 Current finding (waived, owner: scoring dictionary): `B:self_control.choice_consistency` requires 12 delay choices

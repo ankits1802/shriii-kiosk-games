@@ -15,15 +15,15 @@ Where the two disagree, this file decides. Everything not mentioned here follows
 5. Camera / facial / voice-tone are **not** trait signals and are not implemented.
 6. Private-dice integrity is **group-level only**; never classify an individual as dishonest.
 7. Adults only (18+) by default; consent by tap, separate archive and contact opt-ins; no audio retained.
-8. Scientific thresholds live in YAML (`scoring/dictionary/*.yaml`, `scoring/hypotheses.yaml`, `scoring/gates.yaml`), never hard-coded.
+8. Scientific thresholds live in YAML (`stats/measurement-model/dictionary/*.yaml`, `stats/measurement-model/hypotheses.yaml`, `stats/measurement-model/gates.yaml`), never hard-coded.
 9. Every derived score references algorithm version, source records and data snapshot; everything is reproducible from raw events.
 
 ## Decisions for this build iteration
 
 | Topic | Plan said | Spec said | **Decision (iteration 1)** | Why |
 |---|---|---|---|---|
-| App structure | Separate Electron kiosk + ODK + Metabase | One unified Next.js app with `/kiosk`, `/research/*`, `/admin/*` | **Monorepo.** `packages/kiosk-game` (React + PixiJS game library) is mounted both by `apps/kiosk` (Vite; the Electron-ready, offline kiosk build) **and** by `apps/web` at `/kiosk` (Next.js). `apps/web` hosts all `/research/*` and `/admin/*` routes from the spec. | Satisfies the spec's unified routes while keeping the timing-critical, offline kiosk build the plan requires. |
-| Kiosk shell / OS | Electron on Ubuntu Core 24 | — | **Browser-first build now**, with `apps/kiosk/electron` scaffold (main/preload, kiosk mode). Ubuntu Core image deferred to field-readiness. | Lets the game run and be tested on any machine today. |
+| App structure | Separate Electron kiosk + ODK + Metabase | One unified Next.js app with `/kiosk`, `/research/*`, `/admin/*` | **Monorepo.** `frontend/packages/kiosk-game` (React + PixiJS game library) is mounted both by `frontend/apps/kiosk` (Vite; the Electron-ready, offline kiosk build) **and** by `frontend/apps/web` at `/kiosk` (Next.js). `frontend/apps/web` hosts all `/research/*` and `/admin/*` routes from the spec. | Satisfies the spec's unified routes while keeping the timing-critical, offline kiosk build the plan requires. |
+| Kiosk shell / OS | Electron on Ubuntu Core 24 | — | **Browser-first build now**, with `frontend/apps/kiosk/electron` scaffold (main/preload, kiosk mode). Ubuntu Core image deferred to field-readiness. | Lets the game run and be tested on any machine today. |
 | Offline outbox | SQLite in Electron main | Local buffering | **IndexedDB (Dexie) outbox** in the browser build behind an `Outbox` interface; SQLite adapter later for Electron. Gapless per-session `seq`, idempotent batch upload by `batch_id`, `event_id` dedup server-side. | Same contract, portable storage. |
 | Game rendering | PixiJS 8 | Phaser + GSAP | **PixiJS 8 + GSAP + pixi-filters**, XState 5 for session/trial statecharts. | Pixi gives full control of art direction and timing; GSAP for cinematic transitions. |
 | Art & sound | (assets TBD) | Illustrative images only | **Original procedural/vector art** (hand-authored SVG + Pixi Graphics, lighting via filters, particles, parallax) for a golden-hour Indian village market fair; **procedural Web Audio** music & SFX (drone, percussion, ambience). No third-party images. | No licensed assets exist yet; avoids IP risk; looks premium. |
@@ -32,14 +32,21 @@ Where the two disagree, this file decides. Everything not mentioned here follows
 | Backend | FastAPI | FastAPI + Pydantic | **FastAPI + Pydantic v2 + SQLAlchemy 2 + Alembic + psycopg 3**, PostgreSQL 18 via Docker Compose. | Agreed. |
 | Jobs | Dagster | Celery/Redis | **Postgres-backed job table + worker (`FOR UPDATE SKIP LOCKED`)**, idempotent, retryable, input-hashed. Dagster is the documented upgrade path. | No extra infra; spec requires idempotent/observable/retryable jobs only. |
 | Psychometrics | Python + R (lavaan, semTools, mirt) | Python (SciPy, statsmodels, semopy) + ML | **Python now** (numpy, scipy, statsmodels, pingouin, semopy, factor_analyzer, scikit-learn, xgboost). R is not installed on the dev machine; an `RBackend` adapter boundary is defined for invariance/IRT-DIF/norming (lavaan/semTools/mirt/cNORM) and implemented later. Python covers: split-half (permutation, Spearman–Brown), ICC(A,1)/(C,1) with CIs, alpha/omega, MTMM, disattenuation, EFA + parallel analysis, CFA (semopy), logistic-regression DIF, multi-group comparisons, equivalence tests (TOST), grouped-CV incremental validity. All checked against reference values. | Works on this machine; keeps the door open for R. |
-| Criterion capture | ODK Central + Collect | In-app researcher-administered mode + CSV/XLSX import | **In-app administration** in `apps/web` (`/research/instruments/.../administer`, tablet layout, audio-assist slots) **plus** CSV/XLSX import with column mapping (covers ODK exports). | Spec requirement; ODK stays importable. |
+| Criterion capture | ODK Central + Collect | In-app researcher-administered mode + CSV/XLSX import | **In-app administration** in `frontend/apps/web` (`/research/instruments/.../administer`, tablet layout, audio-assist slots) **plus** CSV/XLSX import with column mapping (covers ODK exports). | Spec requirement; ODK stays importable. |
 | Instrument item text | — | Licensing metadata | Registry stores structure, scoring keys, reverse items, subscales, licensing metadata. **Copyrighted item wording is not committed**; items carry IDs + placeholder text to be loaded from a licensed source file. | IP compliance. |
 | Auth | Cognito + step-ca | OIDC + RBAC | **OIDC-ready auth with RBAC** (roles: admin, researcher, administrator, analyst, kiosk device). Dev mode uses a local signed-JWT dev login. | Provider-agnostic. |
-| Research dashboards | Metabase + Quarto | Custom React dashboards (ECharts/Plotly) | **Custom dashboards in `apps/web`** (ECharts), incl. the Trait Validation Workbench. Exports CSV/Parquet. | Spec requirement. |
+| Research dashboards | Metabase + Quarto | Custom React dashboards (ECharts/Plotly) | **Custom dashboards in `frontend/apps/web`** (ECharts), incl. the Trait Validation Workbench. Exports CSV/Parquet. | Spec requirement. |
 | Hosting | AWS ap-south-1 | Docker, IaC | Docker Compose for dev/pilot; IaC deferred. | Keep it simple. |
 | Languages | hi-IN, mr-IN, ta-IN placeholders | — | Same + `en-IN` for development. | — |
 
 ## Monorepo layout (iteration 1)
+
+> **Layout reorganised (October 2026).** The tree below records the iteration-1 layout and is kept as historical text.
+> Current locations: `apps/kiosk`, `apps/web` -> `frontend/apps/*`; `apps/api` -> `backend/api`; `packages/contracts` ->
+> `contracts/`; other `packages/*` -> `frontend/packages/*`; `python/shriii_contracts` -> `contracts/python`; other
+> `python/shriii_*` -> `stats/*`; `scoring/` -> `stats/measurement-model/`. See
+> [ARCHITECTURE.md](ARCHITECTURE.md) for the full map.
+
 ```
 apps/
   kiosk/              Vite shell for the kiosk build (+ electron/ scaffold)

@@ -1,7 +1,7 @@
 # @shriii/kiosk-electron — kiosk runtime
 
 Hardened Electron (44.x) shell for the offline kiosk (KSK-01, KSK-07, KSK-08, KSK-11). It loads the
-built `apps/kiosk` renderer and owns everything that needs Node: the encrypted SQLite outbox, the
+built `frontend/apps/kiosk` renderer and owns everything that needs Node: the encrypted SQLite outbox, the
 uploader, the thermal printer and updates.
 
 ## Security model
@@ -20,7 +20,7 @@ uploader, the thermal printer and updates.
 ## Data path
 
 Renderer (kiosk-game logger) → `IpcOutbox` (`src/renderer-bridge`) → IPC → `SqliteOutbox`
-(`packages/outbox-sqlite`, per-session DEK sealed to the backend X25519 key) → `MainUploader`
+(`frontend/packages/outbox-sqlite`, per-session DEK sealed to the backend X25519 key) → `MainUploader`
 (`net.fetch`, paused unless the kiosk is in attract, backoff, 426 stop) → API.
 
 ## Configuration

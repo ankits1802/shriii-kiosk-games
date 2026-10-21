@@ -1,6 +1,6 @@
 """RFC 9180 HPKE base mode for DHKEM(X25519, HKDF-SHA256) + HKDF-SHA256 + AES-GCM.
 
-Mirror of ``packages/session-crypto/src/hpke.ts``. Built on ``cryptography`` primitives (X25519,
+Mirror of ``frontend/packages/session-crypto/src/hpke.ts``. Built on ``cryptography`` primitives (X25519,
 HMAC-SHA256, AES-GCM) and verified against the RFC 9180 known-answer vectors.
 """
 

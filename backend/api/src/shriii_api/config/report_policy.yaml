@@ -1,4 +1,4 @@
-# Player-report policy (layer 5) applied on top of scoring/gates.yaml. It can only withhold more, never
+# Player-report policy (layer 5) applied on top of stats/measurement-model/gates.yaml. It can only withhold more, never
 # show more: the gates.yaml display rule, caps and permanent withholds still apply in full.
 #
 # Entries use the gates.yaml `permanent_withhold` shape ({construct, pathway, reason}); pathway "*" means

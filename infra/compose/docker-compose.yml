@@ -1,6 +1,6 @@
 # Local development services for SHRIII (BUILD_DECISIONS: PostgreSQL 18 via Docker Compose).
-#   docker compose up -d postgres            # database only
-#   docker compose --profile tools up -d     # database + Adminer on http://localhost:8080
+#   docker compose -f infra/compose/docker-compose.yml up -d postgres            # database only (or: pnpm db:up)
+#   docker compose -f infra/compose/docker-compose.yml --profile tools up -d     # database + Adminer on http://localhost:8080
 name: shriii
 
 services:

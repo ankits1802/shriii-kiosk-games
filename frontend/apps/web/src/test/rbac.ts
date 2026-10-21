@@ -8,7 +8,7 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
 export const RBAC_PY = fileURLToPath(
-  new URL('../../../api/src/shriii_api/auth/rbac.py', import.meta.url),
+  new URL('../../../../../backend/api/src/shriii_api/auth/rbac.py', import.meta.url),
 );
 
 const SCRIPT = `

@@ -1,6 +1,6 @@
 """sherpa-onnx keyword spotter with a ladder of thresholds (the score is the strictest tier that fired).
 
-This mirrors packages/asr-sherpa exactly: one spotter per tier, per-prompt keyword lists, label =
+This mirrors frontend/packages/asr-sherpa exactly: one spotter per tier, per-prompt keyword lists, label =
 code of the highest tier, ambiguous (two codes at the top tier) = reject.
 """
 

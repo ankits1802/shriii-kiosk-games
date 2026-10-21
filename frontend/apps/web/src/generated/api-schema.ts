@@ -237,7 +237,7 @@ export interface paths {
         put?: never;
         /**
          * Upload an idempotent event batch
-         * @description Accepts an ``UploadBatch`` (packages/contracts upload-batch.v1). ``sha256`` must equal the SHA-256 of the RFC 8785 (JCS) serialisation of ``session_chunks``. Replays with the same ``batch_id`` return the stored result (``duplicate_batch=true``). Each event gets ``accepted | duplicate | parked | rejected_terminal | retryable``; scorable events wait in consent parking until core consent arrives; ``server_received_at`` is set by the server.
+         * @description Accepts an ``UploadBatch`` (contracts upload-batch.v1). ``sha256`` must equal the SHA-256 of the RFC 8785 (JCS) serialisation of ``session_chunks``. Replays with the same ``batch_id`` return the stored result (``duplicate_batch=true``). Each event gets ``accepted | duplicate | parked | rejected_terminal | retryable``; scorable events wait in consent parking until core consent arrives; ``server_received_at`` is set by the server.
          */
         post: operations["upload_batch_api_v1_events_batch_post"];
         delete?: never;

@@ -1,6 +1,6 @@
 /**
  * Semantic invariants that the restricted JSON Schema profile cannot express (no if/then/else).
- * Mirrored in python/shriii_contracts (invariants.py); both are exercised by the shared fixtures.
+ * Mirrored in contracts/python (invariants.py); both are exercised by the shared fixtures.
  */
 import type { EventEnvelope, GameTrialSpec } from './generated/types.ts';
 

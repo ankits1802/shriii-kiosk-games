@@ -18,12 +18,12 @@ Milestone start months come from the plan itself (`Milestones are defined in §8
 so M1 (P6) may depend on M2 (P6) but not on M3 (P8). Standard library only.
 
 ```bash
-uv run python tools/plan-lint/plan_lint.py            # lint (exit 1 on findings, 2 on unreadable input)
-uv run python tools/plan-lint/plan_lint.py --order    # + topological build order grouped by milestone
-uv run python tools/plan-lint/plan_lint.py --counts   # + regenerate the Appendix A table
-uv run python tools/plan-lint/plan_lint.py --json     # machine-readable findings and order
-uv run python tools/plan-lint/plan_lint.py --features-yaml features.yaml   # lint a YAML mirror instead
-uv run pytest tools/plan-lint                          # tests
+uv run python cicd/plan-lint/plan_lint.py            # lint (exit 1 on findings, 2 on unreadable input)
+uv run python cicd/plan-lint/plan_lint.py --order    # + topological build order grouped by milestone
+uv run python cicd/plan-lint/plan_lint.py --counts   # + regenerate the Appendix A table
+uv run python cicd/plan-lint/plan_lint.py --json     # machine-readable findings and order
+uv run python cicd/plan-lint/plan_lint.py --features-yaml features.yaml   # lint a YAML mirror instead
+uv run pytest cicd/plan-lint                          # tests
 ```
 
 CI: the `plan` job in `.github/workflows/ci.yml`.

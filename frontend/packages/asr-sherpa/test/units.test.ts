@@ -192,7 +192,7 @@ describe('EnergyVad', () => {
 describe('contract with tools/asr-bakeoff', () => {
   it('parses the asr-config the bake-off emits', () => {
     const path = fileURLToPath(
-      new URL('../../../tools/asr-bakeoff/fixtures/asr-config.sample.json', import.meta.url),
+      new URL('../../../../tools/asr-bakeoff/fixtures/asr-config.sample.json', import.meta.url),
     );
     const g = parseGrammar(JSON.parse(readFileSync(path, 'utf8')));
     expect(g.language).toBe('hi-IN');

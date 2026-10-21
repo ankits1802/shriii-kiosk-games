@@ -1,6 +1,6 @@
 import { expect, type Role, signIn, test } from './fixtures';
 
-/** Expected sidebar per role (spec section 1 routes x apps/api RBAC). */
+/** Expected sidebar per role (spec section 1 routes x backend/api RBAC). */
 const EXPECTED_NAV: Record<Role, string[]> = {
   admin: [
     '/research',

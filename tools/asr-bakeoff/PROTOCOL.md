@@ -47,7 +47,7 @@ contains its code. The candidate set is that prompt's closed vocabulary, never t
 | id | kind | notes |
 |---|---|---|
 | `dtw_mfcc` | template MFCC + DTW | Model-free floor that any candidate must beat. |
-| `sherpa_kws_*` | sherpa-onnx zipformer KWS | Production path (`packages/asr-sherpa`). Uses a ladder of `keywords_threshold` tiers; the score is the strictest tier that fired. Needs a KWS model for the language (only an English stand-in is published upstream). |
+| `sherpa_kws_*` | sherpa-onnx zipformer KWS | Production path (`frontend/packages/asr-sherpa`). Uses a ladder of `keywords_threshold` tiers; the score is the strictest tier that fired. Needs a KWS model for the language (only an English stand-in is published upstream). |
 | `whisper_*` | Whisper tiny/small, int8 ONNX via sherpa-onnx | Transcription matched to the vocabulary by edit similarity. Indic vowel signs are preserved. |
 | `indicconformer_ctc` | ONNX CTC model + constrained decoding | Each phrase is scored with the CTC forward algorithm against a free-decoding garbage path. Export AI4Bharat IndicConformer's CTC head to ONNX: `model.onnx` and `tokens.txt` go in `models/indicconformer/<lang>/`. |
 
@@ -96,7 +96,7 @@ only.
   top-k alternatives.
 - `report-<run>.html`, a per-language report of accuracy by age, gender and SNR with CIs (VOX-06 AC).
 - `asr-config/asr-config.<lang>.json` (`schemas/asr-config.schema.json`). This is the language-pack ASR
-  config consumed by `packages/asr-sherpa` (`parseGrammar`): keyword token sequences, propose and commit
+  config consumed by `frontend/packages/asr-sherpa` (`parseGrammar`): keyword token sequences, propose and commit
   tiers with calibrated confidences, per-prompt `voice_enabled`, runtime thresholds and provenance
   (run id, dataset, policy hash). Only a sherpa-onnx KWS winner yields voice-enabled prompts, because
   that is the engine the kiosk adapter runs. Any other outcome yields a touch-only config.
@@ -109,7 +109,7 @@ python -m uv sync
 python -m uv run shriii-asr-bakeoff synth --out data/synthetic        # rehearsal data (no TTS, no speech)
 python -m uv run shriii-asr-bakeoff validate data/synthetic/dataset.json
 python -m uv run shriii-asr-bakeoff run data/synthetic/dataset.json --out out/rehearsal
-python -m uv run shriii-asr-bakeoff tokenize ../../packages/asr-sherpa/models/<kws>/bpe.model "yes" "no"
+python -m uv run shriii-asr-bakeoff tokenize ../../frontend/packages/asr-sherpa/models/<kws>/bpe.model "yes" "no"
 ```
 
 For a real run, point `run` at the `asr_eval` manifest, put the recorded noise in `data/noise/` and

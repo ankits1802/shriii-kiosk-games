@@ -1,8 +1,8 @@
 import { fileURLToPath } from 'node:url';
 import type { NextConfig } from 'next';
 
-/** Monorepo root: Turbopack must see packages/* and content/* (kiosk-game imports content JSON). */
-const repoRoot = fileURLToPath(new URL('../..', import.meta.url));
+/** Monorepo root: Turbopack must see frontend/packages/*, contracts/ and content/* (kiosk-game imports content JSON). */
+const repoRoot = fileURLToPath(new URL('../../..', import.meta.url));
 
 /** FastAPI origin; the browser talks to it through same-origin rewrites (no CORS, no token in URLs). */
 const apiProxyTarget = (process.env.API_PROXY_TARGET ?? 'http://127.0.0.1:8000').replace(

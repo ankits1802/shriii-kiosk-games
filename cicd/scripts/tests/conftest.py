@@ -1,4 +1,4 @@
-"""Make the CI helper scripts in ``.github/scripts`` importable."""
+"""Make the CI helper scripts in ``cicd/scripts`` importable."""
 
 from __future__ import annotations
 

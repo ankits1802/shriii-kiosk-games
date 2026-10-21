@@ -288,7 +288,7 @@ describe('ManifestVoiceService', () => {
 
 describe('voice catalogue', () => {
   it('matches content/i18n/lines.yaml (ids, never-voice flags, durations)', () => {
-    const yamlPath = resolve(process.cwd(), '../../content/i18n/lines.yaml');
+    const yamlPath = resolve(process.cwd(), '../../../content/i18n/lines.yaml');
     const raw = parse(readFileSync(yamlPath, 'utf8')) as {
       lines: {
         id: string;

@@ -20,8 +20,8 @@
     "py:sync": "uv sync --all-packages",
     "py:test": "uv run pytest",
     "py:lint": "uv run ruff check . && uv run mypy",
-    "db:up": "docker compose up -d postgres",
-    "db:down": "docker compose down"
+    "db:up": "docker compose -f infra/compose/docker-compose.yml up -d postgres",
+    "db:down": "docker compose -f infra/compose/docker-compose.yml down"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.15",

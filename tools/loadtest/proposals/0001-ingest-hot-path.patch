@@ -1,7 +1,7 @@
-diff --git a/apps/api/src/shriii_api/services/ingestion.py b/apps/api/src/shriii_api/services/ingestion.py
+diff --git a/backend/api/src/shriii_api/services/ingestion.py b/backend/api/src/shriii_api/services/ingestion.py
 index c7d471c..0314e4e 100644
---- a/apps/api/src/shriii_api/services/ingestion.py
-+++ b/apps/api/src/shriii_api/services/ingestion.py
+--- a/backend/api/src/shriii_api/services/ingestion.py
++++ b/backend/api/src/shriii_api/services/ingestion.py
 @@ -31,7 +31,9 @@ from datetime import UTC, date, datetime, timedelta
  from typing import Any, Literal
  
@@ -107,10 +107,10 @@ index c7d471c..0314e4e 100644
          ).scalars()
      )
      event_rows: list[dict[str, Any]] = []
-diff --git a/python/shriii_contracts/src/shriii_contracts/strictness.py b/python/shriii_contracts/src/shriii_contracts/strictness.py
+diff --git a/contracts/python/src/shriii_contracts/strictness.py b/contracts/python/src/shriii_contracts/strictness.py
 index 57ba4fa..b0e5711 100644
---- a/python/shriii_contracts/src/shriii_contracts/strictness.py
-+++ b/python/shriii_contracts/src/shriii_contracts/strictness.py
+--- a/contracts/python/src/shriii_contracts/strictness.py
++++ b/contracts/python/src/shriii_contracts/strictness.py
 @@ -7,6 +7,7 @@ writer-side rule that our own outgoing records carry no unknown fields.
  
  from __future__ import annotations

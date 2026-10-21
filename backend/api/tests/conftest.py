@@ -62,7 +62,11 @@ def _recreate(url: str, name: str) -> str:
 def database_urls(tmp_path_factory: pytest.TempPathFactory) -> Iterator[tuple[str, str]]:
     base = _find_server()
     if base is None:
-        msg = "PostgreSQL not reachable (tried " + ", ".join(_candidates()) + "); run `docker compose up -d postgres`"
+        msg = (
+            "PostgreSQL not reachable (tried "
+            + ", ".join(_candidates())
+            + "); run `pnpm db:up` (docker compose -f infra/compose/docker-compose.yml up -d postgres)"
+        )
         if os.environ.get("SHRIII_REQUIRE_DB") == "1":
             pytest.fail(msg)
         pytest.skip(msg)

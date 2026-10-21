@@ -1,4 +1,4 @@
-/** Typed shapes of the generated report rules (sourced from scoring/*.yaml). */
+/** Typed shapes of the generated report rules (sourced from stats/measurement-model/*.yaml). */
 
 export interface DisplayRule {
   readonly batteryGate: string;

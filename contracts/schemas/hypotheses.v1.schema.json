@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://shriii.local/contracts/hypotheses.v1.schema.json",
   "title": "Hypotheses",
-  "description": "scoring/hypotheses.yaml: pre-registration registry (CRT-11). Frozen with gates.yaml before Stage 2 unblinding.",
+  "description": "stats/measurement-model/hypotheses.yaml: pre-registration registry (CRT-11). Frozen with gates.yaml before Stage 2 unblinding.",
   "type": "object",
   "additionalProperties": false,
   "properties": {

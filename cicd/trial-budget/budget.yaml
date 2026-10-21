@@ -1,7 +1,7 @@
-# tools/trial-budget configuration (SCR-03 trial-time budget sheet, ONB-08 session budget check).
+# cicd/trial-budget configuration (SCR-03 trial-time budget sheet, ONB-08 session budget check).
 #
 # This file holds NO scientific thresholds. Budgets come from content/games/session-plan.json and the
-# plan section 4.4 table; required trials per indicator come from scoring/dictionary/dictionary.{A,B}.yaml
+# plan section 4.4 table; required trials per indicator come from stats/measurement-model/dictionary/dictionary.{A,B}.yaml
 # (`min_valid_trials`, fed by VAL-02). This file only says how to read them:
 #   * which plan section 4.4 rows correspond to which session-plan segment keys;
 #   * how many trials the schedule *guarantees* for each dictionary task (the "supply"), expressed as
@@ -32,7 +32,7 @@ plan_section_4_4:
 
 # Where the probe-segment length used by the scoring engine lives (read, never copied).
 segment_param:
-  file: python/shriii_scoring/src/shriii_scoring/data/scoring_params.yaml
+  file: stats/scoring/src/shriii_scoring/data/scoring_params.yaml
   path: [style, min_trials_per_segment]
 
 # Shortfalls on these `min_valid_trials.basis` values fail; other bases (val02_pending placeholders) warn.

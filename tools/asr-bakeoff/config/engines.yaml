@@ -12,7 +12,7 @@ engines:
     description: sherpa-onnx zipformer transducer KWS, 3.3M params (English stand-in until Indic KWS is trained).
     languages: [en-IN]
     params:
-      model_dir: ../../packages/asr-sherpa/models/sherpa-onnx-kws-zipformer-gigaspeech-3.3M-2024-01-01
+      model_dir: ../../frontend/packages/asr-sherpa/models/sherpa-onnx-kws-zipformer-gigaspeech-3.3M-2024-01-01
       bpe_model: bpe.model
       tiers: [0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.45]
       num_threads: 1

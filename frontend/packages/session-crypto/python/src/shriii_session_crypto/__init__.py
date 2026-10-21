@@ -1,4 +1,4 @@
-"""Reference decryptor for SHRIII kiosk session chunks (see packages/session-crypto/README.md)."""
+"""Reference decryptor for SHRIII kiosk session chunks (see frontend/packages/session-crypto/README.md)."""
 
 from .hpke import DecryptionError, derive_key_pair, public_from_private
 from .session import (

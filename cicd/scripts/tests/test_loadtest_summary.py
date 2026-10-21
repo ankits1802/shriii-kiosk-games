@@ -1,4 +1,4 @@
-"""Tests for the load-test job summary / verdict (.github/scripts/loadtest_summary.py)."""
+"""Tests for the load-test job summary / verdict (cicd/scripts/loadtest_summary.py)."""
 
 from __future__ import annotations
 

@@ -2,12 +2,12 @@
  * Stimulus-design defaults for values the iteration-1 content configs (`content/games/**`) do not yet
  * carry. These are CONTENT defaults (ladder steps, pot multiplier, goods catalogue), never scientific
  * thresholds: thresholds (premature cut-off, reacquisition run, hostile tone level, ...) are always
- * passed in by callers from `scoring/**` YAML.
+ * passed in by callers from `stats/measurement-model/**` YAML.
  *
  * Every default is consumed through `resolveNumber`/explicit option objects that report
  * `source: 'paradigm_default'`, and modules log the resolved value with its source, so a session that
  * ran on a default is identifiable in the raw events. Where a value mirrors the synthetic-player
- * simulator (`python/shriii_simulator/.../data/simulator.yaml`) it says so: the simulator and the
+ * simulator (`stats/simulator/.../data/simulator.yaml`) it says so: the simulator and the
  * kiosk must present the same stimuli for parameter recovery to be meaningful.
  *
  * Each key names the config key that should replace it (requested from the content owner).

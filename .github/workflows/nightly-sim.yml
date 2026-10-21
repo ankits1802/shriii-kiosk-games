@@ -57,7 +57,7 @@ jobs:
           SIM_SEED: ${{ inputs.seed || '11' }}
         run: |
           [[ "$SIM_N" =~ ^[0-9]+$ && "$SIM_SEED" =~ ^[0-9]+$ ]] || { echo "::error::n and seed must be integers"; exit 1; }
-          uv run python .github/scripts/sim_recovery.py \
+          uv run python cicd/scripts/sim_recovery.py \
             --n "$SIM_N" --seed "$SIM_SEED" \
             --pathways ${{ matrix.pathway }} ${{ matrix.extra }} --out-dir "sim-recovery-${{ matrix.pathway }}" \
             --report-only
@@ -89,7 +89,7 @@ jobs:
       - name: Slow statistical and recovery tests
         env:
           SHRIII_RUN_SLOW: "1"
-        run: uv run pytest python/shriii_simulator/tests python/shriii_validation/tests -q
+        run: uv run pytest stats/simulator/tests stats/validation/tests -q
 
   report:
     name: Track failures

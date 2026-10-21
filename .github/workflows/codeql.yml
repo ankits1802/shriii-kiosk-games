@@ -1,4 +1,4 @@
-# Static analysis (PLT-04: CodeQL). Generated code (packages/contracts/src/generated) is excluded via the config.
+# Static analysis (PLT-04: CodeQL). Generated code (contracts/src/generated) is excluded via the config.
 name: CodeQL
 
 on:

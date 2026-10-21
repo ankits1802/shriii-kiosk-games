@@ -1,7 +1,7 @@
 /**
  * Outbox types. {@link KioskOutboxApi} is structurally identical to `KioskOutbox` in
- * `packages/kiosk-game/src/logging/outbox/types.ts` (which extends the `Outbox` contract in
- * `packages/kiosk-game/src/core/contracts.ts`), so the SQLite outbox is a drop-in replacement for the
+ * `frontend/packages/kiosk-game/src/logging/outbox/types.ts` (which extends the `Outbox` contract in
+ * `frontend/packages/kiosk-game/src/core/contracts.ts`), so the SQLite outbox is a drop-in replacement for the
  * Dexie outbox behind the logger, crash recovery and uploader. The compatibility test in
  * `test/kiosk-game-compat.test.ts` runs the real kiosk-game logger and recovery against it.
  */

@@ -1,4 +1,6 @@
-"""Gate service records and release packs (VAL-14, REP-03). Thresholds come from ``scoring/gates.yaml``.
+"""Gate service records and release packs (VAL-14, REP-03).
+
+Thresholds come from ``stats/measurement-model/gates.yaml``.
 
 Gate history is append-only; the current status per key is the latest row whose ``effective_from`` is
 not in the future. Missing rows mean ``closed`` / ``unvalidated`` (fail closed). Promotions need

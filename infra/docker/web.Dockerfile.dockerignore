@@ -13,9 +13,13 @@
 **/.mypy_cache
 **/.ruff_cache
 docs/reference
-python
-apps/api
-apps/kiosk/electron/dist
+contracts/python
+stats/scoring
+stats/validation
+stats/simulator
+stats/rbridge
+backend/api
+frontend/apps/kiosk/electron/dist
 infra/tofu
 *.log
 .env

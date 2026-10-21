@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://shriii.local/tools/asr-bakeoff/asr-config.schema.json",
   "title": "AsrConfig",
-  "description": "Language-pack ASR configuration (asr-grammars/<lang>/asr-config.json) consumed by packages/asr-sherpa parseGrammar(). Mirrors its validation rules; cross-field rules (tier ordering, unique token sequences, touch-only prompt families) are also enforced by the adapter.",
+  "description": "Language-pack ASR configuration (asr-grammars/<lang>/asr-config.json) consumed by frontend/packages/asr-sherpa parseGrammar(). Mirrors its validation rules; cross-field rules (tier ordering, unique token sequences, touch-only prompt families) are also enforced by the adapter.",
   "type": "object",
   "additionalProperties": false,
   "required": [

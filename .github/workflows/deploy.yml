@@ -55,7 +55,7 @@ jobs:
           - image: web
             dockerfile: infra/docker/web.Dockerfile
             target: runtime
-            requires: apps/web
+            requires: frontend/apps/web
           - image: kiosk
             dockerfile: infra/docker/kiosk.Dockerfile
             target: runtime
@@ -166,7 +166,7 @@ jobs:
             tofu apply -input=false -auto-approve -lock-timeout=5m \
               -target='module.platform.module.ecs.aws_ecs_task_definition.this["migrate"]'
             tofu output -json platform > platform.json
-            bash "$GITHUB_WORKSPACE/.github/scripts/ecs_migrate.sh" platform.json
+            bash "$GITHUB_WORKSPACE/cicd/scripts/ecs_migrate.sh" platform.json
             echo "done=true" >> "$GITHUB_OUTPUT"
           else
             echo "::notice::No existing platform state; migrations will run after the first apply."
@@ -180,4 +180,4 @@ jobs:
         if: steps.premigrate.outputs.done != 'true'
         run: |
           tofu output -json platform > platform.json
-          bash "$GITHUB_WORKSPACE/.github/scripts/ecs_migrate.sh" platform.json
+          bash "$GITHUB_WORKSPACE/cicd/scripts/ecs_migrate.sh" platform.json

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { loadRbacMatrix, permissionsFromSource } from '@/test/rbac';
 import { isPermission, PERMISSIONS, USER_ROLES } from './permissions';
 
-describe('permission vocabulary parity with apps/api rbac.py', () => {
+describe('permission vocabulary parity with backend/api rbac.py', () => {
   it('lists exactly the Perm enum values (source scan)', () => {
     expect([...PERMISSIONS].sort()).toEqual(permissionsFromSource().sort());
   });

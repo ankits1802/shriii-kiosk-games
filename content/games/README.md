@@ -1,14 +1,14 @@
 # Game configs
 
 One JSON file per module (`pathway-b/`), episode (`pathway-a/`) and the shared warm-up (`shared/`), validated
-by `packages/contracts/schemas/game-config.v1.schema.json`. `session-plan.json` holds the plan section 4.4
+by `contracts/schemas/game-config.v1.schema.json`. `session-plan.json` holds the plan section 4.4
 session budgets, the fixed Pathway B order with the planned-missingness slot, the Pathway A order and the
 idle/walkaway timers.
 
 All load parameters (stimulus durations, windows, ISIs, caps) live in each file's `levels.L1|L2|L3.timing`
 table; game code must read them from there (ENG-10: no hard-coded timers).
 
-## Budget model (design targets until the `tools/trial-budget` sheet exists)
+## Budget model (design targets until the `cicd/trial-budget` sheet exists)
 
 ```
 duration(level, bot, counts) = intro_ms + outro_ms
