@@ -21,7 +21,7 @@ from typing import Any
 from shriii_loadtest import __version__
 from shriii_loadtest.corpus import default_cache_dir, load_or_build_corpus
 from shriii_loadtest.provision import load_fleet, provision_fleet, save_fleet
-from shriii_loadtest.report import evaluate, load_targets, render_markdown, summarise_run
+from shriii_loadtest.report import evaluate, load_targets, render_markdown, strict_json, summarise_run
 from shriii_loadtest.runner import ResearchOptions, run_plan
 from shriii_loadtest.scenarios import SCENARIOS, PlanOptions, build_plan
 from shriii_loadtest.verify import pgstats_reset, pgstats_top, table_sizes, verify_plan
@@ -112,7 +112,10 @@ def run_one(
     out_dir.mkdir(parents=True, exist_ok=True)
     (out_dir / f"{name}.json").write_text(
         json.dumps(
-            {"meta": meta, "checks": checks, "summary": summary, "verification": verification}, indent=2, default=str
+            strict_json({"meta": meta, "checks": checks, "summary": summary, "verification": verification}),
+            indent=2,
+            default=str,
+            allow_nan=False,
         ),
         encoding="utf-8",
     )
@@ -123,7 +126,9 @@ def run_one(
     (out_dir / f"{name}.md").write_text(render_markdown(name, summary, checks, verification, md_meta), encoding="utf-8")
     raw_dir = default_cache_dir() / "samples"
     raw_dir.mkdir(parents=True, exist_ok=True)
-    (raw_dir / f"{label}-{name}.json").write_text(json.dumps(result.to_json(), default=str), encoding="utf-8")
+    (raw_dir / f"{label}-{name}.json").write_text(
+        json.dumps(strict_json(result.to_json()), default=str, allow_nan=False), encoding="utf-8"
+    )
     print(f"[{name}] checks: { {k: v['passed'] for k, v in checks.items()} }", file=sys.stderr)
     return {"name": name, "checks": checks, "summary": summary, "verification": verification}
 
@@ -218,8 +223,10 @@ def main(argv: list[str] | None = None) -> int:
                     "ing02": out["summary"]["ing02_full_batches_first_attempt"],
                 }
             )
-        (RESULTS / args.label / "index.json").write_text(json.dumps(index, indent=2), encoding="utf-8")
-        print(json.dumps(index, indent=2))
+        (RESULTS / args.label / "index.json").write_text(
+            json.dumps(strict_json(index), indent=2, allow_nan=False), encoding="utf-8"
+        )
+        print(json.dumps(strict_json(index), indent=2))
     return 0
 
 

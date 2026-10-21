@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import json
+import math
 import random
 import uuid
 
@@ -11,6 +13,7 @@ from shriii_api.canonical import canonical_json as server_canonical_json
 from shriii_api.security import is_valid_code
 from shriii_loadtest.ids import pseudonymous_pid, uuid7, uuid7_from
 from shriii_loadtest.jcs import canonical_json, canonical_sha256, format_number
+from shriii_loadtest.report import strict_json
 from shriii_loadtest.stats import percentile, summarise
 
 EDGE_NUMBERS = [
@@ -90,3 +93,10 @@ def test_summary_of_empty_is_nan() -> None:
     assert s.n == 0 and s.p95 != s.p95
     full = summarise([1.0, 2.0, 3.0, 4.0])
     assert full.p50 == 2.5 and full.max == 4.0 and full.mean == 2.5
+
+
+def test_strict_json_replaces_non_finite_floats() -> None:
+    doc = {"p95_ms": math.nan, "max": math.inf, "rows": [1.5, -math.inf, {"mean_ms": math.nan}], "n": 0}
+    out = strict_json(doc)
+    assert out == {"p95_ms": None, "max": None, "rows": [1.5, None, {"mean_ms": None}], "n": 0}
+    json.dumps(out, allow_nan=False)

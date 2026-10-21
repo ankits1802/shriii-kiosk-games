@@ -32,7 +32,7 @@
   "checks": {
     "ing02_p95": {
       "target_ms": 300,
-      "observed_ms": NaN,
+      "observed_ms": null,
       "n": 0,
       "kiosks": 50,
       "passed": false
@@ -79,12 +79,12 @@
     },
     "ing02_full_batches_first_attempt": {
       "n": 0,
-      "p50_ms": NaN,
-      "p90_ms": NaN,
-      "p95_ms": NaN,
-      "p99_ms": NaN,
-      "max_ms": NaN,
-      "mean_ms": NaN
+      "p50_ms": null,
+      "p90_ms": null,
+      "p95_ms": null,
+      "p99_ms": null,
+      "max_ms": null,
+      "mean_ms": null
     },
     "all_ok_requests": {
       "n": 226,
@@ -121,12 +121,12 @@
     "research": {},
     "research_all": {
       "n": 0,
-      "p50_ms": NaN,
-      "p90_ms": NaN,
-      "p95_ms": NaN,
-      "p99_ms": NaN,
-      "max_ms": NaN,
-      "mean_ms": NaN
+      "p50_ms": null,
+      "p90_ms": null,
+      "p95_ms": null,
+      "p99_ms": null,
+      "max_ms": null,
+      "mean_ms": null
     },
     "pg_stat_statements_top": [
       {

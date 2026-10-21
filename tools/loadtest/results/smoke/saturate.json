@@ -123,12 +123,12 @@
     "research": {},
     "research_all": {
       "n": 0,
-      "p50_ms": NaN,
-      "p90_ms": NaN,
-      "p95_ms": NaN,
-      "p99_ms": NaN,
-      "max_ms": NaN,
-      "mean_ms": NaN
+      "p50_ms": null,
+      "p90_ms": null,
+      "p95_ms": null,
+      "p99_ms": null,
+      "max_ms": null,
+      "mean_ms": null
     },
     "pg_stat_statements_top": [
       {

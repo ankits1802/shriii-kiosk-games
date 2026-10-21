@@ -120,6 +120,17 @@ def evaluate(summary: dict[str, Any], verification: dict[str, Any] | None, targe
     return checks
 
 
+def strict_json(value: Any) -> Any:
+    """Replace non-finite floats (``nan`` for empty latency groups) with ``None`` so reports are valid JSON."""
+    if isinstance(value, float):
+        return value if math.isfinite(value) else None
+    if isinstance(value, dict):
+        return {k: strict_json(v) for k, v in value.items()}
+    if isinstance(value, list | tuple):
+        return [strict_json(v) for v in value]
+    return value
+
+
 def _fmt(v: Any) -> str:
     if isinstance(v, float):
         return "n/a" if math.isnan(v) else f"{v:,.1f}"
