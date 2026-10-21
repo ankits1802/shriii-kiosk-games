@@ -165,7 +165,7 @@ class DeviceConfig:
         }
 
 
-def write_atomic(path: Path, data: bytes, *, mode: int = 0o644) -> None:
+def write_atomic(path: Path, data: bytes, *, mode: int = 0o600) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     fd, tmp = tempfile.mkstemp(dir=path.parent, prefix=f".{path.name}.")
     try:
@@ -180,7 +180,7 @@ def write_atomic(path: Path, data: bytes, *, mode: int = 0o644) -> None:
         raise
 
 
-def write_json(path: Path, obj: Any, *, mode: int = 0o644) -> None:
+def write_json(path: Path, obj: Any, *, mode: int = 0o600) -> None:
     write_atomic(path, (json.dumps(obj, indent=2, sort_keys=True) + "\n").encode(), mode=mode)
 
 

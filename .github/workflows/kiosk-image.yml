@@ -58,7 +58,7 @@ jobs:
       UV_FROZEN: "1"
     steps:
       - uses: actions/checkout@v5
-      - uses: astral-sh/setup-uv@v6
+      - uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e  # v6
         with:
           enable-cache: true
           python-version: ${{ env.PYTHON_VERSION }}
@@ -128,7 +128,7 @@ jobs:
       UV_FROZEN: "1"
     steps:
       - uses: actions/checkout@v5
-      - uses: astral-sh/setup-uv@v6
+      - uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e  # v6
         with:
           enable-cache: true
           python-version: ${{ env.PYTHON_VERSION }}
@@ -162,7 +162,7 @@ jobs:
       CSC_IDENTITY_AUTO_DISCOVERY: "false"
     steps:
       - uses: actions/checkout@v5
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1  # v4
       - uses: actions/setup-node@v5
         with:
           node-version-file: package.json
@@ -178,7 +178,7 @@ jobs:
         run: sh infra/kiosk-image/scripts/prepare-app-build.sh
       - name: snapcraft pack (LXD)
         id: snapcraft
-        uses: canonical/action-build@v1
+        uses: canonical/action-build@3bdaa03e1ba6bf59a65f84a751d943d549a54e79  # v1
         with:
           path: infra/kiosk-image/app
           build-info: "false"
@@ -240,7 +240,7 @@ jobs:
           python3 -c "import sys, yaml; d = yaml.safe_load(open('infra/kiosk-image/gadget/gadget.yaml')); assert d['volumes']['pc']['bootloader'] == 'grub'; print('gadget.yaml parses')"
       - name: snapcraft pack (LXD)
         id: snapcraft
-        uses: canonical/action-build@v1
+        uses: canonical/action-build@3bdaa03e1ba6bf59a65f84a751d943d549a54e79  # v1
         with:
           path: infra/kiosk-image/gadget
           build-info: "false"
@@ -283,7 +283,7 @@ jobs:
             echo "::error::release needs repository settings:$missing (see infra/kiosk-image/README.md, CI and signing)"
             exit 1
           fi
-      - uses: astral-sh/setup-uv@v6
+      - uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e  # v6
         with:
           python-version: ${{ env.PYTHON_VERSION }}
       - name: Render + validate the production model
