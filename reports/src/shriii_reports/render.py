@@ -66,8 +66,26 @@ def _text(v: Any) -> str:
     return str(v)
 
 
+_TAG_START = re.compile(r"<(?=[A-Za-z/!?])")
+
+
+def _md_prose(v: Any) -> str:
+    """Free text for Markdown / Quarto: one line, and no raw HTML (a tag start ``<x`` becomes ``&lt;x``).
+
+    Pandoc and most Markdown renderers pass raw HTML through, so bundle text such as notes or rationale
+    could otherwise inject markup or script into the rendered page.
+    """
+    text = "" if v is None else str(v)
+    return _TAG_START.sub("&lt;", text.replace("\r\n", " ").replace("\r", " ").replace("\n", " "))
+
+
 def _md_cell(v: Any) -> str:
-    return _text(v).replace("\\", "\\\\").replace("|", "\\|").replace("\r", " ").replace("\n", " ")
+    return _md_prose(_text(v).replace("\\", "\\\\").replace("|", "\\|"))
+
+
+def _yaml_str(v: Any) -> str:
+    """A double-quoted YAML scalar (JSON strings are valid YAML), safe for front matter."""
+    return json.dumps("" if v is None else str(v), ensure_ascii=False)
 
 
 def _num(v: Any) -> str:
@@ -136,6 +154,8 @@ def _environment(fmt: str) -> Environment:
     env.filters.update(
         {
             "cell": _text if fmt == "html" else _md_cell,
+            "prose": str if fmt == "html" else _md_prose,
+            "yaml_str": _yaml_str,
             "num": _num,
             "pct": _pct,
             "rows": _rows,

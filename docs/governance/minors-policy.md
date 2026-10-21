@@ -10,6 +10,10 @@
 3. There is no guardian or parental-consent branch in the kiosk.
 4. The setting `allow_minors` cannot be switched on by configuration alone. The policy validator rejects any
    deployment policy with `allow_minors = true` unless every precondition in section 4 is met and recorded.
+   **Implementation status (2026-10-21):** the deployment-policy validator (PRV-01) is not built yet, and no
+   `allow_minors` configuration key exists in code. Until it exists there is no way to enable minors at all:
+   the kiosk has no guardian branch, and an under-18 band ends the session with nothing persisted
+   (`packages/kiosk-game/src/onboarding/screens/bands.ts`).
 
 ## 2. Why
 
@@ -30,7 +34,7 @@
 | No age guessing from behaviour | The system does not estimate age from play, voice or images (camera input does not exist). |
 | Supervised sites | Administrators do not ask for documents. If a participant is evidently a child, the administrator ends the session kindly and does not enrol them. Criterion batteries are administered only to adults. |
 | Open public kiosks | Thank-you mode only, core consent only; no contact capture unless opted in, no criterion battery, no audio. |
-| Policy validator | Rejects `allow_minors = true` without the precondition records (PRV-01). |
+| Policy validator | Rejects `allow_minors = true` without the precondition records (PRV-01). **Planned, not yet implemented**; see section 1, item 4. |
 | Content | No module is designed or tested for children. |
 
 **Limitation.** Age is self-declared. A child could choose an adult band. The design minimises what such a

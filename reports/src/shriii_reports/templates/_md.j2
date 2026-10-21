@@ -1,13 +1,13 @@
 {#- Markdown macro set. _html.j2 and _qmd.j2 expose the same macro names and signatures. -#}
 {% macro doc_start() -%}
 ---
-title: "{{ report.title | replace('"', "'") }}"
-study: {{ report.study_id }}
-stage: {{ report.stage }}
-status: {{ report.status }}
-analysis_run_id: {{ prov.analysis_run_id }}
-snapshot_sha256: {{ prov.snapshot_sha256 }}
-bundle_sha256: {{ bundle_sha256 }}
+title: {{ report.title | yaml_str }}
+study: {{ report.study_id | yaml_str }}
+stage: {{ report.stage | yaml_str }}
+status: {{ report.status | yaml_str }}
+analysis_run_id: {{ prov.analysis_run_id | yaml_str }}
+snapshot_sha256: {{ prov.snapshot_sha256 | yaml_str }}
+bundle_sha256: {{ bundle_sha256 | yaml_str }}
 ---
 
 {% endmacro %}
@@ -16,18 +16,18 @@ bundle_sha256: {{ bundle_sha256 }}
 {% endmacro %}
 
 {% macro h(level, text) -%}
-{{ '#' * level }} {{ text }}
+{{ '#' * level }} {{ text | prose }}
 
 {% endmacro %}
 
 {% macro p(text) -%}
-{{ text }}
+{{ text | prose }}
 
 {% endmacro %}
 
 {% macro ul(items) -%}
 {% for i in items %}
-- {{ i }}
+- {{ i | prose }}
 {% endfor %}
 
 {% endmacro %}
@@ -54,18 +54,18 @@ bundle_sha256: {{ bundle_sha256 }}
 {% endmacro %}
 
 {% macro callout(kind, title, body) -%}
-> **{{ kind | upper }}: {{ title }}**
+> **{{ kind | upper }}: {{ title | prose }}**
 >
-> {{ body }}
+> {{ body | prose }}
 
 {% endmacro %}
 
 {% macro review(who, text) -%}
-> **[REVIEW REQUIRED: {{ who }}]** {{ text }}
+> **[REVIEW REQUIRED: {{ who | prose }}]** {{ text | prose }}
 
 {% endmacro %}
 
 {% macro placeholder(text) -%}
-> **[TO BE COMPLETED]** {{ text }}
+> **[TO BE COMPLETED]** {{ text | prose }}
 
 {% endmacro %}

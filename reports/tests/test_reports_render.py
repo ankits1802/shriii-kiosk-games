@@ -11,6 +11,7 @@ from typing import Any
 
 import numpy as np
 import pytest
+import yaml
 from pydantic import ValidationError
 from shriii_reports import REPORT_KINDS, ReportBundle, load_registry, prepare_context, render_report, write_report
 from shriii_reports.cli import main
@@ -380,3 +381,72 @@ def test_write_report_names_files_safely(tmp_path: Path, registry: Registry) -> 
     paths = write_report(bundle_of(data), tmp_path, formats=["md"], registry=registry)
     assert paths["md"].parent == tmp_path
     assert "/" not in paths["md"].name and "\\" not in paths["md"].name
+
+
+# ----------------------------------------------------------------------------- verifier hardening
+
+
+@pytest.mark.parametrize("fmt", ["md", "qmd"])
+def test_markdown_formats_neutralise_raw_html_and_front_matter(fmt: str, registry: Registry) -> None:
+    data = raw_fixture("stage2_pilot")
+    data["notes"] = ["see <script>alert(1)</script>\nsecond line"]
+    data["report"]["title"] = 'Pilot: "wave" one\nINJECT: yes'
+    data["report"]["study_id"] = "study: x"
+    data["indicator_decisions"].append(
+        {"indicator_id": "x.y", "pathway": "B", "decision": "flag", "rationale": "<img src=x onerror=alert(1)>"}
+    )
+    out = render_report(bundle_of(data), fmt, registry)
+    assert "<script" not in out and "<img" not in out
+    assert "&lt;script>" in out and "&lt;img" in out
+    front = out.split("---", 2)[1]
+    meta = yaml.safe_load(front)
+    assert meta["title"] == 'Pilot: "wave" one\nINJECT: yes'
+    assert "INJECT" not in meta  # newline in the title did not create a new key
+
+
+def test_missing_bundle_hashes_are_reported(registry: Registry) -> None:
+    data = raw_fixture("stage2_pilot")
+    data["provenance"]["hypotheses_sha256"] = None
+    data["provenance"]["gates_sha256"] = None
+    data["results"].append(_result(result_id="reg", hypothesis_id=next(iter(registry.hypothesis_family))))
+    data["trait_gates"].append({"trait": "self_control", "language": "hi-IN", "pathway": "B", "status": "withheld"})
+    text = " ".join(prepare_context(bundle_of(data), registry)["integrity_warnings"])
+    assert "does not record the hypotheses.yaml sha256" in text
+    assert "does not record the gates.yaml sha256" in text
+
+
+def test_non_finite_p_values_are_not_shown(registry: Registry) -> None:
+    r = _result(result_id="p")
+    r["evidence"]["details"] = {"p_value": float("nan"), "p": 0.03}
+    ctx = prepare_context(_bundle_with([r]), registry)
+    assert ctx["results"][0]["p"] == "0.0300"
+
+
+def test_rates_and_targets_must_be_proportions() -> None:
+    data = raw_fixture("stage2_pilot")
+    bad = copy.deepcopy(data)
+    bad["exclusions"].append({"rule_id": "r", "description": "d", "n_sessions": 1, "by_group": {"g": {"a": 12.0}}})
+    with pytest.raises(ValidationError):
+        bundle_of(bad)
+    bad = copy.deepcopy(data)
+    bad["targets"].append({"metric": "completion", "group": {}, "observed": 85, "target": 0.8, "n": 10})
+    with pytest.raises(ValidationError):
+        bundle_of(bad)
+
+
+def test_cli_strict_refuses_unchecked_classification(tmp_path: Path) -> None:
+    src = tmp_path / "b.json"
+    src.write_text(json.dumps(raw_fixture("stage5_norming")), encoding="utf-8")
+    assert main(["render", str(src), "--out-dir", str(tmp_path / "o"), "--no-registry", "--strict"]) == 1
+    assert main(["render", str(src), "--out-dir", str(tmp_path / "o"), "--no-registry"]) == 0
+
+
+def test_cli_reports_malformed_registry(tmp_path: Path) -> None:
+    src = tmp_path / "b.json"
+    src.write_text(json.dumps(raw_fixture("stage5_norming")), encoding="utf-8")
+    bad = tmp_path / "hyp.yaml"
+    bad.write_text("families: [unclosed\n", encoding="utf-8")
+    assert (
+        main(["render", str(src), "--out-dir", str(tmp_path / "o"), "--hypotheses", str(bad), "--gates", str(GATES)])
+        == 2
+    )

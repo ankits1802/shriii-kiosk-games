@@ -59,11 +59,14 @@ def verify_document(path: Path, repo_root: Path) -> VerificationResult:
         if not match:
             problems.append(f"{rel}: sha256 changed ({expected[:12]}... -> {actual[:12]}...)")
         checked.append({"path": rel, "expected": expected, "actual": actual, "match": match})
-    recorded = {str(e["path"]) for e in manifest.get("inputs", []) if str(e.get("role", "")).startswith("dictionary")}
-    dict_dir = repo_root / "scoring" / "dictionary"
-    if recorded and dict_dir.is_dir():
-        current = {f"scoring/dictionary/{p.name}" for p in dict_dir.glob("*.yaml")}
-        for extra in sorted(current - recorded):
+    recorded = [str(e["path"]) for e in manifest.get("inputs", []) if str(e.get("role", "")).startswith("dictionary")]
+    # The dictionary directory is the one the document was generated from (it may be a custom --scoring-dir).
+    for parent in sorted({Path(r).parent.as_posix() for r in recorded}):
+        dict_dir = Path(parent) if Path(parent).is_absolute() else repo_root / parent
+        if not dict_dir.is_dir():
+            continue
+        current = {(Path(parent) / p.name).as_posix() for p in dict_dir.glob("*.yaml")}
+        for extra in sorted(current - set(recorded)):
             problems.append(f"{extra}: dictionary file not covered by the registered document")
     if not checked:
         problems.append("manifest lists no inputs")

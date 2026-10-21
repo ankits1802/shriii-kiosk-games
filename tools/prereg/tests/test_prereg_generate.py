@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 import json
 import re
+import shutil
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
@@ -314,3 +315,16 @@ def test_cli_rejects_bad_timestamp_and_missing_document(repo_copy: Path) -> None
     with pytest.raises(SystemExit):
         main(["--repo-root", str(repo_copy), "generate", "--generated-at", "yesterday"])
     assert main(["--repo-root", str(repo_copy), "verify", str(repo_copy / "nope.md")]) == 2
+
+
+def test_verify_checks_the_dictionary_dir_it_was_generated_from(repo_copy: Path) -> None:
+    alt = repo_copy / "alt_scoring"
+    shutil.copytree(repo_copy / "scoring", alt)
+    out = repo_copy / "build"
+    doc = build_document(load_inputs(scoring_dir=alt, repo_root=repo_copy), generated_at=FIXED_TIME)
+    paths = write_outputs(doc, out, formats=["md"], repo_root=repo_copy)
+    assert verify_document(paths["md"], repo_copy).ok
+    (alt / "dictionary" / "dictionary.C.yaml").write_text("document: pathway\npathway: C\n", encoding="utf-8")
+    res = verify_document(paths["md"], repo_copy)
+    assert not res.ok
+    assert any("alt_scoring/dictionary/dictionary.C.yaml" in p for p in res.problems)

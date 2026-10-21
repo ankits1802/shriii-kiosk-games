@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -120,7 +121,7 @@ def fmt_group(group: Mapping[str, Any]) -> str:
 def _p_value(details: Mapping[str, Any]) -> str:
     for key, label in (("p_adjusted", " (adj.)"), ("p_holm", " (Holm)"), ("p_bh", " (BH)"), ("p_value", ""), ("p", "")):
         v = details.get(key)
-        if isinstance(v, int | float):
+        if isinstance(v, int | float) and not isinstance(v, bool) and math.isfinite(v):
             return (f"{v:.4f}" if v >= 0.0001 else "<0.0001") + label
     return "-"
 
@@ -227,6 +228,16 @@ def prepare_context(bundle: ReportBundle, reg: Registry, *, section_order: Seque
         integrity.append(
             f"Results were computed against gates.yaml sha256 {prov.gates_sha256[:12]}..., but the gates file used "
             f"for rendering has {reg.gates_sha256[:12]}..."
+        )
+    if reg.hypotheses_sha256 and not prov.hypotheses_sha256 and any(v["tier"] != "exploratory" for v in views):
+        integrity.append(
+            "The bundle does not record the hypotheses.yaml sha256 the analysis used, so registered "
+            "(confirmatory/secondary) classifications cannot be tied to the registered plan."
+        )
+    if reg.gates_sha256 and not prov.gates_sha256 and (bundle.trait_gates or bundle.battery_gates):
+        integrity.append(
+            "The bundle does not record the gates.yaml sha256 the gate evaluations used; the thresholds "
+            "behind these decisions cannot be verified."
         )
     stage = bundle.report.stage.upper()
     if stage not in {"S1", "S1B"} and not prov.prereg_id and bundle.report.kind != "technical_manual":

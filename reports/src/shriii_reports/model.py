@@ -220,13 +220,22 @@ class ExclusionEntry(_Model):
     by_group: dict[str, dict[str, float]] = Field(default_factory=dict)
     """grouping -> {group value -> exclusion rate (proportion)} for the differential-exclusion table"""
 
+    @field_validator("by_group")
+    @classmethod
+    def _rates_are_proportions(cls, v: dict[str, dict[str, float]]) -> dict[str, dict[str, float]]:
+        for grouping, rates in v.items():
+            for group, rate in rates.items():
+                if not (math.isfinite(rate) and 0.0 <= rate <= 1.0):
+                    raise ValueError(f"exclusion rate {grouping}={group} must be a proportion in [0, 1], got {rate}")
+        return v
+
 
 class TargetEntry(_Model):
     metric: Literal["completion", "play_again"]
     group: dict[str, str]
-    observed: float | None
-    target: float
-    n: int
+    observed: float | None = Field(default=None, ge=0.0, le=1.0)
+    target: float = Field(ge=0.0, le=1.0)
+    n: int = Field(ge=0)
 
 
 class TraitGateEntry(_Model):

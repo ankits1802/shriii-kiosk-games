@@ -11,6 +11,7 @@ import sys
 from collections.abc import Sequence
 from pathlib import Path
 
+import yaml
 from pydantic import ValidationError
 
 from shriii_reports.model import REPORT_KINDS, ReportBundle
@@ -83,7 +84,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             return 2
         try:
             registry = load_registry(hyp, gates)
-        except OSError as exc:
+        except (OSError, ValueError, yaml.YAMLError) as exc:
             print(f"error: {exc}", file=sys.stderr)
             return 2
     rc = 0
@@ -95,6 +96,8 @@ def main(argv: Sequence[str] | None = None) -> int:
             return 2
         ctx = prepare_context(bundle, registry, section_order=REPORT_SPECS[bundle.report.kind]["sections"])
         problems = [*ctx["integrity_warnings"], *ctx["classification_warnings"]]
+        if args.no_registry and args.strict:
+            problems.append("rendered with --no-registry: confirmatory classification was not checked")
         for p in problems:
             print(f"warning: {b.name}: {p}", file=sys.stderr)
         if args.strict and problems:

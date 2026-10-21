@@ -2,15 +2,15 @@
     Render with `quarto render <file>.qmd`. Same macro names and signatures as _md.j2. -#}
 {% macro doc_start() -%}
 ---
-title: "{{ report.title | replace('"', "'") }}"
-subtitle: "{{ report.study_id }} - {{ report.stage }}{% if report.wave %} - wave {{ report.wave }}{% endif %} - {{ report.status | upper }}"
+title: {{ report.title | yaml_str }}
+subtitle: {{ (report.study_id ~ ' - ' ~ report.stage ~ ((' - wave ' ~ report.wave) if report.wave else '') ~ ' - ' ~ (report.status | upper)) | yaml_str }}
 {% if report.authors %}
 author:
 {% for a in report.authors %}
-  - "{{ a | replace('"', "'") }}"
+  - {{ a | yaml_str }}
 {% endfor %}
 {% endif %}
-date: "{{ prov.generated_at or '' }}"
+date: {{ prov.generated_at | yaml_str }}
 format:
   html:
     toc: true
@@ -22,9 +22,9 @@ format:
 execute:
   enabled: false
 shriii:
-  analysis_run_id: "{{ prov.analysis_run_id }}"
-  snapshot_sha256: "{{ prov.snapshot_sha256 }}"
-  bundle_sha256: "{{ bundle_sha256 }}"
+  analysis_run_id: {{ prov.analysis_run_id | yaml_str }}
+  snapshot_sha256: {{ prov.snapshot_sha256 | yaml_str }}
+  bundle_sha256: {{ bundle_sha256 | yaml_str }}
 ---
 
 {% endmacro %}
@@ -33,18 +33,18 @@ shriii:
 {% endmacro %}
 
 {% macro h(level, text) -%}
-{{ '#' * level }} {{ text }}
+{{ '#' * level }} {{ text | prose }}
 
 {% endmacro %}
 
 {% macro p(text) -%}
-{{ text }}
+{{ text | prose }}
 
 {% endmacro %}
 
 {% macro ul(items) -%}
 {% for i in items %}
-- {{ i }}
+- {{ i | prose }}
 {% endfor %}
 
 {% endmacro %}
@@ -72,18 +72,18 @@ shriii:
 
 {% macro callout(kind, title, body) -%}
 ::: {.callout-{{ 'warning' if kind in ('warning', 'draft', 'integrity') else 'note' }}}
-## {{ kind | capitalize }}: {{ title }}
+## {{ kind | capitalize }}: {{ title | prose }}
 
-{{ body }}
+{{ body | prose }}
 :::
 
 {% endmacro %}
 
 {% macro review(who, text) -%}
 ::: {.callout-important}
-## Review required: {{ who }}
+## Review required: {{ who | prose }}
 
-{{ text }}
+{{ text | prose }}
 :::
 
 {% endmacro %}
@@ -92,7 +92,7 @@ shriii:
 ::: {.callout-tip}
 ## To be completed
 
-{{ text }}
+{{ text | prose }}
 :::
 
 {% endmacro %}
