@@ -23,7 +23,7 @@ description: |
   Touch-only, offline-first behavioural games kiosk runtime for the SHRIII study. Runs full screen under
   Ubuntu Frame on a locked-down Ubuntu Core 24 image, with an encrypted outbox, a device mTLS certificate
   from the SHRIII step-ca, an ESC/POS receipt printer and a host egress allow-list.
-license: proprietary
+license: Proprietary
 grade: stable
 confinement: strict
 compression: lzo

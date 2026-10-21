@@ -42,14 +42,22 @@ jq -n --arg ott "$token" --arg fp "$fp" --rawfile root "$ROOT" --arg ca "$CA_URL
   config: {printer: {kind: "virtual"}, update: {}}, lockdown: {}
 }' >"$work/bundle.json"
 prov enrol --bundle "$work/bundle.json" --root "$work/device" --pinned-root-fingerprint "$fp"
-step certificate inspect "$work/device/tls/device.crt" --format json >"$work/leaf.json"
-jq -e '.subject.common_name == ["kiosk-ci-001"]' "$work/leaf.json" >/dev/null
-jq -e '.extensions.subject_alt_name.dns_names == ["kiosk-ci-001.kiosk.shriii.internal"]' "$work/leaf.json" >/dev/null
-jq -e '.extensions.subject_alt_name.uris == ["spiffe://shriii.internal/kiosk/kiosk-ci-001"]' "$work/leaf.json" >/dev/null
-jq -e '.extensions.extended_key_usage == ["client_auth"]' "$work/leaf.json" >/dev/null
-jq -e '(.extensions.basic_constraints.is_ca // false) == false' "$work/leaf.json" >/dev/null
-start=$(date -d "$(jq -r .validity.start "$work/leaf.json")" +%s)
-end=$(date -d "$(jq -r .validity.end "$work/leaf.json")" +%s)
+leaf="$work/device/tls/device.crt"
+# Fields kiosk-enrol and cert-reimport read from `step certificate inspect --format json`:
+step certificate inspect "$leaf" --format json >"$work/leaf.json"
+jq -e '(.serial_number | type) == "string" and (.validity.end | type) == "string"' "$work/leaf.json" >/dev/null || {
+  echo "unexpected step inspect JSON:"; jq 'del(.signature)' "$work/leaf.json"; exit 1; }
+text=$(openssl x509 -in "$leaf" -noout -nameopt RFC2253 -subject -ext subjectAltName,extendedKeyUsage,basicConstraints)
+echo "$text"
+expect() { echo "$text" | grep -q -- "$1" || { echo "missing in leaf: $1"; exit 1; }; }
+expect "subject=CN=kiosk-ci-001"
+expect "DNS:kiosk-ci-001.kiosk.shriii.internal"
+expect "URI:spiffe://shriii.internal/kiosk/kiosk-ci-001"
+expect "TLS Web Client Authentication"
+expect "CA:FALSE"
+if echo "$text" | grep -q "TLS Web Server Authentication"; then echo "leaf must not allow serverAuth"; exit 1; fi
+start=$(date -d "$(openssl x509 -in "$leaf" -noout -startdate | cut -d= -f2)" +%s)
+end=$(date -d "$(openssl x509 -in "$leaf" -noout -enddate | cut -d= -f2)" +%s)
 [ $((end - start)) -le $((24 * 3600 + 120)) ] || { echo "certificate lifetime exceeds 24 h"; exit 1; }
 step certificate verify "$work/device/tls/chain.crt" --roots "$ROOT"
 echo "ok: identity, EKU clientAuth only, lifetime <= 24 h, chains to root"
@@ -58,7 +66,7 @@ echo "== 3. step CLI enrolment (snap path)"
 token=$(prov token --ca-url "$CA_URL" --provisioner-key "$PROV" --subject kiosk-ci-002 --root-ca "$ROOT")
 step ca certificate kiosk-ci-002 "$work/step.crt" "$work/step.key" --token "$token" --ca-url "$CA_URL" \
   --root "$ROOT" --kty EC --curve P-256 --force
-step certificate inspect "$work/step.crt" --format json | jq -e '.extensions.subject_alt_name.uris == ["spiffe://shriii.internal/kiosk/kiosk-ci-002"]' >/dev/null
+openssl x509 -in "$work/step.crt" -noout -ext subjectAltName | grep -q "URI:spiffe://shriii.internal/kiosk/kiosk-ci-002"
 echo "ok: step ca certificate with a shriii-provision token"
 
 echo "== 4. refusals"
