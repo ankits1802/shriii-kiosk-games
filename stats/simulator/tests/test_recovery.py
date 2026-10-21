@@ -6,7 +6,9 @@ pipeline is internally correct; it is not evidence that the games measure the tr
 
 from __future__ import annotations
 
+import gc
 import math
+from typing import Any, cast
 
 import numpy as np
 import pytest
@@ -123,14 +125,31 @@ def test_fast_recovery_smoke() -> None:
         assert by[ind].r_latent > 0.5, ind
 
 
+def _summary_only(report: RecoveryReport) -> RecoveryReport:
+    """Keep the per-indicator results and drop the simulated events and scoring rows: the module-scoped
+    fixtures would otherwise hold two full n = RECOVERY_N studies in memory at once."""
+    light = RecoveryReport(
+        pathway=report.pathway,
+        n_persons=report.n_persons,
+        tolerance=report.tolerance,
+        results=report.results,
+        study=cast(Any, None),
+        scoring=cast(Any, None),
+        skipped=report.skipped,
+    )
+    del report
+    gc.collect()
+    return light
+
+
 @pytest.fixture(scope="module")
 def report_b() -> RecoveryReport:
-    return run_recovery(RECOVERY_N, "B", seed=11)
+    return _summary_only(run_recovery(RECOVERY_N, "B", seed=11))
 
 
 @pytest.fixture(scope="module")
 def report_a() -> RecoveryReport:
-    return run_recovery(RECOVERY_N, "A", seed=11)
+    return _summary_only(run_recovery(RECOVERY_N, "A", seed=11))
 
 
 @pytest.mark.slow
