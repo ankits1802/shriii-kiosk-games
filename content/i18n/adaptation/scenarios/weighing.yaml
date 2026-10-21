@@ -1,0 +1,146 @@
+# Cultural adaptation review sheet: Weighmaster role, balance needle, spoken quantities and the new market rule
+# Stage 1 think-aloud (CRT-08, plan section 7.3) and VOX-08 variant decisions. One sheet per scenario.
+# Universal probes are asked in every region in the participant's language (wording given here; draft
+# translations follow the same ITC review as recording scripts). Region sections list known considerations,
+# candidate surface adaptations and extra probes. Locked elements may never change in a variant
+# (VOX-08 forbids changes to scored parameters). Sign-off records go to governance/ (PLT-09).
+schema_version: '1.0'
+scenario_id: weighing
+title: Weighmaster role, balance needle, spoken quantities and the new market rule
+appears_in:
+  - weighing_post
+lines:
+  - weighing_post.intro
+  - weighing_post.practice
+  - weighing_post.new_rule
+  - weighing_post.quantity_prefix
+purpose: 'The player decides approve, warn or fine from a balance needle and spoken quantities, with no numerals (requires_numeracy: false). The announced new rule (sacks leaning left are fined) is the context shift.'
+locked_elements:
+  - Needle positions, tolerance bands, >= 12 decisions and >= 6 trials after the shift (EPI-02).
+  - Decision options approve / warn / fine / inspect more.
+  - 'No decision may require reading digits (requires_numeracy: false).'
+adaptable_surface:
+  - Scale type drawn (beam balance तराजू / dial needle काँटा / platform scale).
+  - Goods in the sack (wheat, rice, onions, cotton) and sack material.
+  - Unit word in the spoken quantity clips (kilo is universal; avoid obsolete local units).
+  - Weighmaster booth and attire (market committee clerk vs private trader).
+construct_risks:
+  - Spoken quantities may push participants to do arithmetic, making the task digit-dependent.
+  - Left/right words are a known comprehension risk; the rule must be shown with an arrow from the player's viewpoint.
+  - Electronic scales are now common; younger participants may not read a needle intuitively.
+  - '''Fine'' (जुर्माना / दंड / அபராதம்) may be read as a police action rather than a market penalty.'
+probe_instructions: Ask the universal probes after the participant finishes the module (retrospective think-aloud), in the participant's language, using the wording given. Keep the concurrent think-aloud prompt neutral ('please keep telling me what you are thinking'). Do not explain the task or the hidden rules. Code each observation with the CRT-08 codebook; note verbatim local words in the region notes.
+universal_probes:
+  - id: weighing.P1
+    en: What did the needle tell you?
+    hi-IN: सुई ने आपको क्या बताया?
+    mr-IN: काट्यानं तुम्हाला काय सांगितलं?
+    ta-IN: முள் உங்களுக்கு என்ன காட்டுச்சு?
+    listen_for: Reads the needle as more/less/about right without counting.
+  - id: weighing.P2
+    en: What does it mean here to fine someone? Who can do that at a market?
+    hi-IN: यहाँ किसी पर जुर्माना लगाने का क्या मतलब है? बाज़ार में यह कौन कर सकता है?
+    mr-IN: इथे एखाद्याला दंड करणं म्हणजे काय? बाजारात हे कोण करू शकतं?
+    ta-IN: இங்க ஒருத்தருக்கு அபராதம் போடுறதுன்னா என்ன? சந்தையில அதை யார் செய்யலாம்?
+    listen_for: Understands a market penalty; note if it sounds like police or court action.
+  - id: weighing.P3
+    en: When the rule changed, what was the new rule?
+    hi-IN: जब नियम बदला, तो नया नियम क्या था?
+    mr-IN: नियम बदलला तेव्हा नवा नियम काय होता?
+    ta-IN: விதி மாறினப்போ, புது விதி என்ன?
+    listen_for: Restates 'sacks leaning left are fined'; left/right confusion is misunderstood_instruction.
+  - id: weighing.P4
+    en: Did you need to count or read anything to decide?
+    hi-IN: फ़ैसला करने के लिए क्या आपको कुछ गिनना या पढ़ना पड़ा?
+    mr-IN: ठरवण्यासाठी तुम्हाला काही मोजावं किंवा वाचावं लागलं का?
+    ta-IN: முடிவு பண்ண, நீங்க ஏதாவது எண்ணவோ படிக்கவோ வேண்டியிருந்ததா?
+    listen_for: Any yes is digit_dependent_decision or reading_dependent_screen (exit gate 1).
+  - id: weighing.P5
+    en: Who usually does the weighing at your market?
+    hi-IN: आपके बाज़ार में आम तौर पर तौलने का काम कौन करता है?
+    mr-IN: तुमच्या बाजारात सहसा वजन कोण करतं?
+    ta-IN: உங்க சந்தையில பொதுவா யார் எடை போடுவாங்க?
+    listen_for: Role familiarity and gender of the role; feeds the gender-roles sheet.
+regions:
+  hi-IN:
+    regions:
+      - hi.west_up_ncr
+      - hi.east_up_bihar
+      - hi.mp
+      - hi.rajasthan
+    considerations:
+      - मंडी weighing of wheat (गेहूँ) sacks is familiar in UP, MP and Rajasthan; both तराजू and dial काँटा are known.
+      - Copy uses काँटा (scale) and सुई (needle).
+    candidate_adaptations:
+      - 'Goods: wheat sacks.'
+      - Dial scale with a large needle and pans.
+    region_probes:
+      - id: weighing.hi.R1
+        en: Do people here say kaanta or taraazu for this?
+        listen_for: Preferred word for the scale.
+  mr-IN:
+    regions:
+      - mr.west_pune
+      - mr.vidarbha
+      - mr.marathwada
+      - mr.konkan_mumbai
+    considerations:
+      - Onion markets (Lasalgaon, Nashik) and cotton (Vidarbha) are iconic weighing contexts; बाजार समिती clerks weigh in regulated yards.
+      - Copy uses वजनकाटा (scale) and काटा (needle); check the double use of काटा is not confusing.
+    candidate_adaptations:
+      - 'Goods: onion sacks (पोती).'
+    region_probes:
+      - id: weighing.mr.R1
+        en: Was it clear when 'kaata' meant the scale and when it meant the needle?
+        listen_for: Ambiguity of काटा.
+  ta-IN:
+    regions:
+      - ta.chennai
+      - ta.kongu
+      - ta.south
+      - ta.delta
+    considerations:
+      - Rice (அரிசி) sacks and the தராசு beam balance are familiar; உழவர் சந்தை uses electronic scales.
+      - Copy uses முள் (needle) and எடை போடுறவர் (the one who weighs).
+    candidate_adaptations:
+      - 'Goods: rice sacks.'
+      - Consider a beam balance if the dial needle is not recognised.
+    region_probes:
+      - id: weighing.ta.R1
+        en: Is a needle scale like this used here, or only electronic ones?
+        listen_for: Scale familiarity by age.
+observer_codes:
+  - confusion
+  - misunderstood_instruction
+  - reading_dependent_screen
+  - digit_dependent_decision
+  - cultural_mismatch
+  - strategy
+signoff:
+  gate: 'Stage 1 exit gate 3 (plan section 7.3): cultural-equivalence sign-off per scenario by region, age band and gender, recorded in governance/ (PLT-09).'
+  cells: Every region listed below x age bands [18-24, 25-34, 35-44, 45-59, 60+] x gender [woman, man]; at least one think-aloud participant per cell before sign-off, and at least 6 participants aged 60+ per pathway (CRT-08 study AC).
+  decision_options:
+    - equivalent
+    - equivalent_with_surface_change
+    - not_equivalent_redesign
+  decision_rules:
+    - 'equivalent: no cultural_mismatch or misunderstood_instruction code linked to this scenario in the cell, and the universal probes show the intended meaning.'
+    - 'equivalent_with_surface_change: problems are fixed by an adaptable-surface change only (art, prop, wording); the change becomes a variant pack (VOX-08) and the scenario is re-tested.'
+    - 'not_equivalent_redesign: a problem touches a locked (scored) element or the construct itself; escalate to the PI and the ITC lead, no pilot use until redesigned.'
+  signatories:
+    - field_researcher (per region)
+    - expert_reviewer (cultural)
+    - itc_lead
+  record_template:
+    scenario_id: <id>
+    region: <region id>
+    age_band: <band>
+    gender: <woman|man>
+    n_participants: 0
+    codes_observed:
+      cultural_mismatch: 0
+      misunderstood_instruction: 0
+    decision: <decision option>
+    surface_changes: []
+    signed_by: []
+    date: YYYY-MM-DD

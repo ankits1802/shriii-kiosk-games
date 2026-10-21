@@ -1,0 +1,154 @@
+# Cultural adaptation review sheet: Gender roles in characters (guide, customers, weighmaster, partners, speaking faces)
+# Stage 1 think-aloud (CRT-08, plan section 7.3) and VOX-08 variant decisions. One sheet per scenario.
+# Universal probes are asked in every region in the participant's language (wording given here; draft
+# translations follow the same ITC review as recording scripts). Region sections list known considerations,
+# candidate surface adaptations and extra probes. Locked elements may never change in a variant
+# (VOX-08 forbids changes to scored parameters). Sign-off records go to governance/ (PLT-09).
+schema_version: '1.0'
+scenario_id: gender_roles
+title: Gender roles in characters (guide, customers, weighmaster, partners, speaking faces)
+appears_in:
+  - onboarding
+  - stall
+  - weighing_post
+  - road_home
+  - coplay
+  - share_pot
+lines:
+  - onboarding.language_face.hi_in
+  - onboarding.language_face.mr_in
+  - onboarding.language_face.ta_in
+  - weighing_post.intro
+  - stall.customer.calm
+  - stall.customer.hostile
+  - road_home.intro
+  - coplay.intro
+purpose: 'Characters must let women and men of every age identify with the player role, and must not encode stereotypes that change the meaning of a scenario (a male weighmaster as authority, a male customer shouting at a woman seller). Character gender is a form property: any change between languages is a variant (VOX-08) and needs DIF checks.'
+locked_elements:
+  - The player is never gendered by the game (no avatar gender, gender-neutral address where grammar allows).
+  - Character gender assignment is identical across languages within a form (equivalence of stimuli).
+  - Customer tone levels are counterbalanced across customer genders and ages.
+adaptable_surface:
+  - Character attire (saree, salwar kameez, kurta, veshti, lungi, shirt-trousers), hairstyles and accessories.
+  - Voice artist gender for the guide (one consistent choice across languages for the pilot form).
+  - Gender of the speaking-face voice per language (the face chooser shows a woman and a man where possible).
+construct_risks:
+  - Role stereotypes (women sell vegetables, men weigh and inspect) make the authority role feel unnatural for women players.
+  - A male hostile customer facing a woman participant may read as harassment rather than impatience, inflating emotional responses.
+  - Hindi and Marathi first-person and some second-person verbs mark gender; inconsistent choices across languages change who the guide is.
+  - Caste, religion and community markers (tilak styles, sacred thread, caps, surnames) in character art introduce irrelevant variance and harm.
+  - In some rural areas women's use of a public kiosk is constrained; the setting must feel acceptable for women to play.
+probe_instructions: Ask the universal probes after the participant finishes the module (retrospective think-aloud), in the participant's language, using the wording given. Keep the concurrent think-aloud prompt neutral ('please keep telling me what you are thinking'). Do not explain the task or the hidden rules. Code each observation with the CRT-08 codebook; note verbatim local words in the region notes.
+universal_probes:
+  - id: gender_roles.P1
+    en: 'In this game, who did you feel you were: a man, a woman, or anyone?'
+    hi-IN: 'इस खेल में आपको लगा कि आप कौन थे: कोई आदमी, कोई औरत, या कोई भी?'
+    mr-IN: 'या खेळात तुम्ही कोण आहात असं वाटलं: पुरुष, स्त्री, की कोणीही?'
+    ta-IN: 'இந்த விளையாட்டுல நீங்க யாரா இருந்தீங்கன்னு தோணுச்சு: ஆணா, பெண்ணா, இல்ல யார் வேணும்னாலுமா?'
+    listen_for: Whether the player role feels gender-open.
+  - id: gender_roles.P2
+    en: Did it feel natural for someone like you to be the weighmaster?
+    hi-IN: क्या आपके जैसे किसी इंसान का तौलने वाला बनना स्वाभाविक लगा?
+    mr-IN: तुमच्यासारख्या व्यक्तीनं वजन करणारं असणं नैसर्गिक वाटलं का?
+    ta-IN: உங்களை மாதிரி ஒருத்தர் எடை போடுறவரா இருக்கிறது இயல்பா தோணுச்சா?
+    listen_for: Role congruity by participant gender and age.
+  - id: gender_roles.P3
+    en: Did the guide's voice feel trustworthy? Would another voice suit people like you better?
+    hi-IN: क्या गाइड की आवाज़ भरोसेमंद लगी? क्या आपके जैसे लोगों के लिए कोई और आवाज़ बेहतर होती?
+    mr-IN: गाइडचा आवाज विश्वासार्ह वाटला का? तुमच्यासारख्या लोकांसाठी दुसरा आवाज जास्त चांगला वाटला असता का?
+    ta-IN: வழிகாட்டியோட குரல் நம்பிக்கையா இருந்ததா? உங்களை மாதிரி ஆட்களுக்கு வேற குரல் இன்னும் பொருத்தமா இருக்குமா?
+    listen_for: Voice gender and age preferences; trust.
+  - id: gender_roles.P4
+    en: Did any character seem to belong to a particular community, caste or religion?
+    hi-IN: क्या कोई किरदार किसी ख़ास समुदाय, जाति या धर्म का लगा?
+    mr-IN: एखादं पात्र एखाद्या विशिष्ट समाजाचं, जातीचं किंवा धर्माचं वाटलं का?
+    ta-IN: ஏதாவது கதாபாத்திரம் ஒரு குறிப்பிட்ட சமூகம், சாதி, அல்லது மதத்தைச் சேர்ந்தவரா தோணுச்சா?
+    listen_for: 'Any marker to remove (exit gate: cultural mismatch).'
+  - id: gender_roles.P5
+    en: Would people in your family be comfortable with someone like you playing this at the fair?
+    hi-IN: क्या आपके घर के लोगों को ठीक लगेगा कि आपके जैसा कोई मेले में यह खेल खेले?
+    mr-IN: तुमच्यासारख्या कोणी जत्रेत हा खेळ खेळला, तर तुमच्या घरच्यांना ते चालेल का?
+    ta-IN: உங்களை மாதிரி ஒருத்தர் திருவிழாவுல இதை விளையாடினா, உங்க வீட்டுல உள்ளவங்களுக்குச் சரியா இருக்குமா?
+    listen_for: Acceptability of kiosk play for women and older participants; site placement implications.
+regions:
+  hi-IN:
+    regions:
+      - hi.west_up_ncr
+      - hi.east_up_bihar
+      - hi.mp
+      - hi.rajasthan
+    considerations:
+      - In rural UP, Bihar and Rajasthan, purdah and ghoonghat norms can limit women's public kiosk use; supervised women-friendly sites may be needed.
+      - Weighmasters in mandis are almost always men; a woman weighmaster may surprise but should not confuse.
+      - Guide copy uses feminine first person (बोलती हूँ) only in the speaking-face lines; player-addressed lines are gender-neutral.
+    candidate_adaptations:
+      - Counterbalance customer gender; show women and men vendors in the background.
+    region_probes:
+      - id: gender_roles.hi.R1
+        en: Would women in your village stop to play at a kiosk like this?
+        listen_for: Access barriers for women.
+  mr-IN:
+    regions:
+      - mr.west_pune
+      - mr.vidarbha
+      - mr.marathwada
+      - mr.konkan_mumbai
+    considerations:
+      - Women vendors (भाजीवाली) are very common in Maharashtrian markets; बचत गट leadership by women is familiar.
+      - मित्र (male friend) in road_home.intro must become मैत्रीण if the partner art is a woman.
+    candidate_adaptations:
+      - Partner character gender fixed per form and the copy matched.
+    region_probes:
+      - id: gender_roles.mr.R1
+        en: Was the friend on the road home a man or a woman to you?
+        listen_for: Mismatch between art and the word मित्र.
+  ta-IN:
+    regions:
+      - ta.chennai
+      - ta.kongu
+      - ta.south
+      - ta.delta
+    considerations:
+      - Women vendors and women officials are common and visible; Tamil second-person address is gender-neutral.
+      - 'Attire: saree or salwar for women, veshti or lungi and shirt for men; avoid religious marks on foreheads.'
+    candidate_adaptations:
+      - None proposed before testing.
+    region_probes:
+      - id: gender_roles.ta.R1
+        en: Did the characters' clothes look like people from your area?
+        listen_for: Attire familiarity; community associations.
+observer_codes:
+  - confusion
+  - misunderstood_instruction
+  - reading_dependent_screen
+  - digit_dependent_decision
+  - cultural_mismatch
+  - strategy
+signoff:
+  gate: 'Stage 1 exit gate 3 (plan section 7.3): cultural-equivalence sign-off per scenario by region, age band and gender, recorded in governance/ (PLT-09).'
+  cells: Every region listed below x age bands [18-24, 25-34, 35-44, 45-59, 60+] x gender [woman, man]; at least one think-aloud participant per cell before sign-off, and at least 6 participants aged 60+ per pathway (CRT-08 study AC).
+  decision_options:
+    - equivalent
+    - equivalent_with_surface_change
+    - not_equivalent_redesign
+  decision_rules:
+    - 'equivalent: no cultural_mismatch or misunderstood_instruction code linked to this scenario in the cell, and the universal probes show the intended meaning.'
+    - 'equivalent_with_surface_change: problems are fixed by an adaptable-surface change only (art, prop, wording); the change becomes a variant pack (VOX-08) and the scenario is re-tested.'
+    - 'not_equivalent_redesign: a problem touches a locked (scored) element or the construct itself; escalate to the PI and the ITC lead, no pilot use until redesigned.'
+  signatories:
+    - field_researcher (per region)
+    - expert_reviewer (cultural)
+    - itc_lead
+  record_template:
+    scenario_id: <id>
+    region: <region id>
+    age_band: <band>
+    gender: <woman|man>
+    n_participants: 0
+    codes_observed:
+      cultural_mismatch: 0
+      misunderstood_instruction: 0
+    decision: <decision option>
+    surface_changes: []
+    signed_by: []
+    date: YYYY-MM-DD

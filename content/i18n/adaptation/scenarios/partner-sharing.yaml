@@ -1,0 +1,151 @@
+# Cultural adaptation review sheet: Partner sharing: Share-the-Pot, Road Home fuel sharing, co-play credit and blame
+# Stage 1 think-aloud (CRT-08, plan section 7.3) and VOX-08 variant decisions. One sheet per scenario.
+# Universal probes are asked in every region in the participant's language (wording given here; draft
+# translations follow the same ITC review as recording scripts). Region sections list known considerations,
+# candidate surface adaptations and extra probes. Locked elements may never change in a variant
+# (VOX-08 forbids changes to scored parameters). Sign-off records go to governance/ (PLT-09).
+schema_version: '1.0'
+scenario_id: partner_sharing
+title: 'Partner sharing: Share-the-Pot, Road Home fuel sharing, co-play credit and blame'
+appears_in:
+  - share_pot
+  - road_home
+  - coplay
+lines:
+  - share_pot.intro
+  - road_home.intro
+  - coplay.intro
+  - report.teamwork.pole_a
+  - report.teamwork.centre
+  - report.teamwork.pole_b
+  - report.judgement.pole_a
+  - report.judgement.centre
+  - report.judgement.pole_b
+purpose: Public-goods contributions, fuel sharing and credit/blame allocation assume participants understand that the pot grows and is shared, and that partners are peers. Who the partners are (kin, neighbours, strangers) changes cooperation and must be equivalent across regions.
+locked_elements:
+  - Partner policies (cooperative, conditional, free-rider, error round), multiplier and number of rounds (MG-05, EPI-03, EPI-06).
+  - The error round window and the credit/blame round structure.
+  - Partner rating is private and self-rating is impossible.
+adaptable_surface:
+  - How partners are introduced visually (neighbours at the market, fellow vendors).
+  - Pot design (clay pot, steel tin) and coin art (generic, never real currency).
+  - Names are not used; if added later, names must be community-neutral.
+construct_risks:
+  - Kin framing raises contributions; stranger framing lowers them. The art must show peers of uncertain relation in every region.
+  - Familiarity with savings groups and rotating funds (SHGs, committees, bhishi, chit funds) helps comprehension unevenly.
+  - In Tamil, சீட்டு also means chit fund and playing cards; the pot must not be read as a lottery.
+  - '''Sharing with helpers'' can be read as paying wages to workers, changing the norm from fairness to employer duty.'
+  - Face-saving norms may push credit/blame choices towards self-blame.
+probe_instructions: Ask the universal probes after the participant finishes the module (retrospective think-aloud), in the participant's language, using the wording given. Keep the concurrent think-aloud prompt neutral ('please keep telling me what you are thinking'). Do not explain the task or the hidden rules. Code each observation with the CRT-08 codebook; note verbatim local words in the region notes.
+universal_probes:
+  - id: partner_sharing.P1
+    en: 'Who were these helpers to you: family, neighbours, or people you don''t know?'
+    hi-IN: 'ये साथी आपके कौन थे: परिवार वाले, पड़ोसी, या अनजान लोग?'
+    mr-IN: 'हे साथीदार तुमचे कोण होते: घरचे, शेजारी, की अनोळखी लोक?'
+    ta-IN: 'இந்தக் கூட்டாளிகள் உங்களுக்கு யாரு: குடும்பம், பக்கத்து வீட்டுக்காரங்க, இல்ல தெரியாதவங்க?'
+    listen_for: Perceived relationship; kin readings inflate cooperation.
+  - id: partner_sharing.P2
+    en: What happens to the coins you put in the pot?
+    hi-IN: आप जो सिक्के बर्तन में डालते हैं, उनका क्या होता है?
+    mr-IN: तुम्ही भांड्यात टाकलेल्या नाण्यांचं काय होतं?
+    ta-IN: நீங்க பானையில போடுற காசுக்கு என்ன ஆகும்?
+    listen_for: Understands that the pot grows and is shared by all; 'lost' or 'given to the guide' is misunderstood_instruction.
+  - id: partner_sharing.P3
+    en: When this helper put in nothing, what did you think of them?
+    hi-IN: जब इस साथी ने कुछ नहीं डाला, तो आपको उनके बारे में क्या लगा?
+    mr-IN: या साथीदारानं काहीच टाकलं नाही, तेव्हा तुम्हाला त्यांच्याबद्दल काय वाटलं?
+    ta-IN: இந்தக் கூட்டாளி எதுவுமே போடாதப்போ, அவங்களைப் பத்தி என்ன நினைச்சீங்க?
+    listen_for: Recognises free-riding; whether it is excused (poverty, need) by local norms.
+  - id: partner_sharing.P4
+    en: Does this remind you of anything in your village or neighbourhood?
+    hi-IN: क्या यह आपको अपने गाँव या मोहल्ले की किसी चीज़ की याद दिलाता है?
+    mr-IN: हे तुम्हाला तुमच्या गावातल्या किंवा वस्तीतल्या कशाची आठवण करून देतं का?
+    ta-IN: இது உங்க ஊர்ல அல்லது தெருவுல இருக்கிற ஏதாவது ஒண்ணை நினைவுபடுத்துதா?
+    listen_for: Savings groups, temple funds, festival collections; any gambling or lottery association.
+  - id: partner_sharing.P5
+    en: When something went wrong, who should take the blame? Why?
+    hi-IN: जब कुछ ग़लत हुआ, तो ग़लती किसकी मानी जानी चाहिए? क्यों?
+    mr-IN: काही चुकलं तेव्हा दोष कोणाचा मानायला हवा? का?
+    ta-IN: ஏதாவது தப்பா போனப்போ, அந்தத் தப்பு யாருடையதுன்னு சொல்லணும்? ஏன்?
+    listen_for: Credit/blame norms; face-saving or deference patterns.
+regions:
+  hi-IN:
+    regions:
+      - hi.west_up_ncr
+      - hi.east_up_bihar
+      - hi.mp
+      - hi.rajasthan
+    considerations:
+      - Rotating savings 'कमेटी' / 'बीसी' and स्वयं सहायता समूह (SHGs) are widespread, more among women.
+      - Copy uses साथी (companion), which is neutral between kin and non-kin.
+    candidate_adaptations:
+      - Partners drawn as fellow vendors with their own stalls.
+    region_probes:
+      - id: partner_sharing.hi.R1
+        en: Is this like a committee or group fund you know?
+        listen_for: ROSCA framing and whether it aids comprehension.
+  mr-IN:
+    regions:
+      - mr.west_pune
+      - mr.vidarbha
+      - mr.marathwada
+      - mr.konkan_mumbai
+    considerations:
+      - बचत गट (women's savings groups) and भिशी (rotating fund) are very familiar.
+      - साथीदार used; जोडीदार avoided because it can mean spouse.
+    candidate_adaptations:
+      - None proposed before testing.
+    region_probes:
+      - id: partner_sharing.mr.R1
+        en: Did the pot remind you of a bachat gat or a bhishi?
+        listen_for: Framing; whether the multiplier is understood.
+  ta-IN:
+    regions:
+      - ta.chennai
+      - ta.kongu
+      - ta.south
+      - ta.delta
+    considerations:
+      - மகளிர் சுய உதவிக் குழு (women's SHGs) are very common; ஏலச் சீட்டு (chit funds) are familiar and carry fraud memories.
+      - கூட்டாளி (partner) chosen; avoid சீட்டு anywhere near this module.
+    candidate_adaptations:
+      - If the pot reads as a chit fund, redraw as a festival collection pot (உண்டியல்) without religious marks.
+    region_probes:
+      - id: partner_sharing.ta.R1
+        en: Did this feel like a chit fund? Was it safe to put coins in?
+        listen_for: Chit-fund framing and distrust.
+observer_codes:
+  - confusion
+  - misunderstood_instruction
+  - reading_dependent_screen
+  - digit_dependent_decision
+  - cultural_mismatch
+  - strategy
+signoff:
+  gate: 'Stage 1 exit gate 3 (plan section 7.3): cultural-equivalence sign-off per scenario by region, age band and gender, recorded in governance/ (PLT-09).'
+  cells: Every region listed below x age bands [18-24, 25-34, 35-44, 45-59, 60+] x gender [woman, man]; at least one think-aloud participant per cell before sign-off, and at least 6 participants aged 60+ per pathway (CRT-08 study AC).
+  decision_options:
+    - equivalent
+    - equivalent_with_surface_change
+    - not_equivalent_redesign
+  decision_rules:
+    - 'equivalent: no cultural_mismatch or misunderstood_instruction code linked to this scenario in the cell, and the universal probes show the intended meaning.'
+    - 'equivalent_with_surface_change: problems are fixed by an adaptable-surface change only (art, prop, wording); the change becomes a variant pack (VOX-08) and the scenario is re-tested.'
+    - 'not_equivalent_redesign: a problem touches a locked (scored) element or the construct itself; escalate to the PI and the ITC lead, no pilot use until redesigned.'
+  signatories:
+    - field_researcher (per region)
+    - expert_reviewer (cultural)
+    - itc_lead
+  record_template:
+    scenario_id: <id>
+    region: <region id>
+    age_band: <band>
+    gender: <woman|man>
+    n_participants: 0
+    codes_observed:
+      cultural_mismatch: 0
+      misunderstood_instruction: 0
+    decision: <decision option>
+    surface_changes: []
+    signed_by: []
+    date: YYYY-MM-DD

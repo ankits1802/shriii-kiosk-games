@@ -11,6 +11,7 @@ dependencies = [
   "shriii-api",
   "shriii-prereg",
   "shriii-reports",
+  "shriii-i18n",
 ]
 
 [dependency-groups]
@@ -37,6 +38,7 @@ members = [
   "apps/api",
   "tools/prereg",
   "reports",
+  "tools/i18n",
 ]
 
 [tool.uv.sources]
@@ -47,6 +49,7 @@ shriii-simulator = { workspace = true }
 shriii-api = { workspace = true }
 shriii-prereg = { workspace = true }
 shriii-reports = { workspace = true }
+shriii-i18n = { workspace = true }
 
 [tool.pytest.ini_options]
 testpaths = [
@@ -59,6 +62,7 @@ testpaths = [
   "content/tests",
   "tools/prereg/tests",
   "reports/tests",
+  "tools/i18n/tests",
 ]
 addopts = ["-ra", "--strict-markers", "--import-mode=importlib"]
 asyncio_mode = "auto"

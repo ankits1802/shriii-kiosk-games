@@ -1,0 +1,150 @@
+# Cultural adaptation review sheet: Customers' rudeness at the Stall (tone levels as stimulus property)
+# Stage 1 think-aloud (CRT-08, plan section 7.3) and VOX-08 variant decisions. One sheet per scenario.
+# Universal probes are asked in every region in the participant's language (wording given here; draft
+# translations follow the same ITC review as recording scripts). Region sections list known considerations,
+# candidate surface adaptations and extra probes. Locked elements may never change in a variant
+# (VOX-08 forbids changes to scored parameters). Sign-off records go to governance/ (PLT-09).
+schema_version: '1.0'
+scenario_id: customer_rudeness
+title: Customers' rudeness at the Stall (tone levels as stimulus property)
+appears_in:
+  - stall
+lines:
+  - stall.intro
+  - stall.customer.calm
+  - stall.customer.hostile
+  - stall.rush_cue
+  - report.emotional_regulation.pole_a
+  - report.emotional_regulation.centre
+  - report.emotional_regulation.pole_b
+purpose: Customer tone (calm to hostile, levels 0-4) is a recorded stimulus property; the player answers by tapping smile, neutral or firm faces. Mirroring is modelled as the slope of chosen tone on customer tone, so the perceived ordering and spacing of tone levels must be equivalent across languages.
+locked_elements:
+  - Tone-level ordering 0-4 and the number of provocations (>= 8) and tone choices (>= 12 across >= 3 levels) (EPI-01).
+  - Exactly one context shift (a run of rude customers).
+  - Tone is never inferred from the player; no camera or voice-tone sensing.
+adaptable_surface:
+  - Exact wording of customer lines (within the same speech act and intensity).
+  - Voice actor, customer age and appearance (counterbalanced, no caste or community cues).
+  - Drawings of the smile / neutral / firm response faces.
+construct_risks:
+  - 'Rudeness intensity is language-specific: a familiar imperative (Hindi करो) or a regional intonation can sound ruder or milder than intended.'
+  - Service norms ('the customer is god') may suppress firm responses everywhere, compressing the mirroring slope.
+  - A rude elder or a male customer facing a woman participant changes the social meaning (deference, threat).
+  - Regional stereotypes about 'rough' speech (for example Chennai Tamil, Puneri curtness) may make neutral lines sound rude.
+acceptance:
+  tone_ordering_task: Each participant hears the five tone-level clips in random order and sorts them from calmest to rudest (picture cards).
+  criterion: Per language, median Kendall tau between participant order and design order >= 0.8, and the hostile clip is placed in the two rudest positions by >= 80% of participants.
+  action_if_failed: Re-record or re-word the clip (adaptable surface), re-run the ordering task; do not change the tone-level design.
+probe_instructions: Ask the universal probes after the participant finishes the module (retrospective think-aloud), in the participant's language, using the wording given. Keep the concurrent think-aloud prompt neutral ('please keep telling me what you are thinking'). Do not explain the task or the hidden rules. Code each observation with the CRT-08 codebook; note verbatim local words in the region notes.
+universal_probes:
+  - id: customer_rudeness.P1
+    en: How was this customer feeling? How could you tell?
+    hi-IN: यह ग्राहक कैसा महसूस कर रहा था? आपको कैसे पता चला?
+    mr-IN: हे गिऱ्हाईक कसं वाटत होतं? तुम्हाला ते कसं कळलं?
+    ta-IN: இந்த வாடிக்கையாளர் எப்படி உணர்ந்தார்? உங்களுக்கு எப்படித் தெரிஞ்சது?
+    listen_for: 'Cue used: words, voice, face. Over-reliance on words suggests the voice acting is too flat.'
+  - id: customer_rudeness.P2
+    en: Please put these customers in order, from the calmest to the rudest.
+    hi-IN: इन ग्राहकों को सबसे शांत से लेकर सबसे रूखे तक क्रम में रखिए।
+    mr-IN: या गिऱ्हाइकांना सगळ्यात शांत ते सगळ्यात उद्धट अशा क्रमानं लावा.
+    ta-IN: இந்த வாடிக்கையாளர்களை, ரொம்ப அமைதியானவர்ல இருந்து ரொம்ப முரட்டுத்தனமானவர் வரைக்கும் வரிசைப்படுத்துங்க.
+    listen_for: Tone-ordering task (see acceptance).
+  - id: customer_rudeness.P3
+    en: If a customer spoke like this at a real stall here, what would the seller do?
+    hi-IN: अगर कोई ग्राहक यहाँ असली दुकान पर ऐसे बोले, तो दुकानदार क्या करेगा?
+    mr-IN: खऱ्या दुकानात एखादं गिऱ्हाईक असं बोललं, तर दुकानदार काय करेल?
+    ta-IN: உண்மையான கடையில ஒரு வாடிக்கையாளர் இப்படிப் பேசினா, கடைக்காரர் என்ன செய்வார்?
+    listen_for: Local service norms; whether a firm reply is acceptable.
+  - id: customer_rudeness.P4
+    en: Did the customer's words sound natural? Would someone here say it like that?
+    hi-IN: क्या ग्राहक की बातें असली लगीं? क्या यहाँ कोई ऐसे बोलेगा?
+    mr-IN: गिऱ्हाइकाचं बोलणं खरं वाटलं का? इथे कोणी असं बोलेल का?
+    ta-IN: வாடிக்கையாளர் பேசினது இயல்பா இருந்ததா? இங்க யாராவது இப்படிப் பேசுவாங்களா?
+    listen_for: Naturalness of the recorded line; offensive or comic readings.
+  - id: customer_rudeness.P5
+    en: What does each of these three faces mean to you?
+    hi-IN: ये तीन चेहरे आपके लिए क्या-क्या मतलब रखते हैं?
+    mr-IN: हे तीन चेहरे तुम्हाला काय सांगतात?
+    ta-IN: இந்த மூணு முகங்களும் உங்களுக்கு என்ன அர்த்தம் சொல்லுது?
+    listen_for: Smile / neutral / firm recognised; 'firm' must not read as angry or rude.
+regions:
+  hi-IN:
+    regions:
+      - hi.west_up_ncr
+      - hi.east_up_bihar
+      - hi.mp
+      - hi.rajasthan
+    considerations:
+      - Hostile line uses familiar करो, which signals rudeness without insult; check it is not heard as abusive.
+      - Strong 'ग्राहक देवता' (customer is god) norm among traders.
+    candidate_adaptations:
+      - If करो reads as too harsh for older listeners, use the polite form with an impatient voice.
+    region_probes:
+      - id: customer_rudeness.hi.R1
+        en: Would you answer a rude customer differently if they were older than you?
+        listen_for: Age deference.
+  mr-IN:
+    regions:
+      - mr.west_pune
+      - mr.vidarbha
+      - mr.marathwada
+      - mr.konkan_mumbai
+    considerations:
+      - Hostile line keeps अहो (adult address) and carries rudeness through आटपा and the accusing question.
+      - Puneri curtness is a known stereotype; neutral lines may sound rude to listeners from other regions and vice versa.
+    candidate_adaptations:
+      - Cast voice artists from more than one sub-region and choose the take that orders correctly in all.
+    region_probes:
+      - id: customer_rudeness.mr.R1
+        en: Did this customer sound like someone from a particular city or area?
+        listen_for: Regional stereotyping of the voice.
+  ta-IN:
+    regions:
+      - ta.chennai
+      - ta.kongu
+      - ta.south
+      - ta.delta
+    considerations:
+      - Tamil hostile line is short and clipped; rudeness is carried by the voice.
+      - Chennai Tamil intonation is perceived as rough by speakers from other districts; casting matters.
+    candidate_adaptations:
+      - Neutral standard spoken Tamil voice; avoid strong district accents.
+    region_probes:
+      - id: customer_rudeness.ta.R1
+        en: Did the customer's way of speaking sound rude, or just normal for some place?
+        listen_for: Accent vs rudeness confound.
+observer_codes:
+  - confusion
+  - misunderstood_instruction
+  - reading_dependent_screen
+  - digit_dependent_decision
+  - cultural_mismatch
+  - strategy
+signoff:
+  gate: 'Stage 1 exit gate 3 (plan section 7.3): cultural-equivalence sign-off per scenario by region, age band and gender, recorded in governance/ (PLT-09).'
+  cells: Every region listed below x age bands [18-24, 25-34, 35-44, 45-59, 60+] x gender [woman, man]; at least one think-aloud participant per cell before sign-off, and at least 6 participants aged 60+ per pathway (CRT-08 study AC).
+  decision_options:
+    - equivalent
+    - equivalent_with_surface_change
+    - not_equivalent_redesign
+  decision_rules:
+    - 'equivalent: no cultural_mismatch or misunderstood_instruction code linked to this scenario in the cell, and the universal probes show the intended meaning.'
+    - 'equivalent_with_surface_change: problems are fixed by an adaptable-surface change only (art, prop, wording); the change becomes a variant pack (VOX-08) and the scenario is re-tested.'
+    - 'not_equivalent_redesign: a problem touches a locked (scored) element or the construct itself; escalate to the PI and the ITC lead, no pilot use until redesigned.'
+  signatories:
+    - field_researcher (per region)
+    - expert_reviewer (cultural)
+    - itc_lead
+  record_template:
+    scenario_id: <id>
+    region: <region id>
+    age_band: <band>
+    gender: <woman|man>
+    n_participants: 0
+    codes_observed:
+      cultural_mismatch: 0
+      misunderstood_instruction: 0
+    decision: <decision option>
+    surface_changes: []
+    signed_by: []
+    date: YYYY-MM-DD

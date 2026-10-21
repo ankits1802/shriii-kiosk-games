@@ -17,6 +17,7 @@ resolution-markers = [
 members = [
     "shriii-api",
     "shriii-contracts",
+    "shriii-i18n",
     "shriii-prereg",
     "shriii-reports",
     "shriii-scoring",
@@ -2547,6 +2548,23 @@ requires-dist = [
 ]
 
 [[package]]
+name = "shriii-i18n"
+version = "0.1.0"
+source = { editable = "tools/i18n" }
+dependencies = [
+    { name = "openpyxl" },
+    { name = "pydantic" },
+    { name = "pyyaml" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "openpyxl", specifier = ">=3.1" },
+    { name = "pydantic", specifier = ">=2.11" },
+    { name = "pyyaml", specifier = ">=6" },
+]
+
+[[package]]
 name = "shriii-prereg"
 version = "0.1.0"
 source = { editable = "tools/prereg" }
@@ -2680,6 +2698,7 @@ source = { virtual = "." }
 dependencies = [
     { name = "shriii-api" },
     { name = "shriii-contracts" },
+    { name = "shriii-i18n" },
     { name = "shriii-prereg" },
     { name = "shriii-reports" },
     { name = "shriii-scoring" },
@@ -2702,6 +2721,7 @@ dev = [
 requires-dist = [
     { name = "shriii-api", editable = "apps/api" },
     { name = "shriii-contracts", editable = "python/shriii_contracts" },
+    { name = "shriii-i18n", editable = "tools/i18n" },
     { name = "shriii-prereg", editable = "tools/prereg" },
     { name = "shriii-reports", editable = "reports" },
     { name = "shriii-scoring", editable = "python/shriii_scoring" },

@@ -1,0 +1,310 @@
+# ITC Guidelines for Translating and Adapting Tests (2nd ed., 2017): checklist mapped to project evidence.
+# Guideline wording follows the published guidelines. 'path' evidence is checked to exist by tools/i18n tests;
+# 'feature' evidence refers to docs/IMPLEMENTATION_PLAN.md. Review at every stage gate (S1-S5).
+schema_version: '1.0'
+source: International Test Commission (2017). The ITC Guidelines for Translating and Adapting Tests (Second edition). www.InTestCom.org
+scope: SHRIII kiosk game (recording scripts, scenarios, characters) and the criterion battery adaptations in hi-IN, mr-IN, ta-IN.
+status_values:
+  met: evidence exists for the current stage
+  partially_met: evidence exists or is planned but open gaps remain
+evidence_status_values:
+  in_repo: artefact exists in this repository
+  planned: feature in docs/IMPLEMENTATION_PLAN.md, not yet built or run
+guidelines:
+  - id: PC-1
+    number: 1
+    category: Pre-condition
+    guideline: Obtain the necessary permission from the holder of the intellectual property rights relating to the test before carrying out any adaptation.
+    evidence:
+      - status: in_repo
+        what: Each criterion instrument carries licensing metadata (holder, licence, permission_status, allowed_use, translation conditions); item wording is not committed.
+        path: content/instruments/bfi2-xs.yaml
+      - status: planned
+        what: 'Licensing and permission tracker: an instrument without granted permission cannot join a battery; 60-day expiry warning.'
+        feature: CRT-03
+      - status: in_repo
+        what: Game content (scenarios, art, narration) is original project IP, so no third-party permission is needed for the game itself.
+        path: content/games
+    open_gaps:
+      - 'Translation permissions for BFI-2, BSCS, DERS-16, Grit-S, HEXACO, GDMS, ERQ, CFI in hi/mr/ta are not yet requested (permission_status: not_requested).'
+    owner_role: itc_lead
+    status: partially_met
+  - id: PC-2
+    number: 2
+    category: Pre-condition
+    guideline: Evaluate that the amount of overlap in the definition and content of the construct measured by the test and the item content in the populations of interest is sufficient for the intended use (or uses) of the scores.
+    evidence:
+      - status: in_repo
+        what: Per-scenario sheets state the construct each scenario carries, the construct risks per region and the probes that test construct overlap (e.g. bribe read as tip, luck read as fate).
+        path: content/i18n/adaptation/scenarios
+      - status: planned
+        what: Stage 1 think-aloud with the cultural_mismatch code and exit gate 3 (cultural-equivalence sign-off per scenario by region, age band and gender).
+        feature: CRT-08
+      - status: in_repo
+        what: Pre-registered nomological network per construct, tested per language in Stage 2.
+        path: scoring/hypotheses.yaml
+    open_gaps:
+      - Construct-overlap judgement by an expert panel per language has not been held yet.
+    owner_role: expert_reviewer
+    status: partially_met
+  - id: PC-3
+    number: 3
+    category: Pre-condition
+    guideline: Minimize the influence of any cultural and linguistic differences that are irrelevant to the intended uses of the test in the populations of interest.
+    evidence:
+      - status: in_repo
+        what: 'Register rules: spoken, simple, reading-free, gender-fair; machine-checked glossary keeps key terms consistent.'
+        path: content/i18n/translations/register-guide.yaml
+      - status: in_repo
+        what: Removes caste, religion and community markers and gender stereotypes from characters; counterbalancing rules.
+        path: content/i18n/adaptation/scenarios/gender-roles.yaml
+      - status: planned
+        what: Cultural variants as forms; overlays can never change scored parameters; one variant per language in the pilot.
+        feature: VOX-08
+      - status: planned
+        what: No reading and no digits needed for any decision (touch + icons + pre-recorded voice).
+        feature: ENG-11 / ONB-04
+    open_gaps: []
+    owner_role: itc_lead
+    status: met
+  - id: TD-1
+    number: 4
+    category: Test development
+    guideline: Ensure that the translation and adaptation processes consider linguistic, psychological, and cultural differences in the intended populations through the choice of experts with relevant expertise.
+    evidence:
+      - status: in_repo
+        what: 'Roles defined: native translator, independent back-translator, expert reviewer panel (linguist + psychologist + local field lead), recording lead, audio QC, field researcher, ITC lead; sign-off role enforced per step.'
+        path: content/i18n/translations/workflow.yaml
+      - status: in_repo
+        what: Import rejects status changes signed by the wrong role.
+        path: tools/i18n
+    open_gaps:
+      - Named experts per language not yet recruited; the drafts are machine-made (status draft_machine_needs_native_review).
+    owner_role: itc_lead
+    status: partially_met
+  - id: TD-2
+    number: 5
+    category: Test development
+    guideline: Use appropriate translation designs and procedures to maximize the suitability of the test adaptation in the intended populations.
+    evidence:
+      - status: in_repo
+        what: Forward translation -> independent back-translation -> expert reconciliation -> recording -> audio QC -> think-aloud -> approval; forward-only transitions; independent-signer rule for translator vs back-translator.
+        path: content/i18n/translations/workflow.yaml
+      - status: in_repo
+        what: 'Spreadsheet round-trip with validation: missing lines, placeholder mismatch, forward-only status, field locks after back-translation, reviewer sign-off.'
+        path: tools/i18n/src/shriii_i18n/spreadsheet.py
+      - status: in_repo
+        what: Every line has a draft script, a literal back-translation and translator notes on adaptation choices (also mr-IN.yaml, ta-IN.yaml).
+        path: content/i18n/translations/hi-IN.yaml
+    open_gaps:
+      - Machine drafts must be replaced by native forward translations and truly independent back-translations.
+    owner_role: itc_lead
+    status: partially_met
+  - id: TD-3
+    number: 6
+    category: Test development
+    guideline: Provide evidence that the test instructions and item content have similar meaning for all intended populations.
+    evidence:
+      - status: in_repo
+        what: Back-translations per line for ITC comparison with the source; per-line translator notes record every meaning-level choice.
+        path: content/i18n/translations
+      - status: planned
+        what: 'Think-aloud codes misunderstood_instruction; exit gate: no screen > 20% unresolved misunderstanding.'
+        feature: CRT-08
+      - status: in_repo
+        what: Tone-ordering acceptance test so that customer rudeness levels mean the same in each language.
+        path: content/i18n/adaptation/scenarios/customer-rudeness.yaml
+    open_gaps:
+      - No participant data yet.
+    owner_role: field_researcher
+    status: partially_met
+  - id: TD-4
+    number: 7
+    category: Test development
+    guideline: Provide evidence that the item formats, rating scales, scoring categories, test conventions, modes of administration, and other procedures are suitable for all intended populations.
+    evidence:
+      - status: planned
+        what: Zero reading-dependent screens and zero digit-dependent decisions; onboarding median <= 90 s.
+        feature: CRT-08 exit gates 1 and 4
+      - status: in_repo
+        what: Probes check that spoken quantities and the left/right rule need no counting or reading.
+        path: content/i18n/adaptation/scenarios/weighing.yaml
+      - status: planned
+        what: Voice input enabled per prompt only if accuracy >= 90% and age/gender gap <= 5 pp per language; otherwise touch only.
+        feature: VOX-06
+      - status: in_repo
+        what: Recording-sheet duration checks (target +-15%, flag at 1.5x) so that timing conventions stay comparable.
+        path: content/i18n/translations/workflow.yaml
+    open_gaps:
+      - Pictorial Likert anchors for criterion items not yet tested per language.
+    owner_role: field_researcher
+    status: partially_met
+  - id: TD-5
+    number: 8
+    category: Test development
+    guideline: Collect pilot data on the adapted test to enable item analysis, reliability assessment and small-scale validity studies, and other such research, so that any necessary revisions to the adapted test can be made.
+    evidence:
+      - status: planned
+        what: Think-aloud (30-40 per pathway across age x literacy x gender x 3 languages) then 450 per language pilot with reliability by method (VAL-04).
+        feature: Stage 1 / Stage 2 (plan sections 7.3-7.4)
+      - status: in_repo
+        what: Reliability engine (split-half, ICC, alpha/omega) ready for per-language analysis.
+        path: python/shriii_validation/src/shriii_validation/reliability.py
+    open_gaps:
+      - Pilot not run.
+    owner_role: itc_lead
+    status: partially_met
+  - id: C-1
+    number: 9
+    category: Confirmation
+    guideline: Select sample with characteristics that are relevant for the intended use of the test and of sufficient size and relevance for the empirical analyses.
+    evidence:
+      - status: planned
+        what: Power report sets n per language (default 450) and trial budgets.
+        feature: VAL-02
+      - status: planned
+        what: Quota cells language x age x gender x education x literacy.
+        feature: CRT-07
+      - status: in_repo
+        what: Sub-regions per language for think-aloud sampling and sign-off cells.
+        path: content/i18n/adaptation/regions.yaml
+    open_gaps: []
+    owner_role: itc_lead
+    status: met
+  - id: C-2
+    number: 10
+    category: Confirmation
+    guideline: Provide relevant statistical evidence about the construct equivalence, method equivalence, and item equivalence for all intended populations.
+    evidence:
+      - status: planned
+        what: Criterion-scale invariance across languages and modes; trial-level game invariance; DIF with purified matching and BH-FDR.
+        feature: VAL-08a / VAL-08 / VAL-09
+      - status: in_repo
+        what: Logistic, ordinal and linear DIF and TOST equivalence implemented in Python.
+        path: python/shriii_validation/src/shriii_validation/fairness.py
+      - status: in_repo
+        what: Gates require criterion invariance and no unresolved large DIF; invariance groupings include language and variant_form.
+        path: scoring/gates.yaml
+    open_gaps:
+      - R backend (lavaan/semTools/mirt) for multigroup CFA is deferred (BUILD_DECISIONS).
+    owner_role: itc_lead
+    status: partially_met
+  - id: C-3
+    number: 11
+    category: Confirmation
+    guideline: Provide evidence supporting the norms, reliability and validity of the adapted version of the test in the intended populations.
+    evidence:
+      - status: planned
+        what: Per-language reliability, retest, MTMM validity and weighted norms.
+        feature: VAL-04 / VAL-05 / VAL-06 / VAL-11
+      - status: in_repo
+        what: 'Battery release gate per language: reports disabled until the gate passes in >= 2 language groups (fail closed).'
+        path: scoring/gates.yaml
+    open_gaps:
+      - No data yet.
+    owner_role: itc_lead
+    status: partially_met
+  - id: C-4
+    number: 12
+    category: Confirmation
+    guideline: Use an appropriate equating design and data analysis procedures when linking score scales from different language versions of a test.
+    evidence:
+      - status: in_repo
+        what: Pooled-language statistics only where invariance holds; small groups use Bayesian approximate invariance or moderated MIMIC.
+        path: scoring/gates.yaml
+      - status: planned
+        what: Anchor trials shared across levels and forms support linking.
+        feature: ENG-07 anchor trials
+    open_gaps:
+      - Cross-language linking design for banded reports to be specified before Stage 4.
+    owner_role: itc_lead
+    status: partially_met
+  - id: A-1
+    number: 13
+    category: Administration
+    guideline: Prepare administration materials and instructions to minimize any culture- and language-related problems that are caused by administration procedures and response modes that can affect the validity of the inferences drawn from the scores.
+    evidence:
+      - status: in_repo
+        what: Spoken, warm, literacy-free register; tone notes per line for voice directors.
+        path: content/i18n/translations/register-guide.yaml
+      - status: planned
+        what: Pre-recorded native-speaker audio for every instructional state with replay; no runtime TTS.
+        feature: VOX-01 / VOX-03
+      - status: planned
+        what: Language selection by speaking faces (no reading).
+        feature: ONB-01
+    open_gaps: []
+    owner_role: recording_lead
+    status: met
+  - id: A-2
+    number: 14
+    category: Administration
+    guideline: Specify testing conditions that should be followed closely in all populations of interest.
+    evidence:
+      - status: in_repo
+        what: Fixed module order, session budgets and idle/walkaway timers identical across languages.
+        path: content/games/session-plan.json
+      - status: planned
+        what: Supervised vs unattended site modes logged and tested for equivalence; noise floor and headset rules.
+        feature: KSK / VAL-18
+    open_gaps:
+      - Field administration manual per language not yet written.
+    owner_role: field_researcher
+    status: partially_met
+  - id: SSI-1
+    number: 15
+    category: Score scales and interpretation
+    guideline: Interpret any group score differences with reference to all relevant available information.
+    evidence:
+      - status: in_repo
+        what: Required groupings (language, literacy, education, age band, gender, device familiarity, input mode, variant form) enter invariance tests and as covariates.
+        path: scoring/gates.yaml
+      - status: planned
+        what: Player reports are banded and strengths-framed; no cross-group comparison is shown to players.
+        feature: REP-01 / REP-02
+    open_gaps: []
+    owner_role: itc_lead
+    status: met
+  - id: SSI-2
+    number: 16
+    category: Score scales and interpretation
+    guideline: Only compare scores across populations when the level of invariance has been established on the scale on which scores are reported.
+    evidence:
+      - status: in_repo
+        what: Trait gate requires invariance per grouping; reports fail closed until the battery gate passes.
+        path: scoring/gates.yaml
+    open_gaps: []
+    owner_role: itc_lead
+    status: met
+  - id: D-1
+    number: 17
+    category: Documentation
+    guideline: Provide technical documentation of any changes, including an account of the evidence obtained to support equivalence, when a test is adapted for use in another population.
+    evidence:
+      - status: in_repo
+        what: Per-line history with signer, role, date and comment for every status change (ITC trail).
+        path: content/i18n/translations
+      - status: in_repo
+        what: '`shriii-i18n trail` exports the ITC trail per language; `coverage` reports status, readiness and quality flags.'
+        path: tools/i18n/src/shriii_i18n/cli.py
+      - status: planned
+        what: ITC dossier among the Quarto reports.
+        feature: VAL-15
+    open_gaps: []
+    owner_role: itc_lead
+    status: met
+  - id: D-2
+    number: 18
+    category: Documentation
+    guideline: Provide documentation for test users that will support good practice in the use of an adapted test with people in the context of the new population.
+    evidence:
+      - status: in_repo
+        what: How to run the adaptation review in Stage 1 and record decisions.
+        path: content/i18n/adaptation/README.md
+      - status: planned
+        what: Per-language technical manual and norm manual.
+        feature: VAL-15 technical manual
+    open_gaps:
+      - User manual for site staff in each language not yet written.
+    owner_role: itc_lead
+    status: partially_met

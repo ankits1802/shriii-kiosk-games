@@ -1,0 +1,20 @@
+[project]
+name = "shriii-i18n"
+version = "0.1.0"
+description = "Localisation tooling (VOX-07): translation YAML validation, ITC state workflow, XLSX round-trip and coverage reports"
+requires-python = ">=3.13"
+dependencies = [
+  "pydantic>=2.11",
+  "pyyaml>=6",
+  "openpyxl>=3.1",
+]
+
+[project.scripts]
+shriii-i18n = "shriii_i18n.cli:main"
+
+[build-system]
+requires = ["uv_build>=0.13,<0.14"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-name = "shriii_i18n"

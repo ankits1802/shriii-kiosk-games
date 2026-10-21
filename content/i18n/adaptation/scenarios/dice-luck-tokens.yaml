@@ -1,0 +1,144 @@
+# Cultural adaptation review sheet: Private dice, luck tokens and 'lucky' stalls
+# Stage 1 think-aloud (CRT-08, plan section 7.3) and VOX-08 variant decisions. One sheet per scenario.
+# Universal probes are asked in every region in the participant's language (wording given here; draft
+# translations follow the same ITC review as recording scripts). Region sections list known considerations,
+# candidate surface adaptations and extra probes. Locked elements may never change in a variant
+# (VOX-08 forbids changes to scored parameters). Sign-off records go to governance/ (PLT-09).
+schema_version: '1.0'
+scenario_id: dice_luck_tokens
+title: Private dice, luck tokens and 'lucky' stalls
+appears_in:
+  - private_dice
+  - four_stalls
+  - weighing_post
+lines:
+  - private_dice.intro
+  - four_stalls.intro
+purpose: Private dice and luck tokens estimate over-reporting at group level only; the true outcome is never logged. Four Stalls frames payoffs as stall 'luck'. Both depend on believable privacy and on luck symbols that carry no religious or gambling meaning that differs by region.
+locked_elements:
+  - '10 private reports, the report-to-picture mapping and mode (a): the true outcome is never logged (MG-06).'
+  - Dice and token indicators are `group_only`; individual scorers reject them.
+  - Four Stalls payoff schedules and repeated probes (MG-09).
+adaptable_surface:
+  - Die appearance (cubic die with pips or picture faces; cowrie shells only if pilots show dice are offensive).
+  - Picture faces used for reporting (fruit, animals) instead of pips if pips invite counting.
+  - Stall signage drawings for Four Stalls (no auspicious symbols, no deities).
+construct_risks:
+  - Dice evoke gambling (जुआ, Diwali card games) and the Mahabharata dice game; disapproval may cause refusal or honesty signalling that varies by region and age.
+  - If participants do not believe the roll is private, over-reporting is suppressed unevenly (privacy believability).
+  - Lucky and unlucky numbers or colours (numerology, auspicious times) can bias which picture is reported.
+  - Tamil பரமபதம் (snakes and ladders) is played on a religious night (Vaikunta Ekadasi); dice imagery may carry religious associations.
+  - Pips require counting to six, a possible digit-dependent decision.
+probe_instructions: Ask the universal probes after the participant finishes the module (retrospective think-aloud), in the participant's language, using the wording given. Keep the concurrent think-aloud prompt neutral ('please keep telling me what you are thinking'). Do not explain the task or the hidden rules. Code each observation with the CRT-08 codebook; note verbatim local words in the region notes.
+universal_probes:
+  - id: dice_luck_tokens.P1
+    en: Did you believe that only you could see the dice? Why?
+    hi-IN: क्या आपको भरोसा था कि पासा सिर्फ़ आप ही देख सकते हैं? क्यों?
+    mr-IN: फासा फक्त तुम्हालाच दिसतोय, यावर तुमचा विश्वास होता का? का?
+    ta-IN: பகடையை நீங்க மட்டும்தான் பார்க்க முடியும்னு நம்பினீங்களா? ஏன்?
+    listen_for: Privacy believability; mentions of cameras or being recorded.
+  - id: dice_luck_tokens.P2
+    en: How do people around you feel about games with dice?
+    hi-IN: आपके आस-पास के लोग पासे वाले खेलों के बारे में क्या सोचते हैं?
+    mr-IN: तुमच्या आजूबाजूचे लोक फाशांच्या खेळांबद्दल काय विचार करतात?
+    ta-IN: உங்களைச் சுத்தி இருக்கிறவங்க பகடை விளையாட்டுகளைப் பத்தி என்ன நினைக்கிறாங்க?
+    listen_for: Gambling disapproval, religious associations, family games.
+  - id: dice_luck_tokens.P3
+    en: Are some numbers or pictures lucky or unlucky for you?
+    hi-IN: क्या आपके लिए कुछ अंक या तस्वीरें शुभ या अशुभ होती हैं?
+    mr-IN: तुमच्यासाठी काही आकडे किंवा चित्रं शुभ किंवा अशुभ असतात का?
+    ta-IN: உங்களுக்கு சில எண்களோ படங்களோ ராசியானதா அல்லது ராசியில்லாததா இருக்கா?
+    listen_for: Specific faces or pictures to avoid in the report set.
+  - id: dice_luck_tokens.P4
+    en: When the guide said some stalls are luckier, what did you think that meant?
+    hi-IN: जब गाइड ने कहा कि कुछ दुकानें ज़्यादा किस्मत वाली हैं, तो आपने उसका क्या मतलब समझा?
+    mr-IN: काही दुकानं जास्त नशीबवान आहेत, असं सांगितलं तेव्हा तुम्हाला त्याचा काय अर्थ वाटला?
+    ta-IN: சில கடைகள்ல அதிர்ஷ்டம் அதிகம்னு சொன்னப்போ, அதுக்கு என்ன அர்த்தம்னு நினைச்சீங்க?
+    listen_for: Learns from outcomes (intended) vs auspiciousness or fate (cultural_mismatch).
+  - id: dice_luck_tokens.P5
+    en: Was there anything religious or disrespectful in these pictures?
+    hi-IN: क्या इन तस्वीरों में कुछ धार्मिक या अपमानजनक लगा?
+    mr-IN: या चित्रांमध्ये काही धार्मिक किंवा अपमानास्पद वाटलं का?
+    ta-IN: இந்தப் படங்கள்ல ஏதாவது மதம் சார்ந்ததோ, மரியாதைக் குறைவானதோ இருந்ததா?
+    listen_for: Any symbol to remove from the art.
+regions:
+  hi-IN:
+    regions:
+      - hi.west_up_ncr
+      - hi.east_up_bihar
+      - hi.mp
+      - hi.rajasthan
+    considerations:
+      - पासा and चौपड़/पचीसी are known; Diwali gambling (जुआ) is a common association.
+      - Auspicious/inauspicious (शुभ/अशुभ) beliefs about numbers vary by family and community.
+    candidate_adaptations:
+      - Picture faces (fruit) instead of pips.
+    region_probes:
+      - id: dice_luck_tokens.hi.R1
+        en: Would older people in your family approve of this dice game?
+        listen_for: Age-related disapproval.
+  mr-IN:
+    regions:
+      - mr.west_pune
+      - mr.vidarbha
+      - mr.marathwada
+      - mr.konkan_mumbai
+    considerations:
+      - फासे and सोंगट्या (board-game pieces) are familiar; dice games are played at festivals.
+      - Copy uses ओंजळ (cupped hands), a natural and gentle image.
+    candidate_adaptations:
+      - None proposed before testing.
+    region_probes:
+      - id: dice_luck_tokens.mr.R1
+        en: Did rolling in cupped hands feel private enough?
+        listen_for: Privacy believability.
+  ta-IN:
+    regions:
+      - ta.chennai
+      - ta.kongu
+      - ta.south
+      - ta.delta
+    considerations:
+      - தாயம் (with long dice, தாயக்கட்டை) and பரமபதம் are traditional; பரமபதம் is played on Vaikunta Ekadasi night.
+      - Numerology and ராசி (luck) are widely discussed; some families avoid particular numbers.
+    candidate_adaptations:
+      - Cubic die with picture faces; avoid thayam long dice (religious and family-game associations).
+    region_probes:
+      - id: dice_luck_tokens.ta.R1
+        en: Did this remind you of thayam or paramapadham?
+        listen_for: Traditional-game and religious associations.
+observer_codes:
+  - confusion
+  - misunderstood_instruction
+  - reading_dependent_screen
+  - digit_dependent_decision
+  - cultural_mismatch
+  - strategy
+signoff:
+  gate: 'Stage 1 exit gate 3 (plan section 7.3): cultural-equivalence sign-off per scenario by region, age band and gender, recorded in governance/ (PLT-09).'
+  cells: Every region listed below x age bands [18-24, 25-34, 35-44, 45-59, 60+] x gender [woman, man]; at least one think-aloud participant per cell before sign-off, and at least 6 participants aged 60+ per pathway (CRT-08 study AC).
+  decision_options:
+    - equivalent
+    - equivalent_with_surface_change
+    - not_equivalent_redesign
+  decision_rules:
+    - 'equivalent: no cultural_mismatch or misunderstood_instruction code linked to this scenario in the cell, and the universal probes show the intended meaning.'
+    - 'equivalent_with_surface_change: problems are fixed by an adaptable-surface change only (art, prop, wording); the change becomes a variant pack (VOX-08) and the scenario is re-tested.'
+    - 'not_equivalent_redesign: a problem touches a locked (scored) element or the construct itself; escalate to the PI and the ITC lead, no pilot use until redesigned.'
+  signatories:
+    - field_researcher (per region)
+    - expert_reviewer (cultural)
+    - itc_lead
+  record_template:
+    scenario_id: <id>
+    region: <region id>
+    age_band: <band>
+    gender: <woman|man>
+    n_participants: 0
+    codes_observed:
+      cultural_mismatch: 0
+      misunderstood_instruction: 0
+    decision: <decision option>
+    surface_changes: []
+    signed_by: []
+    date: YYYY-MM-DD
