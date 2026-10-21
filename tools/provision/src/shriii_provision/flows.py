@@ -61,9 +61,9 @@ def register(api: ApiClient, req: RegisterRequest, *, now: datetime | None = Non
     """Register the kiosk, assign its site and site mode, and return the enrolment bundle (contains secrets)."""
     dc.validate_kiosk_id(req.kiosk_id)
     dc.validate_site_id(req.site_id)
-    if req.site_mode == "open_public" and req.study_id:
-        # Mirrors the PRV-01 rejected combination: no criterion capture or live dyads at open_public sites.
-        raise ProvisionError("open_public kiosks cannot be bound to a study (criterion capture is supervised only)")
+    # open_public kiosks ARE bound to the study: they run thank-you mode for the unattended-mode substudy
+    # (VAL-18) and site_mode is an invariance grouping. The PRV-01 rejected combinations (criterion capture or
+    # live dyads at open_public) are enforced by the signed deployment policy, not by refusing the study link.
     created = now or datetime.now(UTC)
     api.healthz()
     if req.rotate_existing:

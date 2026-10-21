@@ -102,6 +102,5 @@ connections:
   - plug: ${KIOSK_SNAP_ID}:opengl
   - plug: ${KIOSK_SNAP_ID}:browser-support
   - plug: ${KIOSK_SNAP_ID}:hardware-observe
-  - plug: ${KIOSK_SNAP_ID}:raw-usb
   - plug: ${KIOSK_SNAP_ID}:firewall-control
   - plug: ${KIOSK_SNAP_ID}:snapd-control

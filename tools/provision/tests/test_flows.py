@@ -75,10 +75,16 @@ def test_register_token_is_bound_to_kiosk_sans_and_audience(
     assert header["kid"] == stepca.jwk_thumbprint(fake_ca.prov_key.public_key())
 
 
-def test_register_rejects_open_public_with_study(api: ApiClient, register_request: RegisterRequest) -> None:
+def test_register_binds_open_public_kiosk_to_study(
+    api: ApiClient, fake_api: FakeApi, register_request: RegisterRequest
+) -> None:
+    # VAL-18: open_public kiosks run the unattended-mode substudy, so their deployment carries the study id.
     req = replace(register_request, site_mode="open_public", study_id="study-1")
-    with pytest.raises(ProvisionError, match="open_public"):
-        register(api, req)
+    bundle = register(api, req)
+    assert bundle["site_mode"] == "open_public"
+    assert bundle["study_id"] == "study-1"
+    assert fake_api.deployments[-1]["study_id"] == "study-1"
+    assert fake_api.deployments[-1]["site_mode"] == "open_public"
 
 
 def test_register_duplicate_kiosk_fails_and_rotate_reissues(

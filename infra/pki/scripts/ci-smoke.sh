@@ -6,6 +6,7 @@
 #   4. replayed token and SAN-mismatch token are refused; an invalid kiosk id is refused by the template
 #   5. renewal over mTLS (shriii-provision renew)
 #   6. revocation: renew is refused afterwards and the serial is on the CRL
+#   7. the CA endpoint speaks TLS 1.3 only (PRV-07)
 set -eu
 
 repo="$(cd "$(dirname "$0")/../../.." && pwd)"
@@ -115,4 +116,11 @@ sys.exit(0 if int(sys.argv[2]) in serials else 1)
 EOF
   openssl crl -inform DER -in "$work/crl.der" -noout -text; echo "serial $after not on the CRL"; exit 1; }
 echo "ok: revoked certificate cannot renew and is on the CRL"
+echo "== 7. TLS 1.3 only"
+if openssl s_client -connect 127.0.0.1:9443 -servername localhost -tls1_2 -CAfile "$ROOT" </dev/null >"$work/tls12.log" 2>&1; then
+  echo "CA accepted a TLS 1.2 handshake"; exit 1
+fi
+openssl s_client -connect 127.0.0.1:9443 -servername localhost -tls1_3 -CAfile "$ROOT" -verify_return_error </dev/null 2>/dev/null |
+  grep -q 'TLSv1.3' || { echo "CA did not negotiate TLS 1.3"; exit 1; }
+echo "ok: TLS 1.2 refused, TLS 1.3 negotiated"
 echo "PKI smoke passed"

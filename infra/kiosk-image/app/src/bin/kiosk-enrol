@@ -60,14 +60,32 @@ mv -f "$tmp_root" "$ROOT_FILE"
 chmod 644 "$ROOT_FILE"
 
 # ---- device key + certificate (key never leaves the device; disk is TPM-backed FDE)
-log "requesting certificate for $KIOSK_ID from $CA_URL"
-step ca certificate "$KIOSK_ID" "$CERT_FILE.new" "$KEY_FILE.new" \
-  --token "$OTT" --ca-url "$CA_URL" --root "$ROOT_FILE" \
-  --kty EC --curve P-256 --force >/dev/null
-step certificate verify "$CERT_FILE.new" --roots "$ROOT_FILE" >/dev/null || die "issued certificate does not chain to the root"
-chmod 600 "$KEY_FILE.new"
-mv -f "$KEY_FILE.new" "$KEY_FILE"
-mv -f "$CERT_FILE.new" "$CERT_FILE"
+# The one-time token is spent by the first successful issuance. If a later step failed (API briefly down,
+# heartbeat rejected) and systemd restarts this service, re-use the certificate already issued for this
+# kiosk instead of replaying the token (step-ca would refuse it and the bundle would be wasted).
+# Only a certificate issued with THIS bundle's token is re-used (marker = token digest): a new bundle for a
+# compromised device always gets a fresh key.
+ott_digest=$(printf '%s' "$OTT" | sha256sum | cut -d' ' -f1)
+ISSUED_MARKER="$PROVISION_DIR/issued-with"
+existing_cn=""
+if [ -s "$CERT_FILE" ] && [ -s "$KEY_FILE" ] && [ "$(cat "$ISSUED_MARKER" 2>/dev/null || true)" = "$ott_digest" ] &&
+  step certificate verify "$CERT_FILE" --roots "$ROOT_FILE" >/dev/null 2>&1 &&
+  ! step certificate needs-renewal "$CERT_FILE" --expires-in 10m >/dev/null 2>&1; then
+  existing_cn=$(step certificate inspect "$CERT_FILE" --format json | jq -r '.subject.common_name[0] // empty')
+fi
+if [ "$existing_cn" = "$KIOSK_ID" ]; then
+  log "re-using the certificate already issued for $KIOSK_ID (enrolment retry)"
+else
+  log "requesting certificate for $KIOSK_ID from $CA_URL"
+  step ca certificate "$KIOSK_ID" "$CERT_FILE.new" "$KEY_FILE.new" \
+    --token "$OTT" --ca-url "$CA_URL" --root "$ROOT_FILE" \
+    --kty EC --curve P-256 --force >/dev/null
+  step certificate verify "$CERT_FILE.new" --roots "$ROOT_FILE" >/dev/null || die "issued certificate does not chain to the root"
+  chmod 600 "$KEY_FILE.new"
+  mv -f "$KEY_FILE.new" "$KEY_FILE"
+  mv -f "$CERT_FILE.new" "$CERT_FILE"
+  echo "$ott_digest" >"$ISSUED_MARKER"
+fi
 cp -f "$CERT_FILE" "$CHAIN_FILE"   # step writes leaf + intermediate; chain.crt is the same bundle
 serial=$(step certificate inspect "$CERT_FILE" --format json | jq -r '.serial_number')
 not_after=$(step certificate inspect "$CERT_FILE" --format json | jq -r '.validity.end')
@@ -106,6 +124,7 @@ mv -f "$CONFIG_FILE.new" "$CONFIG_FILE"
 
 lockdown=$(jq -c '.lockdown // {}' "$BUNDLE_FILE")
 shred -u "$BUNDLE_FILE" 2>/dev/null || rm -f "$BUNDLE_FILE"
+rm -f "$ISSUED_MARKER"
 date -u +%Y-%m-%dT%H:%M:%SZ >"$PROVISION_DIR/enrolled-at"
 log "enrolled $KIOSK_ID (certificate $serial, valid until $not_after)"
 

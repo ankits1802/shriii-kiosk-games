@@ -85,12 +85,9 @@ def test_cli_verify_fails_with_exit_1(tmp_path: Path, capsys: pytest.CaptureFixt
 
 
 @pytest.mark.usefixtures("wire")
-def test_cli_register_open_public_with_study_is_refused(
-    tmp_path: Path, fake_api: FakeApi, fake_ca: FakeCa, capsys: pytest.CaptureFixture[str]
-) -> None:
-    assert cli.main(_register_args(tmp_path, fake_ca, "--study", "s1")) == 1
-    assert "open_public" in capsys.readouterr().err
-    assert fake_api.kiosks == {}
+def test_cli_register_open_public_with_study_is_accepted(tmp_path: Path, fake_api: FakeApi, fake_ca: FakeCa) -> None:
+    assert cli.main(_register_args(tmp_path, fake_ca, "--study", "s1")) == 0
+    assert fake_api.deployments[0]["study_id"] == "s1"
 
 
 def test_cli_register_rejects_http_api(tmp_path: Path, fake_ca: FakeCa, capsys: pytest.CaptureFixture[str]) -> None:
@@ -150,6 +147,42 @@ def test_cli_token(tmp_path: Path, fake_ca: FakeCa, capsys: pytest.CaptureFixtur
     assert cli.main([*args, "--revoke"]) == 0
     claims = jwt.decode(capsys.readouterr().out.strip(), options={"verify_signature": False})
     assert claims["aud"].endswith("/1.0/revoke")
+
+
+@pytest.mark.usefixtures("wire")
+def test_cli_revoke_certificate_and_kiosk(
+    tmp_path: Path, fake_api: FakeApi, fake_ca: FakeCa, capsys: pytest.CaptureFixture[str]
+) -> None:
+    assert cli.main(_register_args(tmp_path, fake_ca)) == 0
+    bundle = flows.load_bundle(tmp_path / "bundle.json")
+    root = tmp_path / "device"
+    result = flows.enrol(bundle, root, ca_transport=fake_ca.transport())
+    capsys.readouterr()
+    common = [
+        "revoke", "--ca-url", fake_ca.url, "--provisioner-key", str(tmp_path / "prov.pem"),
+        "--root-ca", str(tmp_path / "root.crt"), "--serial", result.certificate_serial,
+    ]  # fmt: skip
+    assert cli.main([*common, "--kiosk-id", "kiosk-cli-001"]) == 1
+    assert "--api is required" in capsys.readouterr().err
+    assert fake_api.kiosks["kiosk-cli-001"]["status"] == "active"
+    args = [*common, "--kiosk-id", "kiosk-cli-001", "--api", "https://api.test"]
+    args += ["--admin-token-file", str(tmp_path / "admin.token")]
+    assert cli.main(args) == 0
+    out = capsys.readouterr().out
+    assert "revoked kiosk kiosk-cli-001 in the API (status revoked)" in out
+    assert fake_api.kiosks["kiosk-cli-001"]["status"] == "revoked"
+    assert result.certificate_serial in fake_ca.revoked
+    # the device token no longer authenticates
+    token = (root / dc.TOKEN_FILE).read_text().strip()
+    resp = fake_api.transport().handle_request(
+        httpx.Request(
+            "POST",
+            "https://api.test/api/v1/admin/kiosks/heartbeat",
+            headers={"authorization": f"Bearer {token}"},
+            json={},
+        )
+    )
+    assert resp.status_code == 401
 
 
 def test_cli_model_render_and_validate(repo_root: Path, tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:

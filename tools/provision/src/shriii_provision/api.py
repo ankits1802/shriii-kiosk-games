@@ -5,6 +5,7 @@ Endpoints (backend/api, ``/api/v1``):
   POST /api/v1/admin/kiosks             register; returns the device token once (admin bearer)
   GET  /api/v1/admin/kiosks             fleet list (admin bearer)
   POST /api/v1/admin/kiosks/{id}/rotate-token
+  POST /api/v1/admin/kiosks/{id}/revoke  stolen / decommissioned: the device token stops working at once
   POST /api/v1/admin/deployments        site + site_mode assignment (admin bearer)
   POST /api/v1/admin/kiosks/heartbeat   device heartbeat (device token)
 
@@ -129,6 +130,14 @@ class ApiClient:
             "POST", f"/api/v1/admin/kiosks/{kiosk_id}/rotate-token", expect=(200,), headers=self._admin_headers()
         )
         return _registration(body)
+
+    def revoke_kiosk(self, kiosk_id: str) -> dict[str, Any]:
+        body = self._request(
+            "POST", f"/api/v1/admin/kiosks/{kiosk_id}/revoke", expect=(200,), headers=self._admin_headers()
+        )
+        if not isinstance(body, dict):
+            raise ProvisionError(f"POST /api/v1/admin/kiosks/{kiosk_id}/revoke: expected an object")
+        return body
 
     def list_kiosks(self) -> list[dict[str, Any]]:
         body = self._request("GET", "/api/v1/admin/kiosks", expect=(200,), headers=self._admin_headers())

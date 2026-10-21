@@ -91,6 +91,13 @@ class FakeApi:
                 return httpx.Response(404, json={"detail": {"code": "unknown_kiosk", "message": "kiosk not found"}})
             self.kiosks[kiosk_id]["status"] = "active"
             return httpx.Response(200, json=self._issue(kiosk_id))
+        if path.startswith("/api/v1/admin/kiosks/") and path.endswith("/revoke") and request.method == "POST":
+            kiosk_id = path.split("/")[5]
+            if kiosk_id not in self.kiosks:
+                return httpx.Response(404, json={"detail": {"code": "unknown_kiosk", "message": "kiosk not found"}})
+            self.kiosks[kiosk_id]["status"] = "revoked"
+            self.kiosks[kiosk_id]["revoked_at"] = _now().isoformat()
+            return httpx.Response(200, json=self._kiosk_out(kiosk_id))
         if path == "/api/v1/admin/deployments" and request.method == "POST":
             body = json.loads(request.content)
             if body["kiosk_id"] not in self.kiosks:

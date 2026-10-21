@@ -4,7 +4,7 @@ Workstation (field technician / fleet operator):
   register      register a kiosk with the API, assign site + site_mode, mint the step-ca token -> bundle
   push          copy a bundle to a kiosk on the bench network over SSH and trigger enrolment
   token         mint a one-time step-ca token (sign or revoke audience)
-  revoke        revoke a device certificate by serial
+  revoke        revoke a device certificate by serial (and, with --kiosk-id, the kiosk's API device token)
   model render  render the Ubuntu Core model template
   model validate
   wave-freeze   build the wave-freeze validation-set assertion
@@ -182,11 +182,24 @@ def cmd_token(args: argparse.Namespace) -> int:
 
 def cmd_revoke(args: argparse.Namespace) -> int:
     provisioner = stepca.load_provisioner_key(Path(args.provisioner_key), name=args.provisioner_name)
+    if args.kiosk_id:
+        # Device token first: it is checked on every API call, so it stops a stolen kiosk immediately; the
+        # certificate revocation then reaches the edge through the CRL (regenerated on revoke).
+        dc.validate_kiosk_id(args.kiosk_id)
+        if not args.api:
+            raise ProvisionError("--api is required with --kiosk-id")
+        admin_token = _read_secret(args.admin_token_file, "SHRIII_ADMIN_TOKEN")
+        api_origin = dc.validate_origin(args.api, "--api", allow_http=args.allow_http)
+        with ApiClient(api_origin, admin_token=admin_token) as api:
+            out = api.revoke_kiosk(args.kiosk_id)
+        print(f"revoked kiosk {args.kiosk_id} in the API (status {out.get('status')})")
     token = stepca.mint_ott(
         provisioner, ca_url=args.ca_url, subject=args.serial, sans=[], ttl_s=300, audience_path="/1.0/revoke"
     )
     stepca.revoke(args.ca_url, serial=args.serial, ott=token, reason=args.reason, root_pem_path=Path(args.root_ca))
-    print(f"revoked certificate {args.serial} (also revoke the API device token: admin/kiosks/<id>/revoke)")
+    print(f"revoked certificate {args.serial}")
+    if not args.kiosk_id:
+        print("note: the kiosk's API device token is still valid; pass --kiosk-id to revoke it as well")
     return 0
 
 
@@ -275,7 +288,7 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--site-mode", required=True, choices=SITE_MODES)
     p.add_argument("--policy-version", required=True)
     p.add_argument("--app-version", required=True)
-    p.add_argument("--study", help="study id (supervised sites only)")
+    p.add_argument("--study", help="study id (open_public kiosks join the VAL-18 unattended-mode substudy)")
     p.add_argument("--ring", default="pilot")
     p.add_argument("--label")
     p.add_argument("--hardware-sku", default="ref-sku-1")
@@ -334,6 +347,10 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--root-ca", required=True)
     p.add_argument("--serial", required=True)
     p.add_argument("--reason", default="kiosk decommissioned or compromised")
+    p.add_argument("--kiosk-id", help="also revoke this kiosk in the API (its device token stops working)")
+    p.add_argument("--api", help="API origin (with --kiosk-id)")
+    p.add_argument("--allow-http", action="store_true", help="allow an http:// API (local development only)")
+    p.add_argument("--admin-token-file", help="file with an admin bearer token (or env SHRIII_ADMIN_TOKEN)")
     p.set_defaults(func=cmd_revoke)
 
     model = sub.add_parser("model", help="Ubuntu Core model assertion").add_subparsers(dest="model_cmd", required=True)

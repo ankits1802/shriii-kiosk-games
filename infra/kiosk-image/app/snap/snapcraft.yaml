@@ -54,7 +54,6 @@ apps:
       - audio-playback
       - network
       - hardware-observe
-      - raw-usb
       - escpos-printer
     environment: &kiosk_env
       XDG_DATA_HOME: $SNAP_COMMON/xdg/data
@@ -100,7 +99,9 @@ apps:
       - home
 
 plugs:
-  # Raw ESC/POS printer node (/dev/usb/lp*), slot defined by the kiosk gadget (custom-device interface).
+  # Raw ESC/POS printer node (/dev/usb/lp*, bidirectional: jobs out, DLE EOT paper status in), slot defined by
+  # the kiosk gadget (custom-device interface). No raw-usb: usbfs access to every USB device would let the
+  # app talk to mass-storage devices directly, around the usb_storage/uas blacklist set at enrolment.
   escpos-printer:
     interface: custom-device
     custom-device: escpos-printer

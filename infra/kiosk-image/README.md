@@ -45,11 +45,11 @@ model shriii-kiosk-pc-24 (brand-signed, grade signed, TPM-backed FDE)
 | `browser-support` | Chromium runtime | gadget |
 | `audio-playback` | pre-recorded prompts (VOX-01). **No `audio-record`**: the microphone arrives with VOX-04 under PRV-03. | gadget → pipewire |
 | `escpos-printer` (`custom-device`) | raw ESC/POS on `/dev/usb/lp[0-9]` only | gadget slot + connection |
-| `raw-usb`, `hardware-observe` | printer paper sensor and the hardware self-test (KSK-08) | gadget |
+| `hardware-observe` | hardware self-test (KSK-08); the paper sensor is read back over the `escpos-printer` node | gadget |
 | `network` | the API, through netguard | auto |
 | `firewall-control` (netguard only) | egress allow-list | gadget (brand store) |
 | `snapd-control` (enrol only) | lockdown finalisation: SSH off, kernel command line, remove the bench user, reboot | gadget (brand store) |
-| **not present** | `camera`, `audio-record`, `home`, `removable-media`, `x11`, `desktop` | |
+| **not present** | `camera`, `audio-record`, `home`, `removable-media`, `raw-usb` (usbfs would bypass the USB storage blacklist), `x11`, `desktop` | |
 
 ## Lockdown (KSK-09)
 

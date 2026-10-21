@@ -190,7 +190,7 @@ jobs:
           unsquashfs -q -d snap-root "$snap" meta/snap.yaml
           cat snap-root/meta/snap.yaml
           grep -q '^confinement: strict' snap-root/meta/snap.yaml
-          ! grep -Eq 'camera|audio-record|removable-media' snap-root/meta/snap.yaml
+          ! grep -Eq 'camera|audio-record|removable-media|raw-usb' snap-root/meta/snap.yaml
       - name: Install smoke (snapd on the runner; hooks run, services register)
         run: |
           set -o pipefail

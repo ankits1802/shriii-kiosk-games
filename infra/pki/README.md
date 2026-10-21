@@ -6,7 +6,7 @@ can be revoked.
 
 | Path | What it is |
 |---|---|
-| `step-ca/ca.json.tmpl` | step-ca configuration: lifetimes, the `kiosk-enrolment` JWK provisioner, CRL, TLS (names are constrained by the device template and the issuing CA's name constraints) |
+| `step-ca/ca.json.tmpl` | step-ca configuration: lifetimes, the `kiosk-enrolment` JWK provisioner, CRL, TLS 1.3 only (PRV-07; names are constrained by the device template and the issuing CA's name constraints) |
 | `step-ca/templates/device-leaf.tpl` | device certificate template. The identity comes only from the token subject. Client auth only. |
 | `step-ca/templates/intermediate-ca.tpl` | issuing-CA template, name-constrained to kiosk identities and the CA's own TLS name |
 | `scripts/render-ca.sh` | renders the templates into a step-ca directory (file key, or AWS KMS in production) |
@@ -63,7 +63,8 @@ A kiosk is revoked when it is stolen, decommissioned or compromised. Do all thre
 
 1. **API device token**: `POST /api/v1/admin/kiosks/{id}/revoke`. Effective immediately: every request with
    the token gets 401.
-2. **Certificate**: `shriii-provision revoke --serial <serial>`. The serial is in the kiosk's `device.json`
+2. **Certificate**: `shriii-provision revoke --serial <serial>` (add `--kiosk-id <id> --api <origin>
+   --admin-token-file <file>` to do step 1 in the same command, token first). The serial is in the kiosk's `device.json`
    and in the heartbeat. Revocation is passive, so the certificate can never renew again. It is also put on
    the CRL, which is regenerated on every revoke (`generateOnRevoke`) and otherwise every 5 minutes
    (`renewPeriod`).
