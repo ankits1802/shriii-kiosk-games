@@ -26,28 +26,21 @@ passes in at least two language groups (fail closed).
 
 ## Repository layout
 
+Full description, the five data layers mapped to directories and the old-to-new path map:
+[`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
+
 ```
-apps/
-  kiosk/                 Vite + React kiosk shell (Electron-ready offline build; electron/ scaffold)
-  web/                   Next.js: /kiosk, /research/*, /admin/*          (later iteration agent)
-  api/                   FastAPI service + worker (Python, uv workspace member)
-packages/
-  contracts/             Canonical JSON Schema 2020-12 + generated TS types, constants, Ajv validators, fixtures
-  kiosk-game/            React + PixiJS game library; src/core/contracts.ts is the shared engine interface
-python/
-  shriii_contracts/      Pydantic v2 models generated from the same schemas + jsonschema validation
-  shriii_scoring/        Layer 2 indicator engine and layer 3 criterion scoring
-  shriii_validation/     Psychometric validation engine
-  shriii_simulator/      Synthetic players with known latent traits
-scoring/
-  dictionary/            shared.yaml (17 constructs), dictionary.A.yaml, dictionary.B.yaml
-  hypotheses.yaml        Pre-registration registry
-  gates.yaml             Battery and trait gate rules
-content/
-  instruments/           Criterion instrument registry (structure, keys, licensing; no copyrighted wording)
-  i18n/lines.yaml        Voice-line catalogue (pre-recorded clips; en-IN reference text for scripts only)
-  games/                 Module/episode configs with per-level timing and budget estimates; session-plan.json
-docs/
+frontend/      apps/kiosk (Vite kiosk shell), apps/kiosk-electron (Electron runtime), apps/web (Next.js),
+               packages/kiosk-game, outbox-sqlite, session-crypto, escpos-printer, asr-sherpa
+backend/api/   FastAPI service, job worker, PostgreSQL 18 schema and Alembic migrations
+stats/         Statistical modelling: measurement-model/ (dictionary, hypotheses, gates YAML), scoring/,
+               validation/, simulator/, rbridge/, r-psychometrics/ (R), reports/, prereg/
+contracts/     Canonical JSON Schemas, generated TS types and validators, fixtures; python/ (Pydantic models)
+content/       Game configs, criterion instruments, voice-line catalogue and translations
+infra/         compose/ (local and full stack), docker/ (images), tofu/ (OpenTofu)
+cicd/          CI gates and helper scripts used by .github/workflows (see cicd/README.md)
+tools/         audio-pipeline/, asr-bakeoff/, i18n/, loadtest/
+docs/          Plan, build decisions, architecture, governance, security, screenshots
 ```
 
 ## Prerequisites
@@ -60,11 +53,12 @@ docs/
 ## Getting started
 
 ```bash
-pnpm install                 # JS workspace (apps/*, packages/*)
-uv sync                      # Python workspace -> .venv (all members + dev tools)
-cp .env.example .env         # development settings
-docker compose -f infra/compose/docker-compose.yml up -d postgres            # PostgreSQL 18 (or pnpm db:up; (db shriii, user/password dev)
-docker compose -f infra/compose/docker-compose.yml --profile tools up -d     # + Adminer on http://localhost:8080
+pnpm install                 # JS workspace (frontend/*, contracts)
+uv sync --all-packages       # Python workspace -> .venv (backend, stats, contracts/python, tools + dev tools)
+cp infra/compose/.env.example .env                  # API/tooling settings (root)
+cp infra/compose/.env.example infra/compose/.env    # Docker Compose settings
+pnpm db:up                   # PostgreSQL 18 (db shriii, user/password dev) via infra/compose/docker-compose.yml
+docker compose -f infra/compose/docker-compose.yml --profile tools up -d   # + Adminer on http://localhost:8080
 ```
 
 ## Everyday commands
@@ -82,7 +76,7 @@ docker compose -f infra/compose/docker-compose.yml --profile tools up -d     # +
 | Regenerate TS contracts | `pnpm contracts:generate` |
 | Regenerate Pydantic models | `uv run python contracts/python/src/shriii_contracts/codegen.py` |
 
-Dev-only switches for the kiosk (`.env`, never honoured by production builds):
+Dev-only switches for the kiosk (`frontend/apps/kiosk/.env`, never honoured by production builds):
 `VITE_DEV_VOICE_PLACEHOLDER=true` (Web Speech placeholder with a "DEV VOICE" banner) and
 `VITE_DEV_OVERLAY=true` (seed/trial/frame-timing overlay).
 
@@ -97,7 +91,7 @@ Dev-only switches for the kiosk (`.env`, never honoured by production builds):
 ## Scientific content workflow
 
 - The dictionary, hypotheses and gates are **v0 drafts**. Freezes happen through signed governance records
-  (PLT-09); after a freeze, thresholds change only by amendment. `uv run pytest scoring` checks schema
+  (PLT-09); after a freeze, thresholds change only by amendment. `uv run pytest stats/measurement-model` checks schema
   validity, the 17-construct count, matrix rules, cross-references to instruments, hypotheses and voice lines.
 - Instrument YAML never contains copyrighted item wording; item text is loaded at administration time
   from the licensed source file referenced by `item_text_source`.
