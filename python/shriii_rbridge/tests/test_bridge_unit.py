@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import subprocess
 import sys
 from pathlib import Path
 from typing import Any
@@ -209,6 +210,13 @@ def test_runner_commands(tmp_path: Path) -> None:
     assert f"type=bind,source={tmp_path.resolve()},target=/work" in cmd
     assert cmd[-6:] == ["img:1", "run", "--request", "/work/request.json", "--response", "/work/response.json"]
     assert ("--user" in cmd) == (sys.platform != "win32")
+    # hardening: never pull implicitly, no capabilities, read-only root, named so a timeout can kill it
+    joined = " ".join(cmd)
+    for flag in ("--pull never", "--cap-drop ALL", "--security-opt no-new-privileges", "--read-only"):
+        assert flag in joined
+    named = DockerRunner(image="img:1").command(tmp_path, name="shriiipsy-abc")
+    assert named[named.index("--name") + 1] == "shriiipsy-abc"
+    assert "--name" not in cmd
     lcmd = LocalRscriptRunner("Rscript").command(tmp_path)
     assert lcmd[0] == "Rscript" and "shriiipsy::cli_main" in lcmd[2]
     assert lcmd[-1] == str(tmp_path / "response.json")
@@ -219,3 +227,19 @@ def test_missing_response_raises_run_error(tmp_path: Path) -> None:
     with pytest.raises(RRunError):
         # python -e is invalid, so the process fails without writing response.json
         runner.run(tmp_path, timeout=60)
+
+
+def test_docker_timeout_kills_the_container(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    calls: list[list[str]] = []
+
+    def fake_run(cmd: list[str], **kwargs: Any) -> subprocess.CompletedProcess[str]:
+        calls.append(cmd)
+        if cmd[1] == "run":
+            raise subprocess.TimeoutExpired(cmd, kwargs.get("timeout") or 0)
+        return subprocess.CompletedProcess(cmd, 0, "", "")
+
+    monkeypatch.setattr(subprocess, "run", fake_run)
+    with pytest.raises(RRunError, match="timed out"):
+        DockerRunner(image="img:1").run(tmp_path, timeout=1)
+    name = calls[0][calls[0].index("--name") + 1]
+    assert calls[1] == ["docker", "kill", name]

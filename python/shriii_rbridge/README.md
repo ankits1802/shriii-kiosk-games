@@ -3,7 +3,7 @@
 This package provides the `RBackend` implementation for `shriii_validation`. It runs the
 [`shriiipsy`](../../r/psychometrics/README.md) R package in one of two ways:
 
-- **Docker:** through the pinned image `shriii/r-psychometrics:0.1.0`, run with `--network none` and a bind-mounted temp directory.
+- **Docker:** through the pinned image `shriii/r-psychometrics:0.1.0`, run with `--network none` and a bind-mounted temp directory. The container never pulls an image implicitly (`--pull never`), drops all capabilities, disables privilege escalation and has a read-only root filesystem with a tmpfs `/tmp`. Each run has a unique container name, so a run that times out is killed instead of left running.
 - **Local:** through a local `Rscript` that has shriiipsy installed.
 
 ```python

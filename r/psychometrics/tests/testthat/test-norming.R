@@ -57,3 +57,12 @@ test_that("percentile crossing blocks publication", {
                     raw = c(1, 2, 3, 1, 3, 2))
   expect_equal(shriiipsy:::.percentile_crossings(tab), 30)
 })
+
+test_that("invalid raking margins and weights fail loudly", {
+  d <- sim_norms()
+  expect_error(rake_weights(d, list(gender = list(f = 0.6, m = 0.6)), 5), "summing to 1")
+  expect_error(rake_weights(d, list(gender = list(f = 1)), 5), "without a population share")
+  expect_error(rake_weights(d, list(gender = list(f = 0.4, m = 0.4, x = 0.2)), 5), "no respondents")
+  d$w0 <- 0
+  expect_error(continuous_norms(d, score = "score", age = "age", weights = "w0"), "all zero")
+})

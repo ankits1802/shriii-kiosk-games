@@ -83,3 +83,27 @@ test_that("non-finite numbers serialise as null", {
   r2 <- psy_result("x", NaN)
   expect_equal(r2$status, "failed")
 })
+
+test_that("re-running a seeded request reproduces every number (VAL-01 AC: within 1e-8)", {
+  set.seed(99)
+  n <- 60
+  d <- data.frame(person = rep(seq_len(n), each = 40), cond = rep(rep(c("calm", "pressure"), each = 20), n))
+  u <- stats::rnorm(n, 0, 0.8)
+  s <- stats::rnorm(n, 0, 0.6)
+  eta <- 1.5 + u[d$person] + (d$cond == "pressure") * (-0.7 + s[d$person])
+  d$correct <- stats::rbinom(nrow(d), 1, stats::plogis(eta))
+  req <- list(schema = "shriiipsy-request/1", analysis = "person_random_slopes", seed = 7,
+              data = list(columns = as.list(d)),
+              params = list(person = "person", condition = "cond", response = "correct", focal = "pressure",
+                            bootstrap_n = 20))
+  strip <- function(r) {
+    js <- jsonlite::fromJSON(as.character(result_to_json(r)), simplifyVector = FALSE)
+    js$provenance$computed_at <- NULL
+    js
+  }
+  a <- strip(run_request(req))
+  b <- strip(run_request(req))
+  expect_equal(a$status, "ok")
+  expect_true(is.finite(a$ci_low))
+  expect_equal(a, b, tolerance = 1e-8)
+})

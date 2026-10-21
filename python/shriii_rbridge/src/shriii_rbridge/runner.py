@@ -7,11 +7,14 @@ Runners never interpret results; they only report process-level failures as :cla
 
 from __future__ import annotations
 
+import contextlib
 import json
 import os
 import shutil
 import subprocess
 import sys
+import uuid
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Protocol, runtime_checkable
@@ -71,7 +74,13 @@ def _read_response(workdir: Path, proc: subprocess.CompletedProcess[str]) -> dic
     return data
 
 
-def _execute(cmd: list[str], workdir: Path, timeout: float | None, env: dict[str, str] | None = None) -> dict[str, Any]:
+def _execute(
+    cmd: list[str],
+    workdir: Path,
+    timeout: float | None,
+    env: dict[str, str] | None = None,
+    on_timeout: Callable[[], None] | None = None,
+) -> dict[str, Any]:
     try:
         proc = subprocess.run(
             cmd,
@@ -86,7 +95,11 @@ def _execute(cmd: list[str], workdir: Path, timeout: float | None, env: dict[str
     except FileNotFoundError as exc:
         raise RRunError(f"executable not found: {cmd[0]}") from exc
     except subprocess.TimeoutExpired as exc:
+        if on_timeout is not None:
+            on_timeout()
         raise RRunError(f"shriiipsy timed out after {timeout} s") from exc
+    except OSError as exc:
+        raise RRunError(f"could not start {cmd[0]}: {exc}") from exc
     return _read_response(workdir, proc)
 
 
@@ -142,7 +155,13 @@ def local_shriiipsy_available(rscript: str | None = None) -> bool:
 
 @dataclass(frozen=True, slots=True)
 class DockerRunner:
-    """Runs the shriiipsy image with the work directory bind-mounted at ``/work`` and no network."""
+    """Runs the shriiipsy image with the work directory bind-mounted at ``/work`` and no network.
+
+    The container is hardened: the image is never pulled implicitly (a missing local image fails instead of
+    fetching a same-named image from a registry and handing it the data), all capabilities are dropped,
+    privilege escalation is disabled and the root filesystem is read-only (``/tmp`` is a tmpfs). Each run
+    gets a unique container name so a timed-out analysis is killed rather than left running.
+    """
 
     image: str = DEFAULT_IMAGE
     docker: str = "docker"
@@ -154,18 +173,29 @@ class DockerRunner:
     def describe(self) -> dict[str, Any]:
         return {"runner": self.kind, "image": self.image}
 
-    def command(self, workdir: Path) -> list[str]:
+    def command(self, workdir: Path, name: str | None = None) -> list[str]:
         cmd = [
             self.docker,
             "run",
             "--rm",
             "--network",
             "none",
+            "--pull",
+            "never",
+            "--cap-drop",
+            "ALL",
+            "--security-opt",
+            "no-new-privileges",
+            "--read-only",
+            "--tmpfs",
+            "/tmp:rw,exec",
             "--mount",
             f"type=bind,source={workdir.resolve()},target=/work",
             "-e",
             "HOME=/tmp",
         ]
+        if name:
+            cmd += ["--name", name]
         if sys.platform != "win32" and hasattr(os, "getuid"):
             cmd += ["--user", f"{os.getuid()}:{os.getgid()}"]
         if self.memory:
@@ -176,8 +206,13 @@ class DockerRunner:
         cmd += [self.image, "run", "--request", f"/work/{REQUEST_FILE}", "--response", f"/work/{RESPONSE_FILE}"]
         return cmd
 
+    def _kill(self, name: str) -> None:
+        with contextlib.suppress(OSError, subprocess.TimeoutExpired):
+            subprocess.run([self.docker, "kill", name], capture_output=True, timeout=60, check=False)
+
     def run(self, workdir: Path, *, timeout: float | None = None) -> dict[str, Any]:
-        return _execute(self.command(workdir), workdir, timeout)
+        name = f"shriiipsy-{uuid.uuid4().hex[:16]}"
+        return _execute(self.command(workdir, name), workdir, timeout, on_timeout=lambda: self._kill(name))
 
 
 @dataclass(frozen=True, slots=True)

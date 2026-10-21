@@ -10,9 +10,24 @@ rake_weights <- function(data, margins, trim_ratio, max_iter = 100L, tol = 1e-8)
   n <- nrow(data)
   w <- rep(1, n)
   vars <- names(margins)
+  if (!length(vars)) stop("raking margins are empty")
   .require_columns(data, vars, "raking variable")
   cols <- lapply(vars, function(v) as.character(data[[v]]))
   names(cols) <- vars
+  for (v in vars) {
+    shares <- as.numeric(unlist(margins[[v]]))
+    if (!length(shares) || any(!is.finite(shares)) || any(shares < 0) || abs(sum(shares) - 1) > 1e-6) {
+      stop(sprintf("raking margins for %s must be non-negative population shares summing to 1", v))
+    }
+    unmatched <- setdiff(unique(cols[[v]]), names(margins[[v]]))
+    if (length(unmatched)) {
+      stop(sprintf("raking variable %s has level(s) without a population share: %s", v, paste(unmatched, collapse = ", ")))
+    }
+    empty <- names(margins[[v]])[shares > 0 & !names(margins[[v]]) %in% cols[[v]]]
+    if (length(empty)) {
+      stop(sprintf("raking variable %s has no respondents in level(s) with a positive share: %s", v, paste(empty, collapse = ", ")))
+    }
+  }
   for (it in seq_len(max_iter)) {
     change <- 0
     for (v in vars) {
@@ -75,6 +90,7 @@ continuous_norms <- function(data, score, age, weights = NULL, margins = NULL, e
   if (!is.null(weights)) {
     w <- as.numeric(df[[weights]])
     if (any(w < 0)) stop("weights must be non-negative")
+    if (!any(w > 0)) stop("weights are all zero")
     w <- .trim_weights(w, trim)
     weight_source <- "supplied (trimmed)"
   } else if (!is.null(margins)) {

@@ -155,7 +155,8 @@ glmm_dif <- function(data, person, item, group, response, family = "binomial", c
     flagged <- new_flagged
   }
   flagged <- table_out$item[is.finite(table_out$q) & table_out$q < alpha]
-  z <- stats::qnorm(0.975)
+  eff_level <- .th(thresholds, "dif", "effect_ci_level")
+  z <- stats::qnorm(1 - (1 - eff_level) / 2)
   table_out$ci_low <- table_out$effect - z * table_out$se
   table_out$ci_high <- table_out$effect + z * table_out$se
   if (family == "binomial") {
@@ -201,6 +202,7 @@ glmm_dif <- function(data, person, item, group, response, family = "binomial", c
     omnibus_random_dif = omni,
     impact = impact,
     reference_group = glev[1],
+    effect_ci_level = eff_level,
     effect_scale = if (family == "binomial") "log-odds (focal minus reference, item-specific)" else
       sprintf("%s response units%s", family, if (!is.null(transform)) paste0(" after ", transform) else ""),
     n_trials = nrow(df), n_items = length(items),
@@ -276,7 +278,6 @@ person_random_slopes <- function(data, person, condition, response, family = "bi
   rel <- .slope_reliability(fit, person, ".cond")
   ft <- .fixef_table(fit)
   fx <- ft[ft$term == ".cond", ]
-  z <- stats::qnorm(0.975)
   vc <- as.data.frame(lme4::VarCorr(fit))
   sd_int <- vc$sdcor[vc$grp == person & vc$var1 == "(Intercept)" & is.na(vc$var2)][1]
   sd_slope <- vc$sdcor[vc$grp == person & vc$var1 == ".cond" & is.na(vc$var2)][1]
@@ -285,6 +286,7 @@ person_random_slopes <- function(data, person, condition, response, family = "bi
                        slope_se = rel$ranef$condsd, stringsAsFactors = FALSE)
   B <- bootstrap_n %||% .th(thresholds, "slopes", "bootstrap_n")
   level <- ci_level %||% .th(thresholds, "slopes", "ci_level")
+  z <- stats::qnorm(1 - (1 - level) / 2)
   ci <- c(NA_real_, NA_real_)
   boot_ok <- NA
   if (B > 0) {
@@ -327,7 +329,7 @@ person_random_slopes <- function(data, person, condition, response, family = "bi
   min_rel <- .th(thresholds, "slopes", "reliability_min")
   details <- list(
     fixed_slope = list(estimate = fx$estimate, se = fx$se, ci_low = fx$estimate - z * fx$se,
-                       ci_high = fx$estimate + z * fx$se, z = fx$estimate / fx$se,
+                       ci_high = fx$estimate + z * fx$se, ci_level = level, z = fx$estimate / fx$se,
                        p = 2 * stats::pnorm(-abs(fx$estimate / fx$se)),
                        scale = if (family == "binomial") "log-odds" else "response units"),
     random_effects = list(sd_intercept = .safe_num(sd_int), sd_slope = .safe_num(sd_slope),

@@ -44,6 +44,7 @@ dif:
   anchor_share: 0.20                 # Woods (2009): 10-20% of items as anchors when none are given
   min_anchors: 4
   purification_max_iter: 10
+  effect_ci_level: 0.95              # Wald CI level for GLMM DIF effects
   # lordif (Choi, Gibbons & Crane 2011) ordinal logistic DIF.
   lordif_criterion: Chisqr           # Chisqr | R2 | Beta
   lordif_alpha: 0.01
