@@ -20,3 +20,6 @@ playwright-report/
 !.env.example
 uv.lock.bak
 .claude/
+.hypothesis/
+# Run artefacts: load-test results are uploaded as CI artifacts (loadtest.yml), never committed.
+tools/loadtest/results/

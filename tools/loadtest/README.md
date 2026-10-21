@@ -1,7 +1,7 @@
 # shriii-loadtest: ingestion and research API load tests (QA-05, ING-02)
 
 A kiosk-fleet simulator for `POST /api/v1/events/batch` and the research read API. It replays realistic
-sessions from `python/shriii_simulator` through the real `UploadBatch` contract (JCS checksum, gapless `seq`,
+sessions from `stats/simulator` through the real `UploadBatch` contract (JCS checksum, gapless `seq`,
 optional X25519 sealed-box + AES-256-GCM chunks), measures latency, and then **verifies the database**: every
 event stored exactly once, nothing left in consent parking, nothing dead-lettered.
 
@@ -81,5 +81,7 @@ when no server is reachable, unless `SHRIII_REQUIRE_DB=1`.
   as new acceptances.
 - Timeouts (60 s client timeout) and 5xx are retried with the same body, as the kiosk outbox does; the
   database verification shows whether anything was lost or duplicated.
-- The client runs on the same host as the API and database in the committed results; see RESULTS.md for
-  the environment and how to read it.
+- The client runs on the same host as the API and database in the recorded baseline runs; see RESULTS.md for
+  the environment and how to read it. Raw run output under `results/` is git-ignored: CI uploads it as the
+  `loadtest-*` workflow artifact, and the earlier committed baselines remain in git history (before the
+  October 2026 layout reorganisation).
