@@ -304,7 +304,10 @@ resource "aws_lb_listener_rule" "api" {
   }
   condition {
     path_pattern {
-      values = ["/api/*", "/healthz", "/readyz", "/docs", "/openapi.json"]
+      # Only the versioned API and liveness go to FastAPI. Everything else under /api/* (e.g. the web app's
+      # /api/auth/* OIDC callback) stays on Next.js; /docs, /openapi.json and /readyz (migration version,
+      # database status) are not published on the internet-facing listener.
+      values = ["/api/v1/*", "/healthz"]
     }
   }
 }
@@ -337,7 +340,10 @@ resource "aws_ecs_task_definition" "this" {
         user                   = each.key == "web" ? "1000:1000" : "10001:10001"
         portMappings           = each.value.port == null ? [] : [{ containerPort = each.value.port, protocol = "tcp" }]
         environment = [
-          for k, v in(each.value.backend ? local.backend_env : merge({ API_BASE_URL = var.internal_api_url }, var.extra_web_env)) :
+          for k, v in(each.value.backend ? local.backend_env : merge({
+            API_BASE_URL     = var.internal_api_url
+            API_PROXY_TARGET = var.internal_api_url
+          }, var.extra_web_env)) :
           { name = k, value = v }
         ]
         secrets = each.value.backend ? [

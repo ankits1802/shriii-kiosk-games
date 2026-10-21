@@ -79,7 +79,7 @@ module "ecs" {
   oidc_audience       = module.cognito.web_client_id
   cors_origins        = [var.public_base_url]
   public_base_url     = var.public_base_url
-  internal_api_url    = "${var.public_base_url}/api"
+  internal_api_url    = var.public_base_url
   bucket_arns         = values(module.s3.bucket_arns)
   task_kms_key_arns   = [module.kms.key_arns["data"], module.kms.key_arns["sessions"], module.kms.key_arns["identity"]]
   secrets_kms_key_arn = module.kms.key_arns["secrets"]

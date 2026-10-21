@@ -27,13 +27,6 @@
   "osvVulnerabilityAlerts": true,
   "packageRules": [
     {
-      "description": "Major updates soak for 30 days and never automerge.",
-      "matchUpdateTypes": ["major"],
-      "minimumReleaseAge": "30 days",
-      "automerge": false,
-      "addLabels": ["major"]
-    },
-    {
       "description": "Patch updates of dev tooling may automerge after the soak once CI is green.",
       "matchDepTypes": ["devDependencies", "dev"],
       "matchUpdateTypes": ["patch"],
@@ -126,6 +119,13 @@
       "matchManagers": ["terraform"],
       "minimumReleaseAge": "14 days",
       "groupName": "opentofu providers"
+    },
+    {
+      "description": "Major updates soak for 30 days and never automerge (last rule, so group rules above cannot shorten the soak).",
+      "matchUpdateTypes": ["major"],
+      "minimumReleaseAge": "30 days",
+      "automerge": false,
+      "addLabels": ["major"]
     }
   ]
 }

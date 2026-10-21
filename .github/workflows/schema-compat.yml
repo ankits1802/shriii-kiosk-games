@@ -45,15 +45,23 @@ jobs:
           python-version: "3.14"
       - name: Resolve base revision
         id: base
+        env:
+          EVENT: ${{ github.event_name }}
+          PR_BASE_REF: ${{ github.base_ref }}
+          MERGE_GROUP_BASE: ${{ github.event.merge_group.base_sha }}
+          PUSH_BEFORE: ${{ github.event.before }}
+          BASE_REF_INPUT: ${{ inputs.base_ref || 'origin/main' }}
         run: |
-          if [ "${{ github.event_name }}" = "pull_request" ]; then
-            base="$(git merge-base "origin/${{ github.base_ref }}" HEAD)"
-          elif [ "${{ github.event_name }}" = "merge_group" ]; then
-            base="${{ github.event.merge_group.base_sha }}"
-          elif [ "${{ github.event_name }}" = "push" ]; then
-            base="${{ github.event.before }}"
+          if [ "$EVENT" = "pull_request" ]; then
+            base="$(git merge-base "origin/${PR_BASE_REF}" HEAD)"
+          elif [ "$EVENT" = "merge_group" ]; then
+            base="$MERGE_GROUP_BASE"
+          elif [ "$EVENT" = "push" ]; then
+            base="$PUSH_BEFORE"
+            # New branch or force push: 'before' is all zeros or no longer reachable; compare with the parent.
+            if ! git cat-file -e "${base}^{commit}" 2>/dev/null; then base="$(git rev-parse HEAD~1)"; fi
           else
-            base="$(git rev-parse "${{ inputs.base_ref || 'origin/main' }}")"
+            base="$(git rev-parse --verify "${BASE_REF_INPUT}^{commit}")"
           fi
           echo "sha=$base" >> "$GITHUB_OUTPUT"
           echo "Comparing against $base"

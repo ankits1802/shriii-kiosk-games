@@ -60,7 +60,7 @@ variable "public_base_url" {
 }
 
 variable "internal_api_url" {
-  description = "URL the web server uses for server-side API calls."
+  description = "API origin (no path) the web server uses for server-side calls and /api/v1 rewrites; the ALB routes /api/v1/* on it to the api service."
   type        = string
 }
 

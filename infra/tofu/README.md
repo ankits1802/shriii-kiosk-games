@@ -31,7 +31,7 @@ tofu -chdir=infra/tofu/envs/staging plan -var image_tag=<commit sha>
 Before the first rollout, put the backend secrets into the Secrets Manager secret named by the `backend_secret_arn`
 output: a JSON object with `DATABASE_URL`, `IDENTITY_DATABASE_URL`, `PID_HMAC_PEPPER`, `SESSION_KEY_KEK`,
 `BACKEND_X25519_PRIVATE_KEY`, `RELEASE_PACK_SIGNING_KEY` and `IDENTITY_VAULT_KEY` (base64, 32 bytes each; generated in
-a KMS-backed ceremony, never in OpenTofu state). Then run the `migrate_task_definition_arn` task once per release
+a KMS-backed ceremony, never in OpenTofu state). `deploy.yml` then runs the `migrate_task_definition_arn` task (via `.github/scripts/ecs_migrate.sh`) once per release
 (`aws ecs run-task`) before the services roll.
 
 ## Validation

@@ -3,7 +3,7 @@
 | Path | What |
 |---|---|
 | `docker/api.Dockerfile` | Backend image: target `api` (FastAPI via uvicorn, default) and target `worker` (job worker). uv, python-slim, non-root uid 10001, healthcheck. |
-| `docker/web.Dockerfile` | `apps/web` as a Next.js standalone server (needs `output: "standalone"` and `outputFileTracingRoot` in `next.config`). Non-root. |
+| `docker/web.Dockerfile` | `apps/web` as a Next.js standalone server (needs `output: "standalone"` and `outputFileTracingRoot` in `next.config`; the pnpm package name is read from `apps/web/package.json`; `API_PROXY_TARGET` is a build arg because Next.js bakes rewrite destinations into the build). Non-root. |
 | `docker/kiosk.Dockerfile` | `apps/kiosk` static browser build served by unprivileged nginx (strict CSP, no remote origins); `--target dist` exports the bundle. |
 | `docker/healthcheck.py` | `shriii-healthcheck http <url>` / `db` probes for slim images. |
 | `docker/r-psychometrics.Dockerfile` | R backend image (owned by the psychometrics stream). |
@@ -31,6 +31,7 @@ docker compose -f infra/compose/compose.full.yml down -v
 - Host ports: `POSTGRES_HOST_PORT` (55433), `API_HOST_PORT` (8000), `WEB_HOST_PORT` (3000), `KIOSK_HOST_PORT`
   (5173), `ADMINER_HOST_PORT` (8080). Browser builds call the API at `PUBLIC_API_BASE_URL`
   (default `http://localhost:8000`, baked in at build time).
+- PostgreSQL and Adminer listen on 127.0.0.1 only (well-known dev credentials); set `BIND_ADDRESS=0.0.0.0` to expose them.
 - To bring up the stack without the web app: `docker compose -f infra/compose/compose.full.yml up --build -d
   postgres migrate api worker kiosk adminer`.
 
@@ -42,7 +43,7 @@ docker compose -f infra/compose/compose.full.yml down -v
 | `schema-compat.yml` | contract backward/forward compatibility against the merge base (`.github/scripts/schema_compat.py`) |
 | `nightly-sim.yml` | full simulated-player recovery report + slow statistical tests |
 | `kiosk-release.yml` | deploy-order gate, reproducible kiosk build (web bundle + Electron shell), CycloneDX SBOM, cosign signatures, GitHub release with the version tuple |
-| `deploy.yml` | build api / worker / web / kiosk images, push to ECR, cosign-sign, OpenTofu plan and apply |
+| `deploy.yml` | build api / worker / web / kiosk images, push to ECR, cosign-sign, run the `migrate` ECS task (`.github/scripts/ecs_migrate.sh`, must exit 0), then OpenTofu plan and apply |
 | `codeql.yml`, `osv-scanner.yml` | static analysis and dependency vulnerability scanning |
 
 Repository settings the workflows expect: variables `AWS_ROLE_ARN`, `AWS_REGION`, `ECR_REGISTRY`, `TOFU_STATE_BUCKET`,

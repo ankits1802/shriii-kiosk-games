@@ -11,6 +11,7 @@
 # Env files under infra/compose/env/ hold development defaults only (ENV=dev: dev JWT login and keys derived
 # from the dev secret). Never reuse them for staging or production; those get secrets from AWS (infra/tofu).
 # Host ports are overridable: POSTGRES_HOST_PORT, API_HOST_PORT, WEB_HOST_PORT, KIOSK_HOST_PORT, ADMINER_HOST_PORT.
+# PostgreSQL and Adminer (well-known dev credentials) listen on loopback only unless BIND_ADDRESS is set.
 name: shriii-full
 
 x-backend-build: &backend-build
@@ -33,7 +34,7 @@ services:
       TZ: UTC
       PGTZ: UTC
     ports:
-      - "${POSTGRES_HOST_PORT:-55433}:5432"
+      - "${BIND_ADDRESS:-127.0.0.1}:${POSTGRES_HOST_PORT:-55433}:5432"
     volumes:
       # PostgreSQL 18 images keep data under /var/lib/postgresql/<major>/docker; mount the parent.
       - pgdata:/var/lib/postgresql
@@ -91,7 +92,8 @@ services:
       context: ../..
       dockerfile: infra/docker/web.Dockerfile
       args:
-        NEXT_PUBLIC_API_BASE_URL: ${PUBLIC_API_BASE_URL:-http://localhost:8000}
+        # Rewrite destinations are baked in at build time: the app proxies /api/v1, /healthz, /readyz here.
+        API_PROXY_TARGET: http://api:8000
     env_file: env/web.env
     restart: unless-stopped
     ports:
@@ -120,7 +122,7 @@ services:
     environment:
       ADMINER_DEFAULT_SERVER: postgres
     ports:
-      - "${ADMINER_HOST_PORT:-8080}:8080"
+      - "${BIND_ADDRESS:-127.0.0.1}:${ADMINER_HOST_PORT:-8080}:8080"
     depends_on:
       postgres:
         condition: service_healthy

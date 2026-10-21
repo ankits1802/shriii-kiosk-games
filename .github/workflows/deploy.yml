@@ -158,7 +158,28 @@ jobs:
           tofu init -input=false \
             -backend-config="bucket=${{ vars.TOFU_STATE_BUCKET }}" \
             -backend-config="region=${{ env.AWS_REGION }}"
+      # Expand-contract migrations run before the services roll to the new image: register the new `migrate`
+      # task definition, run it once and require exit code 0. On the very first rollout nothing exists yet, so
+      # the migration runs right after the initial apply instead.
+      - name: Migrate (before rollout)
+        id: premigrate
+        run: |
+          if tofu output -json platform > platform.json 2>/dev/null && [ "$(jq -r '.ecs_cluster_name // empty' platform.json)" != "" ]; then
+            tofu apply -input=false -auto-approve -lock-timeout=5m \
+              -target='module.platform.module.ecs.aws_ecs_task_definition.this["migrate"]'
+            tofu output -json platform > platform.json
+            bash "$GITHUB_WORKSPACE/.github/scripts/ecs_migrate.sh" platform.json
+            echo "done=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::notice::No existing platform state; migrations will run after the first apply."
+            echo "done=false" >> "$GITHUB_OUTPUT"
+          fi
       - name: Plan
         run: tofu plan -input=false -out=tfplan -lock-timeout=5m
       - name: Apply
         run: tofu apply -input=false -lock-timeout=5m tfplan
+      - name: Migrate (first rollout)
+        if: steps.premigrate.outputs.done != 'true'
+        run: |
+          tofu output -json platform > platform.json
+          bash "$GITHUB_WORKSPACE/.github/scripts/ecs_migrate.sh" platform.json

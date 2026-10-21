@@ -6,6 +6,12 @@
 # Variables:
 #   COSIGN_KEYLESS=true                   use Sigstore keyless signing instead (GitHub OIDC; public Rekor entry)
 #   PRODUCTION_CONTRACTS_REF              git ref deployed to production (default: tag deployed/production)
+#   KIOSK_API_BASE                        ingestion API origin compiled into the bundle (required for tag releases;
+#                                         the Electron shell's SHRIII_API_ORIGIN must match it)
+#   KIOSK_MODE / KIOSK_SITE_MODE          optional build-time session / site modes (defaults: public, supervised)
+# Secrets (build configuration):
+#   KIOSK_DEV_PIN                         operator PIN compiled into the bundle (4-8 digits; required for tag
+#                                         releases, otherwise the app falls back to its well-known development PIN)
 name: Kiosk release
 
 on:
@@ -66,6 +72,14 @@ jobs:
     timeout-minutes: 30
     outputs:
       version: ${{ steps.meta.outputs.version }}
+    # Job-level so the reproducibility rebuild sees exactly the same build-time configuration.
+    env:
+      VITE_API_BASE: ${{ vars.KIOSK_API_BASE }}
+      VITE_KIOSK_MODE: ${{ vars.KIOSK_MODE || 'public' }}
+      VITE_SITE_MODE: ${{ vars.KIOSK_SITE_MODE || 'supervised' }}
+      VITE_DEV_PIN: ${{ secrets.KIOSK_DEV_PIN }}
+      VITE_DEV_VOICE_PLACEHOLDER: "false"
+      VITE_DEV_OVERLAY: "false"
     steps:
       - uses: actions/checkout@v5
       - uses: pnpm/action-setup@v4
@@ -74,6 +88,17 @@ jobs:
           node-version-file: .nvmrc
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - name: Release configuration
+        run: |
+          missing=()
+          [ -n "$VITE_API_BASE" ] || missing+=("vars.KIOSK_API_BASE")
+          [[ "$VITE_DEV_PIN" =~ ^[0-9]{4,8}$ ]] || missing+=("secrets.KIOSK_DEV_PIN (4-8 digits)")
+          if [ ${#missing[@]} -gt 0 ]; then
+            if [[ "$GITHUB_REF" == refs/tags/kiosk-v* ]]; then
+              echo "::error title=Kiosk release configuration::missing ${missing[*]}"; exit 1
+            fi
+            echo "::warning title=Kiosk release configuration::missing ${missing[*]} (tolerated for dry runs only)"
+          fi
       - name: Release metadata (version tuple)
         id: meta
         run: |
@@ -90,15 +115,15 @@ jobs:
               contracts_package: require("./packages/contracts/package.json").version,
               content_session_plan: JSON.parse(fs.readFileSync("content/games/session-plan.json", "utf8")).version,
               scoring_dict_version: { A: yaml("scoring/dictionary/dictionary.A.yaml"), B: yaml("scoring/dictionary/dictionary.B.yaml"), shared: yaml("scoring/dictionary/shared.yaml") },
+              api_base: process.env.VITE_API_BASE || null,
+              kiosk_mode: process.env.VITE_KIOSK_MODE,
+              site_mode: process.env.VITE_SITE_MODE,
               built_at: new Date(Number(process.env.SOURCE_DATE_EPOCH) * 1000).toISOString(),
             };
             fs.writeFileSync("release-tuple.json", JSON.stringify(tuple, null, 2) + "\n");
           ' "$version"
           cat release-tuple.json
       - name: Build (web bundle + Electron main/preload)
-        env:
-          VITE_DEV_VOICE_PLACEHOLDER: "false"
-          VITE_DEV_OVERLAY: "false"
         run: |
           pnpm --filter "@shriii/kiosk..." run build
           pnpm --filter @shriii/kiosk run electron:build
