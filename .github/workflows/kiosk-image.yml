@@ -1,0 +1,298 @@
+# Kiosk OS image + device provisioning (KSK-09, KSK-10, KSK-11, PRV-07).
+#   provision-cli  shriii-provision: ruff, mypy, pytest (mock API + mock step-ca); model template render + validate;
+#                  public snap ids in the model checked against the store
+#   shell          shellcheck over the snap services, hooks and PKI scripts
+#   pki-smoke      real step-ca from the repository templates: enrol (Python + step CLI), refusals, renewal over
+#                  mTLS, revocation + CRL
+#   app-snap       Electron runtime built on the runner, packaged with snapcraft (canonical/action-build, LXD),
+#                  linted with snapcraft lint + the store's review-tools
+#   gadget-snap    brand gadget (placeholder ids on PRs), packed and linted
+#   release        manual only: brand-store values + signing key -> signed model + image (fails closed without them)
+name: Kiosk image
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - infra/kiosk-image/**
+      - infra/pki/**
+      - tools/provision/**
+      - frontend/apps/kiosk-electron/**
+      - .github/workflows/kiosk-image.yml
+  pull_request:
+    paths:
+      - infra/kiosk-image/**
+      - infra/pki/**
+      - tools/provision/**
+      - frontend/apps/kiosk-electron/**
+      - .github/workflows/kiosk-image.yml
+  workflow_dispatch:
+    inputs:
+      release:
+        description: "Sign the model and build the image (needs the brand-store variables and secrets)"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: kiosk-image-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  FORCE_COLOR: "1"
+  PYTHON_VERSION: "3.14"
+  STEP_CLI_VERSION: "0.31.0"
+  STEP_CA_VERSION: "0.30.2"
+
+jobs:
+  provision-cli:
+    name: shriii-provision - lint, types, tests, model
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: tools/provision
+    env:
+      UV_FROZEN: "1"
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache-dependency-glob: |
+            tools/provision/pyproject.toml
+            tools/provision/uv.lock
+      - run: uv sync
+      - name: Ruff
+        run: uv run ruff check --output-format=github . && uv run ruff format --check .
+      - name: Mypy (strict)
+        run: uv run mypy
+      - name: Pytest
+        run: uv run pytest -q --junitxml=pytest-report.xml
+      - name: Model template (placeholders allowed)
+        run: uv run shriii-provision model validate --allow-placeholders --production ../../infra/kiosk-image/model/shriii-kiosk-pc-24.json
+      - name: Model render + validate (CI placeholder brand values)
+        env:
+          MODEL_VAR_BRAND_ACCOUNT_ID: ${{ vars.BRAND_ACCOUNT_ID || 'ciplaceholderbrandaccount0000000' }}
+          MODEL_VAR_BRAND_STORE_ID: ${{ vars.BRAND_STORE_ID || 'ci-placeholder-store' }}
+          MODEL_VAR_GADGET_SNAP_ID: ${{ vars.GADGET_SNAP_ID || 'SHRIIIGADGETxxxxxxxxxxxxxxxxxxxx' }}
+          MODEL_VAR_KIOSK_SNAP_ID: ${{ vars.KIOSK_SNAP_ID || 'SHRIIIKIOSKxxxxxxxxxxxxxxxxxxxxx' }}
+        run: |
+          mkdir -p ../../infra/kiosk-image/model/rendered
+          uv run shriii-provision model render --template ../../infra/kiosk-image/model/shriii-kiosk-pc-24.json \
+            --var MODEL_TIMESTAMP="$(date -u +%Y-%m-%dT%H:%M:%SZ)" --out ../../infra/kiosk-image/model/rendered/model.json
+          uv run shriii-provision model validate --production ../../infra/kiosk-image/model/rendered/model.json
+          python3 -m json.tool ../../infra/kiosk-image/model/rendered/model.json >/dev/null
+      - name: Public snap ids and channels match the store
+        working-directory: infra/kiosk-image/model
+        run: |
+          jq -c '.snaps[] | select(.id | test("^[A-Za-z0-9]{32}$"))' shriii-kiosk-pc-24.json | while read -r snap; do
+            name=$(echo "$snap" | jq -r .name); id=$(echo "$snap" | jq -r .id); channel=$(echo "$snap" | jq -r '.["default-channel"]')
+            info=$(curl -fsS -H 'Snap-Device-Series: 16' "https://api.snapcraft.io/v2/snaps/info/$name?fields=revision")
+            store_id=$(echo "$info" | jq -r '.["snap-id"]')
+            [ "$store_id" = "$id" ] || { echo "::error::$name id $id != store $store_id"; exit 1; }
+            want=${channel#latest/}
+            echo "$info" | jq -e --arg c "$want" --arg full "$channel" \
+              '[.["channel-map"][] | select(.channel.architecture == "amd64") | .channel.name] | any(. == $c or . == $full)' >/dev/null \
+              || { echo "::error::$name has no amd64 channel $channel"; exit 1; }
+            echo "ok: $name $id $channel"
+          done
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: provision-pytest
+          path: tools/provision/pytest-report.xml
+          if-no-files-found: ignore
+
+  shell:
+    name: shellcheck
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v5
+      - run: |
+          shellcheck --version
+          shellcheck -s sh -x \
+            infra/kiosk-image/app/src/bin/* infra/kiosk-image/app/src/share/lib.sh \
+            infra/kiosk-image/app/snap/hooks/* infra/kiosk-image/gadget/snap/hooks/* \
+            infra/kiosk-image/scripts/*.sh infra/pki/scripts/*.sh
+
+  pki-smoke:
+    name: PKI smoke (real step-ca)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      UV_FROZEN: "1"
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache-dependency-glob: tools/provision/uv.lock
+      - name: Install step + step-ca (checksum-verified release binaries)
+        run: |
+          set -eu
+          cd "$RUNNER_TEMP"
+          cli="https://github.com/smallstep/cli/releases/download/v${STEP_CLI_VERSION}"
+          ca="https://github.com/smallstep/certificates/releases/download/v${STEP_CA_VERSION}"
+          curl -fsSLO "$cli/step_linux_amd64.tar.gz"; curl -fsSL -o cli.sums "$cli/checksums.txt"
+          curl -fsSLO "$ca/step-ca_linux_amd64.tar.gz"; curl -fsSL -o ca.sums "$ca/checksums.txt"
+          grep ' step_linux_amd64.tar.gz$' cli.sums | sha256sum -c -
+          grep ' step-ca_linux_amd64.tar.gz$' ca.sums | sha256sum -c -
+          mkdir -p bin x
+          tar -xzf step_linux_amd64.tar.gz -C x; tar -xzf step-ca_linux_amd64.tar.gz -C x
+          install -m 0755 "$(find x -type f -name step | head -n1)" bin/step
+          install -m 0755 "$(find x -type f -name step-ca | head -n1)" bin/step-ca
+          echo "$RUNNER_TEMP/bin" >> "$GITHUB_PATH"
+      - run: step version && step-ca version
+      - name: Sync shriii-provision
+        run: uv sync --frozen --project tools/provision
+      - name: Smoke
+        run: sh infra/pki/scripts/ci-smoke.sh
+
+  app-snap:
+    name: App snap (snapcraft) + lint
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    env:
+      CSC_IDENTITY_AUTO_DISCOVERY: "false"
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: package.json
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Electron binary cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/electron
+          key: electron-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: electron-${{ runner.os }}-
+      - name: Build the Electron runtime (electron-builder --linux dir) and stage it
+        run: sh infra/kiosk-image/scripts/prepare-app-build.sh
+      - name: snapcraft pack (LXD)
+        id: snapcraft
+        uses: canonical/action-build@v1
+        with:
+          path: infra/kiosk-image/app
+          build-info: "false"
+      - name: Inspect
+        run: |
+          snap="${{ steps.snapcraft.outputs.snap }}"
+          ls -la "$snap"
+          unsquashfs -ll "$snap" | grep -E 'meta/snap.yaml|opt/shriii-kiosk/shriii-kiosk$|usr/bin/step$|bin/kiosk-enrol$|usr/sbin/nft$'
+          unsquashfs -q -d snap-root "$snap" meta/snap.yaml
+          cat snap-root/meta/snap.yaml
+          grep -q '^confinement: strict' snap-root/meta/snap.yaml
+          ! grep -Eq 'camera|audio-record|removable-media' snap-root/meta/snap.yaml
+      - name: snapcraft lint
+        run: |
+          sudo snap install snapcraft --classic
+          snapcraft lint "${{ steps.snapcraft.outputs.snap }}" 2>&1 | tee snapcraft-lint.txt
+      - name: review-tools (store checks)
+        run: sh infra/kiosk-image/scripts/review-snap.sh "${{ steps.snapcraft.outputs.snap }}"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: shriii-kiosk-snap
+          path: |
+            ${{ steps.snapcraft.outputs.snap }}
+            snapcraft-lint.txt
+            review-tools.json
+          retention-days: 7
+
+  gadget-snap:
+    name: Gadget snap (snapcraft) + lint
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+      - name: Render gadget.yaml (placeholder brand ids on PRs)
+        env:
+          KIOSK_SNAP_ID: ${{ vars.KIOSK_SNAP_ID }}
+          GADGET_SNAP_ID: ${{ vars.GADGET_SNAP_ID }}
+          CA_ROOT_FINGERPRINT: ${{ vars.CA_ROOT_FINGERPRINT }}
+          SNAP_STORE_PROXY: ${{ vars.SNAP_STORE_PROXY }}
+        run: |
+          if [ -n "$KIOSK_SNAP_ID" ] && [ -n "$GADGET_SNAP_ID" ] && [ -n "$CA_ROOT_FINGERPRINT" ]; then
+            sh infra/kiosk-image/scripts/render-gadget.sh
+          else
+            unset KIOSK_SNAP_ID GADGET_SNAP_ID CA_ROOT_FINGERPRINT SNAP_STORE_PROXY
+            sh infra/kiosk-image/scripts/render-gadget.sh --placeholders
+          fi
+          python3 -c "import sys, yaml; d = yaml.safe_load(open('infra/kiosk-image/gadget/gadget.yaml')); assert d['volumes']['pc']['bootloader'] == 'grub'; print('gadget.yaml parses')"
+      - name: snapcraft pack (LXD)
+        id: snapcraft
+        uses: canonical/action-build@v1
+        with:
+          path: infra/kiosk-image/gadget
+          build-info: "false"
+      - name: Inspect
+        run: |
+          unsquashfs -ll "${{ steps.snapcraft.outputs.snap }}" | grep -E 'meta/gadget.yaml|shim.efi.signed|grubx64.efi|cmdline.extra|grub.conf'
+      - name: review-tools (store checks)
+        run: sh infra/kiosk-image/scripts/review-snap.sh "${{ steps.snapcraft.outputs.snap }}"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: shriii-kiosk-pc-gadget-snap
+          path: |
+            ${{ steps.snapcraft.outputs.snap }}
+            review-tools.json
+          retention-days: 7
+
+  release:
+    name: Sign model + build image (manual)
+    if: github.event_name == 'workflow_dispatch' && inputs.release
+    needs: [provision-cli, pki-smoke, app-snap, gadget-snap]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    environment: production
+    env:
+      SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAPCRAFT_STORE_CREDENTIALS }}
+      MODEL_SIGNING_KEY_NAME: ${{ vars.MODEL_SIGNING_KEY_NAME }}
+      MODEL_VAR_BRAND_ACCOUNT_ID: ${{ vars.BRAND_ACCOUNT_ID }}
+      MODEL_VAR_BRAND_STORE_ID: ${{ vars.BRAND_STORE_ID }}
+      MODEL_VAR_GADGET_SNAP_ID: ${{ vars.GADGET_SNAP_ID }}
+      MODEL_VAR_KIOSK_SNAP_ID: ${{ vars.KIOSK_SNAP_ID }}
+    steps:
+      - uses: actions/checkout@v5
+      - name: Require brand-store configuration (fail closed)
+        run: |
+          missing=""
+          for v in SNAPCRAFT_STORE_CREDENTIALS MODEL_SIGNING_KEY_NAME MODEL_VAR_BRAND_ACCOUNT_ID MODEL_VAR_GADGET_SNAP_ID MODEL_VAR_KIOSK_SNAP_ID; do
+            eval "val=\${$v:-}"; [ -n "$val" ] || missing="$missing $v"
+          done
+          if [ -n "$missing" ]; then
+            echo "::error::release needs repository settings:$missing (see infra/kiosk-image/README.md, CI and signing)"
+            exit 1
+          fi
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Render + validate the production model
+        run: |
+          uv run --frozen --project tools/provision shriii-provision model render \
+            --template infra/kiosk-image/model/shriii-kiosk-pc-24.json \
+            --var MODEL_TIMESTAMP="$(date -u +%Y-%m-%dT%H:%M:%SZ)" --out model.json
+          uv run --frozen --project tools/provision shriii-provision model validate --production model.json
+      - name: Sign the model and build the image
+        run: |
+          sudo snap install snapcraft --classic
+          sudo snap install ubuntu-image --classic
+          # The signing key is registered to the brand account and exported into the store credentials.
+          snapcraft list-keys
+          snap sign -k "$MODEL_SIGNING_KEY_NAME" model.json > shriii-kiosk-pc-24.model
+          ubuntu-image snap shriii-kiosk-pc-24.model --output-dir image
+          ls -la image
+      - uses: actions/upload-artifact@v4
+        with:
+          name: shriii-kiosk-image
+          path: |
+            shriii-kiosk-pc-24.model
+            image/*.img
+          retention-days: 14

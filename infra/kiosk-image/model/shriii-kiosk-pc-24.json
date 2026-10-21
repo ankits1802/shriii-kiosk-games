@@ -1,0 +1,72 @@
+{
+  "type": "model",
+  "series": "16",
+  "authority-id": "${BRAND_ACCOUNT_ID}",
+  "brand-id": "${BRAND_ACCOUNT_ID}",
+  "model": "shriii-kiosk-pc-24",
+  "display-name": "SHRIII Kiosk (reference SKU, Ubuntu Core 24)",
+  "architecture": "amd64",
+  "base": "core24",
+  "grade": "signed",
+  "storage-safety": "encrypted",
+  "store": "${BRAND_STORE_ID}",
+  "system-user-authority": ["${BRAND_ACCOUNT_ID}"],
+  "validation-sets": [
+    {
+      "account-id": "${BRAND_ACCOUNT_ID}",
+      "name": "shriii-wave-freeze",
+      "mode": "enforce"
+    }
+  ],
+  "snaps": [
+    {
+      "name": "shriii-kiosk-pc",
+      "type": "gadget",
+      "default-channel": "24/stable",
+      "id": "${GADGET_SNAP_ID}"
+    },
+    {
+      "name": "pc-kernel",
+      "type": "kernel",
+      "default-channel": "24/stable",
+      "id": "pYVQrBcKmBa0mZ4CCN7ExT6jH8rY1hza"
+    },
+    {
+      "name": "core24",
+      "type": "base",
+      "default-channel": "latest/stable",
+      "id": "dwTAh7MZZ01zyriOZErqd1JynQLiOGvM"
+    },
+    {
+      "name": "snapd",
+      "type": "snapd",
+      "default-channel": "latest/stable",
+      "id": "PMrrV4ml8uWuEUDBT8dSGnKUYbevVhc4"
+    },
+    {
+      "name": "mesa-2404",
+      "type": "app",
+      "default-channel": "latest/stable",
+      "id": "HyhSEBPv3vHsW6uOHkQR384NgI7S6zpj"
+    },
+    {
+      "name": "ubuntu-frame",
+      "type": "app",
+      "default-channel": "24/stable",
+      "id": "BPZbvWzvoMTrpec4goCXlckLe2IhfthK"
+    },
+    {
+      "name": "pipewire",
+      "type": "app",
+      "default-channel": "latest/stable",
+      "id": "cXXVv4NGwXqlxTVSdrjsuvrPGAHfRSRs"
+    },
+    {
+      "name": "shriii-kiosk",
+      "type": "app",
+      "default-channel": "latest/stable",
+      "id": "${KIOSK_SNAP_ID}"
+    }
+  ],
+  "timestamp": "${MODEL_TIMESTAMP}"
+}

@@ -1,0 +1,13 @@
+# Staged / generated build inputs and snapcraft outputs (never committed)
+app/build/
+gadget/gadget.yaml
+gadget/parts/
+gadget/stage/
+gadget/prime/
+app/parts/
+app/stage/
+app/prime/
+*.snap
+*.assert
+*.img
+model/rendered/

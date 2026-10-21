@@ -1,0 +1,37 @@
+#!/bin/sh
+# Wait for Ubuntu Frame's Wayland socket and hand it to the confined app (after Canonical's
+# iot-example-graphical-snap wayland-launch, 24 series).
+set -e
+
+for PLUG in wayland opengl browser-support audio-playback; do
+  if ! snapctl is-connected "$PLUG"; then
+    echo "WARNING: $PLUG interface not connected (the kiosk gadget should auto-connect it)"
+  fi
+done
+
+wait_for() {
+  until
+    until
+      inotifywait --event create "$(dirname "$1")" &
+      inotify_pid=$!
+      [ -e "$1" ] || sleep 2 && [ -e "$1" ]
+    do
+      wait "${inotify_pid}"
+    done
+    kill "${inotify_pid}"
+    [ -O "$1" ]
+  do
+    sleep 1
+  done
+}
+
+real_xdg_runtime_dir=$(dirname "${XDG_RUNTIME_DIR}")
+export WAYLAND_DISPLAY="${real_xdg_runtime_dir}/${WAYLAND_DISPLAY:-wayland-0}"
+
+wait_for "${real_xdg_runtime_dir}"
+wait_for "${WAYLAND_DISPLAY}"
+
+mkdir -p "$XDG_RUNTIME_DIR" -m 700
+unset DISPLAY
+
+exec "$@"

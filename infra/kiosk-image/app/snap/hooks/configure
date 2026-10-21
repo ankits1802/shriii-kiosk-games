@@ -1,0 +1,46 @@
+#!/bin/sh
+# Validate snap options. Options:
+#   enrolment-bundle      base64 enrolment bundle (alternative to `shriii-provision push`); consumed and unset
+#   ca.root-fingerprint   SHA-256 of the SHRIII root CA pinned in the image (gadget default)
+#   netguard.enforce      true | false
+#   netguard.allow        "host:port,..."
+#   netguard.store-proxy  "host:port"
+set -eu
+
+fail() {
+  echo "$*" >&2
+  exit 1
+}
+
+enforce=$(snapctl get netguard.enforce)
+case "$enforce" in
+  "" | true | false) ;;
+  *) fail "netguard.enforce must be true or false" ;;
+esac
+
+for ep in $(snapctl get netguard.allow | tr ',' ' ') $(snapctl get netguard.store-proxy); do
+  echo "$ep" | grep -Eq '^[A-Za-z0-9.-]+:[0-9]{1,5}$' || fail "netguard endpoint '$ep' must be host:port"
+done
+
+fp=$(snapctl get ca.root-fingerprint)
+if [ -n "$fp" ]; then
+  echo "$fp" | tr -d ':' | grep -Eq '^[0-9A-Fa-f]{64}$' || fail "ca.root-fingerprint must be a SHA-256 hex digest"
+fi
+
+bundle=$(snapctl get enrolment-bundle)
+if [ -n "$bundle" ]; then
+  umask 077
+  mkdir -p "$SNAP_COMMON/provision"
+  tmp="$SNAP_COMMON/provision/.bundle.$$"
+  if ! echo "$bundle" | base64 -d >"$tmp" 2>/dev/null; then
+    rm -f "$tmp"
+    snapctl unset enrolment-bundle
+    fail "enrolment-bundle is not valid base64"
+  fi
+  mv -f "$tmp" "$SNAP_COMMON/provision/bundle.json"
+  # Never keep the device token in snapd's configuration state.
+  snapctl unset enrolment-bundle
+  snapctl restart "$SNAP_INSTANCE_NAME.enrol" || true
+fi
+
+snapctl restart "$SNAP_INSTANCE_NAME.netguard" 2>/dev/null || true

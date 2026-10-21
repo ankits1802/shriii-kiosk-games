@@ -1,0 +1,135 @@
+#!/bin/sh
+# First-boot enrolment (KSK-10, PRV-07). Consumes $SNAP_COMMON/provision/bundle.json written by
+# `shriii-provision push` (or `snap set shriii-kiosk enrolment-bundle=<base64>`), then:
+#   1. checks the bundle schema, expiry and the root CA fingerprint (bundle and image pin),
+#   2. generates the device key ON the device and gets a short-lived certificate from step-ca with the
+#      bundle's one-time token (the token binds the kiosk id and SANs),
+#   3. writes the device config the Electron runtime reads, the device token (0600) and the recipient keys,
+#   4. imports the certificate into the Chromium NSS DB, checks API health and sends a device heartbeat,
+#   5. finalises lockdown through snapd: SSH off, USB mass storage blacklisted on the kernel command line,
+#      bench system users removed, then reboots into the locked kiosk.
+# The same steps are implemented (and unit tested) in tools/provision (shriii-provision enrol/verify).
+set -eu
+# shellcheck source=../share/lib.sh
+. "$SNAP/share/lib.sh"
+
+SCHEMA="shriii.enrolment-bundle/v1"
+
+if [ ! -s "$BUNDLE_FILE" ]; then
+  if is_enrolled; then
+    log "device already enrolled and no new bundle; nothing to do"
+    exit 0
+  fi
+  log "waiting for an enrolment bundle at $BUNDLE_FILE"
+  wait_for_file "$BUNDLE_FILE"
+fi
+
+umask 077
+mkdir -p "$TLS_DIR" "$SHRIII_ROOT/secrets" "$PROVISION_DIR"
+chmod 700 "$SHRIII_ROOT/secrets" "$PROVISION_DIR"
+
+b() { json_get "$1" "$BUNDLE_FILE"; }
+
+[ "$(b .schema)" = "$SCHEMA" ] || die "bundle is not $SCHEMA"
+expires=$(date -d "$(b .expires_at)" +%s) || die "bundle expires_at unreadable"
+[ "$(date +%s)" -lt "$expires" ] || die "bundle expired at $(b .expires_at); re-run shriii-provision register --rotate-existing"
+
+KIOSK_ID=$(b .kiosk_id)
+case "$KIOSK_ID" in
+  *[!a-z0-9-]* | -* | "") die "invalid kiosk id in bundle" ;;
+esac
+API_ORIGIN=$(b .api_origin)
+case "$API_ORIGIN" in
+  https://*) ;;
+  *) die "api_origin must be https" ;;
+esac
+CA_URL=$(b .ca.url)
+OTT=$(b .ca.ott)
+
+# ---- root CA: bundle fingerprint and the image pin (gadget default ca.root-fingerprint) must agree
+tmp_root="$(mktemp "$TLS_DIR/.root.XXXXXX")"
+b .ca.root_pem >"$tmp_root"
+fp=$(step certificate fingerprint "$tmp_root" | tr 'A-F' 'a-f' | tr -d ':')
+[ "$fp" = "$(b .ca.root_fingerprint)" ] || { rm -f "$tmp_root"; die "bundle root CA does not match its fingerprint"; }
+pinned=$(snapctl get ca.root-fingerprint 2>/dev/null | tr 'A-F' 'a-f' | tr -d ':' || true)
+if [ -n "$pinned" ] && [ "$pinned" != "$fp" ]; then
+  rm -f "$tmp_root"
+  die "bundle root CA does not match the root pinned in the image"
+fi
+mv -f "$tmp_root" "$ROOT_FILE"
+chmod 644 "$ROOT_FILE"
+
+# ---- device key + certificate (key never leaves the device; disk is TPM-backed FDE)
+log "requesting certificate for $KIOSK_ID from $CA_URL"
+step ca certificate "$KIOSK_ID" "$CERT_FILE.new" "$KEY_FILE.new" \
+  --token "$OTT" --ca-url "$CA_URL" --root "$ROOT_FILE" \
+  --kty EC --curve P-256 --force >/dev/null
+step certificate verify "$CERT_FILE.new" --roots "$ROOT_FILE" >/dev/null || die "issued certificate does not chain to the root"
+chmod 600 "$KEY_FILE.new"
+mv -f "$KEY_FILE.new" "$KEY_FILE"
+mv -f "$CERT_FILE.new" "$CERT_FILE"
+cp -f "$CERT_FILE" "$CHAIN_FILE"   # step writes leaf + intermediate; chain.crt is the same bundle
+serial=$(step certificate inspect "$CERT_FILE" --format json | jq -r '.serial_number')
+not_after=$(step certificate inspect "$CERT_FILE" --format json | jq -r '.validity.end')
+
+# ---- secrets and config
+printf '%s\n' "$(b .device_token)" >"$TOKEN_FILE.new" && chmod 600 "$TOKEN_FILE.new" && mv -f "$TOKEN_FILE.new" "$TOKEN_FILE"
+jq '.recipient_keys' "$BUNDLE_FILE" >"$RECIPIENT_KEYS_FILE"
+chmod 644 "$RECIPIENT_KEYS_FILE"
+jq --arg serial "$serial" --arg not_after "$not_after" --arg now "$(date -u +%Y-%m-%dT%H:%M:%SZ)" --arg fp "$fp" '{
+    kiosk_id, site_id, site_mode, study_id, deployment_id, policy_version, app_version, ring, api_origin,
+    ca_url: .ca.url, ca_root_fingerprint: $fp, certificate_serial: $serial, certificate_not_after: $not_after,
+    provisioned_at: $now, provisioned_by_tool: "shriii-kiosk.enrol"
+  }' "$BUNDLE_FILE" >"$DEVICE_RECORD_FILE"
+chmod 644 "$DEVICE_RECORD_FILE"
+
+nss_import_device_cert
+
+# ---- health: API liveness, mTLS handshake, device-token heartbeat
+curl -fsS --max-time 15 "$API_ORIGIN/healthz" | jq -e '.status == "ok"' >/dev/null || die "API $API_ORIGIN/healthz failed"
+if ! curl -fsS --max-time 15 --cert "$CHAIN_FILE" --key "$KEY_FILE" "$API_ORIGIN/healthz" >/dev/null; then
+  log "WARNING: mTLS probe failed (edge may not enforce client certificates yet)"
+fi
+hb=$(curl -fsS --max-time 15 -X POST -H 'Content-Type: application/json' \
+  -H "Authorization: Bearer $(cat "$TOKEN_FILE")" \
+  -d '{"app_version": null, "payload": {"provisioning_check": true}}' \
+  "$API_ORIGIN/api/v1/admin/kiosks/heartbeat") || die "device heartbeat rejected"
+[ "$(echo "$hb" | jq -r .kiosk_id)" = "$KIOSK_ID" ] || die "heartbeat answered for a different kiosk"
+
+# ---- config last: its presence starts the kiosk app
+jq --arg keys "$RECIPIENT_KEYS_FILE" '{
+    kioskId: .kiosk_id, apiOrigin: .api_origin, recipientKeysPath: $keys,
+    printer: (.config.printer // {kind: "device", path: "/dev/usb/lp0"}), update: (.config.update // {})
+  }' "$BUNDLE_FILE" >"$CONFIG_FILE.new"
+chmod 644 "$CONFIG_FILE.new"
+mv -f "$CONFIG_FILE.new" "$CONFIG_FILE"
+
+lockdown=$(jq -c '.lockdown // {}' "$BUNDLE_FILE")
+shred -u "$BUNDLE_FILE" 2>/dev/null || rm -f "$BUNDLE_FILE"
+date -u +%Y-%m-%dT%H:%M:%SZ >"$PROVISION_DIR/enrolled-at"
+log "enrolled $KIOSK_ID (certificate $serial, valid until $not_after)"
+
+# ---- finalise lockdown (KSK-09)
+conf='{}'
+if [ "$(echo "$lockdown" | jq -r '.disable_ssh // true')" = "true" ]; then
+  conf=$(echo "$conf" | jq -c '. + {"service.ssh.disable": true}')
+fi
+if [ "$(echo "$lockdown" | jq -r '.blacklist_usb_storage // true')" = "true" ]; then
+  conf=$(echo "$conf" | jq -c '. + {"system.kernel.cmdline-append": "modprobe.blacklist=usb_storage,uas"}')
+fi
+if [ "$conf" != '{}' ]; then
+  change=$(snapd_api PUT /v2/snaps/system/conf "$conf" | jq -r '.change')
+  snapd_wait_change "$change" || die "snapd rejected lockdown settings $conf"
+fi
+if [ "$(echo "$lockdown" | jq -r '.remove_system_users // true')" = "true" ]; then
+  for user in $(snapd_api GET /v2/users | jq -r '.result[]?.username'); do
+    log "removing bench user $user"
+    snapd_api POST /v2/users "{\"action\": \"remove\", \"username\": \"$user\"}" >/dev/null || log "WARNING: could not remove $user"
+  done
+fi
+
+snapctl restart "$SNAP_INSTANCE_NAME.netguard" || true
+snapctl restart "$SNAP_INSTANCE_NAME.cert-renew" || true
+log "rebooting into the locked kiosk"
+snapd_api POST /v2/systems '{"action": "reboot", "mode": "run"}' >/dev/null || log "WARNING: reboot request failed; kiosk will start without reboot"
+snapctl restart "$SNAP_INSTANCE_NAME.kiosk" || true
