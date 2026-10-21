@@ -1,0 +1,8 @@
+# Standalone pnpm project. This file makes tools/timing-calibration/web its own workspace root, so it is
+# not a member of the repository workspace and keeps its own lockfile (run `pnpm install` from this
+# directory). The page runs on the kiosk under test, outside the product build.
+packages: []
+minimumReleaseAgeExclude:
+  - vite@8.3.5
+allowBuilds:
+  esbuild: true

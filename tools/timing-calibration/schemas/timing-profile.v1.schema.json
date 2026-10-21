@@ -1,0 +1,191 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://shriii.local/tools/timing-calibration/timing-profile.v1.schema.json",
+  "title": "TimingProfile",
+  "description": "Per-SKU timing profile (ENG-02). timing_profile_version is the value kiosks write into versions.timing_profile_version of every event (contracts event-envelope.v1, common identifier pattern). Offsets are applied by the ENG-01 timing service: presented_onset += visual.offset_ms, audio_onset/prompt_audio_end += audio.offset_ms, PointerEvent.timeStamp -= touch.offset_ms.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "timing_profile_version",
+    "certified",
+    "hardware_sku",
+    "device_fingerprint",
+    "fingerprint_sha256",
+    "data_sha256",
+    "thresholds_sha256",
+    "tool_version",
+    "created_at",
+    "inputs",
+    "visual",
+    "touch",
+    "audio",
+    "frames",
+    "acceptance"
+  ],
+  "properties": {
+    "schema": { "const": "shriii.timing-profile/1" },
+    "timing_profile_version": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9_.:-]{0,127}$"
+    },
+    "certified": { "type": "boolean" },
+    "hardware_sku": { "type": "string" },
+    "device_fingerprint": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "hardware_sku",
+        "os_build",
+        "firmware",
+        "shell",
+        "refresh_hz_nominal",
+        "audio_output_device"
+      ],
+      "properties": {
+        "hardware_sku": { "type": "string" },
+        "os_build": { "type": "string" },
+        "firmware": { "type": "string" },
+        "shell": { "type": "string" },
+        "refresh_hz_nominal": { "type": ["number", "null"] },
+        "audio_output_device": { "type": "string" }
+      }
+    },
+    "fingerprint_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "data_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "thresholds_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "tool_version": { "type": "string" },
+    "created_at": { "type": "string" },
+    "inputs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["kind", "name", "sha256"],
+        "properties": {
+          "kind": { "type": "string" },
+          "name": { "type": "string" },
+          "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+        }
+      }
+    },
+    "visual": { "$ref": "#/$defs/channel_or_null" },
+    "touch": { "$ref": "#/$defs/channel_or_null" },
+    "audio": { "$ref": "#/$defs/channel_or_null" },
+    "frames": {
+      "oneOf": [
+        { "type": "null" },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "refresh_hz",
+            "period_ms",
+            "n_frames",
+            "interval_mean_ms",
+            "interval_sd_ms",
+            "interval_p99_ms",
+            "dropped_frames",
+            "dropped_rate",
+            "long_frames"
+          ],
+          "properties": {
+            "refresh_hz": { "type": "number" },
+            "period_ms": { "type": "number" },
+            "n_frames": { "type": "integer" },
+            "interval_mean_ms": { "type": "number" },
+            "interval_sd_ms": { "type": "number" },
+            "interval_p99_ms": { "type": "number" },
+            "dropped_frames": { "type": "integer" },
+            "dropped_rate": { "type": "number" },
+            "long_frames": { "type": "integer" }
+          }
+        }
+      ]
+    },
+    "acceptance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["passed", "checks"],
+      "properties": {
+        "passed": { "type": "boolean" },
+        "checks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "value", "op", "threshold", "passed"],
+            "properties": {
+              "id": { "type": "string" },
+              "value": { "type": ["number", "boolean", "null"] },
+              "op": { "enum": ["<=", ">=", "=="] },
+              "threshold": { "type": ["number", "boolean"] },
+              "passed": { "type": "boolean" }
+            }
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "channel_or_null": {
+      "oneOf": [{ "type": "null" }, { "$ref": "#/$defs/channel" }]
+    },
+    "channel": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "method",
+        "anchored",
+        "n_reference",
+        "n_matched",
+        "missed_rate",
+        "spurious_rate",
+        "offset_ms",
+        "offset_ci95_ms",
+        "sd_ms",
+        "sd_ci95_ms",
+        "sd_frames",
+        "p99_abs_residual_ms",
+        "drift_ppm",
+        "sync_uncertainty_ms",
+        "confidence"
+      ],
+      "properties": {
+        "method": {
+          "enum": [
+            "photodiode",
+            "solenoid_tapper",
+            "high_speed_camera",
+            "audio_loopback",
+            "audio_rig"
+          ]
+        },
+        "anchored": { "type": "boolean" },
+        "n_reference": { "type": "integer" },
+        "n_matched": { "type": "integer" },
+        "missed_rate": { "type": "number" },
+        "spurious_rate": { "type": "number" },
+        "offset_ms": { "type": ["number", "null"] },
+        "offset_ci95_ms": {
+          "oneOf": [
+            { "type": "null" },
+            { "type": "array", "items": { "type": "number" }, "minItems": 2, "maxItems": 2 }
+          ]
+        },
+        "sd_ms": { "type": ["number", "null"] },
+        "sd_ci95_ms": {
+          "oneOf": [
+            { "type": "null" },
+            { "type": "array", "items": { "type": "number" }, "minItems": 2, "maxItems": 2 }
+          ]
+        },
+        "sd_frames": { "type": ["number", "null"] },
+        "p99_abs_residual_ms": { "type": ["number", "null"] },
+        "drift_ppm": { "type": ["number", "null"] },
+        "sync_uncertainty_ms": { "type": ["number", "null"] },
+        "confidence": { "enum": ["high", "medium", "low", "none"] }
+      }
+    }
+  }
+}
