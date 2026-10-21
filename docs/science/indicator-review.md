@@ -18,7 +18,7 @@ construct the estimate correlates with most, which shows contamination.
 |---|---|---|---|
 | Composure accuracy slope | The linear-probability mixed model (LPM) had no trial-type term, so near-ceiling go trials diluted the slope and the slope tracked RT-tail variability | Laplace logistic mixed model (`stats/scoring/src/shriii_scoring/glmm.py`) with trial type as a fixed effect is now the default (`models.binary_outcome_model: logistic_glmm`) | B: r latent .30 → .47 (n = 200). Contamination by response consistency .50 → .30. See §2 |
 | Stability shift slopes | Model rel 0–.45, r latent ≤ .30 (B) and ≈ 0 (A) | Early-window contrast option (`models.shift_window_trials`, default unchanged). Longer blocks quantified | No estimator rescues them. The simulator plants little stability signal, and shift performance is dominated by adaptability and emotional regulation. See §3 |
-| Effort discounting log k (B) | Model rel .05: 4 fixed offers, about 47% of players choose "hard" every time | Simulator supports a titrated (adjusting-amount) schedule; design study across 7 schedules | 8 titrated or wide-grid choices bring parallel rel from ≈ .39 to ≈ .65 (+20 s). See §4 |
+| Effort discounting log k (B) | Model rel .05–.20: 4 fixed offers, about 46% of players choose "hard" every time | Simulator supports a titrated (adjusting-amount) schedule; design study across 7 schedules | An 8-trial staircase brings parallel rel from .38 to .64 and r with true log k from .59 to .81 (+20 s). See §4 |
 | Never-scorable indicators | 5 indicators (7 pathway entries) never produced a value | 4 fixed by event mapping or minimum; 2 marked `not_scorable_v1` | See §5 |
 | EZ-diffusion drift (no-go) | r latent .48 against parallel rel .83; correlates .73 with response consistency | Reported only | See §6 |
 
@@ -58,6 +58,12 @@ plan criterion `r ≥ √rel − .05`, because each pressure block has only 11 n
 trials around the timed rush, and recovery stays near zero under every estimator (r ≤ .06). VAL-02 gives the trial
 counts that would be needed.
 
+**Full-size check** (VAL-02, n = 500, three B slot forms pooled). B: GLMM r .48 / parallel rel .31 / model rel .21,
+strongest other latent stability (.26); LPM + trial type .41 / .58 / .41 with response consistency at .44. The
+ordering is unchanged. A: no variant recovers composure (r −.10 to .08), and the GLMM's parallel reliability is
+negative (−.39) because with 6 + 5 no-go trials most person slopes sit at the boundary of the logit scale. VAL-02
+classes the A accuracy slope as `no_reliable_signal`.
+
 **Recommendation.** Keep the GLMM. Report the A accuracy slope as `research_only` unless the Stall adds no-go trials
 around the rush (proposal in VAL-02 §5). Keep composure gating on the RT slope, which recovers well (B r .75, A .70).
 
@@ -70,8 +76,8 @@ around the rush (proposal in VAL-02 §5). Keep composure gating on the RT slope,
 adaptability), `gng.commission_pressure_stability` (.15), `weighing.compliance_stability` (.25 against .8 for
 adaptability), and the Road Home reversal perseveration (.3 against 1.1). Post-shift performance is therefore mainly
 adaptability (rule shifts) or emotional regulation (rude customers). A shift slope that is reliable in a parallel-form
-sense still measures those constructs. The rude-run slope, now scorable (§5), has parallel rel .62 but r latent .06,
-and its strongest other latent is emotional regulation (.6+).
+sense still measures those constructs. The rude-run slope, now scorable (§5), has parallel rel .60 but r latent .17
+(VAL-02 full size), and its strongest other latent is emotional regulation (.71).
 
 **Estimators compared** (n = 150 per condition; the full-size comparison is in the VAL-02 artifacts):
 
@@ -105,30 +111,32 @@ slopes.
 
 **Problem.** Wait-or-Now offers 2 coins with no hold against 5, 6, 8 or 10 coins with a 2.5 s hold, always in that
 order. With the simulator's population of log k (−1 ± 0.7) the value of the hard option exceeds 2 coins for most
-people at every offer. About 47% of players choose "hard" four times, which bounds log k on one side only, so the
-estimate collapses onto the empirical-Bayes prior. The model-based reliability is .05–.16.
+people at every offer. About 46% of players choose "hard" four times, which bounds log k on one side only, so the
+estimate collapses onto the empirical-Bayes prior. The model-based reliability is .05–.20.
 
 **Design study** (`stats/simulator/src/shriii_simulator/discounting_design.py`; same chooser as the simulator and the
-engine's estimator `fit_discounting_eb`; n = 300, two parallel occasions; staircase step halved every trial in this
-local run):
+engine's estimator `fit_discounting_eb`; full-size artifact `val02-effort-designs`, n = 400, two parallel occasions;
+the staircase halves its step only at reversals, so it can reach the whole 2.5–12 coin range):
 
 | Design | Choices | r(est, true log k) | Parallel rel | Model rel | All hard |
 |---|---|---|---|---|---|
-| fixed4_v0 (5, 6, 8, 10) | 4 | .60 | .39 | .16 | 47% |
-| fixed8_wide (2.5 … 12) | 8 | .80 | .64 | .52 | 4% |
-| titrated4 (start 6, step 2) | 4 | .74 | .50 | .12 | 4% |
-| titrated6 | 6 | .76 | .57 | .32 | 2% |
-| titrated8 | 8 | .79 | .66 | .41 | 0% |
-| titrated8, two staircases (3.5 / 9) | 8 | .80 | .62 | .48 | 2% |
-| titrated12, two staircases | 12 | .82 | .72 | .60 | 1% |
+| fixed4_v0 (5, 6, 8, 10) | 4 | .59 | .38 | .20 | 46% |
+| fixed8_wide (2.5 … 12) | 8 | .76 | .57 | .51 | 3% |
+| titrated4 (start 6, step 2) | 4 | .60 | .45 | .06 | 2% |
+| titrated6 | 6 | .68 | .52 | .13 | 1% |
+| titrated8 | 8 | .81 | .64 | .43 | 0% |
+| titrated8, two staircases (3.5 / 9) | 8 | .77 | .58 | .51 | 3% |
+| titrated12, two staircases | 12 | .84 | .71 | .60 | 0% |
 
-The staircase now halves its step only at reversals, so it can reach the whole 2.5–12 coin range. The full-size
-artifact (`val02-effort-designs`) holds the definitive numbers for that rule.
+A titrated staircase's model reliability is lower than its parallel reliability because the offers converge on
+each person's indifference point, where single choices are close to coin flips; the parallel-form number is the
+one that matters for ranking people. (An earlier local run, n = 300 with the step halved every trial, gave
+somewhat higher numbers for the short staircases; the table above supersedes it.)
 
 **Recommendation for the Wait-or-Now owners.** Replace the four fixed offers with an **8-trial adjusting-amount
 staircase on the hard amount** (2.5–12 coins, start 6, step 2, step halved on reversal), or two interleaved 4-trial
 staircases starting at 3.5 and 9. Cost: +4 effort trials × 5.0 s (L2 median) ≈ **+20 s**. Even at 4 trials,
-titration alone removes the ceiling (r .60 → .74, parallel rel .39 → .50) at no time cost. The simulator implements
+titration alone removes the ceiling (all-hard 46% → 2%, parallel rel .38 → .45) at no time cost. The simulator implements
 the schedule (`design.wait_or_now.effort_design: titrated`). The engine's estimator works with any schedule because
 it reads the offers from the trial parameters.
 
@@ -164,7 +172,7 @@ The trial-budget waiver for `choice_consistency` is still needed, because the sh
 
 ```bash
 uv run pytest stats/scoring/tests/test_glmm.py stats/simulator/tests/test_val02.py   # fast checks
-SHRIII_RUN_SLOW=1 uv run pytest stats/simulator/tests/test_recovery.py              # n = 400 recovery
+SHRIII_RUN_SLOW=1 uv run pytest stats/simulator/tests/test_recovery.py              # n = 800 recovery
 uv run python -m shriii_simulator.val02 --profile local                             # smoke-size study (~10 min)
 ```
 

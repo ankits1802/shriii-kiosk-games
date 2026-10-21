@@ -1,6 +1,6 @@
 """Parameter recovery: the scoring + validation pipeline recovers planted parameters (QA-02, plan section 9.2).
 
-Heavy runs (400 persons x 2 parallel occasions per pathway) are marked slow. Recovery shows that the
+Heavy runs (RECOVERY_N persons x 2 parallel occasions per pathway) are marked slow. Recovery shows that the
 pipeline is internally correct; it is not evidence that the games measure the traits.
 """
 
@@ -18,6 +18,17 @@ from shriii_simulator.criterion import simulate_criterion
 from shriii_simulator.recovery import RecoveryReport, run_recovery
 from shriii_simulator.session import simulate_study
 from shriii_validation.validity import evaluate_hypotheses
+
+#: Persons per pathway in the slow recovery runs. The criterion r >= sqrt(rel) - .05 compares two sample
+#: correlations; at n = 400 the standard error of their difference (~.03) is close to the .05 tolerance, so
+#: discrete indicators with few units (3 maps, 5 optional actions) whose population gap is about -.01 failed
+#: on sampling noise alone (VAL-02 at n = 500: all core indicators pass with >= .02 margin). n = 800 halves
+#: the sampling variance; the criterion itself is unchanged.
+RECOVERY_N = 800
+
+#: Smoke-run size: risk_preference.adjusted_pumps needs 10 unexploded balloons, which about 20% of simulated
+#: sessions miss, so at n = 40 the paired count sat exactly at min_n = 30 and fell below it on some platforms.
+SMOKE_N = 60
 
 #: Indicators whose simulated true score is dominated by one planted latent: the plan criterion
 #: r(estimate, latent) >= sqrt(parallel-form reliability) - .05 is asserted for these.
@@ -101,7 +112,7 @@ def _check_directional(report: RecoveryReport) -> None:
 
 
 def test_fast_recovery_smoke() -> None:
-    report = run_recovery(40, "B", seed=21, min_n=30)
+    report = run_recovery(SMOKE_N, "B", seed=21, min_n=30)
     by = report.by_id()
     for ind in (
         "self_control.nogo_commission_rate",
@@ -114,12 +125,12 @@ def test_fast_recovery_smoke() -> None:
 
 @pytest.fixture(scope="module")
 def report_b() -> RecoveryReport:
-    return run_recovery(400, "B", seed=11)
+    return run_recovery(RECOVERY_N, "B", seed=11)
 
 
 @pytest.fixture(scope="module")
 def report_a() -> RecoveryReport:
-    return run_recovery(400, "A", seed=11)
+    return run_recovery(RECOVERY_N, "A", seed=11)
 
 
 @pytest.mark.slow

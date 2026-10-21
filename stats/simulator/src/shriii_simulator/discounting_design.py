@@ -20,6 +20,7 @@ pipeline, so a full design grid runs in seconds.
 from __future__ import annotations
 
 import math
+import zlib
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from typing import Any
@@ -140,7 +141,8 @@ def run_design_study(
     beta = prm.f(d + "beta")
     out: list[DesignResult] = []
     for design in designs:
-        drng = np.random.default_rng([seed, abs(hash(design.name)) % (2**32)])
+        # crc32, not hash(): str hashes are salted per process (PYTHONHASHSEED), which made runs irreproducible.
+        drng = np.random.default_rng([seed, zlib.crc32(design.name.encode())])
         est: dict[int, dict[str, float]] = {}
         rel_model: float | None = None
         all_hard = all_easy = 0
