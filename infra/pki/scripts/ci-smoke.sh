@@ -103,8 +103,16 @@ if prov renew --root "$work/device"; then
 fi
 sleep 2
 curl -fsS --cacert "$ROOT" "$CA_URL/1.0/crl" -o "$work/crl.der"
-hex=$(python3 -c "import sys; print(format(int(sys.argv[1]), 'X'))" "$after")
-openssl crl -inform DER -in "$work/crl.der" -noout -text | tr -d ' :' | grep -qi "SerialNumber$hex\|^$hex" || {
-  openssl crl -inform DER -in "$work/crl.der" -noout -text; echo "serial $hex not on the CRL"; exit 1; }
+# Compare serials as integers (openssl pads hex serials with a leading 00 when the high bit is set).
+uv run --project "$repo/tools/provision" python - "$work/crl.der" "$after" <<'EOF' || {
+import sys
+from cryptography import x509
+
+crl = x509.load_der_x509_crl(open(sys.argv[1], "rb").read())
+serials = {r.serial_number for r in crl}
+print(f"CRL: {len(serials)} revoked serial(s), next update {crl.next_update_utc}")
+sys.exit(0 if int(sys.argv[2]) in serials else 1)
+EOF
+  openssl crl -inform DER -in "$work/crl.der" -noout -text; echo "serial $after not on the CRL"; exit 1; }
 echo "ok: revoked certificate cannot renew and is on the CRL"
 echo "PKI smoke passed"
