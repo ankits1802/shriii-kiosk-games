@@ -1,0 +1,31 @@
+# Kiosk offline outbox policy (KSK-07). Operational thresholds live here, never in code.
+# A site policy file (PRV-01) may override any key; the loader validates ranges.
+schema_version: "1.0"
+
+capacity:
+  # The kiosk must hold this many days of unsynced sessions before it stops starting new ones.
+  design_days: 30
+  # Planning assumptions used to size the quota when max_db_bytes is null.
+  expected_sessions_per_day: 80
+  expected_bytes_per_session: 600000   # ~1,200 events x ~500 B stored (ciphertext + overhead)
+  headroom_factor: 1.5
+  # Hard ceiling on stored event bytes; null derives it from the assumptions above.
+  max_db_bytes: null
+  # Minimum free disk space to keep; new sessions stop below it.
+  min_free_disk_bytes: 1073741824     # 1 GiB
+  # Warn (heartbeat) when usage passes this fraction of the quota.
+  warn_fraction: 0.8
+
+alerts:
+  # Heartbeat alert when the oldest unsynced consented event is older than this.
+  unsynced_age_days: 7
+
+upload:
+  max_events_per_batch: 500
+  max_batch_bytes: 262144              # 256 kB of event JSON before gzip
+  # Acknowledged rows are deleted after this grace period.
+  ack_grace_hours: 24
+
+retention:
+  # Sessions that never reached consent are purged when closed, abandoned, or older than this.
+  unconsented_max_age_hours: 2

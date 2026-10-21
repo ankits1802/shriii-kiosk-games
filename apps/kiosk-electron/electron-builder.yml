@@ -1,0 +1,98 @@
+# electron-builder configuration for the SHRIII kiosk runtime.
+#   Linux (field):   snap (Ubuntu Core 24, strict confinement) and AppImage
+#   Windows (dev):   unpacked dir (no installer, unsigned)
+# Code signing is out of scope for this build; the snap is signed by the store on upload (KSK-09).
+appId: org.shriii.kiosk
+productName: SHRIII Kiosk
+copyright: Copyright © 2026 SHRIII
+directories:
+  output: release
+  buildResources: build-resources
+files:
+  - dist/main/**
+  - dist/preload/**
+  - dist/build-info.json
+  - package.json
+  - "!**/*.map"
+# Renderer, shell pages and policy live outside the asar so the app:// handler can serve them
+# with plain fs (and operators can verify their hashes on disk).
+extraResources:
+  - from: dist/renderer
+    to: renderer
+  - from: dist/static
+    to: static
+  - from: dist/config
+    to: config
+asar: true
+# Electron fuses (flipped in the packaged binary): the kiosk binary cannot be repurposed as a
+# Node runtime (ELECTRON_RUN_AS_NODE), take NODE_OPTIONS or --inspect from the environment, load
+# app code from anywhere but the (integrity-checked) app.asar, or grant file:// extra privileges.
+electronFuses:
+  runAsNode: false
+  enableCookieEncryption: true
+  enableNodeOptionsEnvironmentVariable: false
+  enableNodeCliInspectArguments: false
+  enableEmbeddedAsarIntegrityValidation: true
+  onlyLoadAppFromAsar: true
+  grantFileProtocolExtraPrivileges: false
+# No native modules: the outbox uses Node's built-in node:sqlite.
+npmRebuild: false
+nodeGypRebuild: false
+buildDependenciesFromSource: false
+electronLanguages: [en-US, hi, mr, ta]
+# The workspace package name (@shriii/kiosk-electron) is not a valid snap / desktop id.
+extraMetadata:
+  name: shriii-kiosk
+  main: dist/main/index.js
+  desktopName: shriii-kiosk.desktop
+
+linux:
+  target:
+    - snap
+    - AppImage
+  category: Education
+  executableName: shriii-kiosk
+  syncDesktopName: true
+  synopsis: SHRIII behavioural games kiosk
+  description: Offline-first, touch-only behavioural games kiosk runtime.
+  maintainer: SHRIII Engineering <engineering@shriii.local>
+
+snap:
+  base: core24
+  grade: stable
+  confinement: strict
+  summary: SHRIII behavioural games kiosk
+  # core24 needs a real snapcraft build (Linux CI with snapcraft + LXD/multipass, or
+  # --destructive-mode on Ubuntu 24.04). electron-builder's prebuilt template app targets 18.04
+  # (gnome-3-28-1804) and must not be mixed with core24.
+  useTemplateApp: false
+  # Runs under Ubuntu Frame (wayland) on the locked-down Ubuntu Core image (KSK-09).
+  allowNativeWayland: true
+  plugs:
+    - browser-support
+    - wayland
+    - opengl
+    - audio-playback
+    - network
+    - raw-usb
+    - serial-port
+    - hardware-observe
+  environment:
+    SHRIII_KIOSK_SNAP: "1"
+  autoStart: false
+  artifactName: shriii-kiosk_${version}_${arch}.${ext}
+
+appImage:
+  artifactName: ${productName}-${version}-${arch}.AppImage
+
+win:
+  target:
+    - dir
+  signAndEditExecutable: false
+
+# Update feeds: one generic feed per ring (lab, canary, ring10, stable); the runtime switches
+# the URL per kiosk (main/updater.ts) and requires a signed release manifest before downloading.
+publish:
+  - provider: generic
+    url: https://updates.shriii.local/kiosk/stable
+    channel: latest

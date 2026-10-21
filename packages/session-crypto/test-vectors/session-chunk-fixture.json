@@ -1,0 +1,59 @@
+{
+  "description": "Cross-language fixture: sealed by @shriii/session-crypto (TS), opened by the Python reference.",
+  "recipients": [
+    {
+      "kid": "backend-2026-10",
+      "private_key_hex": "91e2dd577c3ed6d08ef5432abb9589d4e81fca0942a4decd4c29458124830733",
+      "public_key_hex": "1a239249ea74403babc01f32df9931a16f71ac8972c461d69fed15640e310639"
+    },
+    {
+      "kid": "backend-2027-01",
+      "private_key_hex": "e27332361573d4ddbae5f96f3560d118bf433f068b515aabaad164fa128ad25c",
+      "public_key_hex": "e3b9708aaa21a7f1e62a95ee28d1e5d60b0fceed6c68599013a54b318e9e0b15"
+    }
+  ],
+  "dek_hex": "987eebff60d2bc9f2259cda242cc2587bf01fdf1fbae3187f57625180bb7c899",
+  "chunk": {
+    "encryption": "x25519_sealed_aes256gcm",
+    "session_id": "01928c6e-7d3a-7b2c-8f00-1234567890ab",
+    "sealed_dek": "AQAgAAEAAg9iYWNrZW5kLTIwMjYtMTCgRYi3RoMzT252cNtFzKEoj8LBSZ14cV2UVvXZkmGoIydDlJ3F9HVeYU+yNlD2GpscyhZvfCb3dkgCmPkOq4s5aLqI5UTLoyJYYMB81H44aw==",
+    "nonce": "9ySW1hvjFyUuYD9u",
+    "ciphertext": "GQUs17jykfRsr5KgB6K5nknogLF2X/qD4MAkHp6apMfNirTnkMKjI0FXCobIG2Mi5QJtkgSHWHETAUTErjym8lQnJ+/p4ahun+jUSfo9O3r+SbqjBWTU5LlqE3AY3LimoJ5bMv4OAOL2G+0RryuULnbvF02CXF053af7tVLFDLQpF0DAhWfA8wksqQjhdsaPkE+LI1pVm8f8bOe6ewreUxSckudXmKQCi8VW7s0AU3eL+mcDfniVTLT3JwXDT4tGuLDuAeTYepKPaj+M/70ITVnesxYgBZ+y0e4jharbGjMuNPyNb9xeULq53hnvurXeiSJt3Hss+QAjeVlf5Zx7Fw==",
+    "first_seq": 0,
+    "last_seq": 2,
+    "event_count": 3
+  },
+  "events": [
+    {
+      "event_id": "01928c6e-7d3a-7b2c-8f00-000000000000",
+      "session_id": "01928c6e-7d3a-7b2c-8f00-1234567890ab",
+      "seq": 0,
+      "event_type": "session.state_changed",
+      "payload": {
+        "to": "state_0"
+      },
+      "note": "Unicode check: नमस्ते"
+    },
+    {
+      "event_id": "01928c6e-7d3a-7b2c-8f00-000000000001",
+      "session_id": "01928c6e-7d3a-7b2c-8f00-1234567890ab",
+      "seq": 1,
+      "event_type": "consent.granted",
+      "payload": {
+        "consent_kind": "core",
+        "tap_confirmed": true
+      },
+      "note": "Unicode check: नमस्ते"
+    },
+    {
+      "event_id": "01928c6e-7d3a-7b2c-8f00-000000000002",
+      "session_id": "01928c6e-7d3a-7b2c-8f00-1234567890ab",
+      "seq": 2,
+      "event_type": "session.state_changed",
+      "payload": {
+        "to": "state_2"
+      },
+      "note": "Unicode check: नमस्ते"
+    }
+  ]
+}

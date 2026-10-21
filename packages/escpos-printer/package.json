@@ -1,0 +1,30 @@
+{
+  "name": "@shriii/escpos-printer",
+  "version": "0.1.0",
+  "private": true,
+  "description": "80 mm ESC/POS raster printing for the kiosk picture report: dithering, GS v 0 bands, raster QR, status handling, USB/serial/network transports, virtual PNG printer",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc --noEmit -p tsconfig.json",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run",
+    "lint": "biome check ."
+  },
+  "dependencies": {
+    "qrcode": "1.5.4"
+  },
+  "devDependencies": {
+    "@types/node": "^24.19.2",
+    "@types/qrcode": "1.5.6",
+    "jsqr": "1.4.0",
+    "typescript": "7.0.2",
+    "vitest": "5.0.5"
+  }
+}
