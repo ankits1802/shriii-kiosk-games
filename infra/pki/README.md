@@ -6,7 +6,7 @@ can be revoked.
 
 | Path | What it is |
 |---|---|
-| `step-ca/ca.json.tmpl` | step-ca configuration: lifetimes, the `kiosk-enrolment` JWK provisioner, CRL, X.509 name policy, TLS |
+| `step-ca/ca.json.tmpl` | step-ca configuration: lifetimes, the `kiosk-enrolment` JWK provisioner, CRL, TLS (names are constrained by the device template and the issuing CA's name constraints) |
 | `step-ca/templates/device-leaf.tpl` | device certificate template. The identity comes only from the token subject. Client auth only. |
 | `step-ca/templates/intermediate-ca.tpl` | issuing-CA template, name-constrained to kiosk identities and the CA's own TLS name |
 | `scripts/render-ca.sh` | renders the templates into a step-ca directory (file key, or AWS KMS in production) |

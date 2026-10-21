@@ -1,4 +1,4 @@
-# shellcheck shell=sh
+# shellcheck shell=sh disable=SC2034
 # Shared helpers for the shriii-kiosk snap scripts. Sourced, never executed.
 #
 # Device root: $SNAP_COMMON (survives refreshes and reverts; the outbox must never roll back with a revert).

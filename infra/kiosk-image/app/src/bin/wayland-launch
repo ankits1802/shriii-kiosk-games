@@ -31,7 +31,8 @@ export WAYLAND_DISPLAY="${real_xdg_runtime_dir}/${WAYLAND_DISPLAY:-wayland-0}"
 wait_for "${real_xdg_runtime_dir}"
 wait_for "${WAYLAND_DISPLAY}"
 
-mkdir -p "$XDG_RUNTIME_DIR" -m 700
+mkdir -p "$XDG_RUNTIME_DIR"
+chmod 700 "$XDG_RUNTIME_DIR"
 unset DISPLAY
 
 exec "$@"

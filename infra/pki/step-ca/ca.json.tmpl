@@ -27,16 +27,6 @@
       "disableRenewal": false,
       "allowRenewalAfterExpiry": false
     },
-    "policy": {
-      "x509": {
-        "allow": {
-          "dns": ["*.kiosk.${DEVICE_DOMAIN}"],
-          "uri": ["${DEVICE_DOMAIN}"],
-          "cn": ["*"]
-        },
-        "allowWildcardNames": false
-      }
-    },
     "provisioners": [
       {
         "type": "JWK",

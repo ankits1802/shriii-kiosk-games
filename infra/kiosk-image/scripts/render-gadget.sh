@@ -39,6 +39,7 @@ export KIOSK_SNAP_ID GADGET_SNAP_ID FRAME_SNAP_ID PIPEWIRE_SNAP_ID CA_ROOT_FINGE
 # shellcheck disable=SC2016
 envsubst '${KIOSK_SNAP_ID} ${GADGET_SNAP_ID} ${FRAME_SNAP_ID} ${PIPEWIRE_SNAP_ID} ${CA_ROOT_FINGERPRINT} ${SNAP_STORE_PROXY}' \
   <"$here/gadget/gadget.yaml.in" >"$here/gadget/gadget.yaml"
+# shellcheck disable=SC2016
 if grep -q '\${' "$here/gadget/gadget.yaml"; then
   echo "unrendered placeholders left in gadget.yaml" >&2
   exit 1

@@ -23,7 +23,7 @@ description: |
   Touch-only, offline-first behavioural games kiosk runtime for the SHRIII study. Runs full screen under
   Ubuntu Frame on a locked-down Ubuntu Core 24 image, with an encrypted outbox, a device mTLS certificate
   from the SHRIII step-ca, an ESC/POS receipt printer and a host egress allow-list.
-license: Proprietary
+license: proprietary
 grade: stable
 confinement: strict
 compression: lzo
@@ -142,10 +142,9 @@ parts:
       craftctl set version="$(cat version.txt)"
     override-build: |
       craftctl default
-      # Unused Chromium locales and the crashpad uploader are not needed on the kiosk.
-      find "$CRAFT_PART_INSTALL/opt/shriii-kiosk/locales" -type f \
-        ! -name 'en-US.pak' ! -name 'hi.pak' ! -name 'mr.pak' ! -name 'ta.pak' -delete || true
-      chmod 0755 "$CRAFT_PART_INSTALL/opt/shriii-kiosk/shriii-kiosk"
+      # (organize runs after build, so the tree is still at linux-unpacked/ here; electron-builder already
+      # trimmed the Chromium locales to en-US, hi, mr, ta via electronLanguages)
+      chmod 0755 "$CRAFT_PART_INSTALL/linux-unpacked/shriii-kiosk"
     stage-packages:
       - libnspr4
       - libnss3

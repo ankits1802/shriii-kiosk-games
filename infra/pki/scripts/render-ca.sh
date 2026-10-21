@@ -46,6 +46,7 @@ for tpl in device-leaf intermediate-ca; do
   envsubst '${DEVICE_DOMAIN} ${CA_DNS}' <"$here/step-ca/templates/$tpl.tpl" >"$CA_DIR/templates/$tpl.tpl"
 done
 
+# shellcheck disable=SC2016
 if grep -q '\${' "$CA_DIR/config/ca.json" "$CA_DIR/templates/device-leaf.tpl"; then
   echo "unrendered placeholders left" >&2
   exit 1

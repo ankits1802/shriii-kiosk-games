@@ -115,7 +115,7 @@ jobs:
       - uses: actions/checkout@v5
       - run: |
           shellcheck --version
-          shellcheck -s sh -x \
+          shellcheck -s sh -x -P SCRIPTDIR \
             infra/kiosk-image/app/src/bin/* infra/kiosk-image/app/src/share/lib.sh \
             infra/kiosk-image/app/snap/hooks/* infra/kiosk-image/gadget/snap/hooks/* \
             infra/kiosk-image/scripts/*.sh infra/pki/scripts/*.sh
