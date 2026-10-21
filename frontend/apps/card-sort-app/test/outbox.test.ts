@@ -11,9 +11,16 @@ interface Call {
 }
 
 /** Fake API: scripted POST outcomes; GET returns what has been "stored" so far. */
-function fakeApi(postOutcomes: (number | 'network')[]) {
+interface StoredRow {
+  item_id: string;
+  raw_response: number | null;
+  device_id: string;
+  administrator_id: string | null;
+}
+
+function fakeApi(postOutcomes: (number | 'network')[], preexisting: StoredRow[] = []) {
   const calls: Call[] = [];
-  const stored: { item_id: string }[] = [];
+  const stored: StoredRow[] = [...preexisting];
   const fetchFn = (async (input: RequestInfo | URL, init?: RequestInit) => {
     const url = String(input);
     const method = init?.method ?? 'GET';
@@ -25,14 +32,24 @@ function fakeApi(postOutcomes: (number | 'network')[]) {
     });
     if (method === 'GET') return new Response(JSON.stringify(stored), { status: 200 });
     const outcome = postOutcomes.shift() ?? 201;
-    const body = JSON.parse(String(init?.body)) as { responses: { item_id: string }[] };
+    const body = JSON.parse(String(init?.body)) as {
+      device_id: string;
+      administrator_id: string | null;
+      responses: { item_id: string; raw_response: number | null }[];
+    };
+    const rows = body.responses.map((r) => ({
+      item_id: r.item_id,
+      raw_response: r.raw_response,
+      device_id: body.device_id,
+      administrator_id: body.administrator_id,
+    }));
     if (outcome === 'network') {
       // The request reached the server and was stored, but the response was lost.
-      stored.push(...body.responses);
+      stored.push(...rows);
       throw new TypeError('Failed to fetch');
     }
     if (outcome === 201) {
-      stored.push(...body.responses);
+      stored.push(...rows);
       return new Response(
         JSON.stringify({ responses: [], scoring_run_id: '0b0e4c1e-8d47-4a43-9d1e-5f0e2a1c3b4d' }),
         {
@@ -91,6 +108,24 @@ describe('offline sync queue', () => {
     expect(item?.status).toBe('synced');
     expect(api.stored).toHaveLength(3); // one copy of the three measures
     expect(api.calls.filter((c) => c.method === 'POST')).toHaveLength(1);
+  });
+
+  it('an earlier administration of the same pid and occasion is not mistaken for this one', async () => {
+    const store = await setup();
+    const [queued] = await store.listOutbox();
+    const earlier: StoredRow[] = (queued?.payload.administration.responses ?? []).map((r) => ({
+      item_id: r.item_id,
+      raw_response: (r.raw_response ?? 0) + 1,
+      device_id: 'other-tablet',
+      administrator_id: 'admin.other',
+    }));
+    const api = fakeApi([503, 201], earlier);
+    const deps = { store, settings: SETTINGS, fetch: api.fetchFn };
+    expect((await syncOutbox(deps, { force: true })).retrying).toBe(1);
+    const second = await syncOutbox(deps, { force: true });
+    expect(second.synced).toBe(1);
+    expect(second.deduplicated).toBe(0);
+    expect(api.calls.filter((c) => c.method === 'POST')).toHaveLength(2);
   });
 
   it('server errors back off; definitive 4xx is rejected until requeued', async () => {

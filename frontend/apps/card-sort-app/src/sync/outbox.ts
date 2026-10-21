@@ -90,7 +90,18 @@ function describe(body: unknown): string {
   return typeof body === 'string' ? body.slice(0, 500) : '';
 }
 
-/** True when the server already holds every measure of this administration. */
+interface StoredResponse {
+  readonly item_id?: unknown;
+  readonly raw_response?: unknown;
+  readonly device_id?: unknown;
+  readonly administrator_id?: unknown;
+}
+
+/**
+ * True when the server already holds every measure of this administration: same item, same value,
+ * sent from this device by the same administrator. Matching on item ids alone would mistake an
+ * earlier administration of the same pid and occasion for this one and drop it unsent.
+ */
 async function alreadyStored(deps: SyncDeps, item: OutboxItem): Promise<boolean | null> {
   const a = item.payload.administration;
   const q = new URLSearchParams({
@@ -104,8 +115,17 @@ async function alreadyStored(deps: SyncDeps, item: OutboxItem): Promise<boolean 
     headers: headers(deps.settings),
   });
   if (res.status !== 200 || !Array.isArray(res.body)) return null;
-  const stored = new Set((res.body as { item_id?: unknown }[]).map((r) => String(r.item_id)));
-  return a.responses.every((r) => stored.has(r.item_id));
+  const byItem = new Map<string, StoredResponse>();
+  for (const r of res.body as StoredResponse[]) byItem.set(String(r.item_id), r);
+  return a.responses.every((r) => {
+    const s = byItem.get(r.item_id);
+    return (
+      s !== undefined &&
+      Number(s.raw_response) === r.raw_response &&
+      s.device_id === a.device_id &&
+      (s.administrator_id ?? null) === (a.administrator_id ?? null)
+    );
+  });
 }
 
 export async function syncItem(deps: SyncDeps, item: OutboxItem): Promise<OutboxItem> {
