@@ -19,3 +19,4 @@ playwright-report/
 .env.*.local
 !.env.example
 uv.lock.bak
+.claude/
