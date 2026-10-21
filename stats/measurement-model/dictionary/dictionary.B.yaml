@@ -330,13 +330,18 @@ indicators:
   - level_not_fixed_l2
   missing_data: planned_missing_slot
   group_only: false
-  gate_eligible: true
+  gate_eligible: false
   timing_sensitive: false
   sensitivity: standard
   expected_r_lower_bound: 0.1
   convergent_criteria:
   - bscs.total
-  notes: null
+  notes: >-
+    not_scorable_v1: requires 12 delay choices (plan_ac) but Wait-or-Now schedules 8 delay trials (trial-budget
+    waiver), so it is never scored. Under the titrated delay schedule the offers converge on each person's
+    indifference point, so consistency with the fitted function mostly reflects choice noise near
+    indifference rather than self-control. Not gate-eligible in v1; game owners: 4 extra delay trials
+    (docs/science/VAL-02-trial-requirements.md) or retire at the next amendment.
 - id: emotional_regulation.tone_after_unfair_loss_b
   construct: emotional_regulation
   role: exploratory
@@ -415,8 +420,8 @@ indicators:
   - condition.noise
   formula:
     ref: hier.pressure_slope_accuracy
-    description: Person random slope of accuracy on pressure (off vs on) from a hierarchical logistic model detrended on trial
-      index.
+    description: Person random slope of accuracy on pressure (off vs on) from a hierarchical logistic model (logit scale;
+      trial type and block position as fixed effects).
   unit: slope
   direction: higher_more
   transformation: none
@@ -444,7 +449,11 @@ indicators:
   convergent_criteria:
   - bfi2_xs.negative_emotionality
   - ders16.total
-  notes: Slope is coded so that a smaller accuracy decrement under pressure is higher.
+  notes: >-
+    Slope is coded so that a smaller accuracy decrement under pressure is higher. Indicator review (2026-10):
+    the v0 engine used a linear-probability mixed model without a trial-type term despite this description
+    (r with the planted latent .30 in simulation); the logistic model with trial type is now the default
+    (docs/science/indicator-review.md).
 - id: composure.pressure_slope_rt
   construct: composure
   role: secondary
@@ -1796,7 +1805,7 @@ indicators:
   reliability_method: split_half_permutation
   level_rule: fixed_level_only
   min_valid_trials:
-    count: 40
+    count: 30
     unit: trials
     basis: val02_pending
   exclusions:
@@ -1815,7 +1824,9 @@ indicators:
   sensitivity: standard
   expected_r_lower_bound: null
   convergent_criteria: []
-  notes: null
+  notes: >-
+    VAL-02 / indicator review (2026-10): the minimum (40) exceeded the 36 trials of the only selected block
+    (Don't-Tap main), so the indicator could never be scored; lowered to 30 (exploratory, val02_pending).
 - id: teamwork.mean_contribution
   construct: teamwork
   role: primary
@@ -2590,10 +2601,15 @@ indicators:
   - level_not_fixed_l2
   missing_data: planned_missing_slot
   group_only: false
-  gate_eligible: true
+  gate_eligible: false
   timing_sensitive: false
   sensitivity: standard
   expected_r_lower_bound: 0.1
   convergent_criteria:
   - grit_s.total
-  notes: null
+  notes: >-
+    not_scorable_v1: Wait-or-Now offers a hold only after a 'hard' choice, so the number of completion
+    opportunities is behaviour-dependent (median 3 of 4 in simulation, 0 for steep effort discounters) and
+    never reliably reaches the 4-choice minimum; the count that is observed is confounded with effort
+    discounting. Not gate-eligible in v1. Pathway A (Road Home uphill, 4 forced holds) carries the paradigm.
+    Fix for v2: forced-hold trials in Wait-or-Now (proposal in docs/science/indicator-review.md).
