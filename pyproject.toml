@@ -9,6 +9,8 @@ dependencies = [
   "shriii-validation",
   "shriii-simulator",
   "shriii-api",
+  "shriii-prereg",
+  "shriii-reports",
 ]
 
 [dependency-groups]
@@ -33,6 +35,8 @@ members = [
   "python/shriii_validation",
   "python/shriii_simulator",
   "apps/api",
+  "tools/prereg",
+  "reports",
 ]
 
 [tool.uv.sources]
@@ -41,6 +45,8 @@ shriii-scoring = { workspace = true }
 shriii-validation = { workspace = true }
 shriii-simulator = { workspace = true }
 shriii-api = { workspace = true }
+shriii-prereg = { workspace = true }
+shriii-reports = { workspace = true }
 
 [tool.pytest.ini_options]
 testpaths = [
@@ -51,6 +57,8 @@ testpaths = [
   "apps/api/tests",
   "scoring/tests",
   "content/tests",
+  "tools/prereg/tests",
+  "reports/tests",
 ]
 addopts = ["-ra", "--strict-markers", "--import-mode=importlib"]
 asyncio_mode = "auto"

@@ -1,0 +1,71 @@
+{#- Markdown macro set. _html.j2 and _qmd.j2 expose the same macro names and signatures. -#}
+{% macro doc_start() -%}
+---
+title: "{{ report.title | replace('"', "'") }}"
+study: {{ report.study_id }}
+stage: {{ report.stage }}
+status: {{ report.status }}
+analysis_run_id: {{ prov.analysis_run_id }}
+snapshot_sha256: {{ prov.snapshot_sha256 }}
+bundle_sha256: {{ bundle_sha256 }}
+---
+
+{% endmacro %}
+
+{% macro doc_end() -%}
+{% endmacro %}
+
+{% macro h(level, text) -%}
+{{ '#' * level }} {{ text }}
+
+{% endmacro %}
+
+{% macro p(text) -%}
+{{ text }}
+
+{% endmacro %}
+
+{% macro ul(items) -%}
+{% for i in items %}
+- {{ i }}
+{% endfor %}
+
+{% endmacro %}
+
+{% macro table(headers, rows) -%}
+| {% for c in headers %}{{ c | cell }} | {% endfor %}
+
+|{% for c in headers %} --- |{% endfor %}
+
+{% for r in rows %}
+| {% for c in r %}{{ c | cell }} | {% endfor %}
+
+{% endfor %}
+
+{% endmacro %}
+
+{% macro kv(pairs) -%}
+| Item | Value |
+| --- | --- |
+{% for k, v in pairs %}
+| {{ k | cell }} | {{ v | cell }} |
+{% endfor %}
+
+{% endmacro %}
+
+{% macro callout(kind, title, body) -%}
+> **{{ kind | upper }}: {{ title }}**
+>
+> {{ body }}
+
+{% endmacro %}
+
+{% macro review(who, text) -%}
+> **[REVIEW REQUIRED: {{ who }}]** {{ text }}
+
+{% endmacro %}
+
+{% macro placeholder(text) -%}
+> **[TO BE COMPLETED]** {{ text }}
+
+{% endmacro %}

@@ -1,0 +1,61 @@
+{#- Stage 4 fairness and mode equivalence, ITC (plan section 7.6). -#}
+{% import macros as m with context %}
+{% import '_blocks.j2' as b with context %}
+{% set inv = gates.get('trait_gate', {}).get('invariance', {}) %}
+{% set bg = gates.get('battery_gate', {}) %}
+{% set asr = gates.get('asr_policy', {}) %}
+{{ m.doc_start() }}
+{{ b.header('Stage 4 fairness and mode equivalence') }}
+
+{{ m.h(2, '1. Purpose and design') }}
+{{ m.p('Stage 4 tests whether indicators measure the same thing across groups, following the ITC guidelines: trial-level measurement invariance, DIF with a purified matching variable and FDR control, differential exclusion, ASR accuracy gaps, and supervised vs unattended mode equivalence (required before any open-public release).') }}
+{% if inv %}
+{{ m.p('Required groupings (gates.yaml trait_gate.invariance): ' ~ (inv.required_groupings | join(', ')) ~ '. At most ' ~ (inv.max_freed_parameter_share | pct) ~ ' of parameters may be freed for partial invariance; groups below n = ' ~ inv.small_group_n ~ ' use Bayesian approximate invariance or moderated MIMIC.') }}
+{% endif %}
+{% if bg %}
+{{ m.p('Battery-level fairness (rule A3): criterion invariance required; no unresolved large DIF for retained indicators; differential exclusion between required groups <= ' ~ (bg.differential_exclusion_max_pp | num) ~ ' percentage points.') }}
+{% endif %}
+{% if asr %}
+{{ m.p('ASR policy: a prompt is voice-enabled only with accuracy >= ' ~ (asr.min_accuracy | pct) ~ ' at ' ~ asr.snr_db ~ ' dB SNR and an age/gender gap <= ' ~ asr.max_group_gap_pp ~ ' pp, with >= ' ~ asr.min_heldout_speakers ~ ' held-out speakers per language.') }}
+{% endif %}
+{% if min_cell_n is not none %}
+{{ m.p('Disclosure control: subgroup results with n < ' ~ min_cell_n ~ ' are suppressed (gates.yaml quality.fairness_cell_min_n). A non-significant difference is never reported as equivalence; equivalence claims use TOST with registered bounds.') }}
+{% endif %}
+
+{{ m.h(2, '2. Sample') }}
+{{ b.sample_block() }}
+
+{{ m.h(2, '3. Exclusions and differential exclusion') }}
+{{ b.exclusions_block() }}
+
+{{ m.h(2, '4. Results') }}
+{% set expected = ['invariance', 'dif', 'differential_exclusion', 'mode_equivalence', 'asr'] %}
+{{ b.missing_sections(expected) }}
+{{ b.section('criterion_invariance') }}
+{{ b.section('invariance', intro='Configural, metric and scalar steps by grouping; change-in-fit criteria and freed parameters are listed in each result.') }}
+{{ b.section('dif', intro='Class-C-equivalent DIF left unresolved leads to revision or removal of the indicator.') }}
+{{ b.section('differential_exclusion') }}
+{{ b.section('mode_equivalence', intro='site_mode supervised vs open_public, with ability held constant (purified latent plus warm-up covariates). The open-public battery gate stays closed until this passes per language and pathway.') }}
+{{ b.section('asr') }}
+{{ b.remaining_sections(expected + ['criterion_invariance']) }}
+
+{{ m.h(2, '5. Indicator decisions arising from fairness review') }}
+{{ b.decisions_block() }}
+
+{{ m.h(2, '6. Gate evaluations') }}
+{{ m.h(3, 'Trait gates') }}
+{{ b.trait_gates_block() }}
+{{ m.h(3, 'Battery release gate') }}
+{{ b.battery_gates_block() }}
+
+{{ m.h(2, '7. Assumption checks and analysis warnings') }}
+{{ b.flagged_block() }}
+
+{{ m.h(2, '8. Fairness review') }}
+{{ m.review('Ethics Officer, Research Lead and community/language reviewers', 'Every flagged grouping needs a documented judgement (accept, revise indicator, drop indicator, or restrict release) before gate promotion. Language and cultural reviewers confirm that flagged items are not explained by translation or cultural mismatch.') }}
+{{ m.placeholder('Fairness review narrative per flagged grouping and the decision taken.') }}
+{{ b.notes_block() }}
+
+{{ b.review_footer(['PI or Research Lead', 'Ethics Officer']) }}
+{{ b.provenance_block() }}
+{{ m.doc_end() }}

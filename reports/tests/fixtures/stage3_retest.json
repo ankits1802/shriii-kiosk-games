@@ -1,0 +1,458 @@
+{
+  "schema": "shriii-report-bundle",
+  "schema_version": "1.0",
+  "report": {
+    "kind": "stage3_retest",
+    "title": "Stage 3 retest report (fixture)",
+    "study_id": "S3",
+    "stage": "S3",
+    "wave": "1",
+    "languages": [
+      "hi-IN",
+      "mr-IN",
+      "ta-IN"
+    ],
+    "pathways": [
+      "B"
+    ],
+    "site_mode": "supervised",
+    "status": "draft"
+  },
+  "provenance": {
+    "analysis_run_id": "run-s3-fixture",
+    "snapshot_id": "0193f1c2-7a00-7000-8000-000000005201",
+    "snapshot_sha256": "5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f",
+    "generated_at": "2026-10-21T00:00:00+00:00",
+    "git_sha": "1b01cae",
+    "image_digest": "sha256:abababababababababababababababababababababababababababababababab",
+    "prereg_id": "osf.io/fixture",
+    "protocol_version": "1.0.0",
+    "hypotheses_sha256": "eb48e8143fd7ed2d3944f513d2e6491ba010d45ef59493e274cd11899a34d483",
+    "gates_sha256": "e4929191de6e201f5623c4b34b7961233427d74a57acb0ae99904b49b17119d3",
+    "dictionary_sha256": {
+      "shared": "c242ae47dad1260387c4f6407bed8977c8bcc6ab85e8a8265c3f52cc6479459e",
+      "A": "9241132200671411a894a7837ebf3c4fa040427b1b26fefd37da9e53e43dfa3d",
+      "B": "c5850a37983b49924ff34d74008a19629ff4c134909118fa21831057ecb12762"
+    },
+    "validation_algorithm_version": "0.1.0",
+    "scoring_run_id": "scoring-run-fixture-1",
+    "erasures_applied": 3,
+    "seeds": {
+      "bootstrap": 20261021,
+      "permutation": 7
+    }
+  },
+  "sample": {
+    "enrolled": 480,
+    "consented": 480,
+    "analysed": 300,
+    "withdrawn": 2
+  },
+  "exclusions": [
+    {
+      "rule_id": "out_of_window",
+      "description": "Retest outside 14-28 days (flagged; excluded from primary analysis).",
+      "n_sessions": 38,
+      "n_participants": 38
+    }
+  ],
+  "results": [
+    {
+      "section": "retest",
+      "subject": "self_control",
+      "metric": "icc_a1",
+      "evidence": {
+        "analysis": "ICC_A1",
+        "estimate": 0.6450817792159594,
+        "ci_low": 0.5146534945779506,
+        "ci_high": 0.7463789686743773,
+        "ci_level": 0.95,
+        "n": 100,
+        "method": "icc_anova_mcgraw_wong",
+        "status": "ok",
+        "assumptions": [],
+        "warnings": [],
+        "details": {
+          "k": 2,
+          "F": 4.624625866771439,
+          "p": 1.7822006376145567e-13,
+          "msr": 1.9255601459283547,
+          "msc": 0.2963876206366399,
+          "mse": 0.4163710106289385,
+          "msw": 0.4151711767290155
+        },
+        "provenance": {
+          "analysis": "icc:ICC_A1",
+          "algorithm_version": "0.1.0",
+          "computed_at": "2026-10-21T00:00:00+00:00",
+          "inputs_sha256": "eed530fcc7587c09594391245800449c3b3fad08f21a8a8a7f62784b971290c5",
+          "seed": null,
+          "params": {
+            "ci_level": 0.95
+          },
+          "library_versions": {
+            "numpy": "pinned",
+            "scipy": "pinned"
+          }
+        }
+      },
+      "result_id": "s3-icc-hi-IN",
+      "hypothesis_id": null,
+      "language": "hi-IN",
+      "subject_kind": "trait",
+      "threshold": 0.6,
+      "threshold_rule": "point >= 0.60 and lower bound >= 0.40",
+      "passed": true
+    },
+    {
+      "section": "retest",
+      "subject": "self_control",
+      "metric": "icc_c1",
+      "evidence": {
+        "analysis": "ICC_C1",
+        "estimate": 0.6444207939562016,
+        "ci_low": 0.5135762048092027,
+        "ci_high": 0.7459761067607256,
+        "ci_level": 0.95,
+        "n": 100,
+        "method": "icc_anova_mcgraw_wong",
+        "status": "ok",
+        "assumptions": [],
+        "warnings": [],
+        "details": {
+          "k": 2,
+          "F": 4.624625866771439,
+          "p": 1.7822006376145567e-13,
+          "msr": 1.9255601459283547,
+          "msc": 0.2963876206366399,
+          "mse": 0.4163710106289385,
+          "msw": 0.4151711767290155
+        },
+        "provenance": {
+          "analysis": "icc:ICC_C1",
+          "algorithm_version": "0.1.0",
+          "computed_at": "2026-10-21T00:00:00+00:00",
+          "inputs_sha256": "eed530fcc7587c09594391245800449c3b3fad08f21a8a8a7f62784b971290c5",
+          "seed": null,
+          "params": {
+            "ci_level": 0.95
+          },
+          "library_versions": {
+            "numpy": "pinned",
+            "scipy": "pinned"
+          }
+        }
+      },
+      "result_id": "s3-iccc-hi-IN",
+      "language": "hi-IN",
+      "subject_kind": "trait"
+    },
+    {
+      "section": "retest",
+      "subject": "self_control",
+      "metric": "icc_a1",
+      "evidence": {
+        "analysis": "ICC_A1",
+        "estimate": 0.686929647252808,
+        "ci_low": 0.5679428110428862,
+        "ci_high": 0.7778553281112274,
+        "ci_level": 0.95,
+        "n": 100,
+        "method": "icc_anova_mcgraw_wong",
+        "status": "ok",
+        "assumptions": [],
+        "warnings": [],
+        "details": {
+          "k": 2,
+          "F": 5.382232972448896,
+          "p": 1.1295279484212635e-15,
+          "msr": 1.7098714550377212,
+          "msc": 0.2734737958539591,
+          "mse": 0.3176881163989704,
+          "msw": 0.31724597319352027
+        },
+        "provenance": {
+          "analysis": "icc:ICC_A1",
+          "algorithm_version": "0.1.0",
+          "computed_at": "2026-10-21T00:00:00+00:00",
+          "inputs_sha256": "1c01a60d40fc5600dfba6d56807a5c32a2428b390b1c625ae1742eba3db361b3",
+          "seed": null,
+          "params": {
+            "ci_level": 0.95
+          },
+          "library_versions": {
+            "numpy": "pinned",
+            "scipy": "pinned"
+          }
+        }
+      },
+      "result_id": "s3-icc-mr-IN",
+      "hypothesis_id": null,
+      "language": "mr-IN",
+      "subject_kind": "trait",
+      "threshold": 0.6,
+      "threshold_rule": "point >= 0.60 and lower bound >= 0.40",
+      "passed": true
+    },
+    {
+      "section": "retest",
+      "subject": "self_control",
+      "metric": "icc_c1",
+      "evidence": {
+        "analysis": "ICC_C1",
+        "estimate": 0.6866300543032998,
+        "ci_low": 0.5672298275977271,
+        "ci_high": 0.7777594154914249,
+        "ci_level": 0.95,
+        "n": 100,
+        "method": "icc_anova_mcgraw_wong",
+        "status": "ok",
+        "assumptions": [],
+        "warnings": [],
+        "details": {
+          "k": 2,
+          "F": 5.382232972448896,
+          "p": 1.1295279484212635e-15,
+          "msr": 1.7098714550377212,
+          "msc": 0.2734737958539591,
+          "mse": 0.3176881163989704,
+          "msw": 0.31724597319352027
+        },
+        "provenance": {
+          "analysis": "icc:ICC_C1",
+          "algorithm_version": "0.1.0",
+          "computed_at": "2026-10-21T00:00:00+00:00",
+          "inputs_sha256": "1c01a60d40fc5600dfba6d56807a5c32a2428b390b1c625ae1742eba3db361b3",
+          "seed": null,
+          "params": {
+            "ci_level": 0.95
+          },
+          "library_versions": {
+            "numpy": "pinned",
+            "scipy": "pinned"
+          }
+        }
+      },
+      "result_id": "s3-iccc-mr-IN",
+      "language": "mr-IN",
+      "subject_kind": "trait"
+    },
+    {
+      "section": "retest",
+      "subject": "self_control",
+      "metric": "icc_a1",
+      "evidence": {
+        "analysis": "ICC_A1",
+        "estimate": 0.7105355874792068,
+        "ci_low": 0.5984528704711459,
+        "ci_high": 0.7954095889475974,
+        "ci_level": 0.95,
+        "n": 100,
+        "method": "icc_anova_mcgraw_wong",
+        "status": "ok",
+        "assumptions": [],
+        "warnings": [],
+        "details": {
+          "k": 2,
+          "F": 5.979017264799132,
+          "p": 2.8451348486505644e-17,
+          "msr": 1.8612720136923908,
+          "msc": 0.7533020701482909,
+          "mse": 0.3113006588307487,
+          "msw": 0.31572067294392414
+        },
+        "provenance": {
+          "analysis": "icc:ICC_A1",
+          "algorithm_version": "0.1.0",
+          "computed_at": "2026-10-21T00:00:00+00:00",
+          "inputs_sha256": "7a8367e30a9435715cca755978a496982e24ceb92bf80d2c0ba535a5fbe5dc79",
+          "seed": null,
+          "params": {
+            "ci_level": 0.95
+          },
+          "library_versions": {
+            "numpy": "pinned",
+            "scipy": "pinned"
+          }
+        }
+      },
+      "result_id": "s3-icc-ta-IN",
+      "hypothesis_id": null,
+      "language": "ta-IN",
+      "subject_kind": "trait",
+      "threshold": 0.6,
+      "threshold_rule": "point >= 0.60 and lower bound >= 0.40",
+      "passed": true
+    },
+    {
+      "section": "retest",
+      "subject": "self_control",
+      "metric": "icc_c1",
+      "evidence": {
+        "analysis": "ICC_C1",
+        "estimate": 0.7134267011936438,
+        "ci_low": 0.6018261780708486,
+        "ci_high": 0.7976981561343822,
+        "ci_level": 0.95,
+        "n": 100,
+        "method": "icc_anova_mcgraw_wong",
+        "status": "ok",
+        "assumptions": [],
+        "warnings": [],
+        "details": {
+          "k": 2,
+          "F": 5.979017264799132,
+          "p": 2.8451348486505644e-17,
+          "msr": 1.8612720136923908,
+          "msc": 0.7533020701482909,
+          "mse": 0.3113006588307487,
+          "msw": 0.31572067294392414
+        },
+        "provenance": {
+          "analysis": "icc:ICC_C1",
+          "algorithm_version": "0.1.0",
+          "computed_at": "2026-10-21T00:00:00+00:00",
+          "inputs_sha256": "7a8367e30a9435715cca755978a496982e24ceb92bf80d2c0ba535a5fbe5dc79",
+          "seed": null,
+          "params": {
+            "ci_level": 0.95
+          },
+          "library_versions": {
+            "numpy": "pinned",
+            "scipy": "pinned"
+          }
+        }
+      },
+      "result_id": "s3-iccc-ta-IN",
+      "language": "ta-IN",
+      "subject_kind": "trait"
+    },
+    {
+      "section": "retest",
+      "subject": "stability",
+      "metric": "icc_a1",
+      "evidence": {
+        "analysis": "ICC_A1",
+        "estimate": 0.7022776377193378,
+        "ci_low": 0.587149334513911,
+        "ci_high": 0.7895143451245297,
+        "ci_level": 0.95,
+        "n": 100,
+        "method": "icc_anova_mcgraw_wong",
+        "status": "ok",
+        "assumptions": [],
+        "warnings": [],
+        "details": {
+          "k": 2,
+          "F": 5.673037083713659,
+          "p": 1.820419790694291e-16,
+          "msr": 1.6082608338055113,
+          "msc": 0.015297611286550973,
+          "mse": 0.28349203611281854,
+          "msw": 0.2808100918645559
+        },
+        "provenance": {
+          "analysis": "icc:ICC_A1",
+          "algorithm_version": "0.1.0",
+          "computed_at": "2026-10-21T00:00:00+00:00",
+          "inputs_sha256": "55169fcfb501785b2ebe668f47f1d07656743833e540f2c6de592b3809507dc6",
+          "seed": null,
+          "params": {
+            "ci_level": 0.95
+          },
+          "library_versions": {
+            "numpy": "pinned",
+            "scipy": "pinned"
+          }
+        }
+      },
+      "result_id": "s3-hr-stab",
+      "hypothesis_id": "hr.stability",
+      "family": "retest",
+      "subject_kind": "trait",
+      "threshold": 0.6,
+      "threshold_rule": "point >= 0.60 and lower bound >= 0.40",
+      "passed": false
+    },
+    {
+      "section": "practice_effects",
+      "subject": "self_control.nogo_commission_rate",
+      "metric": "cohens_d",
+      "evidence": {
+        "analysis": "cohens_d",
+        "estimate": 0.24743317510469737,
+        "ci_low": 0.08679160494622287,
+        "ci_high": 0.4080747452631719,
+        "ci_level": 0.95,
+        "n": 600,
+        "method": "pooled_sd_normal_ci",
+        "status": "ok",
+        "assumptions": [],
+        "warnings": [],
+        "details": {
+          "hedges_g": 0.24712271942702524
+        },
+        "provenance": {
+          "analysis": "cohens_d",
+          "algorithm_version": "0.1.0",
+          "computed_at": "2026-10-21T00:00:00+00:00",
+          "inputs_sha256": "640c504a691d38b1d3551096aac013dbc6d760a85622e8f9b979ceb1c7b65be7",
+          "seed": null,
+          "params": {},
+          "library_versions": {
+            "numpy": "pinned",
+            "scipy": "pinned"
+          }
+        }
+      },
+      "result_id": "s3-pe-1",
+      "threshold": 0.3,
+      "threshold_rule": "|d| < 0.30 (flag otherwise)",
+      "passed": true
+    },
+    {
+      "result_id": "s3-attr-1",
+      "section": "attrition",
+      "subject": "retest_completion",
+      "subject_kind": "battery",
+      "metric": "odds_ratio_literacy",
+      "estimate": 1.42,
+      "ci_low": 0.98,
+      "ci_high": 2.05,
+      "ci_level": 0.95,
+      "n": 480,
+      "method": "logistic_regression",
+      "subgroup": {
+        "predictor": "literacy not_at_all vs easily"
+      },
+      "exploratory": true
+    }
+  ],
+  "indicator_decisions": [
+    {
+      "indicator_id": "self_control.nogo_commission_rate",
+      "pathway": "B",
+      "decision": "retain",
+      "rationale": "ICC(A,1) meets B1 in all languages.",
+      "evidence_ids": [
+        "s3-icc-hi-IN",
+        "s3-icc-mr-IN",
+        "s3-icc-ta-IN"
+      ],
+      "signers": [
+        "research_lead",
+        "ethics_officer"
+      ]
+    },
+    {
+      "indicator_id": "stability.shift_slope",
+      "pathway": "B",
+      "decision": "revise",
+      "rationale": "Retest below target; redesign in wave 2.",
+      "signers": [
+        "research_lead",
+        "ethics_officer"
+      ]
+    }
+  ]
+}

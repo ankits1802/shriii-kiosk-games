@@ -1,0 +1,73 @@
+{#- Technical manual skeleton (VAL-15), organised after the AERA/APA/NCME Standards for Educational and
+    Psychological Testing (2014) and the ITC Guidelines. Generated tables fill in where evidence exists;
+    every narrative section is a placeholder until written and reviewed. -#}
+{% import macros as m with context %}
+{% import '_blocks.j2' as b with context %}
+{{ m.doc_start() }}
+{{ b.header('Technical manual (skeleton)') }}
+{{ m.callout('warning', 'Skeleton', 'This manual is a structured skeleton. Generated tables reflect the evidence in the supplied bundle; every [TO BE COMPLETED] block must be written, and every [REVIEW REQUIRED] block signed off, before the manual is issued.') }}
+
+{{ m.h(2, '1. Purpose, intended uses and prohibited uses') }}
+{{ m.review('PI, Ethics Officer and legal counsel', 'State the report-use statement in force (default: personal reflection only), the population (adults 18+ in the enabled languages), and the prohibited uses: clinical diagnosis, hiring or any high-stakes decision, and any individual integrity judgement.') }}
+{{ m.placeholder('Intended-use statement and the evidence each use relies on.') }}
+
+{{ m.h(2, '2. Constructs and evidence-centred design') }}
+{{ m.placeholder('For each of the 17 constructs: definition, claim, evidence, tasks (from scoring/dictionary/shared.yaml), registration status per pathway and report cap. Include the traceability matrix.') }}
+
+{{ m.h(2, '3. Test development and adaptation') }}
+{{ m.placeholder('Task design, content-as-config bundles, the ITC adaptation workflow (forward and back translation, expert review, recording, audio QC, think-aloud), cultural-equivalence sign-offs per scenario and region, and Stage 1/1b findings.') }}
+
+{{ m.h(2, '4. Administration') }}
+{{ m.placeholder('Kiosk hardware and timing profile, supervised vs open-public modes, onboarding and consent flow, practice and warm-up, calibration-level policy, session time budget, accessibility profile, criterion administration at supervised sites.') }}
+
+{{ m.h(2, '5. Scoring') }}
+{{ m.placeholder('Indicator definitions and versions (dictionary sha256: ' ~ (prov.dictionary_sha256 | dictsort | map('join', ': ') | join('; ') or 'not supplied') ~ '), exclusion and missing-data rules, transformations, composites, criterion scoring keys, and scoring-run lineage.') }}
+
+{{ m.h(2, '6. Reliability and precision') }}
+{{ b.section('reliability', level=3) }}
+{{ b.section('retest', level=3) }}
+{{ m.placeholder('Interpretation of reliability by indicator kind and language; SEM and SDC used for the "not enough to say" rule.') }}
+
+{{ m.h(2, '7. Validity evidence') }}
+{{ b.section('criterion_invariance', level=3) }}
+{{ b.section('convergent', level=3) }}
+{{ b.section('discriminant_pattern', level=3) }}
+{{ b.section('nomological', level=3) }}
+{{ b.section('structure', level=3) }}
+{{ b.section('criterion_validity', level=3) }}
+{{ b.section('incremental_validity', level=3) }}
+{{ m.placeholder('Validity argument per construct, including negative and null findings.') }}
+
+{{ m.h(2, '8. Fairness') }}
+{{ b.section('invariance', level=3) }}
+{{ b.section('dif', level=3) }}
+{{ b.section('differential_exclusion', level=3) }}
+{{ b.section('mode_equivalence', level=3) }}
+{{ b.section('asr', level=3) }}
+{{ m.placeholder('Fairness review outcomes and the groups for which evidence is insufficient.') }}
+
+{{ m.h(2, '9. Norms and score interpretation') }}
+{{ b.norms_block() }}
+{{ m.placeholder('Norm sample, weighting, banding, strengths-framed phrasing and the participant report (no numbers, no negative labels).') }}
+
+{{ m.h(2, '10. Gate status') }}
+{{ m.h(3, 'Battery release gate') }}
+{{ b.battery_gates_block() }}
+{{ m.h(3, 'Trait gates') }}
+{{ b.trait_gates_block() }}
+
+{{ m.h(2, '11. Other results in the bundle') }}
+{{ b.remaining_sections(['reliability', 'retest', 'criterion_invariance', 'convergent', 'discriminant_pattern', 'nomological', 'structure', 'criterion_validity', 'incremental_validity', 'invariance', 'dif', 'differential_exclusion', 'mode_equivalence', 'asr']) }}
+
+{{ m.h(2, '12. Limitations') }}
+{{ m.placeholder('Known limitations, including modest task-questionnaire convergence, unattended-mode evidence, languages not yet covered, and provisional norms.') }}
+
+{{ m.h(2, '13. Privacy, data governance and research ethics') }}
+{{ m.p('See docs/governance/ (DPIA, data management plan, retention and deletion policy, access control policy, consent scripts, IEC/IRB protocol).') }}
+
+{{ m.h(2, '14. References') }}
+{{ m.placeholder('Instrument manuals and licences, methodological references.') }}
+
+{{ b.review_footer(['PI or Research Lead', 'Ethics Officer']) }}
+{{ b.provenance_block() }}
+{{ m.doc_end() }}
