@@ -1,0 +1,130 @@
+# Ingestion load test (QA-05, ING-02): PostgreSQL 18 service + the API on the runner, then the
+# tools/loadtest suite (kiosk-fleet simulator, exactly-once DB verification). Reports the ING-02 metric
+# (p95 of first-attempt, full 500-event batches; target p95 < 300 ms with 50 kiosks) in the job summary and
+# uploads the per-scenario reports. Nightly (full suite) and on demand; on pull requests only when the harness
+# or this workflow changes, with a reduced scenario set.
+#
+# Verdict: data-correctness checks (no terminal failures, no duplicate rows, nothing left parked,
+# exactly-once) always gate. The p95 target is reported against ING-02 and gates only when `enforce_p95` is
+# set, because client, API and database share one hosted runner here (see tools/loadtest/RESULTS.md).
+name: Load test
+
+on:
+  pull_request:
+    paths:
+      - tools/loadtest/**
+      - .github/scripts/loadtest_summary.py
+      - .github/workflows/loadtest.yml
+  schedule:
+    - cron: "47 21 * * *" # 03:17 IST
+  workflow_dispatch:
+    inputs:
+      scenarios:
+        description: Suite entries to run (space-separated; empty = the full standard suite)
+        required: false
+        default: "single-kiosk steady-50k saturate-50k retry-50k dup-storm-20x out-of-order-skew"
+      enforce_p95:
+        description: Fail the run when the ING-02 p95 target is missed
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: loadtest-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  UV_FROZEN: "1"
+  PYTHON_VERSION: "3.14"
+
+jobs:
+  loadtest:
+    name: Ingestion load test (ING-02)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_DB: shriii_load
+          POSTGRES_USER: load
+          POSTGRES_PASSWORD: load
+        ports:
+          - 55442:5432
+        options: >-
+          --health-cmd "pg_isready -U load -d shriii_load"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+    env:
+      ENV: dev
+      AUTH_MODE: dev
+      LOG_LEVEL: WARNING
+      DATABASE_URL: postgresql+psycopg://load:load@localhost:55442/shriii_load
+      LOADTEST_DATABASE_URL: postgresql://load:load@localhost:55442/shriii_load
+      LOADTEST_BASE_URL: http://127.0.0.1:8077
+      LABEL: ci-${{ github.run_id }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+          python-version: ${{ env.PYTHON_VERSION }}
+      - run: uv sync --all-packages
+      - name: Enable pg_stat_statements (service containers take no command line)
+        env:
+          PG_CONTAINER: ${{ job.services.postgres.id }}
+        run: |
+          docker exec "$PG_CONTAINER" psql -U load -d shriii_load -c "ALTER SYSTEM SET shared_preload_libraries = 'pg_stat_statements'"
+          docker restart "$PG_CONTAINER"
+          for _ in $(seq 1 60); do docker exec "$PG_CONTAINER" pg_isready -U load -d shriii_load && break; sleep 1; done
+          docker exec "$PG_CONTAINER" psql -U load -d shriii_load -c "CREATE EXTENSION IF NOT EXISTS pg_stat_statements"
+      - name: Start API (migrate, seed, serve)
+        run: |
+          uv run shriii-api migrate
+          uv run shriii-api seed --demo > /dev/null
+          nohup uv run shriii-api serve --host 127.0.0.1 --port 8077 > api.log 2>&1 &
+          for _ in $(seq 1 60); do curl -fsS "$LOADTEST_BASE_URL/readyz" > /dev/null && break; sleep 1; done
+          curl -fsS "$LOADTEST_BASE_URL/readyz"
+      - name: Provision fleet and build corpus
+        run: |
+          uv run --package shriii-loadtest shriii-loadtest provision --kiosks 60
+          uv run --package shriii-loadtest shriii-loadtest corpus
+      - name: Run suite
+        env:
+          # Full suite nightly; the dispatch input on demand; a short harness check on pull requests.
+          SCENARIOS: >-
+            ${{ github.event_name == 'workflow_dispatch' && inputs.scenarios
+            || github.event_name == 'pull_request' && 'single-kiosk saturate-50k dup-storm-20x' || '' }}
+        run: |
+          only=()
+          if [ -n "$SCENARIOS" ]; then only=(--only $SCENARIOS); fi
+          uv run --package shriii-loadtest shriii-loadtest suite --label "$LABEL" "${only[@]}"
+      - name: ING-02 report
+        if: always()
+        env:
+          ENFORCE: ${{ github.event_name == 'workflow_dispatch' && inputs.enforce_p95 && '--enforce-p95' || '' }}
+        run: |
+          results="tools/loadtest/results/$LABEL"
+          if [ ! -f "$results/index.json" ]; then echo "::error title=Load test::no suite results"; exit 1; fi
+          uv run python .github/scripts/loadtest_summary.py "$results" $ENFORCE --out loadtest-summary.md
+      - name: Job summary
+        if: always()
+        run: |
+          [ -f loadtest-summary.md ] && cat loadtest-summary.md >> "$GITHUB_STEP_SUMMARY"
+          for f in tools/loadtest/results/"$LABEL"/*.md; do
+            [ -f "$f" ] || continue
+            { echo; echo "<details><summary>$(basename "$f" .md)</summary>"; echo; cat "$f"; echo; echo "</details>"; } >> "$GITHUB_STEP_SUMMARY"
+          done
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: loadtest-${{ github.run_id }}
+          path: |
+            tools/loadtest/results/${{ env.LABEL }}/
+            loadtest-summary.md
+            api.log
+          if-no-files-found: warn
+          retention-days: 30

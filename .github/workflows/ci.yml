@@ -139,7 +139,7 @@ jobs:
       - name: Mypy
         run: |
           uv run mypy
-          uv run mypy --strict tools/plan-lint/plan_lint.py tools/trial-budget/trial_budget.py .github/scripts/schema_compat.py
+          uv run mypy --strict tools/plan-lint/plan_lint.py tools/trial-budget/trial_budget.py .github/scripts/schema_compat.py .github/scripts/loadtest_summary.py
       - name: Pytest (scoring golden tests, content completeness, API against PostgreSQL 18)
         run: uv run pytest -q --junitxml=pytest-report.xml
       - name: Small simulated-player recovery run (n = 50 per pathway, report only)
