@@ -1,0 +1,47 @@
+# VOX-06 voice-enablement and fairness policy, plus VOX-05 noise acceptance. Every threshold the
+# bake-off uses to pass/fail a prompt, an engine or a language lives here (never in code).
+schema_version: '1.0'
+
+accuracy:
+  # A prompt is voice-enabled only if closed-vocabulary accuracy at this SNR meets the minimum...
+  reference_snr_db: 10
+  min_accuracy: 0.90
+  # ...judged on the lower bound of this two-sided Wilson interval (conservative) or the point estimate.
+  ci_level: 0.95
+  judge_on: point            # point | lower_ci  (VOX-06 states the point estimate; lower_ci is stricter)
+
+fairness:
+  # Max accuracy gap between subgroups (percentage points) at the reference SNR (VOX-06: <= 5 pp).
+  max_gap_pp: 5.0
+  subgroup_fields: [age_band, gender]
+  # Subgroups with fewer held-out speakers than this are reported but cannot pass the prompt.
+  min_speakers_per_subgroup: 5
+
+sample:
+  # Held-out speakers per language required before any prompt can be voice-enabled (VOX-06).
+  min_heldout_speakers: 30
+  # Minimum utterances per prompt code at the reference SNR.
+  min_trials_per_code: 30
+
+false_accepts:
+  # Share of keyword-free trials (market noise only, out-of-vocabulary speech) that produce a label
+  # (VOX-05 AC: <= 3 % with recorded 75 dBA market noise).
+  max_rate: 0.03
+  ci_level: 0.95
+
+latency:
+  # Decision latency from end of audio to result, and real-time factor, on the kiosk SKU.
+  max_p95_ms: 600
+  max_rtf: 0.5
+
+confidence_tiers:
+  # Calibrated precision targets used to place the adapter's propose/commit tiers (packages/asr-sherpa).
+  propose_min_precision: 0.85
+  commit_min_precision: 0.97
+
+runtime:
+  # Written verbatim into the language pack's asr-config (AsrRuntimePolicy in packages/asr-sherpa).
+  noise_max_dbfs: -35
+  max_listen_ms: 6000
+  vad_preroll_ms: 300
+  settle_ms: 250

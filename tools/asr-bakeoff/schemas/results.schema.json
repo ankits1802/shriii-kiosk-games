@@ -1,0 +1,260 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://shriii.local/tools/asr-bakeoff/results.schema.json",
+  "title": "AsrBakeoffResults",
+  "description": "Results of one bake-off run (VOX-06): per engine x language accuracy by SNR with Wilson CIs, false-accept rates on keyword-free trials, subgroup accuracy and gaps, latency, CPU and memory, confidence calibration, per-prompt policy verdicts and the winning engine per language.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "run_id",
+    "created_at",
+    "dataset",
+    "conditions",
+    "policy",
+    "host",
+    "engines",
+    "winners"
+  ],
+  "$defs": {
+    "rate": { "type": "number", "minimum": 0, "maximum": 1 },
+    "snr": { "anyOf": [{ "const": "clean" }, { "type": "number" }] },
+    "proportion": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["n", "k", "p", "ci_low", "ci_high"],
+      "properties": {
+        "n": { "type": "integer", "minimum": 0 },
+        "k": { "type": "integer", "minimum": 0 },
+        "p": { "anyOf": [{ "$ref": "#/$defs/rate" }, { "type": "null" }] },
+        "ci_low": { "anyOf": [{ "$ref": "#/$defs/rate" }, { "type": "null" }] },
+        "ci_high": { "anyOf": [{ "$ref": "#/$defs/rate" }, { "type": "null" }] }
+      }
+    },
+    "language": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "language",
+        "accuracy",
+        "false_accepts",
+        "subgroups",
+        "gap_pp",
+        "latency_ms",
+        "rtf",
+        "cpu",
+        "calibration",
+        "prompts",
+        "heldout_speakers"
+      ],
+      "properties": {
+        "language": { "type": "string", "pattern": "^[a-z]{2,3}-[A-Z]{2}$" },
+        "heldout_speakers": { "type": "integer", "minimum": 0 },
+        "accuracy": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["snr_db", "accuracy", "rejections", "confusions"],
+            "properties": {
+              "snr_db": { "$ref": "#/$defs/snr" },
+              "accuracy": { "$ref": "#/$defs/proportion" },
+              "rejections": { "type": "integer", "minimum": 0 },
+              "confusions": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "object",
+                  "additionalProperties": { "type": "integer" }
+                }
+              }
+            }
+          }
+        },
+        "false_accepts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["snr_db", "source", "rate"],
+            "properties": {
+              "snr_db": { "$ref": "#/$defs/snr" },
+              "source": { "enum": ["noise_only", "oov"] },
+              "rate": { "$ref": "#/$defs/proportion" }
+            }
+          }
+        },
+        "subgroups": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["field", "group", "speakers", "accuracy"],
+            "properties": {
+              "field": { "type": "string" },
+              "group": { "type": "string" },
+              "speakers": { "type": "integer", "minimum": 0 },
+              "accuracy": { "$ref": "#/$defs/proportion" }
+            }
+          }
+        },
+        "gap_pp": {
+          "type": "object",
+          "additionalProperties": { "anyOf": [{ "type": "number" }, { "type": "null" }] }
+        },
+        "latency_ms": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["p50", "p95", "mean"],
+          "properties": {
+            "p50": { "type": "number" },
+            "p95": { "type": "number" },
+            "mean": { "type": "number" }
+          }
+        },
+        "rtf": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["mean", "p95"],
+          "properties": { "mean": { "type": "number" }, "p95": { "type": "number" } }
+        },
+        "cpu": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["cpu_ms_per_audio_s", "peak_rss_mb"],
+          "properties": {
+            "cpu_ms_per_audio_s": { "type": "number" },
+            "peak_rss_mb": { "type": "number" }
+          }
+        },
+        "calibration": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["threshold", "precision", "recall", "n"],
+            "properties": {
+              "threshold": { "type": "number" },
+              "precision": { "anyOf": [{ "$ref": "#/$defs/rate" }, { "type": "null" }] },
+              "recall": { "$ref": "#/$defs/rate" },
+              "n": { "type": "integer", "minimum": 0 }
+            }
+          }
+        },
+        "prompts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "prompt_id",
+              "vocabulary",
+              "accuracy",
+              "gap_pp",
+              "speakers",
+              "voice_enabled",
+              "reasons"
+            ],
+            "properties": {
+              "prompt_id": { "type": "string" },
+              "vocabulary": { "type": "array", "items": { "type": "string" } },
+              "accuracy": { "$ref": "#/$defs/proportion" },
+              "gap_pp": {
+                "type": "object",
+                "additionalProperties": { "anyOf": [{ "type": "number" }, { "type": "null" }] }
+              },
+              "speakers": { "type": "integer", "minimum": 0 },
+              "voice_enabled": { "type": "boolean" },
+              "reasons": { "type": "array", "items": { "type": "string" } }
+            }
+          }
+        }
+      }
+    }
+  },
+  "properties": {
+    "schema_version": { "const": "1.0" },
+    "run_id": { "type": "string" },
+    "created_at": { "type": "string", "format": "date-time" },
+    "dataset": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["dataset_id", "kind", "manifest_sha256", "utterances"],
+      "properties": {
+        "dataset_id": { "type": "string" },
+        "kind": { "enum": ["synthetic_placeholder", "asr_eval"] },
+        "manifest_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+        "utterances": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "conditions": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["snr_db", "noise_source", "seed"],
+      "properties": {
+        "snr_db": { "type": "array", "items": { "$ref": "#/$defs/snr" } },
+        "noise_source": { "enum": ["recorded", "synthetic"] },
+        "seed": { "type": "integer" }
+      }
+    },
+    "policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "file_sha256",
+        "reference_snr_db",
+        "min_accuracy",
+        "max_gap_pp",
+        "min_heldout_speakers",
+        "max_false_accept_rate"
+      ],
+      "properties": {
+        "file_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+        "reference_snr_db": { "type": "number" },
+        "min_accuracy": { "$ref": "#/$defs/rate" },
+        "max_gap_pp": { "type": "number" },
+        "min_heldout_speakers": { "type": "integer" },
+        "max_false_accept_rate": { "$ref": "#/$defs/rate" }
+      }
+    },
+    "host": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["platform", "machine", "cpu_count", "python"],
+      "properties": {
+        "platform": { "type": "string" },
+        "machine": { "type": "string" },
+        "cpu_count": { "type": "integer" },
+        "python": { "type": "string" }
+      }
+    },
+    "engines": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["engine_id", "kind", "available", "languages"],
+        "properties": {
+          "engine_id": { "type": "string" },
+          "kind": { "type": "string" },
+          "available": { "type": "boolean" },
+          "unavailable_reason": { "type": "string" },
+          "version": { "type": "string" },
+          "languages": { "type": "array", "items": { "$ref": "#/$defs/language" } }
+        }
+      }
+    },
+    "winners": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["engine_id", "voice_enabled_prompts", "reason"],
+        "properties": {
+          "engine_id": { "anyOf": [{ "type": "string" }, { "type": "null" }] },
+          "voice_enabled_prompts": { "type": "array", "items": { "type": "string" } },
+          "reason": { "type": "string" }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,53 @@
+[project]
+name = "shriii-audio-pipeline"
+version = "0.1.0"
+description = "SHRIII voice-over pipeline (VOX-02/VOX-07): ingest native-speaker recordings, QC, EBU R128 loudness normalisation, Opus encoding, signed per-language audio manifests, QC report and recording scripts."
+requires-python = ">=3.13"
+dependencies = [
+  "imageio-ffmpeg>=0.6",
+  "numpy>=2.2",
+  "PyYAML>=6",
+  "jsonschema>=4.23",
+  "referencing>=0.36",
+  "cryptography>=44",
+  "openpyxl>=3.1",
+]
+
+[project.scripts]
+shriii-audio = "shriii_audio.cli:main"
+
+[dependency-groups]
+dev = ["pytest>=8", "ruff>=0.14", "mypy>=1.18", "types-PyYAML"]
+
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/shriii_audio"]
+
+[tool.uv]
+default-groups = ["dev"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["tests"]
+addopts = ["-ra", "--strict-markers", "--import-mode=importlib"]
+markers = ["ffmpeg: tests that run the real ffmpeg binary"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py313"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "N", "SIM", "RUF", "PT", "C4", "PL"]
+ignore = ["PLR0913", "PLR2004", "PLR0911", "PLR0912", "PLR0915", "PLR0917", "PT018"]
+
+[tool.mypy]
+python_version = "3.13"
+strict = true
+files = ["src"]
+
+[[tool.mypy.overrides]]
+module = ["imageio_ffmpeg.*", "openpyxl.*", "jsonschema.*", "referencing.*"]
+ignore_missing_imports = true

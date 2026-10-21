@@ -1,0 +1,68 @@
+# Audio QC and mastering thresholds for the voice-over pipeline (VOX-02, VOX-07).
+# Every number the pipeline uses to accept, warn about or reject a clip lives here; nothing is hard-coded.
+schema_version: '1.0'
+
+loudness:
+  # EBU R128 integrated loudness target and true-peak ceiling of the delivered clip (VOX-02).
+  target_lufs: -16.0
+  true_peak_ceiling_dbtp: -1.0
+  # The loudnorm pass aims a little under the ceiling because Opus encoding can overshoot the true peak.
+  encode_true_peak_target_dbtp: -1.5
+  # Loudness range target passed to loudnorm (only relevant if it falls back to dynamic mode).
+  loudness_range_target_lu: 11.0
+  # Acceptance on re-measure of the encoded clip (VOX-02 AC: -16 +- 0.5 LUFS and <= -1 dBTP).
+  tolerance_lu: 0.5
+
+encode:
+  codec: libopus
+  sample_rate_hz: 48000
+  channels: 1
+  bitrate_kbps: 48
+  frame_duration_ms: 20
+  application: audio
+
+trim:
+  # A frame is "speech" when its RMS exceeds the estimated noise floor by this margin, and at least
+  # this absolute level (so a near-silent file is not "all speech").
+  frame_ms: 10
+  threshold_above_floor_db: 12.0
+  absolute_min_dbfs: -60.0
+  # Silence kept before the first and after the last speech frame (pad).
+  lead_pad_ms: 120
+  tail_pad_ms: 200
+  # Bridge gaps shorter than this inside an utterance (never trims inside speech).
+  min_speech_run_ms: 30
+
+input:
+  # Recordings below these are rejected outright.
+  min_sample_rate_hz: 44100
+  max_channels: 2
+  min_duration_ms: 300
+  max_duration_ms: 60000
+
+clipping:
+  # |sample| at or above this fraction of full scale counts as a clipped sample...
+  sample_threshold: 0.999
+  # ...and a clipping event is a run of at least this many consecutive clipped samples.
+  min_run_samples: 3
+  # More events than this rejects the take; any event at all is at least a warning.
+  max_events_reject: 0
+
+noise:
+  # SNR estimate = active speech level minus noise floor (frame RMS percentiles, dB).
+  noise_floor_percentile: 10
+  speech_level_percentile: 95
+  min_snr_db_reject: 25.0
+  min_snr_db_warn: 35.0
+  # Noise floor (dBFS) above which a take is flagged as a noisy room.
+  max_noise_floor_dbfs_warn: -55.0
+  # DC offset (fraction of full scale) above which the take is flagged.
+  max_dc_offset_warn: 0.01
+
+duration:
+  # Recording-sheet target duration tolerance (VOX-07: +-15 %): outside is a warning.
+  target_tolerance_fraction: 0.15
+  # Clips longer than this multiple of the source-language clip are flagged (VOX-02 AC).
+  max_ratio_to_source: 1.5
+  # A flagged long clip is a warning (not a rejection) so a language lead can sign it off.
+  long_clip_is_error: false
