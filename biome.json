@@ -16,7 +16,8 @@
       "!backend/api/openapi.json",
       "!docs/security/scans",
       "!stats/reports/tests/fixtures/*.json",
-      "!tools/loadtest/results"
+      "!tools/loadtest/results",
+      "!.claude"
     ]
   },
   "formatter": {

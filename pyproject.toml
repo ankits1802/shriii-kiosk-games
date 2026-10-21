@@ -73,6 +73,9 @@ testpaths = [
   "tools/loadtest/tests",
 ]
 addopts = ["-ra", "--strict-markers", "--import-mode=importlib"]
+cache_dir = ".cache/pytest"
+# Defaults plus .claude (agent worktrees live under .claude/worktrees inside the repo).
+norecursedirs = [".*", "*.egg", "_darcs", "build", "CVS", "dist", "node_modules", "venv", "{arch}", ".claude"]
 markers = [
   "slow: heavy statistical / recovery test (skipped unless SHRIII_RUN_SLOW=1 or -m slow)",
 ]
@@ -83,7 +86,8 @@ filterwarnings = ["error::pytest.PytestUnraisableExceptionWarning"]
 [tool.ruff]
 line-length = 120
 target-version = "py313"
-extend-exclude = ["docs/reference", "node_modules", "contracts/python/src/shriii_contracts/_generated.py"]
+cache-dir = ".cache/ruff"
+extend-exclude = [".claude", "docs/reference", "node_modules", "contracts/python/src/shriii_contracts/_generated.py"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "B", "UP", "N", "SIM", "RUF", "PT", "C4", "PL"]
@@ -97,6 +101,8 @@ python_version = "3.13"
 strict = true
 warn_unreachable = true
 plugins = ["pydantic.mypy"]
+cache_dir = ".cache/mypy"
+exclude = ["^\\.claude/"]
 files = [
   "contracts/python/src",
   "contracts/python/tests",

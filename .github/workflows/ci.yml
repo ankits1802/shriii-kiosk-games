@@ -71,7 +71,7 @@ jobs:
   node:
     name: Node - lint, typecheck, test, build
     env:
-      TURBO_CACHE_DIR: .turbo/cache
+      TURBO_CACHE_DIR: .cache/turbo
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
@@ -79,12 +79,12 @@ jobs:
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v5
         with:
-          node-version-file: .nvmrc
+          node-version-file: package.json
           cache: pnpm
       - name: Turborepo cache
         uses: actions/cache@v4
         with:
-          path: .turbo/cache
+          path: .cache/turbo
           key: turbo-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.sha }}
           restore-keys: |
             turbo-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-

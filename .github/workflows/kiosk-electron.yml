@@ -19,7 +19,6 @@ on:
       - package.json
       - pnpm-lock.yaml
       - pnpm-workspace.yaml
-      - .nvmrc
       - .github/workflows/kiosk-electron.yml
   workflow_dispatch:
 
@@ -47,7 +46,7 @@ jobs:
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v5
         with:
-          node-version-file: .nvmrc
+          node-version-file: package.json
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - name: Typecheck (kiosk-electron and its workspace dependencies)

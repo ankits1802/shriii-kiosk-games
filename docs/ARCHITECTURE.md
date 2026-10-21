@@ -46,13 +46,43 @@ did not change in the October 2026 reorganisation (`@shriii/kiosk-game`, `@shrii
 │  ├─ audio-pipeline/  asr-bakeoff/  i18n/  loadtest/
 ├─ docs/                         IMPLEMENTATION_PLAN.md, BUILD_DECISIONS.md, ARCHITECTURE.md (this file),
 │                                reference/, governance/, security/, screenshots/
+├─ config/                       tsconfig.base.json (extended by every package tsconfig)
 └─ .github/                      workflows/ (must stay here), codeql/, renovate.json
 ```
 
-The root holds only workspace-level files: `package.json`, `pnpm-workspace.yaml`, `pnpm-lock.yaml`,
-`turbo.json`, `tsconfig.base.json`, `biome.json` (JS workspace), `pyproject.toml`, `uv.lock`,
-`.python-version` (Python workspace; uv reads the interpreter pin from the root), `.editorconfig`, `.nvmrc`,
-`.gitignore`, `.gitattributes` and `README.md`.
+## The repository root
+
+The root holds only files that a tool insists on finding there:
+
+| File | Why it must be at the root |
+|---|---|
+| `package.json` | pnpm workspace root; also carries the Node pin (`engines.node`, read by `actions/setup-node` via `node-version-file: package.json`) and the pnpm pin (`packageManager`, read by corepack and `pnpm/action-setup`) |
+| `pnpm-workspace.yaml`, `pnpm-lock.yaml` | pnpm only looks for them next to the workspace root |
+| `turbo.json` | Turborepo requires the root config |
+| `biome.json` | Biome 2.5 discovers its config by walking up for `biome.json`/`biome.jsonc`/`.biome.json(c)` only (no `.config/` lookup). `frontend/apps/web/biome.json` extends it with `"extends": "//"`, and the per-package `biome check .` scripts and editor plugins rely on that discovery, so `--config-path` from `config/` is not a workable substitute |
+| `pyproject.toml`, `uv.lock` | uv workspace root; also holds the ruff, mypy and pytest settings and the Python floor (`requires-python`) |
+| `.gitignore`, `.gitattributes` | git reads them from the root (`.gitattributes` enforces LF endings) |
+| `README.md` | Rendered by GitHub |
+| `.github/` | GitHub Actions, CodeQL and Renovate only read it there |
+
+Everything else lives below the root:
+
+- `config/tsconfig.base.json`: the shared compiler options. Every package `tsconfig.json` extends it by
+  relative path, and `turbo.json` lists it under `globalDependencies`.
+- Version pins: Node in `package.json` `engines`, pnpm in `packageManager`, Python as `requires-python`
+  (floor 3.13) plus `PYTHON_VERSION: "3.14"` in the workflows and `ARG PYTHON_VERSION=3.14` in the API image.
+  There is no `.nvmrc` or `.python-version`. Developers who want uv to use exactly 3.14 locally run
+  `uv python pin 3.14`; the file it writes is gitignored.
+- `.editorconfig` was dropped. Formatting is enforced by tools rather than editor hints: Biome formats
+  JS/TS/JSON/CSS (2-space, LF, width 100), `ruff format` formats Python (4-space, width 120), and
+  `.gitattributes` normalises line endings for every text file.
+- Tool caches go to one gitignored `.cache/` directory: `.cache/ruff` (`[tool.ruff] cache-dir`),
+  `.cache/mypy` (`[tool.mypy] cache_dir`), `.cache/pytest` (`[tool.pytest.ini_options] cache_dir`),
+  `.cache/hypothesis` (`HYPOTHESIS_STORAGE_DIRECTORY`, set in the Hypothesis suites' `conftest.py`) and
+  `.cache/turbo` (`turbo.json` `cacheDir`; CI caches the same path). Vitest already keeps its cache under each
+  package's `node_modules/.vite`. `.venv/` and `node_modules/` stay in their standard locations.
+- `.claude/` (agent worktrees under `.claude/worktrees/`) is gitignored and excluded from Biome, ruff, mypy
+  and pytest collection.
 
 ## What each top-level directory owns
 
