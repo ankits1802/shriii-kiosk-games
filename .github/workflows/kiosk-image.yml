@@ -193,8 +193,10 @@ jobs:
           ! grep -Eq 'camera|audio-record|removable-media' snap-root/meta/snap.yaml
       - name: snapcraft lint
         run: |
-          sudo snap install snapcraft --classic
-          snapcraft lint "${{ steps.snapcraft.outputs.snap }}" 2>&1 | tee snapcraft-lint.txt
+          set -o pipefail
+          # Pack-time linters (classic, gpu, library, metadata) already ran inside action-build; this re-runs
+          # them on the finished artefact. The runner user is not in the lxd group, hence sudo.
+          sudo snapcraft lint "${{ steps.snapcraft.outputs.snap }}" 2>&1 | tee snapcraft-lint.txt
       - name: review-tools (store checks)
         run: sh infra/kiosk-image/scripts/review-snap.sh "${{ steps.snapcraft.outputs.snap }}"
       - uses: actions/upload-artifact@v4
