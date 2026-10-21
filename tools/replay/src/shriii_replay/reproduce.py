@@ -144,7 +144,14 @@ def reproduce(
 
     ``partition_events`` (the whole scoring partition) makes batch-model indicators comparable too."""
     issues: list[Issue] = []
-    scored_events = list(partition_events) if partition_events is not None else list(events)
+    # The replayed session is always scored from the validated, deduplicated stream; the partition only
+    # contributes the *other* sessions (otherwise a tampered session file could be masked by a clean copy
+    # of the same session inside the partition file).
+    scored_events = (
+        [e for e in partition_events if e.get("session_id") != session_id] + list(events)
+        if partition_events is not None
+        else list(events)
+    )
     complete = partition_complete or partition_events is not None
     eng, result = score_session(scored_events, trial_params, allow_synthetic=allow_synthetic, engine=engine)
     rows = [r for r in result.rows if r.session_id == session_id]

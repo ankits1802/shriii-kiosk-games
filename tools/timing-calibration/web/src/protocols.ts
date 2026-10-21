@@ -7,7 +7,7 @@
  * timing service records presented_onset before adding the per-SKU display offset.
  */
 
-import type { AudioClick, SyncPair, TouchTap, VisualTrial } from './capture.ts';
+import type { AudioClick, ClockMapping, SyncPair, TouchTap, VisualTrial } from './capture.ts';
 import { findOnset, jitteredSchedule, normalisePoint, parseSyncReply } from './lib.ts';
 
 export type Progress = (done: number, total: number) => void;
@@ -123,6 +123,7 @@ export interface AudioOptions {
 export interface AudioResult {
   clicks: AudioClick[];
   inputLatencyMs: number | null;
+  clockMapping: ClockMapping;
   context: { sampleRate: number; baseLatencyMs: number | null; outputLatencyMs: number | null };
 }
 
@@ -141,7 +142,10 @@ const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms
 
 /** Map an AudioContext time to the page clock through getOutputTimestamp (the same mapping the kiosk
  * audio engine must use when it logs audio_onset); falls back to currentTime sampled with now(). */
-function ctxToPerf(ctx: AudioContext, ctxTime: number): number {
+function ctxToPerf(
+  ctx: AudioContext,
+  ctxTime: number,
+): { ms: number; via: 'output_timestamp' | 'current_time' } {
   const ts = typeof ctx.getOutputTimestamp === 'function' ? ctx.getOutputTimestamp() : null;
   if (
     ts &&
@@ -149,9 +153,9 @@ function ctxToPerf(ctx: AudioContext, ctxTime: number): number {
     ts.performanceTime !== undefined &&
     ts.performanceTime > 0
   ) {
-    return ts.performanceTime + (ctxTime - ts.contextTime) * 1000;
+    return { ms: ts.performanceTime + (ctxTime - ts.contextTime) * 1000, via: 'output_timestamp' };
   }
-  return performance.now() + (ctxTime - ctx.currentTime) * 1000;
+  return { ms: performance.now() + (ctxTime - ctx.currentTime) * 1000, via: 'current_time' };
 }
 
 /** Audio protocol: 2 ms full-scale clicks at jittered intervals; optional in-page loopback capture. */
@@ -191,6 +195,7 @@ export async function runAudio(
   const offsets = jitteredSchedule(opts.n, opts.minIsiMs, opts.maxIsiMs, opts.seed);
   const t0 = ctx.currentTime + 1;
   const clicks: AudioClick[] = [];
+  const vias = new Set<'output_timestamp' | 'current_time'>();
   for (let i = 0; i < offsets.length && !signal.aborted; i++) {
     const at = t0 + (offsets[i] ?? 0) / 1000;
     while (at - ctx.currentTime > 0.15 && !signal.aborted) await sleep(20);
@@ -198,10 +203,12 @@ export async function runAudio(
     src.buffer = click;
     src.connect(ctx.destination);
     src.start(at);
+    const mapped = ctxToPerf(ctx, at);
+    vias.add(mapped.via);
     clicks.push({
       i,
       scheduled_ctx_s: at,
-      scheduled_perf_ms: ctxToPerf(ctx, at),
+      scheduled_perf_ms: mapped.ms,
       detected_ctx_s: null,
     });
     onProgress(i + 1, offsets.length);
@@ -230,7 +237,9 @@ export async function runAudio(
     outputLatencyMs: typeof ctx.outputLatency === 'number' ? ctx.outputLatency * 1000 : null,
   };
   await ctx.close();
-  return { clicks, inputLatencyMs, context };
+  const clockMapping: ClockMapping =
+    vias.size > 1 ? 'mixed' : vias.has('current_time') ? 'current_time' : 'output_timestamp';
+  return { clicks, inputLatencyMs, clockMapping, context };
 }
 
 /** Frame protocol: log every rAF timestamp for `seconds` (keep the page otherwise idle). */

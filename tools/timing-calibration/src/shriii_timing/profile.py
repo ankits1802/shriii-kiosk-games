@@ -208,8 +208,21 @@ def analyse_audio(inp: Inputs, cmap: ClockMap | None, period: float | None, th: 
     input_lat = aud.get("input_latency_ms")
     rtt = np.array([(c["detected_ctx_s"] - c["scheduled_ctx_s"]) * 1000.0 for c in detected], dtype=float)
     ref = np.array([c["scheduled_perf_ms"] for c in detected], dtype=float)
-    anchored = input_lat is not None
-    lat = rtt - float(input_lat) if anchored else rtt
+    # The loopback measures the whole output path from render time. The offset must use the same
+    # reference as the rig channel (``scheduled_perf_ms``, which the kiosk audio engine also logs): with a
+    # getOutputTimestamp mapping that reference already contains the reported output latency, so only the
+    # remainder is the offset. A mixed or unknown mapping cannot be anchored.
+    mapping = aud.get("clock_mapping")
+    reported = inp.capture["device"]["audio"].get("output_latency_ms")
+    already_mapped: float | None
+    if mapping == "current_time":
+        already_mapped = 0.0
+    elif mapping == "output_timestamp" and reported is not None:
+        already_mapped = float(reported)
+    else:
+        already_mapped = None
+    anchored = input_lat is not None and already_mapped is not None
+    lat = rtt - float(input_lat) - float(already_mapped or 0.0) if anchored else rtt
     return channel_stats(
         lat,
         ref,
@@ -272,12 +285,15 @@ def fingerprint(capture: dict[str, Any]) -> dict[str, Any]:
     """Device identity that pins a profile: any SKU, OS, firmware, shell, display or audio-output change
     yields a different fingerprint and therefore a new ``timing_profile_version`` (ENG-02 AC)."""
     d = capture["device"]
+    scr = d["screen"]
     return {
         "hardware_sku": d["hardware_sku"],
         "os_build": d["os_build"],
         "firmware": d["firmware"],
         "shell": d["shell"],
         "refresh_hz_nominal": d["refresh_hz_nominal"],
+        # Panel geometry: a display swap on the same SKU changes the resolution or pixel ratio.
+        "display": f"{scr['width']:g}x{scr['height']:g}@{scr['dpr']:g}",
         "audio_output_device": d["audio"]["output_device"],
     }
 

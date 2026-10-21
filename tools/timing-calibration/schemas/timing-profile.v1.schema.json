@@ -40,6 +40,7 @@
         "firmware",
         "shell",
         "refresh_hz_nominal",
+        "display",
         "audio_output_device"
       ],
       "properties": {
@@ -48,6 +49,7 @@
         "firmware": { "type": "string" },
         "shell": { "type": "string" },
         "refresh_hz_nominal": { "type": ["number", "null"] },
+        "display": { "type": "string" },
         "audio_output_device": { "type": "string" }
       }
     },

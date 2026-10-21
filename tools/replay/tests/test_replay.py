@@ -226,6 +226,30 @@ def test_html_is_self_contained(fx_b: Fixture, engine: IndicatorEngine) -> None:
     assert links <= anchors
 
 
+def test_html_escapes_untrusted_ids(fx_b: Fixture, engine: IndicatorEngine) -> None:
+    # Replay renders streams that fail validation, so ids from the input are untrusted text.
+    events = copy.deepcopy(fx_b.events)
+    hostile = 'x"><img src=x onerror=alert(1)>'
+    for ev in events:
+        if (ev.get("task") or {}).get("trial_id"):
+            ev["task"]["trial_id"] = hostile
+            break
+    html = render_html(_replay(fx_b, engine, events=events, rescore=False))
+    assert "<img" not in html
+    assert "Content-Security-Policy" in html
+
+
+def test_partition_copy_cannot_mask_a_tampered_session(fx_a: Fixture, engine: IndicatorEngine) -> None:
+    # The replayed session is scored from the validated input, not from its copy inside the partition.
+    events = copy.deepcopy(fx_a.events)
+    for ev in events:
+        p = ev["payload"]
+        if ev["event_type"] == "response" and ev["timing"]["scorable"] and isinstance(p.get("latency_ms"), float):
+            p["latency_ms"] = round(p["latency_ms"] * 0.5, 3)
+    r = _replay(fx_a, engine, events=events, partition_events=fx_a.partition_events)
+    assert r.reproducible is False
+
+
 @pytest.mark.parametrize("mode", ["strict", "reader"])
 def test_narrowed_validator_agrees_with_full_envelope_schema(fx_b: Fixture, mode: Mode) -> None:
     samples = copy.deepcopy(fx_b.events[:120])

@@ -120,11 +120,20 @@ def _pathway(arm: str | None) -> str | None:
     return arm[0] if arm[:1] in ("A", "B") else None
 
 
+def _ms(v: Any, default: float) -> float:
+    """A numeric time from untrusted input (replay renders events that failed validation)."""
+    return float(v) if isinstance(v, int | float) and not isinstance(v, bool) else default
+
+
+def _obj(v: Any) -> dict[str, Any]:
+    return v if isinstance(v, dict) else {}
+
+
 def build_timeline(events: Sequence[dict[str, Any]]) -> Timeline:
     """``events`` must be one session, deduplicated and ordered by ``seq`` (see ``check_sequence``)."""
     issues: list[Issue] = []
     first = events[0] if events else {}
-    ctx = first.get("context") or {}
+    ctx = _obj(first.get("context"))
     modules: dict[str, ModuleSpan] = {}
     module_order: list[str] = []
     trials: dict[tuple[str, str], TrialRow] = {}
@@ -134,7 +143,7 @@ def build_timeline(events: Sequence[dict[str, Any]]) -> Timeline:
     modes: Counter[str] = Counter()
     seed: str | None = None
     end_reason: str | None = None
-    times = [float((e.get("timing") or {}).get("t_mono_ms", 0.0)) for e in events]
+    times = [_ms(_obj(e.get("timing")).get("t_mono_ms"), 0.0) for e in events]
 
     def module(mid: str, t: float) -> ModuleSpan:
         if mid not in modules:
@@ -145,10 +154,10 @@ def build_timeline(events: Sequence[dict[str, Any]]) -> Timeline:
     for ev, t in zip(events, times, strict=True):
         et = ev.get("event_type", "?")
         seq = int(ev.get("seq", -1)) if isinstance(ev.get("seq"), int) else -1
-        p = ev.get("payload") or {}
-        task = ev.get("task") or {}
-        cond = ev.get("condition") or {}
-        timing = ev.get("timing") or {}
+        p = _obj(ev.get("payload"))
+        task = _obj(ev.get("task"))
+        cond = _obj(ev.get("condition"))
+        timing = _obj(ev.get("timing"))
         mid = task.get("module_id")
         tid = task.get("trial_id")
 
@@ -228,11 +237,11 @@ def build_timeline(events: Sequence[dict[str, Any]]) -> Timeline:
             trial.stimulus_id = p.get("stimulus_id")
             trial.response_window_ms = p.get("response_window_ms")
         elif et == "stimulus_onset":
-            trial.onset_ms = float(p.get("presented_onset_ms", t))
+            trial.onset_ms = _ms(p.get("presented_onset_ms"), t)
             trial.requested_onset_ms = p.get("requested_onset_ms")
             trial.stimulus_id = trial.stimulus_id or p.get("stimulus_id")
         elif et == "prompt_audio_end":
-            trial.audio_end_ms = float(p.get("audio_end_ms", t))
+            trial.audio_end_ms = _ms(p.get("audio_end_ms"), t)
         elif et == "prompt_window_open":
             trial.go_ms = t
         elif et == "trial_end":
@@ -307,7 +316,7 @@ def build_timeline(events: Sequence[dict[str, Any]]) -> Timeline:
 def _response(p: dict[str, Any], t: float, seq: int, trial: TrialRow) -> ResponseRow:
     anchor = p.get("latency_anchor")
     anchor_ms = {"visual_onset": trial.onset_ms, "audio_end": trial.audio_end_ms, "go_signal": trial.go_ms}.get(
-        anchor or ""
+        anchor if isinstance(anchor, str) else ""
     )
     lat = p.get("latency_ms")
     return ResponseRow(

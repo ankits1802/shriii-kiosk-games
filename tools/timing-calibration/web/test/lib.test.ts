@@ -132,6 +132,7 @@ describe('capture document', () => {
     };
     c.audio = {
       input_latency_ms: null,
+      clock_mapping: 'output_timestamp',
       clicks: [
         { i: 0, scheduled_ctx_s: 1.123456789123, scheduled_perf_ms: 5.5, detected_ctx_s: null },
       ],

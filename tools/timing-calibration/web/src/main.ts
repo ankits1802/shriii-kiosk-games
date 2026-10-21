@@ -186,7 +186,11 @@ bind('run-audio', async () => {
       output_latency_ms: res.context.outputLatencyMs,
       output_device: val('audiodev') || 'default',
     };
-    c.audio = { input_latency_ms: res.inputLatencyMs, clicks: res.clicks };
+    c.audio = {
+      input_latency_ms: res.inputLatencyMs,
+      clock_mapping: res.clockMapping,
+      clicks: res.clicks,
+    };
     c.device = device();
     log(`audio: ${res.clicks.length} clicks scheduled`);
   }

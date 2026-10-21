@@ -61,10 +61,17 @@ export interface Capture {
     trials: VisualTrial[];
   } | null;
   touch: { taps: TouchTap[] } | null;
-  audio: { input_latency_ms: number | null; clicks: AudioClick[] } | null;
+  audio: {
+    input_latency_ms: number | null;
+    clock_mapping: ClockMapping;
+    clicks: AudioClick[];
+  } | null;
   frames: { raf_ms: number[] } | null;
   sync: { pairs: SyncPair[] } | null;
 }
+
+/** How AudioContext time was mapped to the page clock (see protocols.ts ctxToPerf). */
+export type ClockMapping = 'output_timestamp' | 'current_time' | 'mixed';
 
 export const SKU_PATTERN = /^[a-z0-9][a-z0-9_.:-]{0,63}$/;
 

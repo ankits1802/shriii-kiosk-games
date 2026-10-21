@@ -7,6 +7,7 @@ and a trial table, and finally the indicator reproducibility table whose rows li
 
 from __future__ import annotations
 
+import math
 from html import escape
 from typing import Any
 
@@ -94,7 +95,8 @@ def _badge(label: str, state: bool | None) -> str:
 
 
 def _trial_anchor(t: TrialRow) -> str:
-    return f"t-{t.module_id}-{t.trial_id}".replace(":", "_")
+    # Escaped: replay renders events that failed validation, so ids are untrusted text.
+    return escape(f"t-{t.module_id}-{t.trial_id}".replace(":", "_"), quote=True)
 
 
 class _Scale:
@@ -108,7 +110,10 @@ class _Scale:
 
 def _axis(sc: _Scale, y: float, height: float) -> list[str]:
     span_s = (sc.t1 - sc.t0) / 1000.0
-    step = next(s for s in (1, 2, 5, 10, 15, 30, 60, 120, 300, 600, 1800) if span_s / s <= 14)
+    step = next(
+        (s for s in (1, 2, 5, 10, 15, 30, 60, 120, 300, 600, 1800, 3600) if span_s / s <= 14),
+        max(3600, math.ceil(span_s / 14 / 3600) * 3600),
+    )
     out = []
     k = 0.0
     while k <= span_s + 1e-9:
@@ -264,7 +269,7 @@ def _overview_svg(report: ReplayReport) -> str:
             f"{escape(str(m.ended_reason))}</title></rect></a>"
         )
         if x1 - x0 > 50:
-            parts.append(f'<text x="{x0 + 4:.1f}" y="51" style="fill:#fff">{escape(m.module_id)[:18]}</text>')
+            parts.append(f'<text x="{x0 + 4:.1f}" y="51" style="fill:#fff">{escape(m.module_id[:18])}</text>')
     for mk in tl.markers:
         parts.append(_marker_svg(mk, sc, 66, 18))
     parts.append("</svg>")
@@ -429,6 +434,7 @@ def render_html(report: ReplayReport) -> str:
     return (
         '<!doctype html><html lang="en"><head><meta charset="utf-8">'
         '<meta name="viewport" content="width=device-width, initial-scale=1">'
+        "<meta http-equiv=\"Content-Security-Policy\" content=\"default-src 'none'; style-src 'unsafe-inline'\">"
         f"<title>{escape(title)}</title><style>{CSS}</style></head><body><main>"
         f'<h1>{escape(title)}</h1><div class="badges">{badges}</div>'
         f'<section class="facts">{facts_html}</section>'

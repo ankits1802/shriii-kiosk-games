@@ -133,9 +133,13 @@
         {
           "type": "object",
           "additionalProperties": false,
-          "required": ["input_latency_ms", "clicks"],
+          "required": ["input_latency_ms", "clock_mapping", "clicks"],
           "properties": {
             "input_latency_ms": { "type": ["number", "null"] },
+            "clock_mapping": {
+              "enum": ["output_timestamp", "current_time", "mixed"],
+              "description": "How scheduled_perf_ms was mapped from AudioContext time: output_timestamp (getOutputTimestamp, already includes the reported output latency), current_time (currentTime sampled with performance.now(), render time) or mixed."
+            },
             "clicks": {
               "type": "array",
               "items": {

@@ -48,6 +48,10 @@ class SynthSpec:
     frame_drop_rate: float = 0.001
     frame_jitter_sd_ms: float = 0.25
     inject_delay_ms: float = 0.0
+    # Page mapped AudioContext time with getOutputTimestamp (reference already includes the reported
+    # output latency) instead of currentTime + performance.now() (render time).
+    output_timestamp_mapping: bool = False
+    reported_output_latency_ms: float = 30.0
 
 
 @dataclass(slots=True)
@@ -163,6 +167,7 @@ def generate(spec: SynthSpec | None = None) -> SynthRun:
     t = t_end_touch + 2000.0
     ctx_origin = t - 500.0
     clicks: list[dict[str, Any]] = []
+    mapped = s.reported_output_latency_ms if s.output_timestamp_mapping else 0.0
     mic_truth: list[float] = []
     for i in range(s.n_clicks):
         t += float(rng.uniform(300, 600))
@@ -173,7 +178,7 @@ def generate(spec: SynthSpec | None = None) -> SynthRun:
             {
                 "i": i,
                 "scheduled_ctx_s": round((t - ctx_origin) / 1000.0, 7),
-                "scheduled_perf_ms": round(t, 4),
+                "scheduled_perf_ms": round(t + mapped, 4),
                 "detected_ctx_s": round(detected, 7),
             }
         )
@@ -210,13 +215,17 @@ def generate(spec: SynthSpec | None = None) -> SynthRun:
             "audio": {
                 "sample_rate": 48000,
                 "base_latency_ms": 5.3,
-                "output_latency_ms": 30.0,
+                "output_latency_ms": s.reported_output_latency_ms,
                 "output_device": s.output_device,
             },
         },
         "visual": {"patch": {"x": 0, "y": 0, "size": 120}, "flash_frames": 3, "trials": trials},
         "touch": {"taps": taps},
-        "audio": {"input_latency_ms": s.input_latency_ms, "clicks": clicks},
+        "audio": {
+            "input_latency_ms": s.input_latency_ms,
+            "clock_mapping": "output_timestamp" if s.output_timestamp_mapping else "current_time",
+            "clicks": clicks,
+        },
         "frames": {"raf_ms": raf},
         "sync": None,
     }

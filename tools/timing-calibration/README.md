@@ -13,7 +13,8 @@ event (contracts `event-envelope.v1`, `common.v1#/$defs/identifier`):
 * not certified: `uncertified-<sku>-<fingerprint8>-<data8>`. The scoring engine already treats the
   `uncertified` prefix as an uncertified device (`device_uncertified_timing`, KSK-14 / SCR-12).
 
-The fingerprint hashes SKU, OS build, firmware, shell, nominal refresh rate and audio output device. Any
+The fingerprint hashes SKU, OS build, firmware, shell, nominal refresh rate, display
+(resolution and pixel ratio) and audio output device. Any
 change to one of them gives a new version (ENG-02 AC). The data hash covers the input files, options,
 thresholds and tool version, so the same inputs always give the same profile.
 
@@ -41,7 +42,7 @@ Exit codes: `analyse` 0 certified, 3 not certified; `compare` 4 on regression; 1
 | Touch (solenoid tapper) | `touch.taps[].event_ts_ms` (`PointerEvent.timeStamp`) | `tapper.csv`: `t_ms` contact (switch or accelerometer) | event - contact | `PointerEvent.timeStamp -= touch.offset_ms` |
 | Touch (high-speed camera) | as above, plus `flash_presented_ms` of the patch flashed on each pointerdown | `camera.csv`: `tap_index,contact_ms,photon_ms` (or `*_frame` with `--camera-fps`) | (photon - contact) - (flash - event) - display offset | same |
 | Audio (rig mic) | `audio.clicks[].scheduled_perf_ms` (the AudioContext time mapped through `getOutputTimestamp`) | `audio_rig.csv`: `t_ms` onsets | mic - scheduled | `audio_onset`, `prompt_audio_end += audio.offset_ms` |
-| Audio (in-page loopback) | `detected_ctx_s` from a line-out -> line-in cable, `input_latency_ms` | none | round trip - input latency | same |
+| Audio (in-page loopback) | `detected_ctx_s` from a line-out -> line-in cable, `input_latency_ms` | none | round trip - input latency - output latency already in the reference (`device.audio.output_latency_ms` when `audio.clock_mapping` is `output_timestamp`, 0 for `current_time`) | same |
 | Frames | `frames.raf_ms` (every rAF timestamp) | none | interval jitter and dropped frames | `timing_flag` thresholds |
 
 Practical notes:
@@ -53,7 +54,10 @@ Practical notes:
   audio) from the seed, so the sensor stream cannot alias with the refresh cycle and unanchored runs can be
   aligned by their pattern.
 * The kiosk audio engine must map AudioContext time to the page clock the same way the page does
-  (`AudioContext.getOutputTimestamp`); the audio offset is relative to that mapping.
+  (`AudioContext.getOutputTimestamp`); the audio offset is relative to that mapping. The capture records
+  the mapping actually used (`audio.clock_mapping`), and the loopback offset is converted to the same
+  reference so that rig and loopback certifications of one SKU give the same `audio.offset_ms`. A
+  `mixed` mapping leaves the loopback channel unanchored.
 
 ### Clock anchoring
 

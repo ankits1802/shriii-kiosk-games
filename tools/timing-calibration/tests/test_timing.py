@@ -164,9 +164,24 @@ def test_profile_is_deterministic(run: SynthRun, th: Thresholds, profile: dict[s
     assert again == profile
 
 
-def test_firmware_change_creates_new_version(run: SynthRun, th: Thresholds, profile: dict[str, Any]) -> None:
+@pytest.mark.parametrize(
+    ("path", "value"),
+    [
+        (("firmware",), "fw-1.4.3"),
+        (("os_build",), "os-2.0.1"),
+        (("shell",), "electron-99"),
+        (("screen", "width"), 1280),
+        (("audio", "output_device"), "usb-dac"),
+    ],
+)
+def test_device_change_creates_new_version(
+    run: SynthRun, th: Thresholds, profile: dict[str, Any], path: tuple[str, ...], value: Any
+) -> None:
     cap = json.loads(json.dumps(run.capture))
-    cap["device"]["firmware"] = "fw-1.4.3"
+    node = cap["device"]
+    for key in path[:-1]:
+        node = node[key]
+    node[path[-1]] = value
     other = build_profile(replace(_inputs(run), capture=cap), th, created_at=FIXED)
     assert other["fingerprint_sha256"] != profile["fingerprint_sha256"]
     assert other["timing_profile_version"] != profile["timing_profile_version"]
@@ -215,6 +230,29 @@ def test_audio_loopback_without_rig(run: SynthRun, th: Thresholds) -> None:
     a = build_profile(inp, th, created_at=FIXED)["audio"]
     assert a["method"] == "audio_loopback"
     assert a["offset_ms"] == pytest.approx(run.spec.audio_offset_ms, abs=0.8)
+
+
+@pytest.mark.parametrize("output_timestamp", [False, True])
+def test_audio_rig_and_loopback_share_one_reference(th: Thresholds, output_timestamp: bool) -> None:
+    """Rig and loopback offsets must agree whichever AudioContext -> page clock mapping the page used."""
+    spec = SynthSpec(output_timestamp_mapping=output_timestamp, n_visual=50, n_taps=30, n_camera=10)
+    r = generate(spec)
+    inp = _inputs(r)
+    rig = build_profile(inp, th, created_at=FIXED)["audio"]
+    loop = build_profile(replace(inp, audio_rig=None), th, created_at=FIXED)["audio"]
+    assert rig["method"] == "audio_rig" and loop["method"] == "audio_loopback"
+    assert loop["anchored"] is True
+    expected = spec.audio_offset_ms - (spec.reported_output_latency_ms if output_timestamp else 0.0)
+    assert rig["offset_ms"] == pytest.approx(expected, abs=0.8)
+    assert loop["offset_ms"] == pytest.approx(expected, abs=0.8)
+
+
+def test_mixed_audio_mapping_is_unanchored(run: SynthRun, th: Thresholds) -> None:
+    cap = json.loads(json.dumps(run.capture))
+    cap["audio"]["clock_mapping"] = "mixed"
+    a = build_profile(replace(_inputs(run), capture=cap, audio_rig=None), th, created_at=FIXED)["audio"]
+    assert a["anchored"] is False
+    assert a["offset_ms"] is None
 
 
 def test_missing_channels_fail_presence(run: SynthRun, th: Thresholds) -> None:
