@@ -19,7 +19,6 @@ import {
   readdirSync,
   readFileSync,
   rmSync,
-  statSync,
   writeFileSync,
 } from 'node:fs';
 import path from 'node:path';
@@ -101,9 +100,13 @@ cpSync(
 function hashDir(dir) {
   const h = createHash('sha256');
   const walk = (d) => {
-    for (const name of readdirSync(d).sort()) {
-      const p = path.join(d, name);
-      if (statSync(p).isDirectory()) walk(p);
+    // Dirent types instead of stat-then-read on the same path; same (code-unit) order as before.
+    const entries = readdirSync(d, { withFileTypes: true }).sort((a, b) =>
+      a.name < b.name ? -1 : a.name > b.name ? 1 : 0,
+    );
+    for (const entry of entries) {
+      const p = path.join(d, entry.name);
+      if (entry.isDirectory()) walk(p);
       else h.update(path.relative(dir, p).replaceAll('\\', '/')).update(readFileSync(p));
     }
   };

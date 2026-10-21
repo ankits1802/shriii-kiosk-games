@@ -6,7 +6,8 @@
  * read-only static server rooted at the renderer directory: traversal outside the roots, symlinks
  * escaping them and anything but GET/HEAD are refused.
  */
-import { readFile, realpath, stat } from 'node:fs/promises';
+import { constants } from 'node:fs';
+import { open, realpath } from 'node:fs/promises';
 import path from 'node:path';
 import { APP_HOST, APP_SCHEME } from './csp.ts';
 
@@ -112,8 +113,16 @@ export async function serveAppRequest(
     const rel = path.relative(realRoot, real);
     if (rel.startsWith('..') || path.isAbsolute(rel))
       return { status: 403, headers: base, body: null };
-    if (!(await stat(real)).isFile()) return { status: 404, headers: base, body: null };
-    const body = request.method === 'HEAD' ? null : new Uint8Array(await readFile(real));
+    // Check and read through one handle (no stat-then-read race on the path); O_NOFOLLOW (POSIX only)
+    // refuses a final-component symlink swapped in after the containment check.
+    const handle = await open(real, constants.O_RDONLY | (constants.O_NOFOLLOW ?? 0));
+    let body: Uint8Array | null;
+    try {
+      if (!(await handle.stat()).isFile()) return { status: 404, headers: base, body: null };
+      body = request.method === 'HEAD' ? null : new Uint8Array(await handle.readFile());
+    } finally {
+      await handle.close();
+    }
     // CSP on every response: documents and worker scripts each take theirs from their own response.
     const headers: Record<string, string> = {
       ...base,
