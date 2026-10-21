@@ -45,15 +45,19 @@ def language_coverage(
     total = len(catalogue.lines)
     to_record = [e for e in entries if e.record]
     status_counts = Counter(e.status for e in entries)
+    # Milestones are measured over the lines this language records (record: false lines never reach
+    # `recorded`, so counting them would make a 100% CI gate unreachable). Catalogue lines with no entry
+    # count as recorded-but-not-reached.
+    milestone_base = len(to_record) + (total - len(entries))
     milestones: dict[str, float] = {}
     for st in workflow.forward_path():
-        reached = sum(1 for e in entries if status_reached(workflow, e.status, st.id))
-        milestones[st.id] = round(reached / total, 4) if total else 0.0
+        reached = sum(1 for e in to_record if status_reached(workflow, e.status, st.id))
+        milestones[st.id] = round(reached / milestone_base, 4) if milestone_base else 0.0
     pack_ready: dict[str, float] = {}
     for pack, allowed in workflow.pack_eligibility.items():
         # Only lines this language records go into its audio pack.
         ok = sum(1 for e in to_record if e.status in allowed)
-        pack_ready[pack] = round(ok / len(to_record), 4) if to_record else 0.0
+        pack_ready[pack] = round(ok / milestone_base, 4) if milestone_base else 0.0
     by_category: dict[str, dict[str, int]] = defaultdict(lambda: defaultdict(int))
     for e in entries:
         by_category[lines[e.id].category][e.status] += 1
@@ -97,8 +101,8 @@ def render_markdown(reports: list[LanguageCoverage], workflow: Workflow, catalog
         "# Localisation coverage report",
         "",
         f"Catalogue `{catalogue.catalogue_version}` ({len(catalogue.lines)} lines). "
-        "Milestone columns give the share of catalogue lines at or beyond that ITC status; "
-        "pack readiness counts only lines the language records.",
+        "Milestone columns and pack readiness give the share of the lines each language records "
+        "(lines marked record: false are excluded) that are at or beyond that ITC status.",
         "",
         "## Summary",
         "",

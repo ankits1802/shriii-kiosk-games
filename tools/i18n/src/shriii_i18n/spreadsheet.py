@@ -176,6 +176,7 @@ def export_workbook(
         }
         for col in COLUMNS:
             cell = ws.cell(row=r, column=COLUMN_INDEX[col.key], value=values[col.key])
+            _force_text(cell)
             cell.alignment = Alignment(wrap_text=col.wrap, vertical="top")
             if col.editable:
                 cell.protection = Protection(locked=False)
@@ -233,6 +234,13 @@ def export_workbook(
     path.parent.mkdir(parents=True, exist_ok=True)
     wb.save(path)
     return path
+
+
+def _force_text(cell: Any) -> None:
+    """Store strings literally: openpyxl turns any string starting with '=' into a formula, which would be
+    lost on re-import (no cached value) and could execute in the reviewer's spreadsheet program."""
+    if isinstance(cell.value, str) and cell.value.startswith("="):
+        cell.data_type = "s"
 
 
 def _write_readme(ws: Worksheet, tag: str, name: str, workflow: Workflow) -> None:
@@ -411,7 +419,9 @@ def import_workbook(
     today = today or dt.date.today()
     issues = IssueList()
     result = ImportResult(language=data.language, workbook=path, issues=issues)
-    wb = load_workbook(path, data_only=True)
+    # data_only=False so that formulas typed by a reviewer are seen (and rejected) instead of silently read
+    # back as their cached value or as empty.
+    wb = load_workbook(path, data_only=False)
     meta = _read_meta(wb)
     lang = workflow.language(data.language)
     where_lang = {"language": lang.tag}
@@ -442,8 +452,8 @@ def import_workbook(
     seen: dict[str, int] = {}
     staged: dict[str, TranslationEntry] = {}
 
-    for r, raw in enumerate(ws.iter_rows(min_row=2, values_only=True), start=2):
-        row = {k: (raw[i] if i < len(raw) else None) for k, i in col_of.items()}
+    for r, cells in enumerate(ws.iter_rows(min_row=2), start=2):
+        row = {k: (cells[i].value if i < len(cells) else None) for k, i in col_of.items()}
         if all(_cell_text(v) == "" for v in row.values()):
             continue
         line_id = _cell_text(row["line_id"])
@@ -455,6 +465,18 @@ def import_workbook(
             issues.error("duplicate_line", f"line already appears in row {seen[line_id]}", **where)
             continue
         seen[line_id] = r
+        formula_cols = [
+            COLUMNS[COLUMN_INDEX[k] - 1].header
+            for k, i in col_of.items()
+            if i < len(cells) and cells[i].data_type == "f"
+        ]
+        if formula_cols:
+            issues.error(
+                "formula_in_cell",
+                f"cells hold spreadsheet formulas ({', '.join(formula_cols)}); type plain text instead",
+                **where,
+            )
+            continue
         line = lines.get(line_id)
         entry = entries.get(line_id)
         if line is None or entry is None:

@@ -14,7 +14,7 @@ from .checks import IssueList, validate_translation_file
 from .coverage import language_coverage, render_markdown
 from .repo import Repo, RepoError
 from .spreadsheet import WorkbookError, export_workbook, import_workbook, read_workbook_language
-from .sync import empty_translation_file, sync_translation_file
+from .sync import empty_translation_file, rebase_stale, sync_translation_file
 
 EXIT_OK, EXIT_INVALID, EXIT_USAGE = 0, 1, 2
 
@@ -54,6 +54,7 @@ def cmd_validate(args: argparse.Namespace, repo: Repo) -> int:
 
 def cmd_sync(args: argparse.Namespace, repo: Repo) -> int:
     catalogue, workflow = repo.load_catalogue(), repo.load_workflow()
+    status = EXIT_OK
     for tag in _languages(repo, args.lang):
         path = repo.translation_path(workflow, tag)
         data = (
@@ -64,13 +65,27 @@ def cmd_sync(args: argparse.Namespace, repo: Repo) -> int:
             f"{tag}: +{len(report.added)} added, {len(report.pruned)} pruned, {len(report.orphans)} orphan(s), "
             f"{len(report.stale)} stale{', reordered' if report.reordered else ''}"
         )
+        hint = "re-translating" if args.rebase_stale else "use --rebase-stale"
         for line_id in report.stale:
-            print(f"  stale: {line_id} (source text changed; flag for revision)")
+            print(f"  stale: {line_id} (source text changed; {hint})")
         for line_id in report.orphans:
             print(f"  orphan: {line_id} (not in catalogue; use --prune to remove)")
+        if args.rebase_stale and report.stale:
+            today = dt.date.fromisoformat(args.today) if args.today else None
+            rebased, rb = rebase_stale(
+                updated, catalogue, workflow, by=args.by or "", role=args.role or "", today=today
+            )
+            for line_id, problem in rb.problems:
+                print(f"  cannot rebase {line_id}: {problem}")
+            if not rb.ok:
+                print(f"{tag}: rebase rejected; nothing written for this language (pass --by NAME --role ROLE)")
+                status = EXIT_INVALID
+                continue
+            print(f"{tag}: rebased {len(rb.rebased)} draft/flagged, flagged {len(rb.flagged)} for revision")
+            updated = rebased
         if not args.dry_run and (report.changed or not path.exists() or updated != data):
             repo.save_translations(workflow, updated)
-    return EXIT_OK
+    return status
 
 
 def cmd_export(args: argparse.Namespace, repo: Repo) -> int:
@@ -145,6 +160,16 @@ def cmd_coverage(args: argparse.Namespace, repo: Repo) -> int:
     return EXIT_OK
 
 
+_CSV_FORMULA_PREFIXES = ("=", "+", "-", "@", "\t", "\r")
+
+
+def _csv_safe(value: object) -> object:
+    """Neutralise spreadsheet formula injection in free-text CSV fields (OWASP CSV injection guidance)."""
+    if isinstance(value, str) and value.startswith(_CSV_FORMULA_PREFIXES):
+        return "'" + value
+    return value
+
+
 def cmd_trail(args: argparse.Namespace, repo: Repo) -> int:
     workflow = repo.load_workflow()
     out_dir: Path = args.out_dir
@@ -182,11 +207,11 @@ def cmd_trail(args: argparse.Namespace, repo: Repo) -> int:
                             n,
                             ev.from_status,
                             ev.to_status,
-                            ev.by,
-                            ev.role,
+                            _csv_safe(ev.by),
+                            _csv_safe(ev.role),
                             ev.date.isoformat(),
-                            ev.comment,
-                            ev.source,
+                            _csv_safe(ev.comment),
+                            _csv_safe(ev.source),
                             entry.status,
                         ]
                     )
@@ -211,6 +236,14 @@ def build_parser() -> argparse.ArgumentParser:
     p = sub.add_parser("sync", help="add new catalogue lines as drafts, restore catalogue order, report stale/orphans")
     lang_opt(p)
     p.add_argument("--prune", action="store_true", help="remove entries whose line left the catalogue")
+    p.add_argument(
+        "--rebase-stale",
+        action="store_true",
+        help="take the new source text for stale entries; signed-off entries move to flagged_for_revision",
+    )
+    p.add_argument("--by", help="name signing the flagged_for_revision events written by --rebase-stale")
+    p.add_argument("--role", help="role of the --by signer (must be a workflow role)")
+    p.add_argument("--today", help="override today's date (YYYY-MM-DD) for --rebase-stale events")
     p.add_argument("--dry-run", action="store_true")
     p.set_defaults(func=cmd_sync)
 

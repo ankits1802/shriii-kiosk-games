@@ -14,11 +14,11 @@ It is a uv workspace member. After `uv sync --all-packages`, run it with `uv run
 | Command | What it does |
 |---|---|
 | `validate [--lang L] [--warnings] [--strict]` | Checks each translation file against the catalogue, the workflow and the glossary. Fails on errors, or on warnings too with `--strict`. Use it in CI. |
-| `sync [--lang L] [--prune] [--dry-run]` | Adds new catalogue lines as drafts and restores catalogue order. Reports lines whose source text changed (stale) and entries with no catalogue line (orphans). `--prune` removes the orphans. |
+| `sync [--lang L] [--prune] [--rebase-stale [--by NAME --role ROLE]] [--dry-run]` | Adds new catalogue lines as drafts and restores catalogue order. Reports lines whose source text changed (stale) and entries with no catalogue line (orphans). `--prune` removes the orphans. `--rebase-stale` takes the new source text for stale entries: machine drafts and flagged lines just get the new source; signed-off lines also move to `flagged_for_revision` with a history event signed by `--by`/`--role` (all or nothing per language). |
 | `export [--lang L] [--out-dir D]` | Writes one review workbook per language: `shriii-translations_<lang>_<date>.xlsx`. |
 | `import WORKBOOK... [--dry-run] [--report R.json] [--today YYYY-MM-DD]` | Validates reviewed workbooks. If a workbook has no errors, it is applied to the YAML (all or nothing). |
-| `coverage [--lang L] [--format md\|json] [--out F] [--min-status S --min-ratio R]` | Reports per language: status counts, share of lines at each milestone, pilot and production pack readiness, issues, and duration estimates. Exits non-zero below the threshold you set. |
-| `trail [--lang L] [--out-dir D]` | Exports the ITC sign-off trail as CSV. |
+| `coverage [--lang L] [--format md\|json] [--out F] [--min-status S --min-ratio R]` | Reports per language: status counts, share of lines at each milestone, pilot and production pack readiness, issues, and duration estimates. Milestones and pack readiness are measured over the lines the language records (`record: false` lines are excluded). Exits non-zero below the threshold you set. |
+| `trail [--lang L] [--out-dir D]` | Exports the ITC sign-off trail as CSV. Free-text cells that start with `=`, `+`, `-` or `@` are prefixed with `'` so they cannot run as formulas. |
 
 ## The review workbook
 
@@ -43,6 +43,7 @@ Each rule below has an issue code. The import is rejected if any row has an erro
 |---|---|
 | Every catalogue line appears exactly once | `missing_line`, `duplicate_line`, `unknown_line` |
 | The source text has not changed since export | `stale_export` |
+| No cell holds a spreadsheet formula (export always stores text literally, even when it starts with `=`) | `formula_in_cell` |
 | The YAML entry has not changed since export | `concurrent_change` |
 | Placeholders (`{x}`, `{{x}}`, `%s`, `<tag/>`, `[pause]`) match the source exactly | `placeholder_mismatch` |
 | Statuses move forward only, one step at a time, or to `flagged_for_revision` | `illegal_transition` |
