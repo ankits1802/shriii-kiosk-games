@@ -1,0 +1,135 @@
+:root {
+  color-scheme: dark;
+  --bg: #111418;
+  --panel: #1b2027;
+  --text: #e6e9ee;
+  --muted: #9aa4b2;
+  --accent: #4f9cf0;
+  font-family: system-ui, sans-serif;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+}
+
+main {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+h1 {
+  font-size: 1.4rem;
+}
+
+h2 {
+  font-size: 1.1rem;
+  margin-top: 1.5rem;
+}
+
+h3 {
+  font-size: 1rem;
+  margin: 0 0 0.5rem;
+}
+
+.hint {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.grid,
+.protocols {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+}
+
+.card {
+  background: var(--panel);
+  border-radius: 8px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+input {
+  font: inherit;
+  color: var(--text);
+  background: #0c0f12;
+  border: 1px solid #333b46;
+  border-radius: 4px;
+  padding: 6px;
+}
+
+input[type="checkbox"] {
+  width: auto;
+}
+
+button {
+  font: inherit;
+  background: var(--accent);
+  color: #fff;
+  border: 0;
+  border-radius: 6px;
+  padding: 10px 14px;
+  cursor: pointer;
+}
+
+button.secondary {
+  background: #3a4350;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: progress;
+}
+
+.row {
+  display: flex;
+  gap: 8px;
+}
+
+pre {
+  background: var(--panel);
+  border-radius: 8px;
+  padding: 12px;
+  white-space: pre-wrap;
+  font-size: 0.85rem;
+}
+
+#stage {
+  position: fixed;
+  inset: 0;
+  background: #000;
+  touch-action: none;
+  cursor: none;
+  z-index: 10;
+}
+
+#patch {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 120px;
+  height: 120px;
+  background: #000;
+}
+
+#stage-status {
+  position: absolute;
+  right: 16px;
+  bottom: 16px;
+  color: #444;
+  font-size: 0.8rem;
+}

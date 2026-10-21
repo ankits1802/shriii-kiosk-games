@@ -1,0 +1,3 @@
+# Local synthetic runs and generated profiles (`shriii-timing synth --out demo`).
+demo/
+profile*.json

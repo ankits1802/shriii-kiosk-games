@@ -1,0 +1,26 @@
+[project]
+name = "shriii-replay"
+version = "0.1.0"
+description = "Session replay and reproducibility check (ING-07, SCR-13): validate raw events against the contracts, check gapless seq, rebuild the trial timeline, re-run the indicator engine and render a self-contained HTML timeline for QA."
+requires-python = ">=3.13"
+dependencies = [
+  "shriii-contracts",
+  "shriii-scoring",
+  "shriii-simulator",
+  "jsonschema>=4.25",
+]
+
+[project.scripts]
+shriii-replay = "shriii_replay.cli:main"
+
+[build-system]
+requires = ["uv_build>=0.13,<0.14"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-name = "shriii_replay"
+
+[tool.uv.sources]
+shriii-contracts = { workspace = true }
+shriii-scoring = { workspace = true }
+shriii-simulator = { workspace = true }

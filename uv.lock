@@ -21,6 +21,7 @@ members = [
     "shriii-loadtest",
     "shriii-prereg",
     "shriii-rbridge",
+    "shriii-replay",
     "shriii-reports",
     "shriii-scoring",
     "shriii-simulator",
@@ -3326,6 +3327,25 @@ requires-dist = [
     { name = "pyarrow", specifier = ">=21" },
     { name = "pyyaml", specifier = ">=6" },
     { name = "shriii-validation", editable = "stats/validation" },
+]
+
+[[package]]
+name = "shriii-replay"
+version = "0.1.0"
+source = { editable = "tools/replay" }
+dependencies = [
+    { name = "jsonschema" },
+    { name = "shriii-contracts" },
+    { name = "shriii-scoring" },
+    { name = "shriii-simulator" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "jsonschema", specifier = ">=4.25" },
+    { name = "shriii-contracts", editable = "contracts/python" },
+    { name = "shriii-scoring", editable = "stats/scoring" },
+    { name = "shriii-simulator", editable = "stats/simulator" },
 ]
 
 [[package]]

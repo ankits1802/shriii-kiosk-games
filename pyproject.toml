@@ -43,6 +43,7 @@ members = [
   "stats/reports",
   "tools/i18n",
   "tools/loadtest",
+  "tools/replay",
 ]
 
 [tool.uv.sources]
@@ -71,6 +72,7 @@ testpaths = [
   "stats/reports/tests",
   "tools/i18n/tests",
   "tools/loadtest/tests",
+  "tools/replay/tests",
 ]
 addopts = ["-ra", "--strict-markers", "--import-mode=importlib"]
 cache_dir = ".cache/pytest"
