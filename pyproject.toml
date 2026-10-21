@@ -41,6 +41,7 @@ members = [
   "tools/prereg",
   "reports",
   "tools/i18n",
+  "tools/loadtest",
 ]
 
 [tool.uv.sources]
@@ -53,6 +54,7 @@ shriii-api = { workspace = true }
 shriii-prereg = { workspace = true }
 shriii-reports = { workspace = true }
 shriii-i18n = { workspace = true }
+shriii-loadtest = { workspace = true }
 
 [tool.pytest.ini_options]
 testpaths = [
@@ -67,6 +69,7 @@ testpaths = [
   "tools/prereg/tests",
   "reports/tests",
   "tools/i18n/tests",
+  "tools/loadtest/tests",
 ]
 addopts = ["-ra", "--strict-markers", "--import-mode=importlib"]
 asyncio_mode = "auto"
