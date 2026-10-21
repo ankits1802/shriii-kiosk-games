@@ -196,10 +196,9 @@ describe('transports', () => {
     const { server, port } = await tcpPrinter(vp);
     const sockets = new Set<import('node:net').Socket>();
     server.on('connection', (s) => sockets.add(s));
-    const printer = new ThermalPrinter(
-      new NetworkTransport({ host: '127.0.0.1', port }),
-      { statusTimeoutMs: 200 },
-    );
+    const printer = new ThermalPrinter(new NetworkTransport({ host: '127.0.0.1', port }), {
+      statusTimeoutMs: 200,
+    });
     try {
       expect((await printer.printReport({ qrUrl: URL_ })).ok).toBe(true);
       for (const s of sockets) s.destroy();

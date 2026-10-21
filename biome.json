@@ -12,7 +12,11 @@
       "!**/coverage",
       "!**/src/generated",
       "!docs/reference",
-      "!**/pnpm-lock.yaml"
+      "!**/pnpm-lock.yaml",
+      "!apps/api/openapi.json",
+      "!docs/security/scans",
+      "!reports/tests/fixtures/*.json",
+      "!tools/loadtest/results"
     ]
   },
   "formatter": {
