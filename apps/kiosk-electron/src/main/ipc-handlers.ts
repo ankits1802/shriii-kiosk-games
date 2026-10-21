@@ -55,10 +55,12 @@ function event(v: unknown, sid: string, s: number): unknown {
   const json = JSON.stringify(v);
   if (Buffer.byteLength(json, 'utf8') > MAX_EVENT_BYTES)
     throw new InvalidPayload('event too large');
+  // Envelopes must carry their own session_id and seq: the upload chunk decryptor (TS and Python)
+  // rejects a whole chunk whose events do not match its header, so one malformed event would
+  // otherwise poison every later batch of the session.
   const e = v as { session_id?: unknown; seq?: unknown };
-  if (e.session_id !== undefined && e.session_id !== sid)
-    throw new InvalidPayload('event session_id mismatch');
-  if (e.seq !== undefined && e.seq !== s) throw new InvalidPayload('event seq mismatch');
+  if (e.session_id !== sid) throw new InvalidPayload('event session_id missing or mismatched');
+  if (e.seq !== s) throw new InvalidPayload('event seq missing or mismatched');
   return JSON.parse(json) as unknown;
 }
 

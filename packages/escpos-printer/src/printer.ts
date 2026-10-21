@@ -103,6 +103,30 @@ export class ThermalPrinter {
     this.opened = true;
   }
 
+  /**
+   * Drop the link after a transport or status failure so the next job reopens it. Without this a
+   * printer that was power-cycled or unplugged (socket closed, device node re-created) would stay
+   * unusable until the app restarts.
+   */
+  private async resetLink(): Promise<void> {
+    if (!this.opened) return;
+    this.opened = false;
+    try {
+      await this.transport.close();
+    } catch {
+      // The link is already broken; reopening is what matters.
+    }
+  }
+
+  private async readStatusOrReset(): Promise<PrinterStatus> {
+    try {
+      return await this.readStatusUnlocked();
+    } catch (err) {
+      await this.resetLink();
+      throw err;
+    }
+  }
+
   private async readStatusUnlocked(): Promise<PrinterStatus> {
     await this.ensureOpen();
     this.transport.drain();
@@ -119,7 +143,7 @@ export class ThermalPrinter {
 
   /** Query real-time status (throws {@link StatusError} if the printer does not answer). */
   status(): Promise<PrinterStatus> {
-    return this.serial(() => this.readStatusUnlocked());
+    return this.serial(() => this.readStatusOrReset());
   }
 
   /** Compose and dither the report page without printing (preview, gallery, tests). */
@@ -162,7 +186,7 @@ export class ThermalPrinter {
     return this.serial(async () => {
       let before: PrinterStatus;
       try {
-        before = await this.readStatusUnlocked();
+        before = await this.readStatusOrReset();
       } catch (err) {
         return { ok: false, reason: 'no_status', status: null, detail: errorText(err) };
       }
@@ -173,11 +197,12 @@ export class ThermalPrinter {
       try {
         await this.writeChunked(job);
       } catch (err) {
+        await this.resetLink();
         return { ok: false, reason: 'transport_error', status: before, detail: errorText(err) };
       }
       let after: PrinterStatus;
       try {
-        after = await this.readStatusUnlocked();
+        after = await this.readStatusOrReset();
       } catch (err) {
         return { ok: false, reason: 'no_status', status: null, detail: errorText(err) };
       }

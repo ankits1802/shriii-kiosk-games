@@ -108,7 +108,31 @@ let rt: Runtime | null = null;
 
 function readConfigFile(file: string): Record<string, unknown> | null {
   if (!existsSync(file)) return null;
-  return JSON.parse(readFileSync(file, 'utf8')) as Record<string, unknown>;
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(readFileSync(file, 'utf8'));
+  } catch (err) {
+    throw new ConfigError(`${file} is not valid JSON: ${(err as Error).message}`);
+  }
+  if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) {
+    throw new ConfigError(`${file} must contain a JSON object`);
+  }
+  return parsed as Record<string, unknown>;
+}
+
+/** Open the outbox; any failure (unreadable KEK, bad key file, corrupt DB) leaves it unavailable. */
+function openOutboxSafely(
+  cfg: KioskConfig,
+  log: Logger,
+): { outbox: SqliteOutbox | null; encryption: KioskInfo['encryption'] } {
+  try {
+    return openOutbox(cfg, log);
+  } catch (err) {
+    // Never regenerate keys or delete data here: the kiosk keeps running (sessions cannot start,
+    // the heartbeat reports it) and operations fix the device key or policy file.
+    log.error('outbox could not be opened', { error: (err as Error).message });
+    return { outbox: null, encryption: 'unavailable' };
+  }
 }
 
 function secretStore(): SecretStore {
@@ -416,7 +440,7 @@ async function main(): Promise<void> {
   } catch {
     history = [];
   }
-  const { outbox, encryption } = openOutbox(cfg, log);
+  const { outbox, encryption } = openOutboxSafely(cfg, log);
   const printer = createPrinter(cfg.printer, path.join(userData, 'virtual-printer'));
   const r: Runtime = {
     cfg,
@@ -446,13 +470,16 @@ async function main(): Promise<void> {
   if (app.isPackaged && !process.env.SNAP && cfg.update.feedUrl) {
     const { default: electronUpdater } = await import('electron-updater');
     const ring = assignRing(cfg.kioskId, cfg.update.ring, cfg.update.ring10Percent);
+    // Manifest fetches use their own session: the default session's request allow-list admits only
+    // the app and the API origin (the renderer's network), which would cancel the update feed.
+    const updateSession = session.fromPartition('shriii-updater', { cache: false });
     r.updater = new KioskUpdater(
       electronUpdater.autoUpdater as unknown as UpdaterLike,
       cfg.update,
       ring,
       app.getVersion(),
       log,
-      (input, init) => net.fetch(input as string, init),
+      (input, init) => updateSession.fetch(input as string, init),
     );
     r.updater.start();
   }
@@ -538,5 +565,16 @@ if (!app.requestSingleInstanceLock()) {
     if (!selfTestPath) app.relaunch();
     app.exit(1);
   });
-  void app.whenReady().then(main);
+  app
+    .whenReady()
+    .then(main)
+    .catch((err: unknown) => {
+      // A startup failure must not leave a window-less zombie process: exit so the supervisor
+      // (snap daemon / systemd) restarts the kiosk and the failure shows on the heartbeat.
+      const e = err instanceof Error ? err : new Error(String(err));
+      rt?.log.error('startup failed', { error: e.message, stack: e.stack?.slice(0, 2000) });
+      console.error('SHRIII kiosk startup failed:', e);
+      shutdown();
+      app.exit(70);
+    });
 }

@@ -191,6 +191,32 @@ describe('transports', () => {
     }
   });
 
+  it('reconnects after the network printer drops the link (power cycle)', async () => {
+    const vp = new VirtualPrinter();
+    const { server, port } = await tcpPrinter(vp);
+    const sockets = new Set<import('node:net').Socket>();
+    server.on('connection', (s) => sockets.add(s));
+    const printer = new ThermalPrinter(
+      new NetworkTransport({ host: '127.0.0.1', port }),
+      { statusTimeoutMs: 200 },
+    );
+    try {
+      expect((await printer.printReport({ qrUrl: URL_ })).ok).toBe(true);
+      for (const s of sockets) s.destroy();
+      sockets.clear();
+      await new Promise((r) => setTimeout(r, 50));
+      // The first job after the drop may fail on the dead link; the printer must not stay broken.
+      const first = await printer.printReport({ qrUrl: URL_ });
+      const result = first.ok ? first : await printer.printReport({ qrUrl: URL_ });
+      expect(result.ok).toBe(true);
+      expect(vp.pages.length).toBeGreaterThanOrEqual(2);
+      expect((await printer.status()).online).toBe(true);
+    } finally {
+      await printer.close();
+      server.close();
+    }
+  });
+
   it('fails fast when the network printer is unreachable', async () => {
     const printer = new ThermalPrinter(
       new NetworkTransport({ host: '127.0.0.1', port: 1, connectTimeoutMs: 500 }),

@@ -123,6 +123,13 @@ describe('IPC handlers', () => {
       await h(IPC.outboxAppendAt, { sessionId: SID, seq: 0, event: { big: 'x'.repeat(70_000) } }),
     ).toMatchObject({ ok: false, code: 'invalid' });
     expect(await h(IPC.outboxAppendAt, null)).toMatchObject({ ok: false, code: 'invalid' });
+    // Envelopes without their own session_id / seq would poison the session's upload chunks.
+    expect(
+      await h(IPC.outboxAppendAt, { sessionId: SID, seq: 0, event: { event_type: 'x', seq: 0 } }),
+    ).toMatchObject({ ok: false, code: 'invalid' });
+    expect(
+      await h(IPC.outboxAppendAt, { sessionId: SID, seq: 0, event: { session_id: SID } }),
+    ).toMatchObject({ ok: false, code: 'invalid' });
     expect(await h(IPC.outboxAppendAt, { sessionId: SID, seq: 0, event: ev(SID, 0) })).toEqual({
       ok: true,
       value: 0,

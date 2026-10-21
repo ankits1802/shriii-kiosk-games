@@ -24,6 +24,17 @@ extraResources:
   - from: dist/config
     to: config
 asar: true
+# Electron fuses (flipped in the packaged binary): the kiosk binary cannot be repurposed as a
+# Node runtime (ELECTRON_RUN_AS_NODE), take NODE_OPTIONS or --inspect from the environment, load
+# app code from anywhere but the (integrity-checked) app.asar, or grant file:// extra privileges.
+electronFuses:
+  runAsNode: false
+  enableCookieEncryption: true
+  enableNodeOptionsEnvironmentVariable: false
+  enableNodeCliInspectArguments: false
+  enableEmbeddedAsarIntegrityValidation: true
+  onlyLoadAppFromAsar: true
+  grantFileProtocolExtraPrivileges: false
 # No native modules: the outbox uses Node's built-in node:sqlite.
 npmRebuild: false
 nodeGypRebuild: false

@@ -10,6 +10,7 @@
  * - {@link StreamTransport}: wraps any Duplex (e.g. a `serialport` instance) for platforms where a
  *   device file is not available.
  */
+import { constants as fsConstants } from 'node:fs';
 import { type FileHandle, open as openFile } from 'node:fs/promises';
 import { connect, type Socket } from 'node:net';
 import type { Duplex } from 'node:stream';
@@ -112,14 +113,16 @@ export class NetworkTransport implements PrinterTransport {
         this.socket = socket;
         resolve();
       });
-      socket.once('error', (err) => {
+      // Persistent handler: an error after connecting (printer power-cycled, ECONNRESET) must never
+      // become an unhandled 'error' event in the main process. The printer reopens the link.
+      socket.on('error', (err) => {
         clearTimeout(timer);
-        this.socket = null;
+        if (this.socket === socket) this.socket = null;
         reject(new TransportError(`connect failed ${this.description}`, { cause: err }));
       });
       socket.on('data', (d: Buffer) => this.rx.push(new Uint8Array(d)));
       socket.on('close', () => {
-        this.socket = null;
+        if (this.socket === socket) this.socket = null;
       });
     });
   }
@@ -192,26 +195,38 @@ export class StreamTransport implements PrinterTransport {
   }
 }
 
+/** Errors a non-blocking character device returns when no data / buffer space is available. */
+function isWouldBlock(err: unknown): boolean {
+  const code = (err as { code?: unknown } | null)?.code;
+  return code === 'EAGAIN' || code === 'EWOULDBLOCK';
+}
+
 /**
- * Character-device transport (Linux usblp `/dev/usb/lp0`, serial tty). Reads poll the device with a
- * short interval because character devices do not support async readiness through node:fs.
+ * Character-device transport (Linux usblp `/dev/usb/lp0`, serial tty). The device is opened
+ * `O_NONBLOCK` (where the platform has it) and reads poll with a short interval: a blocking read on
+ * a printer that never answers would otherwise park a libuv thread forever and every later read
+ * would queue behind it, so the status timeout could never fire.
  */
 export class DeviceFileTransport implements PrinterTransport {
   readonly description: string;
   private readonly path: string;
   private readonly pollMs: number;
+  private readonly writeStallMs: number;
   private handle: FileHandle | null = null;
 
-  constructor(options: { path: string; pollMs?: number }) {
+  constructor(options: { path: string; pollMs?: number; writeStallMs?: number }) {
     this.path = options.path;
     this.pollMs = options.pollMs ?? 20;
+    this.writeStallMs = options.writeStallMs ?? 10_000;
     this.description = `device://${this.path}`;
   }
 
   async open(): Promise<void> {
     if (this.handle) return;
     try {
-      this.handle = await openFile(this.path, 'r+');
+      // O_NONBLOCK is undefined on Windows; there the flag set is plain read/write.
+      const nonBlock = (fsConstants as { O_NONBLOCK?: number }).O_NONBLOCK ?? 0;
+      this.handle = await openFile(this.path, fsConstants.O_RDWR | nonBlock);
     } catch (err) {
       throw new TransportError(`cannot open ${this.path}`, { cause: err });
     }
@@ -220,9 +235,25 @@ export class DeviceFileTransport implements PrinterTransport {
   async write(data: Uint8Array): Promise<void> {
     if (!this.handle) throw new TransportError('device not open');
     let offset = 0;
+    let stalledSince: number | null = null;
     while (offset < data.length) {
-      const { bytesWritten } = await this.handle.write(data, offset, data.length - offset);
-      offset += bytesWritten;
+      let bytesWritten = 0;
+      try {
+        ({ bytesWritten } = await this.handle.write(data, offset, data.length - offset));
+      } catch (err) {
+        if (!isWouldBlock(err)) throw new TransportError('write failed', { cause: err });
+      }
+      if (bytesWritten > 0) {
+        offset += bytesWritten;
+        stalledSince = null;
+        continue;
+      }
+      // Printer buffer full: wait for it to drain, but not forever (paper jam, unplugged).
+      stalledSince ??= Date.now();
+      if (Date.now() - stalledSince > this.writeStallMs) {
+        throw new TransportError(`write stalled for ${this.writeStallMs} ms`);
+      }
+      await new Promise((r) => setTimeout(r, this.pollMs));
     }
   }
 
@@ -231,7 +262,12 @@ export class DeviceFileTransport implements PrinterTransport {
     const deadline = Date.now() + timeoutMs;
     const buf = new Uint8Array(maxBytes);
     for (;;) {
-      const { bytesRead } = await this.handle.read(buf, 0, maxBytes, null);
+      let bytesRead = 0;
+      try {
+        ({ bytesRead } = await this.handle.read(buf, 0, maxBytes, null));
+      } catch (err) {
+        if (!isWouldBlock(err)) throw new TransportError('read failed', { cause: err });
+      }
       if (bytesRead > 0) return buf.slice(0, bytesRead);
       if (Date.now() >= deadline) return new Uint8Array(0);
       await new Promise((r) => setTimeout(r, this.pollMs));
