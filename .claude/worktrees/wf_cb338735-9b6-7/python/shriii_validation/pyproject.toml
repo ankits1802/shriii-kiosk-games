@@ -1,0 +1,32 @@
+[project]
+name = "shriii-validation"
+version = "0.1.0"
+description = "Psychometric validation engine (reliability, validity, structure, fairness, prediction, norming)"
+requires-python = ">=3.13"
+dependencies = [
+  "shriii-contracts",
+  "shriii-scoring",
+  "numpy>=2.3",
+  "scipy>=1.16",
+  "pandas>=2.3",
+  "polars>=1.30",
+  "statsmodels>=0.14",
+  "pingouin>=0.5",
+  "semopy>=2.3",
+  "factor_analyzer>=0.5",
+  "scikit-learn>=1.7",
+  "xgboost>=3",
+  "pyarrow>=21",
+  "pyyaml>=6",
+]
+
+[build-system]
+requires = ["uv_build>=0.13,<0.14"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-name = "shriii_validation"
+
+[tool.uv.sources]
+shriii-contracts = { workspace = true }
+shriii-scoring = { workspace = true }

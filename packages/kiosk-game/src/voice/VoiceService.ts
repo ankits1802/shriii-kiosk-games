@@ -11,6 +11,7 @@
  * - Production plays recorded files only. The Web Speech placeholder exists only when
  *   `import.meta.env.DEV && VITE_DEV_VOICE_PLACEHOLDER === 'true'` (compiled out of production builds)
  *   AND the host asked for it; it shows a "DEV VOICE" badge. Subtitles are never shown.
+ * - `speaking` / `onSpeakingChange` report when narration is audible (the walkaway timer pauses).
  */
 
 import type { VoiceAudioHost } from '../audio/AudioEngine.ts';
@@ -19,6 +20,7 @@ import type {
   EventLogger,
   LanguageTag,
   LineId,
+  Unsubscribe,
   VoicePlayback,
   VoicePlaybackResult,
   VoicePlayOptions,
@@ -27,6 +29,7 @@ import type {
 import { LINES } from './catalogue/lines.generated.ts';
 import type { LineMeta } from './catalogue/types.ts';
 import { type ResolvedClip, resolveClip, type VoiceManifest } from './manifest.ts';
+import { SpeakingTracker } from './speaking.ts';
 
 /** True only in dev builds with VITE_DEV_VOICE_PLACEHOLDER=true (statically false in production). */
 export const DEV_VOICE_PLACEHOLDER_ALLOWED: boolean =
@@ -91,6 +94,7 @@ export class ManifestVoiceService implements VoiceService {
   private current: InFlight | null = null;
   private lastInstruction: LineId | null = null;
   private replayCounts = new Map<LineId, number>();
+  private readonly speakingTracker = new SpeakingTracker();
 
   constructor(opts: VoiceServiceOptions) {
     this.host = opts.host;
@@ -106,6 +110,15 @@ export class ManifestVoiceService implements VoiceService {
 
   get language(): LanguageTag {
     return this.lang;
+  }
+
+  /** True while a clip is audible. */
+  get speaking(): boolean {
+    return this.speakingTracker.speaking;
+  }
+
+  onSpeakingChange(listener: (speaking: boolean) => void): Unsubscribe {
+    return this.speakingTracker.subscribe(listener);
   }
 
   get isDevPlaceholder(): boolean {
@@ -288,6 +301,7 @@ export class ManifestVoiceService implements VoiceService {
     const sources: AudioBufferSourceNode[] = [];
     const gains: GainNode[] = [];
     let release: (() => void) | null = null;
+    let endSpeaking: (() => void) | null = null;
     let finished = false;
 
     const finish = (
@@ -299,6 +313,8 @@ export class ManifestVoiceService implements VoiceService {
       finished = true;
       release?.();
       release = null;
+      endSpeaking?.();
+      endSpeaking = null;
       options.signal?.removeEventListener('abort', onAbort);
       const endMs = this.now();
       const durationMs = Math.max(0, endMs - onsetMs);
@@ -394,6 +410,7 @@ export class ManifestVoiceService implements VoiceService {
         last = src;
       }
       playedClips = ready.map((r) => ({ clip: r.clip, durationMs: r.buffer.duration * 1000 }));
+      endSpeaking = this.speakingTracker.begin();
       onsetMs = this.clock ? this.clock.fromAudioTime(t0) : this.now() + SCHEDULE_LEAD_S * 1000;
       resolveStarted(onsetMs);
       if (last) {
@@ -467,11 +484,13 @@ export class ManifestVoiceService implements VoiceService {
         });
         return;
       }
+      const endSpeaking = this.speakingTracker.begin();
       const speech = mod.speakPlaceholder(lineIds, target, () => this.now());
       cancel = speech.cancel;
       void speech.started.then(resolveStarted);
       void speech.ended.then(async (r) => {
         release?.();
+        endSpeaking();
         const onset = await speech.started;
         if (this.current?.playback === playback) this.current = null;
         resolveEnded({

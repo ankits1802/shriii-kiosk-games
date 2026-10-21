@@ -1,0 +1,257 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://shriii.local/contracts/content-manifest.v1.schema.json",
+  "title": "ContentManifest",
+  "description": "Maps stimulus, audio and layout IDs to semantic attributes (plan section 6.2, PLT-03). 100% of trials must join to a stimulus entry.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "$ref": "common.v1.schema.json#/$defs/minor_schema_version"
+    },
+    "manifest_id": {
+      "$ref": "common.v1.schema.json#/$defs/identifier"
+    },
+    "content_pack_version": {
+      "$ref": "common.v1.schema.json#/$defs/semver"
+    },
+    "bundle_hash": {
+      "$ref": "common.v1.schema.json#/$defs/sha256"
+    },
+    "created_at": {
+      "$ref": "common.v1.schema.json#/$defs/date_time"
+    },
+    "languages": {
+      "type": "array",
+      "items": {
+        "$ref": "common.v1.schema.json#/$defs/language_tag"
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "stimuli": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "title": "StimulusEntry",
+        "additionalProperties": false,
+        "properties": {
+          "stimulus_id": {
+            "$ref": "common.v1.schema.json#/$defs/identifier"
+          },
+          "stimulus_version": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          },
+          "module_id": {
+            "$ref": "common.v1.schema.json#/$defs/identifier"
+          },
+          "kind": {
+            "$ref": "common.v1.schema.json#/$defs/identifier"
+          },
+          "attributes": {
+            "type": "object",
+            "title": "StimulusAttributes",
+            "additionalProperties": false,
+            "properties": {
+              "go_nogo": {
+                "type": ["string", "null"],
+                "enum": ["go", "nogo", null]
+              },
+              "rule": {
+                "anyOf": [
+                  {
+                    "$ref": "common.v1.schema.json#/$defs/identifier"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "min_moves": {
+                "type": ["integer", "null"],
+                "minimum": 0
+              },
+              "solver_optimum": {
+                "type": ["integer", "null"],
+                "minimum": 0
+              },
+              "unsolvable": {
+                "type": "boolean"
+              },
+              "optional": {
+                "type": "boolean"
+              },
+              "prompted": {
+                "type": "boolean"
+              },
+              "customer_tone_level": {
+                "type": ["integer", "null"],
+                "minimum": 0,
+                "maximum": 4
+              },
+              "voice_clip_id": {
+                "anyOf": [
+                  {
+                    "$ref": "common.v1.schema.json#/$defs/identifier"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "face_asset_id": {
+                "anyOf": [
+                  {
+                    "$ref": "common.v1.schema.json#/$defs/identifier"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "bribe_size_tokens": {
+                "type": ["integer", "null"],
+                "minimum": 0
+              },
+              "repeat_group_id": {
+                "anyOf": [
+                  {
+                    "$ref": "common.v1.schema.json#/$defs/identifier"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "anchor_trial": {
+                "type": "boolean"
+              },
+              "form_id": {
+                "anyOf": [
+                  {
+                    "$ref": "common.v1.schema.json#/$defs/identifier"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "requires_numeracy": {
+                "const": false,
+                "description": "No decision may require reading digits (ENG-04/ENG-11)."
+              },
+              "voice_forbidden": {
+                "type": "boolean"
+              }
+            },
+            "required": ["anchor_trial", "requires_numeracy", "voice_forbidden"]
+          }
+        },
+        "required": ["stimulus_id", "stimulus_version", "module_id", "kind", "attributes"]
+      }
+    },
+    "audio_clips": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "title": "AudioEntry",
+        "additionalProperties": false,
+        "properties": {
+          "key": {
+            "$ref": "common.v1.schema.json#/$defs/identifier"
+          },
+          "language": {
+            "$ref": "common.v1.schema.json#/$defs/language_tag"
+          },
+          "file": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_./-]+\\.(opus|ogg|webm|wav)$"
+          },
+          "sha256": {
+            "$ref": "common.v1.schema.json#/$defs/sha256"
+          },
+          "duration_ms": {
+            "type": "number",
+            "minimum": 0
+          },
+          "speaker_id": {
+            "anyOf": [
+              {
+                "$ref": "common.v1.schema.json#/$defs/identifier"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "take": {
+            "type": ["integer", "null"],
+            "minimum": 1
+          },
+          "script_version": {
+            "$ref": "common.v1.schema.json#/$defs/semver"
+          },
+          "review_state": {
+            "$ref": "common.v1.schema.json#/$defs/itc_state"
+          },
+          "loudness_lufs": {
+            "type": ["number", "null"]
+          },
+          "true_peak_dbtp": {
+            "type": ["number", "null"]
+          },
+          "voice_forbidden": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "key",
+          "language",
+          "file",
+          "sha256",
+          "duration_ms",
+          "speaker_id",
+          "take",
+          "script_version",
+          "review_state",
+          "loudness_lufs",
+          "true_peak_dbtp",
+          "voice_forbidden"
+        ]
+      }
+    },
+    "layouts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "title": "LayoutEntry",
+        "additionalProperties": false,
+        "properties": {
+          "layout_id": {
+            "$ref": "common.v1.schema.json#/$defs/identifier"
+          },
+          "module_id": {
+            "$ref": "common.v1.schema.json#/$defs/identifier"
+          },
+          "attributes": {
+            "type": "object"
+          }
+        },
+        "required": ["layout_id", "module_id", "attributes"]
+      }
+    }
+  },
+  "required": [
+    "schema_version",
+    "manifest_id",
+    "content_pack_version",
+    "bundle_hash",
+    "created_at",
+    "languages",
+    "stimuli",
+    "audio_clips",
+    "layouts"
+  ]
+}

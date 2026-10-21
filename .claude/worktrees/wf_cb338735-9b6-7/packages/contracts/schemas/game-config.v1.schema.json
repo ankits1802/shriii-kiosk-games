@@ -1,0 +1,323 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://shriii.local/contracts/game-config.v1.schema.json",
+  "title": "GameConfig",
+  "description": "content/games/**/*.json: module/episode configuration skeleton (ENG-04). All load parameters come from the level table (no hard-coded timers).",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "$ref": "common.v1.schema.json#/$defs/minor_schema_version"
+    },
+    "config_id": {
+      "$ref": "common.v1.schema.json#/$defs/identifier"
+    },
+    "module_id": {
+      "$ref": "common.v1.schema.json#/$defs/identifier"
+    },
+    "kind": {
+      "type": "string",
+      "enum": ["micro", "episode", "warmup"]
+    },
+    "pathways": {
+      "type": "array",
+      "items": {
+        "$ref": "common.v1.schema.json#/$defs/pathway"
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "version": {
+      "$ref": "common.v1.schema.json#/$defs/semver"
+    },
+    "paradigms": {
+      "type": "array",
+      "items": {
+        "$ref": "common.v1.schema.json#/$defs/identifier"
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "constructs": {
+      "type": "array",
+      "items": {
+        "$ref": "common.v1.schema.json#/$defs/construct_id"
+      },
+      "uniqueItems": true
+    },
+    "indicators": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z_]+\\.[a-z0-9_]+$",
+        "description": "Indicator id: <construct_id>.<name>."
+      },
+      "uniqueItems": true
+    },
+    "slot": {
+      "type": "boolean"
+    },
+    "scorable": {
+      "type": "boolean"
+    },
+    "budget": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "intro_ms": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "outro_ms": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "target_ms_l2": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "soft_cap_ms": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "hard_cap_ms": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "required": ["intro_ms", "outro_ms", "target_ms_l2", "soft_cap_ms", "hard_cap_ms"]
+    },
+    "levels": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "L1": {
+          "$ref": "#/$defs/level_config"
+        },
+        "L2": {
+          "$ref": "#/$defs/level_config"
+        },
+        "L3": {
+          "$ref": "#/$defs/level_config"
+        }
+      },
+      "required": ["L1", "L2", "L3"]
+    },
+    "blocks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "title": "BlockConfig",
+        "additionalProperties": false,
+        "properties": {
+          "block_id": {
+            "$ref": "common.v1.schema.json#/$defs/identifier"
+          },
+          "phase": {
+            "$ref": "common.v1.schema.json#/$defs/phase"
+          },
+          "condition_id": {
+            "$ref": "common.v1.schema.json#/$defs/identifier"
+          },
+          "trials": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "min_trials": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "budget_trial_ms": {
+            "type": ["integer", "null"],
+            "minimum": 1
+          },
+          "scorable": {
+            "type": "boolean"
+          },
+          "conditions": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "timer": {
+                "type": "boolean"
+              },
+              "noise": {
+                "type": "boolean"
+              },
+              "shift_active": {
+                "type": "boolean"
+              }
+            },
+            "required": ["timer", "noise", "shift_active"]
+          },
+          "beats": {
+            "type": "array",
+            "items": {
+              "$ref": "common.v1.schema.json#/$defs/identifier"
+            },
+            "uniqueItems": true
+          }
+        },
+        "required": [
+          "block_id",
+          "phase",
+          "condition_id",
+          "trials",
+          "min_trials",
+          "budget_trial_ms",
+          "scorable",
+          "conditions",
+          "beats"
+        ]
+      },
+      "minItems": 1
+    },
+    "min_counts": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "integer",
+        "minimum": 0
+      },
+      "description": "Minimum scheduled counts the scheduler must guarantee at every level (e.g. nogo, post_switch)."
+    },
+    "planned_counts": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "integer",
+        "minimum": 0
+      },
+      "description": "Planned counts at L2 for the same keys as min_counts."
+    },
+    "constraints": {
+      "type": "object",
+      "additionalProperties": {
+        "type": ["number", "string", "boolean", "array"]
+      },
+      "description": "Scheduler constraints (ENG-09)."
+    },
+    "context_shift": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "announced": {
+          "type": "boolean"
+        },
+        "window": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "minItems": 2,
+          "maxItems": 2
+        }
+      },
+      "required": ["kind", "announced", "window"]
+    },
+    "forms": {
+      "type": "array",
+      "items": {
+        "$ref": "common.v1.schema.json#/$defs/identifier"
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "audio_keys": {
+      "type": "array",
+      "items": {
+        "$ref": "common.v1.schema.json#/$defs/identifier"
+      },
+      "uniqueItems": true
+    },
+    "requires_numeracy": {
+      "const": false
+    },
+    "notes": {
+      "type": ["string", "null"],
+      "minLength": 1,
+      "maxLength": 4000
+    }
+  },
+  "required": [
+    "schema_version",
+    "config_id",
+    "module_id",
+    "kind",
+    "pathways",
+    "version",
+    "paradigms",
+    "constructs",
+    "indicators",
+    "slot",
+    "scorable",
+    "budget",
+    "levels",
+    "blocks",
+    "min_counts",
+    "planned_counts",
+    "constraints",
+    "context_shift",
+    "forms",
+    "audio_keys",
+    "requires_numeracy",
+    "notes"
+  ],
+  "$defs": {
+    "level_config": {
+      "type": "object",
+      "title": "LevelConfig",
+      "additionalProperties": false,
+      "properties": {
+        "timing": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "number",
+            "minimum": 0
+          },
+          "description": "Level-specific load parameters in ms (stimulus durations, ISI, windows, caps)."
+        },
+        "seconds_per_trial": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "median": {
+              "type": "number",
+              "minimum": 0
+            },
+            "slow": {
+              "type": "number",
+              "minimum": 0
+            }
+          },
+          "required": ["median", "slow"]
+        },
+        "estimated_duration_ms": {
+          "type": "object",
+          "description": "Budget estimates: median bot with planned trials, slow bot with planned trials, slow bot with optional trials trimmed to min_trials (what the soft cap enforces).",
+          "additionalProperties": false,
+          "properties": {
+            "median": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "slow": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "slow_trimmed": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          "required": ["median", "slow", "slow_trimmed"]
+        }
+      },
+      "required": ["timing", "seconds_per_trial", "estimated_duration_ms"]
+    }
+  }
+}

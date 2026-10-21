@@ -14,7 +14,22 @@ uv run shriii-api worker                      # job worker (or: worker --once)
 uv run shriii-api ingest-synthetic --participants 20   # end-to-end synthetic data (ENV=dev/test only)
 uv run shriii-api export-openapi              # writes apps/api/openapi.json (OpenAPI 3.1)
 uv run shriii-api dev-token --roles researcher
+uv run shriii-api demo-pipeline               # end-to-end synthetic demo (ENV=dev/test only), see below
 ```
+
+### End-to-end demo
+
+`shriii-api demo-pipeline` migrates and seeds, creates a fresh demo study, simulates synthetic players with
+`shriii_simulator` (default 400 per language for hi-IN and ta-IN, 100 of them with a T2 retest, item-level criterion
+responses with rotating planned-missing blocks, 2 % careless responders, and planted DIF: no-go errors harder in ta-IN at
+equal latent self-control), uploads every raw event through `POST /api/v1/events/batch`, links participants and stores
+the criterion administrations, then runs the worker (event validation, trials, features, batch scoring with group-level
+private-report estimates), matching, a frozen snapshot, every validation analysis (confirmatory construct validity on
+the registered primary hypotheses), a registered model with an untouched holdout cohort, provisional norms, gate
+evaluation (evaluate-only), a fail-closed release pack and report, kiosk health and a retention dry run. It prints a
+digest (`--json` for everything) and writes the full summary to `DATA_DIR/demo/<study>.json`. Options:
+`--participants-per-language`, `--languages`, `--retests`, `--seed`, `--workers` (processes for upload, criterion and
+jobs), `--models`, `--n-boot`. Point `DATABASE_URL`/`IDENTITY_DATABASE_URL` at a scratch database.
 
 To run the tests: `uv run pytest apps/api/tests`. They need a reachable Postgres, either from `SHRIII_TEST_DATABASE_URL` or found on localhost:5432 or localhost:55432. The tests create their own `shriii_api_test*` databases. If no server is reachable, the tests are skipped, unless `SHRIII_REQUIRE_DB=1` is set.
 
@@ -53,4 +68,7 @@ Database triggers reject UPDATE on raw events, criterion responses, consent arte
 - **Performance tasks** are recorded as `<item>.<measure>` responses (Tower of London, criterion card sort). A `.moves` measure needs `expected_response` set to the problem's minimum moves.
 - **Attention checks** also store `expected_response`, so a correction is re-evaluated against the key and the whole occasion is rescored.
 - **Trait estimates (layer 4)** use `shriii_scoring.bands.composite_score` and `band_for` with the release pack and the `gates.yaml` SEM rule.
-- **Reference analyses:** in construct validity, the confirmatory lower-bound tests are Holm-corrected as one family (gate rule B3). Test-retest ICC(A,1) gives no pass/fail below `min_pairs_per_cell` (B1).
+- **Validation (layer 4)** runs in `shriii_validation` through `adapters/validation.py` (`run_analysis`, `train_model`, `generate_norms`, `evaluate_gates`). There is no API-side fallback: without the engine a job fails with `adapter_unavailable`. Each `validation.statistical_results` row stores N, CI, threshold, pass/fail, `exclusions` (rows available/used/excluded and the frame-level exclusions) and `provenance` (snapshot id and sha256, dictionary/gates/hypotheses sha256, algorithm version, git sha, inputs hash). `POST /api/v1/validation/datasets/{id}/gate-evaluation` evaluates the trait and battery gates from the snapshot's latest results without promoting anything.
+- **Batch scoring** (`batch_scoring` job, `POST /api/v1/features/batch-scoring`) rescores a study x pathway per language so model-based indicators (partial pooling) exist, and writes group-level private-report estimates to `scored.group_indicators` (no session or participant column; small cells suppressed). Snapshots use only indicator values with status `ok`.
+- **Planned missingness:** `planned_missing_items` are validated and stored on every response row of the administration and reused by every rescore (corrections, key updates).
+- **Report policy:** `config/report_policy.yaml` withholds constructs from player reports on top of `gates.yaml` (integrity, BUILD_DECISIONS #6); their phrases are also left out of release-pack allowlists.

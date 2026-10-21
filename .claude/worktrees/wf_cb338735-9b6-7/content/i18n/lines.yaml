@@ -1,0 +1,4062 @@
+# SHRIII voice-line catalogue (VOX-02, VOX-07). Every player-facing sound is a PRE-RECORDED clip keyed by
+# line id x language; there is no runtime TTS in production. reference_text (en-IN) is used ONLY to write
+# recording scripts for native speakers and for ITC translation; it is never synthesised in production.
+# voice_forbidden lines are never routed to the speakers (KSK-05 never-voice list).
+# Recording status per language follows the ITC workflow; production packs contain only `approved` content.
+schema_version: '1.0'
+catalogue_version: 0.1.0
+reference_language: en-IN
+languages:
+- en-IN
+- hi-IN
+- mr-IN
+- ta-IN
+lines:
+- id: attract.greeting
+  category: attract
+  module_id: null
+  speaker_role: guide
+  context: Rotating attract greeting, at most once every 20 s, volume capped.
+  reference_text: Namaste! Come and play a short game at the market fair.
+  target_duration_ms: 5020
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: attract.touch_to_start
+  category: attract
+  module_id: null
+  speaker_role: guide
+  context: Attract loop call to action.
+  reference_text: Touch the screen to begin.
+  target_duration_ms: 2500
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: onboarding.language_face.hi_in
+  category: onboarding
+  module_id: null
+  speaker_role: guide
+  context: Speaking face for hi-IN (recorded in hi-IN itself).
+  reference_text: I speak Hindi. Touch me to play in Hindi.
+  target_duration_ms: 4180
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: onboarding.language_confirm.hi_in
+  category: onboarding
+  module_id: null
+  speaker_role: guide
+  context: Confirmation after choosing hi-IN.
+  reference_text: You chose Hindi. Touch the tick to continue, or the cross to choose again.
+  target_duration_ms: 6280
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: onboarding.language_face.mr_in
+  category: onboarding
+  module_id: null
+  speaker_role: guide
+  context: Speaking face for mr-IN (recorded in mr-IN itself).
+  reference_text: I speak Marathi. Touch me to play in Marathi.
+  target_duration_ms: 4180
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: onboarding.language_confirm.mr_in
+  category: onboarding
+  module_id: null
+  speaker_role: guide
+  context: Confirmation after choosing mr-IN.
+  reference_text: You chose Marathi. Touch the tick to continue, or the cross to choose again.
+  target_duration_ms: 6280
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: onboarding.language_face.ta_in
+  category: onboarding
+  module_id: null
+  speaker_role: guide
+  context: Speaking face for ta-IN (recorded in ta-IN itself).
+  reference_text: I speak Tamil. Touch me to play in Tamil.
+  target_duration_ms: 4180
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: onboarding.language_confirm.ta_in
+  category: onboarding
+  module_id: null
+  speaker_role: guide
+  context: Confirmation after choosing ta-IN.
+  reference_text: You chose Tamil. Touch the tick to continue, or the cross to choose again.
+  target_duration_ms: 6280
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: onboarding.language_face.en_in
+  category: onboarding
+  module_id: null
+  speaker_role: guide
+  context: Speaking face for en-IN (recorded in en-IN itself).
+  reference_text: I speak English. Touch me to play in English.
+  target_duration_ms: 4180
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: onboarding.language_confirm.en_in
+  category: onboarding
+  module_id: null
+  speaker_role: guide
+  context: Confirmation after choosing en-IN.
+  reference_text: You chose English. Touch the tick to continue, or the cross to choose again.
+  target_duration_ms: 6280
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: onboarding.globe_hint
+  category: onboarding
+  module_id: null
+  speaker_role: guide
+  context: Globe icon hint before consent.
+  reference_text: Touch the globe to change the language.
+  target_duration_ms: 3340
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: consent.core.segment_1
+  category: consent
+  module_id: null
+  speaker_role: guide
+  context: Core consent segment 1 (what_we_play); replayable; consent is committed by tap only.
+  reference_text: We will play a few short games at a village market. There are no right or wrong people, only choices.
+  target_duration_ms: 8800
+  tone: calm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: consent.core.segment_2
+  category: consent
+  module_id: null
+  speaker_role: guide
+  context: Core consent segment 2 (what_we_keep); replayable; consent is committed by tap only.
+  reference_text: We keep only your taps and choices, with no name. We never keep your voice or any recording.
+  target_duration_ms: 7960
+  tone: calm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: consent.core.segment_3
+  category: consent
+  module_id: null
+  speaker_role: guide
+  context: Core consent segment 3 (stop_anytime); replayable; consent is committed by tap only.
+  reference_text: You can stop at any time by touching the hand. You can also ask us to delete what you played.
+  target_duration_ms: 8800
+  tone: calm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: consent.core.segment_4
+  category: consent
+  module_id: null
+  speaker_role: guide
+  context: Core consent segment 4 (report_use); replayable; consent is committed by tap only.
+  reference_text: At the end you may hear a short picture summary. It is a snapshot of today's play, not a test or a diagnosis.
+  target_duration_ms: 10060
+  tone: calm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: consent.core.question
+  category: consent
+  module_id: null
+  speaker_role: guide
+  context: Core consent tap prompt.
+  reference_text: If you agree, touch the tick. If not, touch the cross.
+  target_duration_ms: 5020
+  tone: calm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: consent.archive.question
+  category: consent
+  module_id: null
+  speaker_role: guide
+  context: Separate archive opt-in (default no).
+  reference_text: May we keep your anonymous play for future research? Touch the tick for yes, or leave it for no.
+  target_duration_ms: 8380
+  tone: calm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: consent.declined_thanks
+  category: consent
+  module_id: null
+  speaker_role: guide
+  context: After declining core consent; nothing is kept.
+  reference_text: Thank you for stopping by. Have a lovely day at the fair.
+  target_duration_ms: 5440
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: bands.age.question
+  category: bands
+  module_id: null
+  speaker_role: guide
+  context: Life-stage figures with spoken age ranges.
+  reference_text: Which picture is closest to your age?
+  target_duration_ms: 3340
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: bands.age.option.18_24
+  category: bands
+  module_id: null
+  speaker_role: guide
+  context: Spoken age-range option.
+  reference_text: Eighteen to twenty-four years.
+  target_duration_ms: 2080
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: bands.age.option.25_34
+  category: bands
+  module_id: null
+  speaker_role: guide
+  context: Spoken age-range option.
+  reference_text: Twenty-five to thirty-four years.
+  target_duration_ms: 2080
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: bands.age.option.35_44
+  category: bands
+  module_id: null
+  speaker_role: guide
+  context: Spoken age-range option.
+  reference_text: Thirty-five to forty-four years.
+  target_duration_ms: 2080
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: bands.age.option.45_59
+  category: bands
+  module_id: null
+  speaker_role: guide
+  context: Spoken age-range option.
+  reference_text: Forty-five to fifty-nine years.
+  target_duration_ms: 2080
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: bands.age.option.60_plus
+  category: bands
+  module_id: null
+  speaker_role: guide
+  context: Spoken age-range option.
+  reference_text: Sixty years or more.
+  target_duration_ms: 2080
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: bands.age.option.under_18
+  category: bands
+  module_id: null
+  speaker_role: guide
+  context: Spoken age-range option.
+  reference_text: Under eighteen years.
+  target_duration_ms: 1660
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: bands.under_18.goodbye
+  category: bands
+  module_id: null
+  speaker_role: guide
+  context: Under-18 selection ends the session politely; nothing is kept.
+  reference_text: Thank you! This game is for grown-ups. Enjoy the fair!
+  target_duration_ms: 4600
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: bands.literacy.question
+  category: bands
+  module_id: null
+  speaker_role: guide
+  context: Literacy band question with pictorial options.
+  reference_text: Can you read a letter or a newspaper? Easily, with difficulty, or not at all?
+  target_duration_ms: 6700
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: bands.education.question
+  category: bands
+  module_id: null
+  speaker_role: guide
+  context: Schooling-stage pictures.
+  reference_text: Which picture shows how far you went in school?
+  target_duration_ms: 4180
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: bands.gender.question
+  category: bands
+  module_id: null
+  speaker_role: guide
+  context: Optional gender question.
+  reference_text: Which picture fits you? You can also skip this.
+  target_duration_ms: 4180
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: bands.device_use.question
+  category: bands
+  module_id: null
+  speaker_role: guide
+  context: Device familiarity.
+  reference_text: How often do you use a smartphone? Never, sometimes, or every day?
+  target_duration_ms: 5440
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: bands.played_before.question
+  category: bands
+  module_id: null
+  speaker_role: guide
+  context: Repeat play question.
+  reference_text: Have you played this game before?
+  target_duration_ms: 2920
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: bands.prefer_not_to_say
+  category: bands
+  module_id: null
+  speaker_role: guide
+  context: Option available on every band question.
+  reference_text: I prefer not to say.
+  target_duration_ms: 2500
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: warmup.intro
+  category: practice
+  module_id: warmup
+  speaker_role: guide
+  context: Warm-up start (not scored).
+  reference_text: Let's warm up! First, a few easy taps.
+  target_duration_ms: 3760
+  tone: encouraging
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: warmup.tap
+  category: practice
+  module_id: warmup
+  speaker_role: guide
+  context: Tap practice.
+  reference_text: Touch the mango when it appears.
+  target_duration_ms: 2920
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: warmup.hold
+  category: practice
+  module_id: warmup
+  speaker_role: guide
+  context: Hold practice.
+  reference_text: Now touch and hold the jar until it fills.
+  target_duration_ms: 4180
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: warmup.choice
+  category: practice
+  module_id: warmup
+  speaker_role: guide
+  context: Choice practice.
+  reference_text: Touch the basket that matches.
+  target_duration_ms: 2500
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: warmup.done
+  category: practice
+  module_id: warmup
+  speaker_role: guide
+  context: Warm-up end.
+  reference_text: Well done. Now let's go to the market!
+  target_duration_ms: 3760
+  tone: encouraging
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: dont_tap.intro
+  category: guide
+  module_id: dont_tap
+  speaker_role: guide
+  context: Guide introduction for dont_tap.
+  reference_text: Fresh fruit only! Serve good fruit quickly, but do not serve spoiled fruit.
+  target_duration_ms: 5860
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: dont_tap.practice
+  category: guide
+  module_id: dont_tap
+  speaker_role: guide
+  context: Practice prompt for dont_tap (practice trials are not scored).
+  reference_text: Let's try one together.
+  target_duration_ms: 2080
+  tone: encouraging
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: dont_tap.outro
+  category: guide
+  module_id: dont_tap
+  speaker_role: guide
+  context: Short bridge after dont_tap (<= 5 s).
+  reference_text: Thank you! Let's move on.
+  target_duration_ms: 1800
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: dont_tap.replay
+  category: guide
+  module_id: dont_tap
+  speaker_role: guide
+  context: Replay prefix for dont_tap; logged as instruction_replay.
+  reference_text: Here are the instructions again.
+  target_duration_ms: 1600
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: card_sort.intro
+  category: guide
+  module_id: card_sort
+  speaker_role: guide
+  context: Guide introduction for card_sort.
+  reference_text: Help sort the cards into the baskets. Listen to the sound to learn if a card is right.
+  target_duration_ms: 7960
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: card_sort.practice
+  category: guide
+  module_id: card_sort
+  speaker_role: guide
+  context: Practice prompt for card_sort (practice trials are not scored).
+  reference_text: Try sorting this card.
+  target_duration_ms: 2080
+  tone: encouraging
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: card_sort.outro
+  category: guide
+  module_id: card_sort
+  speaker_role: guide
+  context: Short bridge after card_sort (<= 5 s).
+  reference_text: Thank you! Let's move on.
+  target_duration_ms: 1800
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: card_sort.replay
+  category: guide
+  module_id: card_sort
+  speaker_role: guide
+  context: Replay prefix for card_sort; logged as instruction_replay.
+  reference_text: Here are the instructions again.
+  target_duration_ms: 1600
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: balloon.intro
+  category: guide
+  module_id: balloon
+  speaker_role: guide
+  context: Guide introduction for balloon.
+  reference_text: Pump the balloon to fill your jar. Collect before it bursts!
+  target_duration_ms: 5020
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: balloon.practice
+  category: guide
+  module_id: balloon
+  speaker_role: guide
+  context: Practice prompt for balloon (practice trials are not scored).
+  reference_text: Try pumping this balloon.
+  target_duration_ms: 2080
+  tone: encouraging
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: balloon.outro
+  category: guide
+  module_id: balloon
+  speaker_role: guide
+  context: Short bridge after balloon (<= 5 s).
+  reference_text: Thank you! Let's move on.
+  target_duration_ms: 1800
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: balloon.replay
+  category: guide
+  module_id: balloon
+  speaker_role: guide
+  context: Replay prefix for balloon; logged as instruction_replay.
+  reference_text: Here are the instructions again.
+  target_duration_ms: 1600
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: tower.intro
+  category: guide
+  module_id: tower
+  speaker_role: guide
+  context: Guide introduction for tower.
+  reference_text: Move the pots so they look like the picture. Plan your moves.
+  target_duration_ms: 5440
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: tower.practice
+  category: guide
+  module_id: tower
+  speaker_role: guide
+  context: Practice prompt for tower (practice trials are not scored).
+  reference_text: Try this small puzzle.
+  target_duration_ms: 2080
+  tone: encouraging
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: tower.outro
+  category: guide
+  module_id: tower
+  speaker_role: guide
+  context: Short bridge after tower (<= 5 s).
+  reference_text: Thank you! Let's move on.
+  target_duration_ms: 1800
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: tower.replay
+  category: guide
+  module_id: tower
+  speaker_role: guide
+  context: Replay prefix for tower; logged as instruction_replay.
+  reference_text: Here are the instructions again.
+  target_duration_ms: 1600
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: share_pot.intro
+  category: guide
+  module_id: share_pot
+  speaker_role: guide
+  context: Guide introduction for share_pot.
+  reference_text: Share tokens in the pot with your helpers. The pot grows and is shared by everyone.
+  target_duration_ms: 7120
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: share_pot.practice
+  category: guide
+  module_id: share_pot
+  speaker_role: guide
+  context: Practice prompt for share_pot (practice trials are not scored).
+  reference_text: Try a practice round.
+  target_duration_ms: 2080
+  tone: encouraging
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: share_pot.outro
+  category: guide
+  module_id: share_pot
+  speaker_role: guide
+  context: Short bridge after share_pot (<= 5 s).
+  reference_text: Thank you! Let's move on.
+  target_duration_ms: 1800
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: share_pot.replay
+  category: guide
+  module_id: share_pot
+  speaker_role: guide
+  context: Replay prefix for share_pot; logged as instruction_replay.
+  reference_text: Here are the instructions again.
+  target_duration_ms: 1600
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: wait_or_now.intro
+  category: guide
+  module_id: wait_or_now
+  speaker_role: guide
+  context: Guide introduction for wait_or_now.
+  reference_text: 'Choose: a small gift now, or a bigger gift later.'
+  target_duration_ms: 4600
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: wait_or_now.practice
+  category: guide
+  module_id: wait_or_now
+  speaker_role: guide
+  context: Practice prompt for wait_or_now (practice trials are not scored).
+  reference_text: Try one choice.
+  target_duration_ms: 1660
+  tone: encouraging
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: wait_or_now.outro
+  category: guide
+  module_id: wait_or_now
+  speaker_role: guide
+  context: Short bridge after wait_or_now (<= 5 s).
+  reference_text: Thank you! Let's move on.
+  target_duration_ms: 1800
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: wait_or_now.replay
+  category: guide
+  module_id: wait_or_now
+  speaker_role: guide
+  context: Replay prefix for wait_or_now; logged as instruction_replay.
+  reference_text: Here are the instructions again.
+  target_duration_ms: 1600
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: steady_hands.intro
+  category: guide
+  module_id: steady_hands
+  speaker_role: guide
+  context: Guide introduction for steady_hands.
+  reference_text: Touch only when the lamp lights up. Sometimes, keep your hand held down.
+  target_duration_ms: 5860
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: steady_hands.practice
+  category: guide
+  module_id: steady_hands
+  speaker_role: guide
+  context: Practice prompt for steady_hands (practice trials are not scored).
+  reference_text: Let's practise.
+  target_duration_ms: 1240
+  tone: encouraging
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: steady_hands.outro
+  category: guide
+  module_id: steady_hands
+  speaker_role: guide
+  context: Short bridge after steady_hands (<= 5 s).
+  reference_text: Thank you! Let's move on.
+  target_duration_ms: 1800
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: steady_hands.replay
+  category: guide
+  module_id: steady_hands
+  speaker_role: guide
+  context: Replay prefix for steady_hands; logged as instruction_replay.
+  reference_text: Here are the instructions again.
+  target_duration_ms: 1600
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: four_stalls.intro
+  category: guide
+  module_id: four_stalls
+  speaker_role: guide
+  context: Guide introduction for four_stalls.
+  reference_text: Pick a stall to buy from. Some stalls are luckier than others.
+  target_duration_ms: 5440
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: four_stalls.practice
+  category: guide
+  module_id: four_stalls
+  speaker_role: guide
+  context: Practice prompt for four_stalls (practice trials are not scored).
+  reference_text: Try one pick.
+  target_duration_ms: 1660
+  tone: encouraging
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: four_stalls.outro
+  category: guide
+  module_id: four_stalls
+  speaker_role: guide
+  context: Short bridge after four_stalls (<= 5 s).
+  reference_text: Thank you! Let's move on.
+  target_duration_ms: 1800
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: four_stalls.replay
+  category: guide
+  module_id: four_stalls
+  speaker_role: guide
+  context: Replay prefix for four_stalls; logged as instruction_replay.
+  reference_text: Here are the instructions again.
+  target_duration_ms: 1600
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: private_dice.intro
+  category: guide
+  module_id: private_dice
+  speaker_role: guide
+  context: Guide introduction for private_dice.
+  reference_text: Roll the dice in your cupped hands. Only you see it. Then touch the picture that matches.
+  target_duration_ms: 7540
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: private_dice.practice
+  category: guide
+  module_id: private_dice
+  speaker_role: guide
+  context: Practice prompt for private_dice (practice trials are not scored).
+  reference_text: Let's practise once.
+  target_duration_ms: 1660
+  tone: encouraging
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: private_dice.outro
+  category: guide
+  module_id: private_dice
+  speaker_role: guide
+  context: Short bridge after private_dice (<= 5 s).
+  reference_text: Thank you! Let's move on.
+  target_duration_ms: 1800
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: private_dice.replay
+  category: guide
+  module_id: private_dice
+  speaker_role: guide
+  context: Replay prefix for private_dice; logged as instruction_replay.
+  reference_text: Here are the instructions again.
+  target_duration_ms: 1600
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: stall.intro
+  category: guide
+  module_id: stall
+  speaker_role: guide
+  context: Guide introduction for stall.
+  reference_text: Welcome to your stall! Serve your customers, but never serve spoiled food.
+  target_duration_ms: 5440
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: stall.practice
+  category: guide
+  module_id: stall
+  speaker_role: guide
+  context: Practice prompt for stall (practice trials are not scored).
+  reference_text: Let's serve the first customer together.
+  target_duration_ms: 2920
+  tone: encouraging
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: stall.outro
+  category: guide
+  module_id: stall
+  speaker_role: guide
+  context: Short bridge after stall (<= 5 s).
+  reference_text: Thank you! Let's move on.
+  target_duration_ms: 1800
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: stall.replay
+  category: guide
+  module_id: stall
+  speaker_role: guide
+  context: Replay prefix for stall; logged as instruction_replay.
+  reference_text: Here are the instructions again.
+  target_duration_ms: 1600
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: weighing_post.intro
+  category: guide
+  module_id: weighing_post
+  speaker_role: guide
+  context: Guide introduction for weighing_post.
+  reference_text: You are the weighmaster today. Watch the needle and decide.
+  target_duration_ms: 4600
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: weighing_post.practice
+  category: guide
+  module_id: weighing_post
+  speaker_role: guide
+  context: Practice prompt for weighing_post (practice trials are not scored).
+  reference_text: Let's weigh the first sack together.
+  target_duration_ms: 2920
+  tone: encouraging
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: weighing_post.outro
+  category: guide
+  module_id: weighing_post
+  speaker_role: guide
+  context: Short bridge after weighing_post (<= 5 s).
+  reference_text: Thank you! Let's move on.
+  target_duration_ms: 1800
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: weighing_post.replay
+  category: guide
+  module_id: weighing_post
+  speaker_role: guide
+  context: Replay prefix for weighing_post; logged as instruction_replay.
+  reference_text: Here are the instructions again.
+  target_duration_ms: 1600
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: road_home.intro
+  category: guide
+  module_id: road_home
+  speaker_role: guide
+  context: Guide introduction for road_home.
+  reference_text: Time to go home. Plan your route, run your errands, and share fuel with your friend.
+  target_duration_ms: 7120
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: road_home.practice
+  category: guide
+  module_id: road_home
+  speaker_role: guide
+  context: Practice prompt for road_home (practice trials are not scored).
+  reference_text: Let's take the first step together.
+  target_duration_ms: 2920
+  tone: encouraging
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: road_home.outro
+  category: guide
+  module_id: road_home
+  speaker_role: guide
+  context: Short bridge after road_home (<= 5 s).
+  reference_text: Thank you! Let's move on.
+  target_duration_ms: 1800
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: road_home.replay
+  category: guide
+  module_id: road_home
+  speaker_role: guide
+  context: Replay prefix for road_home; logged as instruction_replay.
+  reference_text: Here are the instructions again.
+  target_duration_ms: 1600
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: coplay.intro
+  category: guide
+  module_id: coplay
+  speaker_role: guide
+  context: Guide introduction for coplay.
+  reference_text: Now play together with a partner. Take turns and help each other.
+  target_duration_ms: 5440
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: coplay.practice
+  category: guide
+  module_id: coplay
+  speaker_role: guide
+  context: Practice prompt for coplay (practice trials are not scored).
+  reference_text: Let's practise taking turns.
+  target_duration_ms: 2080
+  tone: encouraging
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: coplay.outro
+  category: guide
+  module_id: coplay
+  speaker_role: guide
+  context: Short bridge after coplay (<= 5 s).
+  reference_text: Thank you! Let's move on.
+  target_duration_ms: 1800
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: coplay.replay
+  category: guide
+  module_id: coplay
+  speaker_role: guide
+  context: Replay prefix for coplay; logged as instruction_replay.
+  reference_text: Here are the instructions again.
+  target_duration_ms: 1600
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: dont_tap.prompt.serve
+  category: guide
+  module_id: dont_tap
+  speaker_role: guide
+  context: Short go cue (latency anchor audio_end when spoken).
+  reference_text: Serve!
+  target_duration_ms: 600
+  tone: playful
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: dont_tap.pressure_cue
+  category: guide
+  module_id: dont_tap
+  speaker_role: guide
+  context: Announced pressure block (context_shift pressure_on).
+  reference_text: The crowd is here! Serve fast, but only good fruit.
+  target_duration_ms: 4600
+  tone: urgent
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: tower.skip_hint
+  category: guide
+  module_id: tower
+  speaker_role: guide
+  context: Skip icon appears after 15 s on each problem.
+  reference_text: If you think it cannot be done, you may touch the arrow to skip.
+  target_duration_ms: 6280
+  tone: calm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: stall.customer.calm
+  category: feedback
+  module_id: stall
+  speaker_role: customer
+  context: Calm customer request (tone level 0-1).
+  reference_text: Namaste! Two good mangoes, please.
+  target_duration_ms: 2500
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: stall.customer.hostile
+  category: feedback
+  module_id: stall
+  speaker_role: customer
+  context: Hostile customer (tone level 3-4); a recorded stimulus property, never sensing of the player.
+  reference_text: Hurry up! Why is this taking so long?
+  target_duration_ms: 3760
+  tone: hostile
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: stall.rush_cue
+  category: guide
+  module_id: stall
+  speaker_role: guide
+  context: Timed rush announcement.
+  reference_text: Rush time! Many customers are coming.
+  target_duration_ms: 2920
+  tone: urgent
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: weighing_post.new_rule
+  category: guide
+  module_id: weighing_post
+  speaker_role: inspector
+  context: Announced new market rule (context_shift new_market_rule).
+  reference_text: Listen! From now on, sacks that lean to the left must be fined.
+  target_duration_ms: 5860
+  tone: firm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: weighing_post.quantity_prefix
+  category: guide
+  module_id: weighing_post
+  speaker_role: guide
+  context: Prefix before a spoken quantity clip; no numerals on screen.
+  reference_text: 'The needle shows:'
+  target_duration_ms: 1000
+  tone: neutral
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: road_home.block_cue
+  category: guide
+  module_id: road_home
+  speaker_role: guide
+  context: Road block event (no cue ever refers to the rule reversal).
+  reference_text: Oh! The road is blocked.
+  target_duration_ms: 2500
+  tone: neutral
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: hub.bridge
+  category: guide
+  module_id: null
+  speaker_role: guide
+  context: Hub bridge between modules (<= 5 s).
+  reference_text: Let's visit the next stall.
+  target_duration_ms: 1800
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: feedback.well_done
+  category: feedback
+  module_id: null
+  speaker_role: guide
+  context: Neutral-positive feedback; never a score.
+  reference_text: Well done!
+  target_duration_ms: 800
+  tone: encouraging
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: feedback.try_again
+  category: feedback
+  module_id: null
+  speaker_role: guide
+  context: Practice retry.
+  reference_text: Let's try again.
+  target_duration_ms: 900
+  tone: encouraging
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: feedback.correct_sound_hint
+  category: feedback
+  module_id: null
+  speaker_role: guide
+  context: Card sort feedback explanation.
+  reference_text: That sound means right.
+  target_duration_ms: 1200
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: feedback.wrong_sound_hint
+  category: feedback
+  module_id: null
+  speaker_role: guide
+  context: Card sort feedback explanation.
+  reference_text: That sound means not this time.
+  target_duration_ms: 1300
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: walkaway.reprompt
+  category: walkaway
+  module_id: null
+  speaker_role: guide
+  context: 8 s after the response window.
+  reference_text: Your turn! Touch the screen when you are ready.
+  target_duration_ms: 4180
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: walkaway.still_there
+  category: walkaway
+  module_id: null
+  speaker_role: guide
+  context: 20 s idle.
+  reference_text: Are you still there?
+  target_duration_ms: 1200
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: walkaway.countdown
+  category: walkaway
+  module_id: null
+  speaker_role: guide
+  context: 45 s idle, then 10 s to abandon.
+  reference_text: The game will end soon. Touch the screen to keep playing.
+  target_duration_ms: 5020
+  tone: calm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: walkaway.goodbye
+  category: walkaway
+  module_id: null
+  speaker_role: guide
+  context: Session abandoned; screen is wiped.
+  reference_text: Thank you for playing. Goodbye!
+  target_duration_ms: 2500
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: stop.hand_prompt
+  category: system
+  module_id: null
+  speaker_role: guide
+  context: Persistent hand icon (keep / delete).
+  reference_text: Do you want to keep what you played, or delete it?
+  target_duration_ms: 5020
+  tone: calm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: stop.deleted
+  category: system
+  module_id: null
+  speaker_role: guide
+  context: After in-session deletion.
+  reference_text: Done. What you played has been deleted.
+  target_duration_ms: 3340
+  tone: calm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: report.thank_you
+  category: report
+  module_id: null
+  speaker_role: guide
+  context: Thank-you mode (default).
+  reference_text: Thank you for playing at the market fair!
+  target_duration_ms: 3760
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: report.what_this_is_about
+  category: report
+  module_id: null
+  speaker_role: guide
+  context: Thank-you mode explanation.
+  reference_text: These games look at how people make choices and work through tasks. Researchers are still learning from them.
+  target_duration_ms: 7960
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: report.disclaimer.snapshot
+  category: report
+  module_id: null
+  speaker_role: guide
+  context: Mandatory disclaimer on every report.
+  reference_text: This is a snapshot of how you played today. It is not a test, a diagnosis, or a judgement of you.
+  target_duration_ms: 9220
+  tone: calm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: report.intro
+  category: report
+  module_id: null
+  speaker_role: guide
+  context: Player report intro (only when the release pack allows).
+  reference_text: Here are some things you showed today.
+  target_duration_ms: 3340
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: report.example_label
+  category: report
+  module_id: null
+  speaker_role: guide
+  context: Demo mode label (fictional profiles, think-aloud only).
+  reference_text: This is an example, not your own result.
+  target_duration_ms: 3760
+  tone: neutral
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: report.self_control.pole_a
+  category: report
+  module_id: null
+  speaker_role: guide
+  context: Strengths-framed band phrase (self_control, pole A).
+  reference_text: You are quick to act when you see a chance.
+  target_duration_ms: 4600
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: report.self_control.centre
+  category: report
+  module_id: null
+  speaker_role: guide
+  context: Strengths-framed band phrase (self_control, centre).
+  reference_text: You balance acting quickly with holding back.
+  target_duration_ms: 3340
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: report.self_control.pole_b
+  category: report
+  module_id: null
+  speaker_role: guide
+  context: Strengths-framed band phrase (self_control, pole B).
+  reference_text: You take a moment to hold back and check before acting.
+  target_duration_ms: 5020
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: report.emotional_regulation.pole_a
+  category: report
+  module_id: null
+  speaker_role: guide
+  context: Strengths-framed band phrase (emotional_regulation, pole A).
+  reference_text: You show your feelings openly.
+  target_duration_ms: 2500
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: report.emotional_regulation.centre
+  category: report
+  module_id: null
+  speaker_role: guide
+  context: Strengths-framed band phrase (emotional_regulation, centre).
+  reference_text: You stay fairly calm with difficult people.
+  target_duration_ms: 3340
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: report.emotional_regulation.pole_b
+  category: report
+  module_id: null
+  speaker_role: guide
+  context: Strengths-framed band phrase (emotional_regulation, pole B).
+  reference_text: You keep calm and kind even when others are rude.
+  target_duration_ms: 4600
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: report.composure.pole_a
+  category: report
+  module_id: null
+  speaker_role: guide
+  context: Strengths-framed band phrase (composure, pole A).
+  reference_text: You put full energy into calm moments.
+  target_duration_ms: 3340
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: report.composure.centre
+  category: report
+  module_id: null
+  speaker_role: guide
+  context: Strengths-framed band phrase (composure, centre).
+  reference_text: You keep going steadily when things get busy.
+  target_duration_ms: 3760
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: report.composure.pole_b
+  category: report
+  module_id: null
+  speaker_role: guide
+  context: Strengths-framed band phrase (composure, pole B).
+  reference_text: You stay steady when things get busy and noisy.
+  target_duration_ms: 4180
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: report.response_consistency.pole_a
+  category: report
+  module_id: null
+  speaker_role: guide
+  context: Strengths-framed band phrase (response_consistency, pole A).
+  reference_text: You like to try different ways each time.
+  target_duration_ms: 3760
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: report.response_consistency.centre
+  category: report
+  module_id: null
+  speaker_role: guide
+  context: Strengths-framed band phrase (response_consistency, centre).
+  reference_text: You mix trying new ways with keeping to what works.
+  target_duration_ms: 4600
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: report.response_consistency.pole_b
+  category: report
+  module_id: null
+  speaker_role: guide
+  context: Strengths-framed band phrase (response_consistency, pole B).
+  reference_text: You respond in a steady, reliable way.
+  target_duration_ms: 3340
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: report.task_organisation.pole_a
+  category: report
+  module_id: null
+  speaker_role: guide
+  context: Strengths-framed band phrase (task_organisation, pole A).
+  reference_text: You like to dive in and sort things out as you go.
+  target_duration_ms: 5440
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: report.task_organisation.centre
+  category: report
+  module_id: null
+  speaker_role: guide
+  context: Strengths-framed band phrase (task_organisation, centre).
+  reference_text: You organise your tasks in a sensible way.
+  target_duration_ms: 3760
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: report.task_organisation.pole_b
+  category: report
+  module_id: null
+  speaker_role: guide
+  context: Strengths-framed band phrase (task_organisation, pole B).
+  reference_text: You plan your errands in a neat, efficient order.
+  target_duration_ms: 4180
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: report.decisiveness.pole_a
+  category: report
+  module_id: null
+  speaker_role: guide
+  context: Strengths-framed band phrase (decisiveness, pole A).
+  reference_text: You like to think things through before deciding.
+  target_duration_ms: 3760
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: report.decisiveness.centre
+  category: report
+  module_id: null
+  speaker_role: guide
+  context: Strengths-framed band phrase (decisiveness, centre).
+  reference_text: You balance thinking and deciding.
+  target_duration_ms: 2500
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: report.decisiveness.pole_b
+  category: report
+  module_id: null
+  speaker_role: guide
+  context: Strengths-framed band phrase (decisiveness, pole B).
+  reference_text: You make up your mind quickly and stick with it.
+  target_duration_ms: 4600
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: report.adaptability.pole_a
+  category: report
+  module_id: null
+  speaker_role: guide
+  context: Strengths-framed band phrase (adaptability, pole A).
+  reference_text: You stay loyal to a way that has worked.
+  target_duration_ms: 4180
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: report.adaptability.centre
+  category: report
+  module_id: null
+  speaker_role: guide
+  context: Strengths-framed band phrase (adaptability, centre).
+  reference_text: You adjust when things change.
+  target_duration_ms: 2500
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: report.adaptability.pole_b
+  category: report
+  module_id: null
+  speaker_role: guide
+  context: Strengths-framed band phrase (adaptability, pole B).
+  reference_text: You notice changes fast and switch your approach easily.
+  target_duration_ms: 4180
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: report.persistence_of_style.pole_a
+  category: report
+  module_id: null
+  speaker_role: guide
+  context: Strengths-framed band phrase (persistence_of_style, pole A).
+  reference_text: You change your style to suit each game.
+  target_duration_ms: 3760
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: report.persistence_of_style.centre
+  category: report
+  module_id: null
+  speaker_role: guide
+  context: Strengths-framed band phrase (persistence_of_style, centre).
+  reference_text: You keep some of your style across games.
+  target_duration_ms: 3760
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: report.persistence_of_style.pole_b
+  category: report
+  module_id: null
+  speaker_role: guide
+  context: Strengths-framed band phrase (persistence_of_style, pole B).
+  reference_text: You keep your own style across all the games.
+  target_duration_ms: 4180
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: report.stability.pole_a
+  category: report
+  module_id: null
+  speaker_role: guide
+  context: Strengths-framed band phrase (stability, pole A).
+  reference_text: You respond strongly to new situations.
+  target_duration_ms: 2920
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: report.stability.centre
+  category: report
+  module_id: null
+  speaker_role: guide
+  context: Strengths-framed band phrase (stability, centre).
+  reference_text: You adjust smoothly when situations change.
+  target_duration_ms: 2920
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: report.stability.pole_b
+  category: report
+  module_id: null
+  speaker_role: guide
+  context: Strengths-framed band phrase (stability, pole B).
+  reference_text: You stay much the same when situations change.
+  target_duration_ms: 3760
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: report.expressive_restraint.pole_a
+  category: report
+  module_id: null
+  speaker_role: guide
+  context: Strengths-framed band phrase (expressive_restraint, pole A).
+  reference_text: You act freely and spontaneously.
+  target_duration_ms: 2500
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: report.expressive_restraint.centre
+  category: report
+  module_id: null
+  speaker_role: guide
+  context: Strengths-framed band phrase (expressive_restraint, centre).
+  reference_text: You balance acting freely and holding back.
+  target_duration_ms: 3340
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: report.expressive_restraint.pole_b
+  category: report
+  module_id: null
+  speaker_role: guide
+  context: Strengths-framed band phrase (expressive_restraint, pole B).
+  reference_text: You hold back extra actions and wait for the right moment.
+  target_duration_ms: 5020
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: report.teamwork.pole_a
+  category: report
+  module_id: null
+  speaker_role: guide
+  context: Strengths-framed band phrase (teamwork, pole A).
+  reference_text: You look out for your own share while working with others.
+  target_duration_ms: 5020
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: report.teamwork.centre
+  category: report
+  module_id: null
+  speaker_role: guide
+  context: Strengths-framed band phrase (teamwork, centre).
+  reference_text: You cooperate with your partners.
+  target_duration_ms: 2500
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: report.teamwork.pole_b
+  category: report
+  module_id: null
+  speaker_role: guide
+  context: Strengths-framed band phrase (teamwork, pole B).
+  reference_text: You share generously and keep helping your partners.
+  target_duration_ms: 3760
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: report.judgement.pole_a
+  category: report
+  module_id: null
+  speaker_role: guide
+  context: Strengths-framed band phrase (judgement, pole A).
+  reference_text: You speak up quickly about who did what.
+  target_duration_ms: 3760
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: report.judgement.centre
+  category: report
+  module_id: null
+  speaker_role: guide
+  context: Strengths-framed band phrase (judgement, centre).
+  reference_text: You weigh up credit and blame fairly.
+  target_duration_ms: 3340
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: report.judgement.pole_b
+  category: report
+  module_id: null
+  speaker_role: guide
+  context: Strengths-framed band phrase (judgement, pole B).
+  reference_text: You take fair responsibility for both successes and mistakes.
+  target_duration_ms: 4180
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: report.problem_solving.pole_a
+  category: report
+  module_id: null
+  speaker_role: guide
+  context: Strengths-framed band phrase (problem_solving, pole A).
+  reference_text: You solve problems by trying things out.
+  target_duration_ms: 3340
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: report.problem_solving.centre
+  category: report
+  module_id: null
+  speaker_role: guide
+  context: Strengths-framed band phrase (problem_solving, centre).
+  reference_text: You find good solutions to puzzles.
+  target_duration_ms: 2920
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: report.problem_solving.pole_b
+  category: report
+  module_id: null
+  speaker_role: guide
+  context: Strengths-framed band phrase (problem_solving, pole B).
+  reference_text: You plan ahead and find efficient solutions.
+  target_duration_ms: 3340
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: report.integrity.pole_a
+  category: report
+  module_id: null
+  speaker_role: guide
+  context: Strengths-framed band phrase (integrity, pole A).
+  reference_text: You think carefully about tricky offers.
+  target_duration_ms: 2920
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: report.integrity.centre
+  category: report
+  module_id: null
+  speaker_role: guide
+  context: Strengths-framed band phrase (integrity, centre).
+  reference_text: You usually choose the fair path.
+  target_duration_ms: 2920
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: report.integrity.pole_b
+  category: report
+  module_id: null
+  speaker_role: guide
+  context: Strengths-framed band phrase (integrity, pole B).
+  reference_text: You choose the fair path even when no one is watching.
+  target_duration_ms: 5020
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: report.initiative.pole_a
+  category: report
+  module_id: null
+  speaker_role: guide
+  context: Strengths-framed band phrase (initiative, pole A).
+  reference_text: You focus on what is asked of you.
+  target_duration_ms: 3760
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: report.initiative.centre
+  category: report
+  module_id: null
+  speaker_role: guide
+  context: Strengths-framed band phrase (initiative, centre).
+  reference_text: You sometimes take extra steps on your own.
+  target_duration_ms: 3760
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: report.initiative.pole_b
+  category: report
+  module_id: null
+  speaker_role: guide
+  context: Strengths-framed band phrase (initiative, pole B).
+  reference_text: You often take helpful extra steps without being asked.
+  target_duration_ms: 4180
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: report.risk_preference.pole_a
+  category: report
+  module_id: null
+  speaker_role: guide
+  context: Strengths-framed band phrase (risk_preference, pole A).
+  reference_text: You prefer safe and steady choices.
+  target_duration_ms: 2920
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: report.risk_preference.centre
+  category: report
+  module_id: null
+  speaker_role: guide
+  context: Strengths-framed band phrase (risk_preference, centre).
+  reference_text: You balance safe choices with some risks.
+  target_duration_ms: 3340
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: report.risk_preference.pole_b
+  category: report
+  module_id: null
+  speaker_role: guide
+  context: Strengths-framed band phrase (risk_preference, pole B).
+  reference_text: You are willing to take chances for bigger rewards.
+  target_duration_ms: 4180
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: report.persistence.pole_a
+  category: report
+  module_id: null
+  speaker_role: guide
+  context: Strengths-framed band phrase (persistence, pole A).
+  reference_text: You know when to move on to the next thing.
+  target_duration_ms: 4600
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: report.persistence.centre
+  category: report
+  module_id: null
+  speaker_role: guide
+  context: Strengths-framed band phrase (persistence, centre).
+  reference_text: You keep trying for a good while.
+  target_duration_ms: 3340
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: report.persistence.pole_b
+  category: report
+  module_id: null
+  speaker_role: guide
+  context: Strengths-framed band phrase (persistence, pole B).
+  reference_text: You keep trying even when things are hard.
+  target_duration_ms: 3760
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: report.show_privately
+  category: report
+  module_id: null
+  speaker_role: guide
+  context: Show-privately option; private content auto-clears after 60 s.
+  reference_text: Touch the eye to see your summary privately.
+  target_duration_ms: 3760
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: report.qr_offer
+  category: report
+  module_id: null
+  speaker_role: guide
+  context: QR retrieval offer (72 h - 7 days).
+  reference_text: Scan this code to hear your summary again later, or to delete your data.
+  target_duration_ms: 6280
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: survey.enjoy
+  category: survey
+  module_id: null
+  speaker_role: guide
+  context: Enjoyment faces (skippable, 10 s timeout).
+  reference_text: Did you enjoy the games? Touch a face.
+  target_duration_ms: 3760
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: survey.play_again
+  category: survey
+  module_id: null
+  speaker_role: guide
+  context: Play-again question.
+  reference_text: Would you play again? Touch the tick or the cross.
+  target_duration_ms: 4600
+  tone: warm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: optin.contact.question
+  category: optin
+  module_id: null
+  speaker_role: guide
+  context: Post-report contact opt-in (default no).
+  reference_text: May we call you in a few weeks to play once more? Touch the tick for yes, or the cross for no.
+  target_duration_ms: 9640
+  tone: calm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: optin.contact.enter_number
+  category: optin
+  module_id: null
+  speaker_role: guide
+  context: PictureDigitPad entry.
+  reference_text: Touch the picture tiles to enter your phone number.
+  target_duration_ms: 4180
+  tone: calm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: optin.digit.zero
+  category: optin
+  module_id: null
+  speaker_role: guide
+  context: 'Phone digit read-back: headset only, never speakers (never-voice list).'
+  reference_text: Zero.
+  target_duration_ms: 600
+  tone: neutral
+  voice_forbidden: true
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: optin.digit.one
+  category: optin
+  module_id: null
+  speaker_role: guide
+  context: 'Phone digit read-back: headset only, never speakers (never-voice list).'
+  reference_text: One.
+  target_duration_ms: 600
+  tone: neutral
+  voice_forbidden: true
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: optin.digit.two
+  category: optin
+  module_id: null
+  speaker_role: guide
+  context: 'Phone digit read-back: headset only, never speakers (never-voice list).'
+  reference_text: Two.
+  target_duration_ms: 600
+  tone: neutral
+  voice_forbidden: true
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: optin.digit.three
+  category: optin
+  module_id: null
+  speaker_role: guide
+  context: 'Phone digit read-back: headset only, never speakers (never-voice list).'
+  reference_text: Three.
+  target_duration_ms: 600
+  tone: neutral
+  voice_forbidden: true
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: optin.digit.four
+  category: optin
+  module_id: null
+  speaker_role: guide
+  context: 'Phone digit read-back: headset only, never speakers (never-voice list).'
+  reference_text: Four.
+  target_duration_ms: 600
+  tone: neutral
+  voice_forbidden: true
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: optin.digit.five
+  category: optin
+  module_id: null
+  speaker_role: guide
+  context: 'Phone digit read-back: headset only, never speakers (never-voice list).'
+  reference_text: Five.
+  target_duration_ms: 600
+  tone: neutral
+  voice_forbidden: true
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: optin.digit.six
+  category: optin
+  module_id: null
+  speaker_role: guide
+  context: 'Phone digit read-back: headset only, never speakers (never-voice list).'
+  reference_text: Six.
+  target_duration_ms: 600
+  tone: neutral
+  voice_forbidden: true
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: optin.digit.seven
+  category: optin
+  module_id: null
+  speaker_role: guide
+  context: 'Phone digit read-back: headset only, never speakers (never-voice list).'
+  reference_text: Seven.
+  target_duration_ms: 600
+  tone: neutral
+  voice_forbidden: true
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: optin.digit.eight
+  category: optin
+  module_id: null
+  speaker_role: guide
+  context: 'Phone digit read-back: headset only, never speakers (never-voice list).'
+  reference_text: Eight.
+  target_duration_ms: 600
+  tone: neutral
+  voice_forbidden: true
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: optin.digit.nine
+  category: optin
+  module_id: null
+  speaker_role: guide
+  context: 'Phone digit read-back: headset only, never speakers (never-voice list).'
+  reference_text: Nine.
+  target_duration_ms: 600
+  tone: neutral
+  voice_forbidden: true
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: optin.thanks
+  category: optin
+  module_id: null
+  speaker_role: guide
+  context: After contact opt-in.
+  reference_text: Thank you. We will call you. Your number is kept separately and safely.
+  target_duration_ms: 5860
+  tone: calm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: system.out_of_service
+  category: system
+  module_id: null
+  speaker_role: guide
+  context: Hardware fault screen.
+  reference_text: Sorry, this kiosk is resting right now. Please come back later.
+  target_duration_ms: 5020
+  tone: calm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft
+- id: system.headset_required
+  category: system
+  module_id: null
+  speaker_role: guide
+  context: Private-report steps in open_public mode require a headset.
+  reference_text: Please put on the headphones for this part.
+  target_duration_ms: 3760
+  tone: calm
+  voice_forbidden: false
+  recording:
+    en-IN:
+      status: scripted
+      itc_state: draft
+    hi-IN:
+      status: not_scripted
+      itc_state: draft
+    mr-IN:
+      status: not_scripted
+      itc_state: draft
+    ta-IN:
+      status: not_scripted
+      itc_state: draft

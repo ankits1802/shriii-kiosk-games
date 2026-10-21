@@ -192,6 +192,35 @@ describe('ManifestVoiceService', () => {
     expect(logger.ofType('audio.played')[0]?.payload.status).toBe('interrupted');
   });
 
+  it('reports speaking while a clip is audible (observable for the walkaway pause)', async () => {
+    const { ctx, voice } = await rig();
+    const changes: boolean[] = [];
+    const off = voice.onSpeakingChange((s) => changes.push(s));
+    expect(voice.speaking).toBe(false);
+    const pb = voice.play('consent.core.question');
+    await pb.started;
+    expect(voice.speaking).toBe(true);
+    const src = ctx
+      .ofKind('buffer')
+      .filter(
+        (s) =>
+          (s as unknown as { started: number | null }).started !== null &&
+          !(s as unknown as { loop: boolean }).loop,
+      )
+      .at(-1) as unknown as { onended: (() => void) | null };
+    src.onended?.();
+    await pb.ended;
+    expect(voice.speaking).toBe(false);
+    // An interrupted clip also ends speaking; a refused never-voice clip never starts it.
+    const pb2 = voice.play('warmup.tap');
+    await pb2.started;
+    pb2.interrupt();
+    await pb2.ended;
+    await voice.play('optin.digit.one').ended;
+    expect(changes).toEqual([true, false, true, false]);
+    off();
+  });
+
   it('logs instruction_replay for player replays of the last instruction', async () => {
     const { logger, voice } = await rig();
     voice.play('warmup.tap').interrupt();

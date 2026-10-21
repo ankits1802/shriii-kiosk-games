@@ -1,0 +1,241 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://shriii.local/contracts/session-plan.v1.schema.json",
+  "title": "SessionPlan",
+  "description": "content/games/session-plan.json: session time budgets (plan section 4.4, ONB-08), pathway module order and idle/walkaway timers (KSK-04). All values in seconds.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "$ref": "common.v1.schema.json#/$defs/minor_schema_version"
+    },
+    "plan_id": {
+      "$ref": "common.v1.schema.json#/$defs/identifier"
+    },
+    "version": {
+      "$ref": "common.v1.schema.json#/$defs/semver"
+    },
+    "session_cap_s": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "session_target_max_s": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "segments_max_s": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "onboarding": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "practice_warmup": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "bridges": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "report_survey": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "contact_optin": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": ["onboarding", "practice_warmup", "bridges", "report_survey", "contact_optin"]
+    },
+    "scored_play_median_s": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "min": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "max": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": ["min", "max"]
+    },
+    "b_module_duration_s": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "min": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "max": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": ["min", "max"]
+    },
+    "a_episode_median_s": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "min": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "max": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": ["min", "max"]
+    },
+    "pathways": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "B": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "core_order": {
+              "type": "array",
+              "items": {
+                "$ref": "common.v1.schema.json#/$defs/identifier"
+              },
+              "minItems": 1
+            },
+            "slot_candidates": {
+              "type": "array",
+              "items": {
+                "$ref": "common.v1.schema.json#/$defs/identifier"
+              },
+              "minItems": 1,
+              "uniqueItems": true
+            },
+            "slot_randomisation": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "method": {
+                  "const": "permuted_block"
+                },
+                "block_size": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "unit": {
+                  "type": "string",
+                  "enum": ["kiosk"]
+                }
+              },
+              "required": ["method", "block_size", "unit"]
+            },
+            "warmup": {
+              "$ref": "common.v1.schema.json#/$defs/identifier"
+            }
+          },
+          "required": ["core_order", "slot_candidates", "slot_randomisation", "warmup"]
+        },
+        "A": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "order": {
+              "type": "array",
+              "items": {
+                "$ref": "common.v1.schema.json#/$defs/identifier"
+              },
+              "minItems": 1
+            },
+            "optional_substudy": {
+              "type": "array",
+              "items": {
+                "$ref": "common.v1.schema.json#/$defs/identifier"
+              },
+              "uniqueItems": true
+            },
+            "warmup": {
+              "$ref": "common.v1.schema.json#/$defs/identifier"
+            }
+          },
+          "required": ["order", "optional_substudy", "warmup"]
+        }
+      },
+      "required": ["B", "A"]
+    },
+    "walkaway": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "reprompt_s": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "still_there_s": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "countdown_s": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "abandon_after_countdown_s": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "counted_after_response_window": {
+          "const": true
+        },
+        "disabled_in_modes": {
+          "type": "array",
+          "items": {
+            "$ref": "common.v1.schema.json#/$defs/session_mode"
+          },
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "reprompt_s",
+        "still_there_s",
+        "countdown_s",
+        "abandon_after_countdown_s",
+        "counted_after_response_window",
+        "disabled_in_modes"
+      ]
+    },
+    "state_ceilings_s": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "integer",
+        "minimum": 1
+      },
+      "description": "Hard ceiling per session state (KSK-02)."
+    },
+    "notes": {
+      "type": ["string", "null"],
+      "minLength": 1,
+      "maxLength": 4000
+    }
+  },
+  "required": [
+    "schema_version",
+    "plan_id",
+    "version",
+    "session_cap_s",
+    "session_target_max_s",
+    "segments_max_s",
+    "scored_play_median_s",
+    "b_module_duration_s",
+    "a_episode_median_s",
+    "pathways",
+    "walkaway",
+    "state_ceilings_s",
+    "notes"
+  ]
+}

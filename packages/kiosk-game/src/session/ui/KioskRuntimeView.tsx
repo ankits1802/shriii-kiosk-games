@@ -2,6 +2,10 @@
  * Full-screen kiosk view: creates the runtime (Pixi stage, input, outbox, uploader, session
  * controller), renders the current state's screen over the stage, the persistent exit control and
  * the walkaway overlay. Screens from the onboarding/report agents plug in through `screens`.
+ *
+ * Crash wiring: screens render inside a {@link KioskErrorBoundary}, and `window` `error` /
+ * `unhandledrejection` are forwarded to `SessionController.reportError` while the runtime lives, so
+ * any unexpected failure ends the session with `CRASH` (expected aborts are ignored).
  */
 import {
   type CSSProperties,
@@ -12,6 +16,7 @@ import {
   useRef,
   useState,
 } from 'react';
+import { installGlobalCrashHandlers } from '../crash-handlers.ts';
 import type { KioskRuntime, KioskRuntimeOptions } from '../runtime.ts';
 import type { KioskSessionView, SessionControllerEvent } from '../session-controller.ts';
 import {
@@ -21,6 +26,7 @@ import {
   type ScreenMap,
   WalkawayOverlay,
 } from './FallbackScreens.tsx';
+import { KioskErrorBoundary } from './KioskErrorBoundary.tsx';
 
 export interface KioskRuntimeViewProps {
   readonly options: KioskRuntimeOptions;
@@ -84,7 +90,15 @@ export function KioskRuntimeView({
           return;
         }
         rt = created;
-        unsub = created.controller.subscribe(setView);
+        const unsubView = created.controller.subscribe(setView);
+        const uninstall =
+          typeof window !== 'undefined'
+            ? installGlobalCrashHandlers(window, (err) => created.controller.reportError(err))
+            : () => undefined;
+        unsub = () => {
+          unsubView();
+          uninstall();
+        };
         setRuntime(created);
         onRuntimeRef.current?.(created);
       })
@@ -119,7 +133,12 @@ export function KioskRuntimeView({
       <style>{FALLBACK_CSS}</style>
       <div ref={hostRef} data-testid="kiosk-stage-host" style={{ position: 'absolute', inset: 0 }}>
         {runtime && view && Screen && (
-          <Screen view={view} controller={runtime.controller} send={send} pxPerMm={pxPerMm} />
+          <KioskErrorBoundary
+            resetKey={`${view.sessionId}|${view.state}`}
+            onError={(err) => runtime.controller.reportError(err)}
+          >
+            <Screen view={view} controller={runtime.controller} send={send} pxPerMm={pxPerMm} />
+          </KioskErrorBoundary>
         )}
         {runtime && view && SESSION_STATES_WITH_EXIT.has(view.state) && (
           <ExitControl send={send} pxPerMm={pxPerMm} />

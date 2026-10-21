@@ -1,0 +1,103 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://shriii.local/contracts/upload-batch-result.v1.schema.json",
+  "title": "UploadBatchResult",
+  "description": "Server response to an UploadBatch with a per-event status.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "$ref": "common.v1.schema.json#/$defs/minor_schema_version"
+    },
+    "batch_id": {
+      "$ref": "common.v1.schema.json#/$defs/uuidv7"
+    },
+    "server_received_at": {
+      "$ref": "common.v1.schema.json#/$defs/date_time"
+    },
+    "clock_offset_estimate_ms": {
+      "type": ["number", "null"]
+    },
+    "duplicate_batch": {
+      "type": "boolean",
+      "description": "True when this batch_id was already stored (replay)."
+    },
+    "results": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "title": "EventIngestResult",
+        "additionalProperties": false,
+        "properties": {
+          "event_id": {
+            "$ref": "common.v1.schema.json#/$defs/uuidv7"
+          },
+          "session_id": {
+            "$ref": "common.v1.schema.json#/$defs/uuidv7"
+          },
+          "seq": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "status": {
+            "$ref": "#/$defs/event_status"
+          },
+          "reason_code": {
+            "anyOf": [
+              {
+                "$ref": "common.v1.schema.json#/$defs/identifier"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": ["event_id", "session_id", "seq", "status", "reason_code"]
+      }
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "accepted": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "duplicate": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "parked": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "rejected_terminal": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "retryable": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": ["accepted", "duplicate", "parked", "rejected_terminal", "retryable"]
+    }
+  },
+  "required": [
+    "schema_version",
+    "batch_id",
+    "server_received_at",
+    "clock_offset_estimate_ms",
+    "duplicate_batch",
+    "results",
+    "summary"
+  ],
+  "$defs": {
+    "event_status": {
+      "type": "string",
+      "enum": ["accepted", "duplicate", "parked", "rejected_terminal", "retryable"],
+      "description": "accepted/duplicate/rejected_terminal are terminal and may be purged locally after a grace period; parked waits for consent; retryable stays in the outbox."
+    }
+  }
+}

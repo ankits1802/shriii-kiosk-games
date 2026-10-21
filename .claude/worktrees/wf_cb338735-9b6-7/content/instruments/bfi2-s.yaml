@@ -1,0 +1,677 @@
+# BFI-2-S — criterion instrument registry entry (CRT-02/03/04).
+# Copyrighted item wording is NOT stored here: each item has a placeholder and item_text_source.
+# Real wording is loaded at administration time from the licensed source file.
+schema_version: '1.0'
+instrument_id: bfi2_s
+name: Big Five Inventory-2 Short Form
+short_name: BFI-2-S
+version: 1.0.0
+kind: questionnaire
+citation: 'Soto, C. J., & John, O. P. (2017). Short and extra-short forms of the Big Five Inventory-2: The BFI-2-S and BFI-2-XS. Journal of Research
+  in Personality, 68, 69-81.'
+constructs_measured:
+- self_control
+- composure
+- teamwork
+- task_organisation
+- initiative
+- problem_solving
+- stability
+- response_consistency
+- expressive_restraint
+licensing:
+  holder: Oliver P. John and Christopher J. Soto
+  licence: Free for non-commercial research use (copyright 2015 John & Soto)
+  permission_status: not_requested
+  permission_document: null
+  allowed_use: Non-commercial research; translations require author contact and approval.
+  expiry: null
+  commercial_use: false
+  notes: Translations into hi/mr/ta must be coordinated with the authors (Colby Personality Lab).
+administration:
+  modes:
+  - self
+  - read_aloud
+  audio_assisted: true
+  estimated_minutes: 6
+  blocks:
+  - X
+  - C
+  public_kiosk_allowed: false
+  instructions_key: criterion.bfi2.instructions
+response_scale:
+  type: likert
+  min: 1
+  max: 5
+  anchors:
+  - value: 1
+    label_key: criterion.agree5.anchor_1
+    pictogram_id: pictogram.likert5.1
+  - value: 2
+    label_key: criterion.agree5.anchor_2
+    pictogram_id: pictogram.likert5.2
+  - value: 3
+    label_key: criterion.agree5.anchor_3
+    pictogram_id: pictogram.likert5.3
+  - value: 4
+    label_key: criterion.agree5.anchor_4
+    pictogram_id: pictogram.likert5.4
+  - value: 5
+    label_key: criterion.agree5.anchor_5
+    pictogram_id: pictogram.likert5.5
+  reverse_formula: min_plus_max_minus_x
+items:
+- item_id: bfi2_s.i01
+  number: 1
+  item_text: '[licensed item text — load from licensed source]'
+  item_text_source:
+    kind: licensed_source
+    reference: BFI-2-S item 1 (Soto & John, 2017, J. Res. Pers. 68, Appendix A)
+  subscales:
+  - extraversion
+  - sociability
+  reverse_keyed: true
+  attention_check: false
+  block: X
+  measures: null
+- item_id: bfi2_s.i02
+  number: 2
+  item_text: '[licensed item text — load from licensed source]'
+  item_text_source:
+    kind: licensed_source
+    reference: BFI-2-S item 2 (Soto & John, 2017, J. Res. Pers. 68, Appendix A)
+  subscales:
+  - agreeableness
+  - compassion
+  reverse_keyed: false
+  attention_check: false
+  block: X
+  measures: null
+- item_id: bfi2_s.i03
+  number: 3
+  item_text: '[licensed item text — load from licensed source]'
+  item_text_source:
+    kind: licensed_source
+    reference: BFI-2-S item 3 (Soto & John, 2017, J. Res. Pers. 68, Appendix A)
+  subscales:
+  - conscientiousness
+  - organization
+  reverse_keyed: true
+  attention_check: false
+  block: X
+  measures: null
+- item_id: bfi2_s.i04
+  number: 4
+  item_text: '[licensed item text — load from licensed source]'
+  item_text_source:
+    kind: licensed_source
+    reference: BFI-2-S item 4 (Soto & John, 2017, J. Res. Pers. 68, Appendix A)
+  subscales:
+  - negative_emotionality
+  - anxiety
+  reverse_keyed: false
+  attention_check: false
+  block: X
+  measures: null
+- item_id: bfi2_s.i05
+  number: 5
+  item_text: '[licensed item text — load from licensed source]'
+  item_text_source:
+    kind: licensed_source
+    reference: BFI-2-S item 5 (Soto & John, 2017, J. Res. Pers. 68, Appendix A)
+  subscales:
+  - open_mindedness
+  - aesthetic_sensitivity
+  reverse_keyed: false
+  attention_check: false
+  block: X
+  measures: null
+- item_id: bfi2_s.i06
+  number: 6
+  item_text: '[licensed item text — load from licensed source]'
+  item_text_source:
+    kind: licensed_source
+    reference: BFI-2-S item 6 (Soto & John, 2017, J. Res. Pers. 68, Appendix A)
+  subscales:
+  - extraversion
+  - assertiveness
+  reverse_keyed: false
+  attention_check: false
+  block: X
+  measures: null
+- item_id: bfi2_s.i07
+  number: 7
+  item_text: '[licensed item text — load from licensed source]'
+  item_text_source:
+    kind: licensed_source
+    reference: BFI-2-S item 7 (Soto & John, 2017, J. Res. Pers. 68, Appendix A)
+  subscales:
+  - agreeableness
+  - respectfulness
+  reverse_keyed: true
+  attention_check: false
+  block: X
+  measures: null
+- item_id: bfi2_s.i08
+  number: 8
+  item_text: '[licensed item text — load from licensed source]'
+  item_text_source:
+    kind: licensed_source
+    reference: BFI-2-S item 8 (Soto & John, 2017, J. Res. Pers. 68, Appendix A)
+  subscales:
+  - conscientiousness
+  - productiveness
+  reverse_keyed: true
+  attention_check: false
+  block: X
+  measures: null
+- item_id: bfi2_s.i09
+  number: 9
+  item_text: '[licensed item text — load from licensed source]'
+  item_text_source:
+    kind: licensed_source
+    reference: BFI-2-S item 9 (Soto & John, 2017, J. Res. Pers. 68, Appendix A)
+  subscales:
+  - negative_emotionality
+  - depression
+  reverse_keyed: false
+  attention_check: false
+  block: X
+  measures: null
+- item_id: bfi2_s.i10
+  number: 10
+  item_text: '[licensed item text — load from licensed source]'
+  item_text_source:
+    kind: licensed_source
+    reference: BFI-2-S item 10 (Soto & John, 2017, J. Res. Pers. 68, Appendix A)
+  subscales:
+  - open_mindedness
+  - intellectual_curiosity
+  reverse_keyed: true
+  attention_check: false
+  block: X
+  measures: null
+- item_id: bfi2_s.i11
+  number: 11
+  item_text: '[licensed item text — load from licensed source]'
+  item_text_source:
+    kind: licensed_source
+    reference: BFI-2-S item 11 (Soto & John, 2017, J. Res. Pers. 68, Appendix A)
+  subscales:
+  - extraversion
+  - energy_level
+  reverse_keyed: false
+  attention_check: false
+  block: X
+  measures: null
+- item_id: bfi2_s.i12
+  number: 12
+  item_text: '[licensed item text — load from licensed source]'
+  item_text_source:
+    kind: licensed_source
+    reference: BFI-2-S item 12 (Soto & John, 2017, J. Res. Pers. 68, Appendix A)
+  subscales:
+  - agreeableness
+  - trust
+  reverse_keyed: false
+  attention_check: false
+  block: X
+  measures: null
+- item_id: bfi2_s.i13
+  number: 13
+  item_text: '[licensed item text — load from licensed source]'
+  item_text_source:
+    kind: licensed_source
+    reference: BFI-2-S item 13 (Soto & John, 2017, J. Res. Pers. 68, Appendix A)
+  subscales:
+  - conscientiousness
+  - responsibility
+  reverse_keyed: false
+  attention_check: false
+  block: X
+  measures: null
+- item_id: bfi2_s.i14
+  number: 14
+  item_text: '[licensed item text — load from licensed source]'
+  item_text_source:
+    kind: licensed_source
+    reference: BFI-2-S item 14 (Soto & John, 2017, J. Res. Pers. 68, Appendix A)
+  subscales:
+  - negative_emotionality
+  - emotional_volatility
+  reverse_keyed: true
+  attention_check: false
+  block: X
+  measures: null
+- item_id: bfi2_s.i15
+  number: 15
+  item_text: '[licensed item text — load from licensed source]'
+  item_text_source:
+    kind: licensed_source
+    reference: BFI-2-S item 15 (Soto & John, 2017, J. Res. Pers. 68, Appendix A)
+  subscales:
+  - open_mindedness
+  - creative_imagination
+  reverse_keyed: false
+  attention_check: false
+  block: X
+  measures: null
+- item_id: bfi2_s.i16
+  number: 16
+  item_text: '[licensed item text — load from licensed source]'
+  item_text_source:
+    kind: licensed_source
+    reference: BFI-2-S item 16 (Soto & John, 2017, J. Res. Pers. 68, Appendix A)
+  subscales:
+  - extraversion
+  - sociability
+  reverse_keyed: false
+  attention_check: false
+  block: C
+  measures: null
+- item_id: bfi2_s.i17
+  number: 17
+  item_text: '[licensed item text — load from licensed source]'
+  item_text_source:
+    kind: licensed_source
+    reference: BFI-2-S item 17 (Soto & John, 2017, J. Res. Pers. 68, Appendix A)
+  subscales:
+  - agreeableness
+  - compassion
+  reverse_keyed: true
+  attention_check: false
+  block: C
+  measures: null
+- item_id: bfi2_s.i18
+  number: 18
+  item_text: '[licensed item text — load from licensed source]'
+  item_text_source:
+    kind: licensed_source
+    reference: BFI-2-S item 18 (Soto & John, 2017, J. Res. Pers. 68, Appendix A)
+  subscales:
+  - conscientiousness
+  - organization
+  reverse_keyed: false
+  attention_check: false
+  block: C
+  measures: null
+- item_id: bfi2_s.i19
+  number: 19
+  item_text: '[licensed item text — load from licensed source]'
+  item_text_source:
+    kind: licensed_source
+    reference: BFI-2-S item 19 (Soto & John, 2017, J. Res. Pers. 68, Appendix A)
+  subscales:
+  - negative_emotionality
+  - anxiety
+  reverse_keyed: true
+  attention_check: false
+  block: C
+  measures: null
+- item_id: bfi2_s.i20
+  number: 20
+  item_text: '[licensed item text — load from licensed source]'
+  item_text_source:
+    kind: licensed_source
+    reference: BFI-2-S item 20 (Soto & John, 2017, J. Res. Pers. 68, Appendix A)
+  subscales:
+  - open_mindedness
+  - aesthetic_sensitivity
+  reverse_keyed: true
+  attention_check: false
+  block: C
+  measures: null
+- item_id: bfi2_s.i21
+  number: 21
+  item_text: '[licensed item text — load from licensed source]'
+  item_text_source:
+    kind: licensed_source
+    reference: BFI-2-S item 21 (Soto & John, 2017, J. Res. Pers. 68, Appendix A)
+  subscales:
+  - extraversion
+  - assertiveness
+  reverse_keyed: true
+  attention_check: false
+  block: C
+  measures: null
+- item_id: bfi2_s.i22
+  number: 22
+  item_text: '[licensed item text — load from licensed source]'
+  item_text_source:
+    kind: licensed_source
+    reference: BFI-2-S item 22 (Soto & John, 2017, J. Res. Pers. 68, Appendix A)
+  subscales:
+  - agreeableness
+  - respectfulness
+  reverse_keyed: false
+  attention_check: false
+  block: C
+  measures: null
+- item_id: bfi2_s.i23
+  number: 23
+  item_text: '[licensed item text — load from licensed source]'
+  item_text_source:
+    kind: licensed_source
+    reference: BFI-2-S item 23 (Soto & John, 2017, J. Res. Pers. 68, Appendix A)
+  subscales:
+  - conscientiousness
+  - productiveness
+  reverse_keyed: false
+  attention_check: false
+  block: C
+  measures: null
+- item_id: bfi2_s.i24
+  number: 24
+  item_text: '[licensed item text — load from licensed source]'
+  item_text_source:
+    kind: licensed_source
+    reference: BFI-2-S item 24 (Soto & John, 2017, J. Res. Pers. 68, Appendix A)
+  subscales:
+  - negative_emotionality
+  - depression
+  reverse_keyed: true
+  attention_check: false
+  block: C
+  measures: null
+- item_id: bfi2_s.i25
+  number: 25
+  item_text: '[licensed item text — load from licensed source]'
+  item_text_source:
+    kind: licensed_source
+    reference: BFI-2-S item 25 (Soto & John, 2017, J. Res. Pers. 68, Appendix A)
+  subscales:
+  - open_mindedness
+  - intellectual_curiosity
+  reverse_keyed: false
+  attention_check: false
+  block: C
+  measures: null
+- item_id: bfi2_s.i26
+  number: 26
+  item_text: '[licensed item text — load from licensed source]'
+  item_text_source:
+    kind: licensed_source
+    reference: BFI-2-S item 26 (Soto & John, 2017, J. Res. Pers. 68, Appendix A)
+  subscales:
+  - extraversion
+  - energy_level
+  reverse_keyed: true
+  attention_check: false
+  block: C
+  measures: null
+- item_id: bfi2_s.i27
+  number: 27
+  item_text: '[licensed item text — load from licensed source]'
+  item_text_source:
+    kind: licensed_source
+    reference: BFI-2-S item 27 (Soto & John, 2017, J. Res. Pers. 68, Appendix A)
+  subscales:
+  - agreeableness
+  - trust
+  reverse_keyed: true
+  attention_check: false
+  block: C
+  measures: null
+- item_id: bfi2_s.i28
+  number: 28
+  item_text: '[licensed item text — load from licensed source]'
+  item_text_source:
+    kind: licensed_source
+    reference: BFI-2-S item 28 (Soto & John, 2017, J. Res. Pers. 68, Appendix A)
+  subscales:
+  - conscientiousness
+  - responsibility
+  reverse_keyed: true
+  attention_check: false
+  block: C
+  measures: null
+- item_id: bfi2_s.i29
+  number: 29
+  item_text: '[licensed item text — load from licensed source]'
+  item_text_source:
+    kind: licensed_source
+    reference: BFI-2-S item 29 (Soto & John, 2017, J. Res. Pers. 68, Appendix A)
+  subscales:
+  - negative_emotionality
+  - emotional_volatility
+  reverse_keyed: false
+  attention_check: false
+  block: C
+  measures: null
+- item_id: bfi2_s.i30
+  number: 30
+  item_text: '[licensed item text — load from licensed source]'
+  item_text_source:
+    kind: licensed_source
+    reference: BFI-2-S item 30 (Soto & John, 2017, J. Res. Pers. 68, Appendix A)
+  subscales:
+  - open_mindedness
+  - creative_imagination
+  reverse_keyed: true
+  attention_check: false
+  block: C
+  measures: null
+subscales:
+- scale_id: extraversion
+  name: Extraversion
+  items:
+  - bfi2_s.i01
+  - bfi2_s.i06
+  - bfi2_s.i11
+  - bfi2_s.i16
+  - bfi2_s.i21
+  - bfi2_s.i26
+  score_type: mean
+  min_answered_prop: 0.8
+  parent: null
+  higher_means: More Extraversion
+- scale_id: agreeableness
+  name: Agreeableness
+  items:
+  - bfi2_s.i02
+  - bfi2_s.i07
+  - bfi2_s.i12
+  - bfi2_s.i17
+  - bfi2_s.i22
+  - bfi2_s.i27
+  score_type: mean
+  min_answered_prop: 0.8
+  parent: null
+  higher_means: More Agreeableness
+- scale_id: conscientiousness
+  name: Conscientiousness
+  items:
+  - bfi2_s.i03
+  - bfi2_s.i08
+  - bfi2_s.i13
+  - bfi2_s.i18
+  - bfi2_s.i23
+  - bfi2_s.i28
+  score_type: mean
+  min_answered_prop: 0.8
+  parent: null
+  higher_means: More Conscientiousness
+- scale_id: negative_emotionality
+  name: Negative Emotionality
+  items:
+  - bfi2_s.i04
+  - bfi2_s.i09
+  - bfi2_s.i14
+  - bfi2_s.i19
+  - bfi2_s.i24
+  - bfi2_s.i29
+  score_type: mean
+  min_answered_prop: 0.8
+  parent: null
+  higher_means: More Negative Emotionality
+- scale_id: open_mindedness
+  name: Open-Mindedness
+  items:
+  - bfi2_s.i05
+  - bfi2_s.i10
+  - bfi2_s.i15
+  - bfi2_s.i20
+  - bfi2_s.i25
+  - bfi2_s.i30
+  score_type: mean
+  min_answered_prop: 0.8
+  parent: null
+  higher_means: More Open-Mindedness
+- scale_id: sociability
+  name: Sociability
+  items:
+  - bfi2_s.i01
+  - bfi2_s.i16
+  score_type: mean
+  min_answered_prop: 1.0
+  parent: extraversion
+  higher_means: More sociability
+- scale_id: assertiveness
+  name: Assertiveness
+  items:
+  - bfi2_s.i06
+  - bfi2_s.i21
+  score_type: mean
+  min_answered_prop: 1.0
+  parent: extraversion
+  higher_means: More assertiveness
+- scale_id: energy_level
+  name: Energy Level
+  items:
+  - bfi2_s.i11
+  - bfi2_s.i26
+  score_type: mean
+  min_answered_prop: 1.0
+  parent: extraversion
+  higher_means: More energy level
+- scale_id: compassion
+  name: Compassion
+  items:
+  - bfi2_s.i02
+  - bfi2_s.i17
+  score_type: mean
+  min_answered_prop: 1.0
+  parent: agreeableness
+  higher_means: More compassion
+- scale_id: respectfulness
+  name: Respectfulness
+  items:
+  - bfi2_s.i07
+  - bfi2_s.i22
+  score_type: mean
+  min_answered_prop: 1.0
+  parent: agreeableness
+  higher_means: More respectfulness
+- scale_id: trust
+  name: Trust
+  items:
+  - bfi2_s.i12
+  - bfi2_s.i27
+  score_type: mean
+  min_answered_prop: 1.0
+  parent: agreeableness
+  higher_means: More trust
+- scale_id: organization
+  name: Organization
+  items:
+  - bfi2_s.i03
+  - bfi2_s.i18
+  score_type: mean
+  min_answered_prop: 1.0
+  parent: conscientiousness
+  higher_means: More organization
+- scale_id: productiveness
+  name: Productiveness
+  items:
+  - bfi2_s.i08
+  - bfi2_s.i23
+  score_type: mean
+  min_answered_prop: 1.0
+  parent: conscientiousness
+  higher_means: More productiveness
+- scale_id: responsibility
+  name: Responsibility
+  items:
+  - bfi2_s.i13
+  - bfi2_s.i28
+  score_type: mean
+  min_answered_prop: 1.0
+  parent: conscientiousness
+  higher_means: More responsibility
+- scale_id: anxiety
+  name: Anxiety
+  items:
+  - bfi2_s.i04
+  - bfi2_s.i19
+  score_type: mean
+  min_answered_prop: 1.0
+  parent: negative_emotionality
+  higher_means: More anxiety
+- scale_id: depression
+  name: Depression
+  items:
+  - bfi2_s.i09
+  - bfi2_s.i24
+  score_type: mean
+  min_answered_prop: 1.0
+  parent: negative_emotionality
+  higher_means: More depression
+- scale_id: emotional_volatility
+  name: Emotional Volatility
+  items:
+  - bfi2_s.i14
+  - bfi2_s.i29
+  score_type: mean
+  min_answered_prop: 1.0
+  parent: negative_emotionality
+  higher_means: More emotional volatility
+- scale_id: intellectual_curiosity
+  name: Intellectual Curiosity
+  items:
+  - bfi2_s.i10
+  - bfi2_s.i25
+  score_type: mean
+  min_answered_prop: 1.0
+  parent: open_mindedness
+  higher_means: More intellectual curiosity
+- scale_id: aesthetic_sensitivity
+  name: Aesthetic Sensitivity
+  items:
+  - bfi2_s.i05
+  - bfi2_s.i20
+  score_type: mean
+  min_answered_prop: 1.0
+  parent: open_mindedness
+  higher_means: More aesthetic sensitivity
+- scale_id: creative_imagination
+  name: Creative Imagination
+  items:
+  - bfi2_s.i15
+  - bfi2_s.i30
+  score_type: mean
+  min_answered_prop: 1.0
+  parent: open_mindedness
+  higher_means: More creative imagination
+scoring:
+  key_version: 1.0.0
+  prorate_min_prop: 0.8
+  attention_check_fail_flag: null
+  notes: Items 1-15 (block X) are the BFI-2-XS; items 16-30 are administered in rotating block C. Domain scores need >= 5 of 6 items; 2-item facets
+    need both items and are recommended only with n >= 400.
+language_versions:
+- language: en-IN
+  itc_state: draft
+  approved: false
+  translation_permission: not_requested
+- language: hi-IN
+  itc_state: draft
+  approved: false
+  translation_permission: not_requested
+- language: mr-IN
+  itc_state: draft
+  approved: false
+  translation_permission: not_requested
+- language: ta-IN
+  itc_state: draft
+  approved: false
+  translation_permission: not_requested

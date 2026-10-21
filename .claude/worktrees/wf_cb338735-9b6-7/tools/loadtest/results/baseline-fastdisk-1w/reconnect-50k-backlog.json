@@ -1,0 +1,308 @@
+{
+  "meta": {
+    "label": "baseline-fastdisk-1w",
+    "scenario": "reconnect",
+    "options": {
+      "kiosks": 50,
+      "sessions_per_kiosk": 4,
+      "jitter_s": 2.0
+    },
+    "research_users": 0,
+    "corpus": {
+      "engine": "shriii_simulator",
+      "seed": 20261021,
+      "sessions": 32,
+      "events": 35519,
+      "events_per_session": {
+        "min": 815,
+        "median": 1106,
+        "max": 1640
+      },
+      "pathways": {
+        "A": 8,
+        "B": 24
+      },
+      "mean_event_bytes": 1618.1
+    },
+    "harness": "0.1.0",
+    "client_host": "Windows 11 / Python 3.14.7",
+    "finished_at": "2026-10-21T16:27:28+00:00"
+  },
+  "checks": {
+    "ing02_p95": {
+      "target_ms": 300,
+      "observed_ms": 56982.6,
+      "n": 329,
+      "kiosks": 50,
+      "passed": false
+    },
+    "terminal_failures": {
+      "target": 0,
+      "observed": 0,
+      "passed": true
+    },
+    "duplicate_rows": {
+      "target": 0,
+      "observed": 0,
+      "passed": true
+    },
+    "still_parked": {
+      "target": 0,
+      "observed": 0,
+      "passed": true
+    },
+    "exactly_once": {
+      "observed": 0,
+      "passed": true
+    }
+  },
+  "summary": {
+    "plan": {
+      "scenario": "reconnect",
+      "kiosks": 50,
+      "sessions": 200,
+      "unique_events": 223273,
+      "requests": 471,
+      "full_batches": 421,
+      "batch_bytes": {
+        "min": 4537,
+        "max": 819434,
+        "mean": 766033
+      }
+    },
+    "wall_s": 480.49,
+    "requests": 575,
+    "throughput": {
+      "unique_events_per_s": 464.7,
+      "requests_per_s": 1.2,
+      "events_per_s": 375.3
+    },
+    "ing02_full_batches_first_attempt": {
+      "n": 329,
+      "p50_ms": 41749.8,
+      "p90_ms": 54801.2,
+      "p95_ms": 56982.6,
+      "p99_ms": 58372.5,
+      "max_ms": 59524.3,
+      "mean_ms": 39930.3
+    },
+    "all_ok_requests": {
+      "n": 471,
+      "p50_ms": 32737.4,
+      "p90_ms": 51040.4,
+      "p95_ms": 56453.8,
+      "p99_ms": 58263.1,
+      "max_ms": 59524.3,
+      "mean_ms": 35248.7
+    },
+    "by_kind": {
+      "reconnect": {
+        "n": 471,
+        "p50_ms": 32737.4,
+        "p90_ms": 51040.4,
+        "p95_ms": 56453.8,
+        "p99_ms": 58263.1,
+        "max_ms": 59524.3,
+        "mean_ms": 35248.7,
+        "requests": 575,
+        "http_errors": {
+          "500:Internal Server Error": 16
+        },
+        "transport_errors": 88,
+        "retryable_responses": 0,
+        "duplicate_batch_responses": 86
+      }
+    },
+    "event_statuses": {
+      "accepted": 223273
+    },
+    "terminal_failures": [],
+    "terminal_failure_count": 0,
+    "research": {},
+    "research_all": {
+      "n": 0,
+      "p50_ms": NaN,
+      "p90_ms": NaN,
+      "p95_ms": NaN,
+      "p99_ms": NaN,
+      "max_ms": NaN,
+      "mean_ms": NaN
+    },
+    "pg_stat_statements_top": [
+      {
+        "query": "INSERT INTO kiosk_raw.events (event_id, server_received_date, server_received_at, session_id, seq, event_type, schema_version, participant_pid, kiosk_id, site_m",
+        "calls": 178415,
+        "total_ms": 3558497.6,
+        "mean_ms": 19.945,
+        "rows": 178415
+      },
+      {
+        "query": "INSERT INTO kiosk_raw.events (event_id, server_received_date, server_received_at, session_id, seq, event_type, schema_version, participant_pid, kiosk_id, site_m",
+        "calls": 40163,
+        "total_ms": 616653.3,
+        "mean_ms": 15.354,
+        "rows": 40163
+      },
+      {
+        "query": "INSERT INTO kiosk_raw.batch_chunks (batch_id, session_id, encryption, first_seq, last_seq, event_count, body) VALUES ($1::UUID, $2::UUID, $3::VARCHAR, $4::INTEG",
+        "calls": 621,
+        "total_ms": 203111.5,
+        "mean_ms": 327.072,
+        "rows": 621
+      },
+      {
+        "query": "INSERT INTO kiosk_raw.event_dedup (event_id, session_id, seq, batch_id, state, server_received_at) VALUES ($1::UUID, $2::UUID, $3::INTEGER, $4::UUID, $5::VARCHA",
+        "calls": 271,
+        "total_ms": 122449.0,
+        "mean_ms": 451.841,
+        "rows": 135500
+      },
+      {
+        "query": "INSERT INTO kiosk_raw.events (event_id, server_received_date, server_received_at, session_id, seq, event_type, schema_version, participant_pid, kiosk_id, site_m",
+        "calls": 1800,
+        "total_ms": 63371.5,
+        "mean_ms": 35.206,
+        "rows": 1800
+      },
+      {
+        "query": "SELECT kiosk_raw.event_dedup.event_id FROM kiosk_raw.event_dedup WHERE kiosk_raw.event_dedup.event_id IN ($1 /*, ... */)",
+        "calls": 621,
+        "total_ms": 59562.0,
+        "mean_ms": 95.913,
+        "rows": 0
+      },
+      {
+        "query": "UPDATE kiosk_raw.batches SET result=$1::JSONB, final=$2 WHERE kiosk_raw.batches.batch_id = $3::UUID",
+        "calls": 471,
+        "total_ms": 55606.2,
+        "mean_ms": 118.06,
+        "rows": 471
+      },
+      {
+        "query": "INSERT INTO kiosk_raw.events (event_id, server_received_date, server_received_at, session_id, seq, event_type, schema_version, participant_pid, kiosk_id, site_m",
+        "calls": 2445,
+        "total_ms": 41164.8,
+        "mean_ms": 16.836,
+        "rows": 2445
+      },
+      {
+        "query": "SELECT session_id, count(*), count(DISTINCT event_id), count(DISTINCT seq) FROM kiosk_raw.events WHERE session_id = ANY($1) GROUP BY session_id",
+        "calls": 1,
+        "total_ms": 19999.1,
+        "mean_ms": 19999.07,
+        "rows": 200
+      },
+      {
+        "query": "INSERT INTO kiosk_raw.events (event_id, server_received_date, server_received_at, session_id, seq, event_type, schema_version, participant_pid, kiosk_id, site_m",
+        "calls": 450,
+        "total_ms": 11477.1,
+        "mean_ms": 25.505,
+        "rows": 450
+      },
+      {
+        "query": "SELECT state, count(*) FROM kiosk_raw.event_dedup WHERE session_id = ANY($1) GROUP BY state",
+        "calls": 1,
+        "total_ms": 11058.8,
+        "mean_ms": 11058.776,
+        "rows": 1
+      },
+      {
+        "query": "SELECT pg_advisory_xact_lock(hashtextextended($1, $2))",
+        "calls": 557,
+        "total_ms": 8489.0,
+        "mean_ms": 15.241,
+        "rows": 557
+      },
+      {
+        "query": "SELECT kiosk_raw.event_dedup.seq FROM kiosk_raw.event_dedup WHERE kiosk_raw.event_dedup.session_id = $1::UUID AND kiosk_raw.event_dedup.seq IN ($2 /*, ... */)",
+        "calls": 621,
+        "total_ms": 6078.9,
+        "mean_ms": 9.789,
+        "rows": 0
+      },
+      {
+        "query": "INSERT INTO kiosk_raw.event_dedup (event_id, session_id, seq, batch_id, state, server_received_at) VALUES ($1::UUID, $2::UUID, $3::INTEGER, $4::UUID, $5::VARCHA",
+        "calls": 1,
+        "total_ms": 5701.7,
+        "mean_ms": 5701.704,
+        "rows": 483
+      },
+      {
+        "query": "INSERT INTO kiosk_raw.event_dedup (event_id, session_id, seq, batch_id, state, server_received_at) VALUES ($1::UUID, $2::UUID, $3::INTEGER, $4::UUID, $5::VARCHA",
+        "calls": 2,
+        "total_ms": 5125.6,
+        "mean_ms": 2562.787,
+        "rows": 854
+      }
+    ],
+    "table_sizes": [
+      {
+        "table": "kiosk_raw.events_p20261021",
+        "bytes": 2687819776
+      },
+      {
+        "table": "kiosk_raw.batch_chunks",
+        "bytes": 312066048
+      },
+      {
+        "table": "kiosk_raw.event_dedup",
+        "bytes": 212566016
+      },
+      {
+        "table": "kiosk_raw.batches",
+        "bytes": 40558592
+      },
+      {
+        "table": "kiosk_raw.consent_parking",
+        "bytes": 2613248
+      },
+      {
+        "table": "governance.audit_events",
+        "bytes": 2351104
+      },
+      {
+        "table": "consent.artefacts",
+        "bytes": 1556480
+      },
+      {
+        "table": "ops.jobs",
+        "bytes": 1499136
+      },
+      {
+        "table": "kiosk_raw.sessions",
+        "bytes": 1040384
+      },
+      {
+        "table": "scored.session_quality_flags",
+        "bytes": 278528
+      },
+      {
+        "table": "scored.indicators",
+        "bytes": 262144
+      },
+      {
+        "table": "scored.feature_definitions",
+        "bytes": 114688
+      }
+    ]
+  },
+  "verification": {
+    "sessions": 200,
+    "expected_events": 223273,
+    "stored_rows": 223273,
+    "stored_distinct": 223273,
+    "duplicate_rows": 0,
+    "sessions_with_missing_events": 0,
+    "missing_events": 0,
+    "still_parked": 0,
+    "dead_letters": {},
+    "dedup_states": {
+      "accepted": 223273
+    },
+    "passed": true,
+    "examples": {
+      "missing": {},
+      "duplicated": {}
+    }
+  }
+}

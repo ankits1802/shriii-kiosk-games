@@ -391,6 +391,10 @@ def tost_two_sample(
     v1, v2 = a.var(ddof=1), b.var(ddof=1)
     diff = float(a.mean() - b.mean())
     se = math.sqrt(v1 / n1 + v2 / n2)
+    if se <= 0 or not math.isfinite(se):
+        return EvidenceResult.unavailable(
+            "tost", "welch_tost", "zero variance in both groups", n=n1 + n2, status="insufficient", provenance=prov
+        )
     df = (v1 / n1 + v2 / n2) ** 2 / ((v1 / n1) ** 2 / (n1 - 1) + (v2 / n2) ** 2 / (n2 - 1))
     bnd = bound if bound is not None else prm.f("fairness.tost_bound_d")
     if bound_type == "d":
@@ -660,6 +664,10 @@ def device_familiarity_effect(
     rss_r, resid_r = rss(base)
     rss_f, _ = rss(base + dummies)
     df1, df2 = len(dummies), n - len(base) - len(dummies)
+    if rss_f <= 0 or df2 <= 0:
+        return EvidenceResult.unavailable(
+            "device_familiarity", "ancova", "no residual variance", n=n, status="insufficient", provenance=prov
+        )
     f = ((rss_r - rss_f) / df1) / (rss_f / df2)
     eta = (rss_r - rss_f) / rss_r if rss_r > 0 else 0.0
     sd = float(np.std(yy, ddof=1))

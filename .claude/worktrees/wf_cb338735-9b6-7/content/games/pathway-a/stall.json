@@ -1,0 +1,232 @@
+{
+  "schema_version": "1.0",
+  "config_id": "stall.v0",
+  "module_id": "stall",
+  "kind": "episode",
+  "pathways": ["A"],
+  "version": "0.1.0",
+  "paradigms": ["go_nogo", "tone_choice", "timed_rush"],
+  "constructs": [
+    "composure",
+    "emotional_regulation",
+    "expressive_restraint",
+    "persistence_of_style",
+    "response_consistency",
+    "self_control",
+    "stability"
+  ],
+  "indicators": [
+    "composure.error_type_shift",
+    "composure.pressure_slope_accuracy",
+    "composure.pressure_slope_rt",
+    "emotional_regulation.drift_slope_difficult_run",
+    "emotional_regulation.mirroring",
+    "emotional_regulation.recovery_after_feedback",
+    "emotional_regulation.tone_after_provocation",
+    "expressive_restraint.extra_taps",
+    "expressive_restraint.iti_rvi",
+    "expressive_restraint.premature_taps",
+    "persistence_of_style.cross_segment_style_r",
+    "persistence_of_style.lag1_autocorr",
+    "response_consistency.choice_entropy_repeats",
+    "response_consistency.loc_scale_sigma",
+    "response_consistency.rt_rvi",
+    "self_control.ezd_drift_nogo",
+    "self_control.nogo_commission_rate",
+    "stability.shift_slope",
+    "stability.shift_slope_rude_run"
+  ],
+  "slot": false,
+  "scorable": true,
+  "budget": {
+    "intro_ms": 9000,
+    "outro_ms": 3000,
+    "target_ms_l2": 185000,
+    "soft_cap_ms": 194000,
+    "hard_cap_ms": 196000
+  },
+  "levels": {
+    "L1": {
+      "timing": {
+        "serve_window_ms": 1500,
+        "customer_isi_ms": 700,
+        "tone_window_ms": 6000,
+        "rush_serve_window_ms": 1200
+      },
+      "seconds_per_trial": {
+        "median": 4.35,
+        "slow": 4.45
+      },
+      "estimated_duration_ms": {
+        "median": 190000,
+        "slow": 192000,
+        "slow_trimmed": 166000
+      }
+    },
+    "L2": {
+      "timing": {
+        "serve_window_ms": 1300,
+        "customer_isi_ms": 600,
+        "tone_window_ms": 5500,
+        "rush_serve_window_ms": 1000
+      },
+      "seconds_per_trial": {
+        "median": 4.1,
+        "slow": 4.4
+      },
+      "estimated_duration_ms": {
+        "median": 185000,
+        "slow": 191000,
+        "slow_trimmed": 165200
+      }
+    },
+    "L3": {
+      "timing": {
+        "serve_window_ms": 1100,
+        "customer_isi_ms": 500,
+        "tone_window_ms": 5000,
+        "rush_serve_window_ms": 850
+      },
+      "seconds_per_trial": {
+        "median": 3.85,
+        "slow": 4.2
+      },
+      "estimated_duration_ms": {
+        "median": 180000,
+        "slow": 187000,
+        "slow_trimmed": 162000
+      }
+    }
+  },
+  "blocks": [
+    {
+      "block_id": "practice",
+      "phase": "practice",
+      "condition_id": "standard",
+      "trials": 2,
+      "min_trials": 2,
+      "budget_trial_ms": 4000,
+      "scorable": false,
+      "conditions": {
+        "timer": false,
+        "noise": false,
+        "shift_active": false
+      },
+      "beats": []
+    },
+    {
+      "block_id": "service",
+      "phase": "main",
+      "condition_id": "standard",
+      "trials": 20,
+      "min_trials": 18,
+      "budget_trial_ms": 2200,
+      "scorable": true,
+      "conditions": {
+        "timer": false,
+        "noise": false,
+        "shift_active": false
+      },
+      "beats": ["go", "nogo", "dont_serve"]
+    },
+    {
+      "block_id": "tone_calm",
+      "phase": "main",
+      "condition_id": "calm_customers",
+      "trials": 8,
+      "min_trials": 6,
+      "budget_trial_ms": null,
+      "scorable": true,
+      "conditions": {
+        "timer": false,
+        "noise": false,
+        "shift_active": false
+      },
+      "beats": ["tone_choice"]
+    },
+    {
+      "block_id": "timed_rush",
+      "phase": "pressure",
+      "condition_id": "timed_rush",
+      "trials": 18,
+      "min_trials": 16,
+      "budget_trial_ms": 1900,
+      "scorable": true,
+      "conditions": {
+        "timer": true,
+        "noise": true,
+        "shift_active": false
+      },
+      "beats": ["go", "nogo", "crowd_noise"]
+    },
+    {
+      "block_id": "rude_run",
+      "phase": "shift_post",
+      "condition_id": "rude_run",
+      "trials": 12,
+      "min_trials": 10,
+      "budget_trial_ms": null,
+      "scorable": true,
+      "conditions": {
+        "timer": false,
+        "noise": false,
+        "shift_active": true
+      },
+      "beats": ["tone_choice", "provocation", "feedback_recovery"]
+    },
+    {
+      "block_id": "probe",
+      "phase": "main",
+      "condition_id": "probe",
+      "trials": 4,
+      "min_trials": 4,
+      "budget_trial_ms": 1200,
+      "scorable": true,
+      "conditions": {
+        "timer": false,
+        "noise": false,
+        "shift_active": false
+      },
+      "beats": ["probe_segment"]
+    }
+  ],
+  "min_counts": {
+    "gng": 30,
+    "nogo": 8,
+    "provocations": 8,
+    "tone_choices": 12,
+    "tone_levels": 3,
+    "feedback_events": 6
+  },
+  "planned_counts": {
+    "gng": 38,
+    "nogo": 11,
+    "provocations": 11,
+    "tone_choices": 20,
+    "tone_levels": 5,
+    "feedback_events": 8
+  },
+  "constraints": {
+    "customer_tone_levels": [0, 1, 2, 3, 4],
+    "tone_is_stimulus_property": true,
+    "tone_options": ["warm", "neutral", "firm"],
+    "exactly_one_shift": true
+  },
+  "context_shift": {
+    "kind": "rude_customer_run",
+    "announced": false,
+    "window": [46, 50]
+  },
+  "forms": ["form_1", "form_2"],
+  "audio_keys": [
+    "stall.intro",
+    "stall.practice",
+    "stall.outro",
+    "stall.replay",
+    "stall.customer.calm",
+    "stall.customer.hostile",
+    "stall.rush_cue"
+  ],
+  "requires_numeracy": false,
+  "notes": "Episode 1, Table for One (EPI-01). Target 3.3 +- 0.3 min. Customer tone is a recorded stimulus property, never sensing of the player."
+}

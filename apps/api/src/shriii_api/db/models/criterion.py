@@ -161,6 +161,9 @@ class Response(Base):
     expected_response: Mapped[float | None] = mapped_column(Float)
     """Administration-file key value: the instructed answer of an attention-check item, or the minimum
     number of moves of a performance ``<problem>.moves`` measure (needed again on every rescore)."""
+    planned_missing_items: Mapped[list[str]] = mapped_column(default=list, server_default=text("'[]'::jsonb"))
+    """Items of this administration left out by the planned-missingness design (rotating blocks); kept with
+    the responses so every rescore treats them as planned missing, never as non-response."""
     source: Mapped[str] = mapped_column(String(32))
     import_id: Mapped[uuid.UUID | None] = mapped_column()
     recorded_at: Mapped[datetime] = mapped_column()

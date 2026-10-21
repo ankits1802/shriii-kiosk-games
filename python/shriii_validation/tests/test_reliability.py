@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import numpy as np
-import pandas as pd  # type: ignore[import-untyped]
+import pandas as pd
 import pingouin as pg
 import pytest
 from hypothesis import given, settings

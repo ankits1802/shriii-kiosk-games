@@ -28,8 +28,11 @@ __all__ = [
     "ModelName",
     "PredictionReport",
     "assert_no_group_leakage",
+    "fit_final_model",
+    "fold_assignments",
     "grouped_cv",
     "hierarchical_regression",
+    "holdout_metrics",
     "holdout_split",
     "predictive_comparisons",
 ]
@@ -359,3 +362,111 @@ def predictive_comparisons(
             provenance=make_provenance("incremental_cv_r2", yv, seed=seed, params={"models": list(models)}),
         )
     return out
+
+
+def fold_assignments(groups: ArrayLike, n_splits: int) -> NDArray[np.int64]:
+    """Outer-fold index of every row under the participant-grouped split used by :func:`grouped_cv`
+    (``GroupKFold`` is deterministic for a given row order)."""
+    from sklearn.model_selection import GroupKFold  # noqa: PLC0415 - heavy, loaded on demand
+
+    gv = np.asarray(groups).astype(str)
+    out = np.full(gv.size, -1, dtype=np.int64)
+    for k, (_, te) in enumerate(GroupKFold(n_splits=n_splits).split(np.zeros((gv.size, 1)), groups=gv)):
+        out[te] = k
+    return out
+
+
+def fit_final_model(
+    x: ArrayLike,
+    y: ArrayLike,
+    groups: ArrayLike,
+    *,
+    model: ModelName = "ridge",
+    inner_folds: int | None = None,
+    seed: int = 0,
+    params: ValidationParams | None = None,
+) -> tuple[Any, dict[str, Any]]:
+    """Tune with participant-grouped inner CV on all development rows and refit on them, for the single
+    final check on an untouched holdout cohort. Returns the fitted estimator and the chosen parameters."""
+    from sklearn.model_selection import GridSearchCV, GroupKFold  # noqa: PLC0415 - heavy, loaded on demand
+
+    prm = params or load_validation_params()
+    xm = np.asarray(x, dtype=float)
+    if xm.ndim == 1:
+        xm = xm[:, None]
+    yv = np.asarray(y, dtype=float)
+    gv = np.asarray(groups).astype(str)
+    ok = np.isfinite(yv)
+    xm, yv, gv = xm[ok], yv[ok], gv[ok]
+    folds = min(inner_folds or prm.i("prediction.inner_folds"), int(np.unique(gv).size))
+    if folds < 2:
+        raise ValueError("final model needs at least two development participants")
+    est, grid = _model(model, seed)
+    search = GridSearchCV(est, grid, cv=GroupKFold(n_splits=folds), scoring="neg_mean_squared_error")
+    search.fit(xm, yv, groups=gv)
+    return search.best_estimator_, dict(search.best_params_)
+
+
+def holdout_metrics(
+    estimator: Any,
+    x: ArrayLike,
+    y: ArrayLike,
+    groups: ArrayLike,
+    *,
+    train_groups: ArrayLike,
+    n_boot: int | None = None,
+    seed: int = 0,
+    params: ValidationParams | None = None,
+) -> tuple[dict[str, EvidenceResult], FloatArray]:
+    """Evaluate a final model once on the holdout rows: R^2, MAE and RMSE with participant-clustered
+    bootstrap CIs. Fails loudly if a holdout participant was used for training."""
+    prm = params or load_validation_params()
+    nb = n_boot or prm.i("prediction.bootstrap_resamples")
+    xm = np.asarray(x, dtype=float)
+    if xm.ndim == 1:
+        xm = xm[:, None]
+    yv = np.asarray(y, dtype=float)
+    gv = np.asarray(groups).astype(str)
+    assert_no_group_leakage(np.asarray(train_groups).astype(str), gv)
+    ok = np.isfinite(yv)
+    xm, yv, gv = xm[ok], yv[ok], gv[ok]
+    pred = np.asarray(estimator.predict(xm), dtype=float)
+    prov = make_provenance("holdout_metrics", xm, yv, seed=seed)
+    if yv.size < 3:
+        empty = {
+            k: EvidenceResult.unavailable(
+                f"holdout_{k}",
+                "holdout",
+                "fewer than 3 holdout rows",
+                n=int(yv.size),
+                status="insufficient",
+                provenance=prov,
+            )
+            for k in ("r2", "mae", "rmse")
+        }
+        return empty, pred
+    overall = _metrics(yv, pred)
+    uniq = np.unique(gv)
+    by_g = {g: np.flatnonzero(gv == g) for g in uniq}
+    rng = np.random.default_rng(seed)
+    boots: dict[str, list[float]] = {"r2": [], "mae": [], "rmse": []}
+    for _ in range(nb):
+        ii = np.concatenate([by_g[g] for g in rng.choice(uniq, uniq.size, replace=True)])
+        m = _metrics(yv[ii], pred[ii])
+        for k, vals in boots.items():
+            vals.append(m[k])
+    out: dict[str, EvidenceResult] = {}
+    for k, vals in boots.items():
+        lo, hi = np.nanpercentile(vals, [2.5, 97.5])
+        out[k] = EvidenceResult(
+            f"holdout_{k}",
+            overall[k],
+            float(lo),
+            float(hi),
+            0.95,
+            int(yv.size),
+            "final_model_on_untouched_holdout_cluster_bootstrap",
+            details={"n_groups": int(uniq.size)},
+            provenance=prov,
+        )
+    return out, pred

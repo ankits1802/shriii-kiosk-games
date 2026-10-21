@@ -1,0 +1,65 @@
+{
+  "schema_version": "1.0",
+  "plan_id": "session-plan.pilot",
+  "version": "0.1.0",
+  "session_cap_s": 900,
+  "session_target_max_s": 890,
+  "segments_max_s": {
+    "onboarding": 90,
+    "practice_warmup": 60,
+    "bridges": 30,
+    "report_survey": 90,
+    "contact_optin": 30
+  },
+  "scored_play_median_s": {
+    "min": 540,
+    "max": 630
+  },
+  "b_module_duration_s": {
+    "min": 60,
+    "max": 120
+  },
+  "a_episode_median_s": {
+    "min": 180,
+    "max": 216
+  },
+  "pathways": {
+    "B": {
+      "core_order": ["dont_tap", "card_sort", "balloon", "tower", "share_pot"],
+      "slot_candidates": ["wait_or_now", "steady_hands", "four_stalls", "private_dice"],
+      "slot_randomisation": {
+        "method": "permuted_block",
+        "block_size": 4,
+        "unit": "kiosk"
+      },
+      "warmup": "warmup"
+    },
+    "A": {
+      "order": ["stall", "weighing_post", "road_home"],
+      "optional_substudy": ["coplay"],
+      "warmup": "warmup"
+    }
+  },
+  "walkaway": {
+    "reprompt_s": 8,
+    "still_there_s": 20,
+    "countdown_s": 45,
+    "abandon_after_countdown_s": 10,
+    "counted_after_response_window": true,
+    "disabled_in_modes": ["think_aloud"]
+  },
+  "state_ceilings_s": {
+    "attract": 86400,
+    "languageSelect": 60,
+    "consent": 120,
+    "bands": 90,
+    "practiceWarmup": 75,
+    "play": 660,
+    "report": 75,
+    "survey": 30,
+    "contactOptIn": 45,
+    "farewell": 15,
+    "wipe": 5
+  },
+  "notes": "Design targets from plan section 4.4; the tools/trial-budget sheet (SCR-03) becomes the source of truth once measured."
+}

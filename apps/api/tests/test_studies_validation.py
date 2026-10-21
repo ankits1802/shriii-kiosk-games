@@ -173,8 +173,11 @@ def test_s2_analysis_refused_without_prereg_then_allowed(
     drain()
     done = client.get(f"/api/v1/validation/runs/{ok.json()['run_id']}", headers=analyst).json()
     assert done["status"] == "succeeded" and done["engine"] and done["manifest"]["snapshot_sha256"] == ready["sha256"]
-    failed = client.get(f"/api/v1/validation/runs/{fairness['run_id']}", headers=analyst).json()
-    assert failed["status"] == "failed" and "shriii_validation" in (failed["error"] or "")
+    fair = client.get(f"/api/v1/validation/runs/{fairness['run_id']}", headers=analyst).json()
+    # The engine runs every analysis; an empty snapshot gives no rows rather than invented numbers.
+    assert fair["status"] == "succeeded" and fair["results"] == []
+    assert "no analysable rows" in " ".join(fair["manifest"]["notes"])
+    assert fair["manifest"]["git_sha"] and fair["manifest"]["provenance"]["snapshot_id"] == snap["snapshot_id"]
     # Frozen studies are locked.
     client.post(f"/api/v1/studies/{STUDY}/freeze", headers=researcher, json={"reason": "stage 2 lock"})
     locked = client.post(f"/api/v1/studies/{STUDY}/cohorts", headers=researcher, json={"cohort_id": "c", "name": "c"})
@@ -248,3 +251,51 @@ def test_synthetic_end_to_end(client: TestClient, researcher: dict[str, str], se
         "/api/v1/validation/matched-records", headers=researcher, params={"study_id": "demo-s2-pilot"}
     ).json()
     assert len(matched) == 6 and all(m["has_game"] and m["has_criterion"] for m in matched)
+
+
+def test_results_carry_provenance_and_gates_are_evaluated_only(
+    client: TestClient, researcher: dict[str, str], settings: Any
+) -> None:
+    """Every persisted row records N, CI, exclusions and provenance; gate evaluation never promotes;
+    batch scoring writes group-level private-report estimates with no person key (small cells suppressed)."""
+    from shriii_api.services.synthetic import ingest_synthetic  # noqa: PLC0415
+    from shriii_api.testing import drain  # noqa: PLC0415
+
+    summary = ingest_synthetic(settings, participants=8, seed=5, occasions=1)
+    snapshot_id = summary["snapshot"]["snapshot_id"]
+    run_id = next(iter(summary["validation_runs"]))
+    run = client.get(f"/api/v1/validation/runs/{run_id}", headers=researcher).json()
+    assert run["status"] == "succeeded" and run["results"], run
+    snap_sha = client.get(f"/api/v1/validation/datasets/{snapshot_id}", headers=researcher).json()["sha256"]
+    for row in run["results"]:
+        prov = row["provenance"]
+        assert prov["snapshot_id"] == snapshot_id and prov["snapshot_sha256"] == snap_sha
+        assert prov["git_sha"] and prov["algorithm_version"] and set(prov["dictionary_sha256"]) == {"shared", "A", "B"}
+        assert "rows_available" in row["exclusions"] or row["details"].get("status") != "ok"
+    assert run["manifest"]["provenance"]["validation_engine"].startswith("shriii_validation-")
+    gate = client.post(
+        f"/api/v1/validation/datasets/{snapshot_id}/gate-evaluation",
+        headers=researcher,
+        json={"pathway": "B", "languages": ["hi-IN", "mr-IN"]},
+    )
+    assert gate.status_code == 201, gate.text
+    rows = gate.json()["results"]
+    traits = [r for r in rows if r["metric"] == "trait_gate_status"]
+    assert traits and all(r["details"]["evaluate_only"] for r in traits)
+    assert all(r["details"]["status"] in ("unvalidated", "research_only", "withheld") for r in traits)
+    battery = [r for r in rows if r["metric"] == "battery_gate_status"]
+    assert battery and all(r["details"]["status"] == "closed" for r in battery)
+    job = client.post(
+        "/api/v1/features/batch-scoring", headers=researcher, params={"study_id": "demo-s2-pilot", "pathway": "B"}
+    )
+    assert job.status_code == 202, job.text
+    drain()
+    done = client.get(f"/api/v1/admin/jobs/{job.json()['job_id']}", headers=researcher)
+    if done.status_code == 200:
+        assert done.json()["status"] == "succeeded", done.json()
+    groups = client.get("/api/v1/features/group-indicators", headers=researcher, params={"study_id": "demo-s2-pilot"})
+    assert groups.status_code == 200
+    for g in groups.json():
+        assert "participant_pid" not in g and "session_id" not in g
+        if g["n_participants"] < 30:
+            assert g["suppressed"] and g["estimate"] is None

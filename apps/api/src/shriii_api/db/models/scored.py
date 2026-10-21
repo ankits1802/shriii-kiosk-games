@@ -175,6 +175,37 @@ class IndicatorValue(Base, DerivedMixin):
     is_current: Mapped[bool] = mapped_column(Boolean, default=True)
 
 
+class GroupIndicatorValue(Base, DerivedMixin):
+    """Group-level indicator estimate (private reports; SCR-08, BUILD_DECISIONS #6).
+
+    Deliberately has no session or participant column: it describes a partition (study, pathway, language,
+    calibration level), never a person. Partitions below ``private_report.min_group_participants`` are
+    stored suppressed (no estimate).
+    """
+
+    __tablename__ = "group_indicators"
+    __table_args__ = (
+        Index("ix_group_indicators_study_current", "study_id", "indicator_id", postgresql_where=text("is_current")),
+        {"schema": SCHEMA},
+    )
+
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    study_id: Mapped[str] = mapped_column(String(128))
+    pathway: Mapped[str] = mapped_column(String(1))
+    partition: Mapped[dict[str, Any]] = mapped_column(default=dict)
+    indicator_id: Mapped[str] = mapped_column(String(128))
+    construct_id: Mapped[str | None] = mapped_column(String(64))
+    estimate: Mapped[float | None] = mapped_column(Float)
+    ci_low: Mapped[float | None] = mapped_column(Float)
+    ci_high: Mapped[float | None] = mapped_column(Float)
+    n_participants: Mapped[int] = mapped_column(Integer)
+    n_reports: Mapped[int] = mapped_column(Integer)
+    suppressed: Mapped[bool] = mapped_column(Boolean, default=False)
+    details: Mapped[dict[str, Any]] = mapped_column(default=dict)
+    scoring_run_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey(f"{SCHEMA}.scoring_runs.run_id"))
+    is_current: Mapped[bool] = mapped_column(Boolean, default=True)
+
+
 class TraitEstimate(Base, DerivedMixin):
     """Layer 4 composite estimate and band (plan ``model_estimates``); only gate-passing traits are shown."""
 

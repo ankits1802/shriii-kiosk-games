@@ -15,6 +15,7 @@ export {
   TARGET_LUFS,
   type VoiceManifest,
 } from './manifest.ts';
+export { SpeakingTracker } from './speaking.ts';
 export {
   type ClipFetcher,
   createVoiceService,

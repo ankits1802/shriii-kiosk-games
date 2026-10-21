@@ -13,29 +13,22 @@ from pydantic import BaseModel, Field
 from sqlalchemy import select
 
 from shriii_api import content
+from shriii_api.adapters import validation as validation_adapter
+from shriii_api.adapters.scoring import AdapterUnavailableError
 from shriii_api.api.deps import DbSession, SettingsDep, ensure_study_access, raise_error, require, set_audit
 from shriii_api.api.schemas import ApiModel, JobRef
 from shriii_api.auth.rbac import Perm, Principal
 from shriii_api.db.models.ops import Job
 from shriii_api.db.models.study import Study
 from shriii_api.db.models.validation import DatasetSnapshot, MatchedRecord, StatisticalResult, ValidationRun
+from shriii_api.services import gate_evaluation as gate_eval_svc
 from shriii_api.services import studies as study_svc
 from shriii_api.worker.queue import enqueue
 
 router = APIRouter(prefix="/validation", tags=["validation"])
 
 ANALYSIS_JOB = {"reliability": "reliability", "construct_validity": "construct_validity", "fairness": "fairness"}
-ANALYSES = (
-    "descriptives",
-    "reliability",
-    "construct_validity",
-    "fairness",
-    "factor_structure",
-    "measurement_invariance",
-    "dif",
-    "incremental_validity",
-    "mtmm",
-)
+ANALYSES: tuple[str, ...] = validation_adapter.analyses()
 
 
 class SnapshotSpec(BaseModel):
@@ -99,6 +92,14 @@ class ResultOut(ApiModel):
     method: str
     subgroup: dict[str, Any]
     details: dict[str, Any]
+    exclusions: dict[str, Any] = Field(default_factory=dict)
+    provenance: dict[str, Any] = Field(default_factory=dict)
+
+
+class GateEvaluationIn(BaseModel):
+    pathway: str = Field(pattern=r"^[AB]$")
+    languages: list[str] | None = Field(default=None, description="Default: every language with results")
+    site_modes: list[str] = Field(default_factory=lambda: ["supervised"])
 
 
 class RunOut(ApiModel):
@@ -363,6 +364,10 @@ def get_run(
     if run is None:
         raise_error(404, "unknown_run", "run not found")
     _snapshot(db, request, principal, run.snapshot_id)
+    return _run_out(db, run)
+
+
+def _run_out(db: DbSession, run: ValidationRun) -> RunOut:
     out = RunOut.model_validate(run)
     if run.job_id:
         job = db.get(Job, run.job_id)
@@ -372,7 +377,40 @@ def get_run(
     out.results = [
         ResultOut.model_validate(r)
         for r in db.execute(
-            select(StatisticalResult).where(StatisticalResult.run_id == run_id).order_by(StatisticalResult.id)
+            select(StatisticalResult).where(StatisticalResult.run_id == run.run_id).order_by(StatisticalResult.id)
         ).scalars()
     ]
     return out
+
+
+@router.post(
+    "/datasets/{snapshot_id}/gate-evaluation",
+    response_model=RunOut,
+    status_code=status.HTTP_201_CREATED,
+    summary="Evaluate trait and battery gates from the snapshot's latest results (evaluate-only, never promotes)",
+)
+def gate_evaluation(
+    snapshot_id: uuid.UUID,
+    body: GateEvaluationIn,
+    request: Request,
+    db: DbSession,
+    settings: SettingsDep,
+    principal: Annotated[Principal, Depends(require(Perm.VALIDATION_RUN))],
+) -> RunOut:
+    snap = _snapshot(db, request, principal, snapshot_id)
+    if snap.status not in ("ready", "frozen"):
+        raise_error(409, "snapshot_not_ready", f"snapshot is {snap.status}")
+    try:
+        run = gate_eval_svc.evaluate_snapshot_gates(
+            db,
+            settings,
+            snap,
+            pathway=body.pathway,
+            actor=principal.sub,
+            languages=body.languages,
+            site_modes=body.site_modes,
+        )
+    except AdapterUnavailableError as exc:
+        raise_error(503, "adapter_unavailable", str(exc))
+    set_audit(request, action="validation.gate_evaluation", resource_type="validation_run", resource_id=str(run.run_id))
+    return _run_out(db, run)

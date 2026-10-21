@@ -1,0 +1,45 @@
+{
+  "schema_version": "1.0",
+  "kind": "calibration_rules",
+  "version": "0.1.0",
+  "status": "draft_pending_pi_signoff",
+  "default_policy": "fixed_L2_with_L1_fallback",
+  "fixed_level": "L2",
+  "fallback_level": "L1",
+  "slow_pace_level": "L1",
+  "warmup": {
+    "passes_per_skill_from": "content/games/shared/warmup.json#/min_counts/passes_per_skill",
+    "max_attempts_per_skill_from": "content/games/shared/warmup.json#/min_counts/max_attempts_per_skill",
+    "skill_blocks": {
+      "tap": "tap",
+      "hold": "hold",
+      "choice": "choice"
+    },
+    "rt_blocks": ["tap", "calibration"]
+  },
+  "classifier": {
+    "rules": [
+      {
+        "level": "L1",
+        "when": {
+          "warmup_accuracy_lt": 0.75
+        }
+      },
+      {
+        "level": "L1",
+        "when": {
+          "warmup_rt_ms_gte": 900
+        }
+      },
+      {
+        "level": "L3",
+        "when": {
+          "warmup_rt_ms_lt": 450,
+          "warmup_accuracy_gte": 0.95
+        }
+      }
+    ],
+    "otherwise": "L2"
+  },
+  "notes": "Field classifier cut-offs are placeholders until the pilot warm-up distribution exists (ENG-10). The pilot policy ignores them: only practice_struggle or an a11y slow-pace choice gives L1. Canonical location (loaded by packages/kiosk-game/src/engine/calibration.ts). Not a game config: it has no module_id."
+}

@@ -1,0 +1,27 @@
+[project]
+name = "shriii-simulator"
+version = "0.1.0"
+description = "Synthetic players with known latent trait parameters for parameter recovery"
+requires-python = ">=3.13"
+dependencies = [
+  "shriii-contracts",
+  "pyyaml>=6",
+  "shriii-validation",
+  "shriii-scoring",
+  "numpy>=2.3",
+  "scipy>=1.16",
+  "polars>=1.30",
+  "pandas>=2.3",
+]
+
+[build-system]
+requires = ["uv_build>=0.13,<0.14"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-name = "shriii_simulator"
+
+[tool.uv.sources]
+shriii-contracts = { workspace = true }
+shriii-scoring = { workspace = true }
+shriii-validation = { workspace = true }

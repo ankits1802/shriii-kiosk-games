@@ -21,7 +21,7 @@ from dataclasses import dataclass, field
 from typing import Any, Literal
 
 import numpy as np
-import pandas as pd  # type: ignore[import-untyped]
+import pandas as pd
 from numpy.typing import ArrayLike, NDArray
 from scipy import optimize, stats
 
@@ -598,11 +598,12 @@ def redundancy(
     thr = prm.f("structure.redundancy_r")
     thr_d = prm.f("structure.redundancy_disattenuated")
     corr = data.corr()
+    mat = corr.to_numpy(dtype=float)
     out: list[dict[str, Any]] = []
-    cols = list(corr.columns)
+    cols = [str(c) for c in corr.columns]
     for i in range(len(cols)):
         for j in range(i + 1, len(cols)):
-            r = float(corr.iloc[i, j])
+            r = float(mat[i, j])
             if not np.isfinite(r):
                 continue
             rd = None

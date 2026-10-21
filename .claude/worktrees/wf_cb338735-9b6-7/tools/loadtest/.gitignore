@@ -1,0 +1,2 @@
+# Cached corpora, fleet tokens (bearer secrets), raw samples and profiler output.
+.cache/

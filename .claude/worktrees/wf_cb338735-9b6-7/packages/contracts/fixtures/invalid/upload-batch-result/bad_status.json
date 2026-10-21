@@ -1,0 +1,23 @@
+{
+  "schema_version": "1.0",
+  "batch_id": "01a15df9-a808-71a8-ac0f-237ec49e19c3",
+  "server_received_at": "2026-10-21T05:05:01.000Z",
+  "clock_offset_estimate_ms": null,
+  "duplicate_batch": false,
+  "results": [
+    {
+      "event_id": "01a15df9-9480-7f6f-a9d5-b1f8b6267644",
+      "session_id": "01a15df9-9480-78bd-98a1-a021f6e0e2f9",
+      "seq": 0,
+      "status": "ok",
+      "reason_code": null
+    }
+  ],
+  "summary": {
+    "accepted": 1,
+    "duplicate": 0,
+    "parked": 0,
+    "rejected_terminal": 0,
+    "retryable": 0
+  }
+}

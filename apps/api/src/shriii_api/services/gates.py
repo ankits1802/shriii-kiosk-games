@@ -26,6 +26,7 @@ from shriii_api.db.models.validation import (
 )
 from shriii_api.errors import DomainError
 from shriii_api.security import ed25519_public_key, sign_ed25519, verify_ed25519
+from shriii_api.services import report_policy
 from shriii_api.settings import Settings
 
 TRAIT_STATUS_ORDER = ("withheld", "unvalidated", "research_only", "validated_broad_style", "validated_banded")
@@ -267,9 +268,11 @@ def build_release_pack(
                     "indicators": comp["indicators"],
                 }
             )
+    withheld = set(report_policy.withheld_constructs())
     allow = [
         {"trait": s.trait, "band": s.band, "phrase_key": s.phrase_key}
         for s in db.execute(select(ScoreInterpretation).where(ScoreInterpretation.approved.is_(True))).scalars()
+        if s.trait not in withheld  # config/report_policy.yaml: never renderable in a player report
     ]
     pack: dict[str, Any] = {
         "schema_version": "1.0",

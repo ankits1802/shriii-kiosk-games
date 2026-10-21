@@ -431,3 +431,46 @@ export function appearanceFor(role: CharacterRole, variant = 0): Appearance {
   if (!a) throw new Error(`appearanceFor: missing villager ${idx}`);
   return a;
 }
+
+/**
+ * Cloth colourways for {@link withCloth}: [upper, upper trim, lower, lower border, drape, headwear].
+ * Every colourway keeps a light/dark contrast between top and bottom so silhouettes stay readable.
+ */
+export const CLOTH_COLOURWAYS: readonly (readonly [
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+])[] = [
+  [MELA.peacock, MELA.marigold, MELA.cream, MELA.peacock, MELA.marigold, MELA.saffron],
+  [MELA.kumkum, MELA.brass, 0x2e8b57, MELA.marigold, MELA.marigold, MELA.kumkum],
+  [MELA.marigold, MELA.vermilion, MELA.indigo, MELA.marigold, MELA.rose, MELA.lapis],
+  [0xf7f2e6, MELA.lapis, MELA.lapis, MELA.cream, MELA.peacockLight, 0xf7f2e6],
+  [MELA.rose, MELA.peacockDeep, MELA.peacockDeep, MELA.rose, MELA.cream, MELA.vermilion],
+  [MELA.mango, MELA.kumkum, 0x5a4a3a, MELA.brass, MELA.saffron, MELA.mango],
+  [MELA.lotus, MELA.indigo, MELA.cream, MELA.indigo, MELA.indigo, MELA.lotus],
+  [MELA.saffron, MELA.cream, MELA.terracotta, MELA.cream, MELA.peacock, MELA.cream],
+];
+
+/**
+ * Appearance with a cloth colour variant (0 = the original clothes). Skin, hair, build and attire cut
+ * are unchanged, so a crowd can reuse a body with fresh colours. Pure and deterministic.
+ */
+export function withCloth(a: Appearance, cloth: number): Appearance {
+  if (!cloth) return a;
+  const n = CLOTH_COLOURWAYS.length;
+  const cw = CLOTH_COLOURWAYS[(((cloth - 1) % n) + n) % n];
+  if (!cw) return a;
+  const [upper, trim, lower, border, drape, head] = cw;
+  return {
+    ...a,
+    upperColor: upper,
+    upperTrim: trim,
+    lowerColor: lower,
+    lowerBorder: border,
+    drapeColor: a.drape === 'pallu' || a.drape === 'chador' ? lower : drape,
+    headwearColor: a.headwear === 'gajra' ? a.headwearColor : head,
+  };
+}

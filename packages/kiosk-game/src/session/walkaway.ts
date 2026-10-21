@@ -5,6 +5,11 @@
  * 20 s "still there?", 45 s countdown, abandon 10 s after the countdown starts). Idle time counts
  * only outside timed response windows; any touch resets it (and logs `walkaway.resumed` if a prompt
  * was showing). Walkaway is disabled in the modes listed in `disabled_in_modes` (think-aloud).
+ *
+ * Narration also suspends the idle count: while the voice service reports `speaking` (an
+ * instruction or prompt is playing) the player is listening, not idle. Counting restarts from zero
+ * when the narration ends. The walkaway prompts' own narration never suspends escalation: narration
+ * that starts while a walkaway prompt is showing is ignored.
  */
 import type { SessionMode, SessionPlan } from '@shriii/contracts';
 import { type Actor, assign, createActor, setup } from 'xstate';
@@ -161,6 +166,12 @@ export class WalkawayMonitor {
   private readonly actor: Actor<typeof walkawayMachine>;
   private readonly config: WalkawayConfig;
   private current: WalkawayStage | null = null;
+  /** A timed response window is open (input layer). */
+  private windowIsOpen = false;
+  /** Narration that suspended the count is playing. */
+  private narrating = false;
+  /** Whether the machine was told to suspend (WINDOW_OPEN sent). */
+  private suspended = false;
 
   constructor(
     config: WalkawayConfig,
@@ -192,10 +203,15 @@ export class WalkawayMonitor {
   start(mode: SessionMode): void {
     if (this.config.disabledInModes.includes(mode)) return;
     this.actor.send({ type: 'START' });
+    // A window or narration already in progress keeps the fresh count suspended.
+    if (this.suspended) this.actor.send({ type: 'WINDOW_OPEN' });
   }
 
   stop(): void {
     this.current = null;
+    this.narrating = false;
+    this.windowIsOpen = false;
+    this.suspended = false;
     this.actor.send({ type: 'STOP' });
   }
 
@@ -204,12 +220,56 @@ export class WalkawayMonitor {
   }
 
   windowOpen(): void {
-    this.current = null;
-    this.actor.send({ type: 'WINDOW_OPEN' });
+    this.windowIsOpen = true;
+    this.sync();
   }
 
   windowClose(): void {
-    this.actor.send({ type: 'WINDOW_CLOSE' });
+    this.windowIsOpen = false;
+    this.sync();
+  }
+
+  /** Narration started (voice `speaking` became true). Ignored while a walkaway prompt shows. */
+  narrationStart(): void {
+    if (this.current !== null || this.narrating) return;
+    this.narrating = true;
+    this.sync();
+  }
+
+  /** Narration ended; idle counting resumes from zero (unless a response window is open). */
+  narrationEnd(): void {
+    if (!this.narrating) return;
+    this.narrating = false;
+    this.sync();
+  }
+
+  /** Follow the voice service's speaking observable; returns the unsubscribe function. */
+  followNarration(voice: {
+    readonly speaking?: boolean;
+    onSpeakingChange?(listener: (speaking: boolean) => void): () => void;
+  }): () => void {
+    if (!voice.onSpeakingChange) return () => undefined;
+    if (voice.speaking === true) this.narrationStart();
+    return voice.onSpeakingChange((speaking) =>
+      speaking ? this.narrationStart() : this.narrationEnd(),
+    );
+  }
+
+  /** True while idle counting is suspended by a response window or narration. */
+  get paused(): boolean {
+    return this.suspended;
+  }
+
+  private sync(): void {
+    const want = this.windowIsOpen || this.narrating;
+    if (want === this.suspended) return;
+    this.suspended = want;
+    if (want) {
+      this.current = null;
+      this.actor.send({ type: 'WINDOW_OPEN' });
+    } else {
+      this.actor.send({ type: 'WINDOW_CLOSE' });
+    }
   }
 
   /** Devtools: jump to a stage. */

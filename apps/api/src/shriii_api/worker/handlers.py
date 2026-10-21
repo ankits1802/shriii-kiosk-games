@@ -8,7 +8,8 @@ from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from typing import Any
 
-import pandas as pd  # type: ignore[import-untyped]
+import numpy as np
+import pandas as pd
 from pydantic import ValidationError
 from shriii_contracts import EVENT_ADAPTER, check_event_invariants, check_session_sequence
 from sqlalchemy import select, update
@@ -20,7 +21,13 @@ from shriii_api.adapters import validation as validation_adapter
 from shriii_api.adapters.scoring import AdapterUnavailableError
 from shriii_api.db.models.kiosk_raw import Event, GameSession
 from shriii_api.db.models.ops import Kiosk, SystemEvent
-from shriii_api.db.models.scored import IndicatorValue, ScoringRun, TraitEstimate, TrialCanonical
+from shriii_api.db.models.scored import (
+    GroupIndicatorValue,
+    IndicatorValue,
+    ScoringRun,
+    TraitEstimate,
+    TrialCanonical,
+)
 from shriii_api.db.models.validation import (
     DatasetSnapshot,
     ModelEvaluation,
@@ -35,6 +42,7 @@ from shriii_api.db.partitions import ensure_upcoming_partitions
 from shriii_api.services import criterion as criterion_svc
 from shriii_api.services import erasure as erasure_svc
 from shriii_api.services import gates as gate_svc
+from shriii_api.services import provenance as provenance_svc
 from shriii_api.services import retention as retention_svc
 from shriii_api.services import sessions as session_svc
 from shriii_api.services import snapshots as snapshot_svc
@@ -221,6 +229,133 @@ def feature_extraction(db: Session, settings: Settings, ctx: JobContext) -> dict
     return {"indicators": len(indicators), "scoring_run_id": str(run.run_id), "algorithm": algorithm}
 
 
+def batch_scoring(db: Session, settings: Settings, ctx: JobContext) -> dict[str, Any]:
+    """Score every completed session of a study x pathway in one batch per language.
+
+    Needed for model-based indicators (partial pooling within language x calibration level) and for the
+    group-level private-report estimators, which per-session extraction leaves null. The batch rows become
+    the current indicator values; group estimates go to ``scored.group_indicators`` (no person key).
+    """
+    study_id, pathway = str(ctx.inputs["study_id"]), str(ctx.inputs["pathway"])
+    sessions = list(
+        db.execute(
+            select(GameSession).where(
+                GameSession.study_id == study_id, GameSession.pathway == pathway, GameSession.status == "completed"
+            )
+        ).scalars()
+    )
+    if not sessions:
+        return {"sessions": 0}
+    by_language: dict[str, list[GameSession]] = {}
+    for s in sessions:
+        by_language.setdefault(s.language or "unknown", []).append(s)
+    doc = content.dictionary_pathway(pathway)
+    run = ScoringRun(
+        kind="indicators_batch",
+        algorithm_version="pending",
+        engine="pending",
+        dictionary_versions={pathway: str(doc.data["version"])},
+        dictionary_sha256={pathway: doc.sha256},
+        inputs={"study_id": study_id, "pathway": pathway, "sessions": len(sessions), "languages": sorted(by_language)},
+        status="running",
+        job_id=ctx.job_id,
+    )
+    db.add(run)
+    db.flush()
+    stats = {"sessions": 0, "indicator_rows": 0, "group_rows": 0, "suppressed_groups": 0}
+    manifests: dict[str, Any] = {}
+    algorithm = "unknown"
+    for k, (language, group) in enumerate(sorted(by_language.items())):
+        ctx.progress(0.05 + 0.9 * k / len(by_language), f"batch scoring {language} ({len(group)} sessions)")
+        events: list[dict[str, Any]] = []
+        for s in group:
+            events += _session_events(db, s.session_id)
+        try:
+            out = scoring_adapter.score_batch(events, pathway, allow_synthetic=settings.is_dev)
+        except AdapterUnavailableError as exc:
+            raise PermanentJobError(str(exc)) from exc
+        algorithm = out.algorithm
+        manifests[language] = out.manifest
+        rows_by_session = {s.session_id: s for s in group}
+        for sid_text, rows in out.rows.items():
+            row = rows_by_session.get(uuid.UUID(sid_text))
+            if row is None:
+                continue
+            db.execute(
+                update(IndicatorValue)
+                .where(IndicatorValue.session_id == row.session_id, IndicatorValue.is_current.is_(True))
+                .values(is_current=False)
+            )
+            for ind in rows:
+                db.add(
+                    IndicatorValue(
+                        session_id=row.session_id,
+                        participant_pid=row.participant_pid,
+                        study_id=row.study_id,
+                        occasion_id=row.occasion_id,
+                        indicator_id=ind.indicator_id,
+                        construct_id=ind.construct_id,
+                        pathway=pathway,
+                        value=ind.value,
+                        n_valid_trials=ind.n_valid_trials,
+                        status=ind.status,
+                        quality_flags=ind.flags,
+                        scoring_run_id=run.run_id,
+                        is_current=True,
+                        algorithm_version=out.algorithm,
+                        dictionary_version=str(doc.data["version"]),
+                        source_refs={"session_id": str(row.session_id), "batch_partition_language": language},
+                        job_id=ctx.job_id,
+                    )
+                )
+            stats["sessions"] += 1
+            stats["indicator_rows"] += len(rows)
+        db.flush()
+        for g in out.group_rows:
+            db.execute(
+                update(GroupIndicatorValue)
+                .where(
+                    GroupIndicatorValue.study_id == study_id,
+                    GroupIndicatorValue.pathway == pathway,
+                    GroupIndicatorValue.indicator_id == g.indicator_id,
+                    GroupIndicatorValue.partition == g.partition,
+                    GroupIndicatorValue.is_current.is_(True),
+                )
+                .values(is_current=False)
+            )
+            suppressed = bool(g.details.get("suppressed_small_group")) or g.estimate is None
+            db.add(
+                GroupIndicatorValue(
+                    study_id=study_id,
+                    pathway=pathway,
+                    partition=g.partition,
+                    indicator_id=g.indicator_id,
+                    construct_id=g.construct_id,
+                    estimate=None if suppressed else g.estimate,
+                    ci_low=None if suppressed else g.ci_low,
+                    ci_high=None if suppressed else g.ci_high,
+                    n_participants=g.n_participants,
+                    n_reports=g.n_reports,
+                    suppressed=suppressed,
+                    details=g.details,
+                    scoring_run_id=run.run_id,
+                    is_current=True,
+                    algorithm_version=out.algorithm,
+                    dictionary_version=str(doc.data["version"]),
+                    source_refs={"study_id": study_id, "sessions_in_partition_language": len(group)},
+                    job_id=ctx.job_id,
+                )
+            )
+            stats["group_rows"] += 1
+            stats["suppressed_groups"] += int(suppressed)
+        db.flush()
+    run.algorithm_version = run.engine = algorithm
+    run.status, run.finished_at = "succeeded", datetime.now(UTC)
+    run.manifest = {"stats": stats, "engine_manifests": manifests}
+    db.flush()
+    return {**stats, "scoring_run_id": str(run.run_id)}
+
+
 def questionnaire_scoring(db: Session, settings: Settings, ctx: JobContext) -> dict[str, Any]:
     i = ctx.inputs
     try:
@@ -269,20 +404,13 @@ def dataset_snapshot(db: Session, settings: Settings, ctx: JobContext) -> dict[s
     return {"snapshot_id": str(snap.snapshot_id), "rows": snap.row_count, "sha256": snap.sha256}
 
 
-def _dictionary_context(pathway: str | None, hypothesis_ids: list[str]) -> dict[str, Any]:
-    pathways = [pathway] if pathway in ("A", "B") else ["A", "B"]
-    indicators: list[dict[str, Any]] = []
-    seen: set[str] = set()
-    for p in pathways:
-        for ind in content.dictionary_pathway(p).data.get("indicators", []):
-            if ind["id"] not in seen:
-                seen.add(ind["id"])
-                indicators.append(ind)
-    constructs = {c["id"]: c for c in content.dictionary_shared().data.get("constructs", [])}
-    return {"indicators": indicators, "constructs": constructs, "hypothesis_ids": hypothesis_ids}
+def _hypothesis_ids(run: ValidationRun) -> list[str]:
+    return list(run.hypothesis_ids) if run.confirmatory else []
 
 
 def validation_analysis(db: Session, settings: Settings, ctx: JobContext) -> dict[str, Any]:
+    """Run one validation analysis on a ready/frozen snapshot and persist every row with N, CI,
+    exclusions and provenance (snapshot id/sha256, dictionary sha256, algorithm version, git sha)."""
     run = db.get(ValidationRun, uuid.UUID(ctx.inputs["run_id"]), with_for_update=True)
     if run is None:
         raise PermanentJobError("validation run not found")
@@ -294,26 +422,27 @@ def validation_analysis(db: Session, settings: Settings, ctx: JobContext) -> dic
     except (ValueError, FileNotFoundError) as exc:
         raise PermanentJobError(str(exc)) from exc
     run.status = "running"
+    ctx.progress(0.1, f"running {run.analysis}")
+    context = provenance_svc.analysis_context(settings, snap, hypothesis_ids=_hypothesis_ids(run))
+    params = dict(run.params)
+    if snap.spec.get("holdout_cohorts") and "holdout_cohorts" not in params:
+        params["holdout_cohorts"] = list(snap.spec["holdout_cohorts"])
     try:
-        output = validation_adapter.run_analysis(
-            run.analysis,
-            frame,
-            params=run.params,
-            context=_dictionary_context(snap.spec.get("pathway"), run.hypothesis_ids if run.confirmatory else []),
-            gates=gate_svc.gates_config(),
-        )
-    except (AdapterUnavailableError, ValueError, KeyError) as exc:
+        output = validation_adapter.run_analysis(run.analysis, frame, params=params, context=context)
+    except (AdapterUnavailableError, ValueError, KeyError, ArithmeticError, np.linalg.LinAlgError) as exc:
+        # Analyses are deterministic on a fixed snapshot: retrying cannot change the outcome.
         run.status = "failed"
-        run.error = str(exc)
+        run.error = f"{type(exc).__name__}: {exc}"
         run.finished_at = datetime.now(UTC)
         db.flush()
-        raise PermanentJobError(str(exc)) from exc
+        raise PermanentJobError(run.error) from exc
+    run_prov = {**context["provenance"], "validation_run_id": str(run.run_id), "job_id": str(ctx.job_id)}
     db.query(StatisticalResult).filter(StatisticalResult.run_id == run.run_id).delete()
     for r in output.results:
         db.add(
             StatisticalResult(
                 run_id=run.run_id,
-                subject=r.subject,
+                subject=r.subject[:256],
                 subject_kind=r.subject_kind,
                 metric=r.metric,
                 estimate=r.estimate,
@@ -325,22 +454,30 @@ def validation_analysis(db: Session, settings: Settings, ctx: JobContext) -> dic
                 passed=r.passed,
                 hypothesis_id=r.hypothesis_id,
                 exploratory=r.exploratory or not run.confirmatory,
-                method=r.method,
+                method=r.method[:128],
                 subgroup=r.subgroup,
                 details=r.details,
+                exclusions={**r.exclusions, "frame": output.exclusions.get("by_reason", {})},
+                provenance={**run_prov, **r.provenance},
             )
         )
     run.status = "succeeded"
     run.engine = output.engine
     run.finished_at = datetime.now(UTC)
     run.manifest = {
+        "snapshot_id": str(snap.snapshot_id),
         "snapshot_sha256": snap.sha256,
         "snapshot_manifest": snap.manifest.get("parquet_sha256"),
         "rows": len(frame),
         "results": len(output.results),
         "notes": output.notes,
+        "exclusions": output.exclusions,
+        "snapshot_exclusions": snap.exclusions,
+        "provenance": {**output.provenance, **run_prov},
         "gates_sha256": content.gates().sha256,
         "hypotheses_sha256": content.hypotheses().sha256,
+        "dictionary_sha256": provenance_svc.dictionary_hashes(),
+        "git_sha": run_prov["git_sha"],
     }
     db.flush()
     return {"results": len(output.results), "engine": output.engine}
@@ -351,10 +488,12 @@ def model_training(db: Session, settings: Settings, ctx: JobContext) -> dict[str
     if tr is None:
         raise PermanentJobError("training run not found")
     model = db.get(ModelVersion, tr.model_id)
-    assert model is not None
+    if model is None:
+        raise PermanentJobError("model version not found")
     snap = db.get(DatasetSnapshot, model.snapshot_id)
     if snap is None:
         raise PermanentJobError("snapshot not found")
+    tr.status = "running"
     try:
         frame = snapshot_svc.load_snapshot_frame(settings, snap)
         out = validation_adapter.train_model(
@@ -365,11 +504,12 @@ def model_training(db: Session, settings: Settings, ctx: JobContext) -> dict[str
             params=model.params,
             holdout_cohort=model.holdout_cohort,
         )
-    except (AdapterUnavailableError, ValueError, FileNotFoundError) as exc:
-        tr.status, tr.error, tr.finished_at = "failed", str(exc), datetime.now(UTC)
+    except (AdapterUnavailableError, ValueError, KeyError, FileNotFoundError) as exc:
+        tr.status, tr.error, tr.finished_at = "failed", f"{type(exc).__name__}: {exc}", datetime.now(UTC)
         model.status = "failed"
         db.flush()
-        raise PermanentJobError(str(exc)) from exc
+        raise PermanentJobError(tr.error) from exc
+    prov = {**provenance_svc.base_provenance(settings, snap), "training_run_id": str(tr.run_id)}
     for metric, stats in out.cv_metrics.items():
         db.add(
             ModelEvaluation(
@@ -380,9 +520,18 @@ def model_training(db: Session, settings: Settings, ctx: JobContext) -> dict[str
                 value=stats.get("mean"),
                 sd=stats.get("sd"),
                 n=out.n_train,
+                details={
+                    "ci_low": stats.get("ci_low"),
+                    "ci_high": stats.get("ci_high"),
+                    "ci_level": 0.95,
+                    "fold_mean": stats.get("fold_mean"),
+                    "ci_method": "participant-clustered bootstrap of out-of-fold predictions",
+                },
             )
         )
+    holdout_ci = (out.details.get("holdout") or {}).get("ci", {})
     for metric, value in out.holdout_metrics.items():
+        ci = holdout_ci.get(metric) or [None, None]
         db.add(
             ModelEvaluation(
                 model_id=model.model_id,
@@ -392,6 +541,7 @@ def model_training(db: Session, settings: Settings, ctx: JobContext) -> dict[str
                 value=value,
                 sd=None,
                 n=out.n_holdout,
+                details={"ci_low": ci[0], "ci_high": ci[1], "ci_level": 0.95, "holdout_cohort": model.holdout_cohort},
             )
         )
     for p in out.predictions:
@@ -408,16 +558,34 @@ def model_training(db: Session, settings: Settings, ctx: JobContext) -> dict[str
             )
         )
     tr.status, tr.engine, tr.finished_at = "succeeded", out.engine, datetime.now(UTC)
+    tr.cv_scheme = {**tr.cv_scheme, **(out.details.get("cv_scheme") or {})}
     tr.metrics = {
         "cv": out.cv_metrics,
         "holdout": out.holdout_metrics,
         "n_train": out.n_train,
         "n_holdout": out.n_holdout,
         "grouping": "research_id (participant)",
+        "details": out.details,
+        "provenance": prov,
     }
     model.status = "trained"
     db.flush()
     return {"cv": out.cv_metrics, "holdout": out.holdout_metrics}
+
+
+def _norm_frame(frame: pd.DataFrame, inputs: dict[str, Any], pathway: str) -> pd.DataFrame:
+    """One language x pathway x occasion slice of the snapshot without the untouched holdout cohort."""
+    if inputs.get("language"):
+        frame = frame[frame["language"] == inputs["language"]]
+    if "pathway" in frame.columns:
+        frame = frame[frame["pathway"].astype(str) == pathway]
+    if "occasion_id" in frame.columns:
+        occasions = sorted(str(o) for o in frame["occasion_id"].dropna().unique())
+        if occasions:
+            frame = frame[frame["occasion_id"].astype(str) == str(inputs.get("occasion_id") or occasions[0])]
+    if "holdout" in frame.columns:
+        frame = frame[~frame["holdout"].fillna(False).astype(bool)]
+    return frame
 
 
 def norm_generation(db: Session, settings: Settings, ctx: JobContext) -> dict[str, Any]:
@@ -431,34 +599,39 @@ def norm_generation(db: Session, settings: Settings, ctx: JobContext) -> dict[st
         for ind in content.dictionary_pathway(pathway).data.get("indicators", [])
         if ind["construct"] == trait and ind.get("gate_eligible") and not ind.get("group_only")
     ]
+    if not indicators:
+        raise PermanentJobError(f"no gate-eligible individual indicators for {trait} in pathway {pathway}")
     directions = {ind["id"]: str(ind.get("direction", "")) for ind in indicators}
+    ci_level = float(i.get("ci_level", 0.90))
     try:
-        frame = snapshot_svc.load_snapshot_frame(settings, snap)
-        if i.get("language"):
-            frame = frame[frame["language"] == i["language"]]
+        frame = _norm_frame(snapshot_svc.load_snapshot_frame(settings, snap), i, pathway)
         out = validation_adapter.generate_norms(
             frame,
             indicator_ids=list(directions),
             directions=directions,
             reliability=float(i["reliability"]),
             quantiles=list(i.get("quantiles", [1 / 3, 2 / 3])),
-            ci_level=float(i.get("ci_level", 0.90)),
+            ci_level=ci_level,
+            gates=gate_svc.gates_config(),
+            trait=trait,
+            norm_table_version=str(i["norm_table_version"]),
+            weights=i.get("weights_column"),
         )
     except (AdapterUnavailableError, ValueError, FileNotFoundError, KeyError) as exc:
-        raise PermanentJobError(str(exc)) from exc
-    used = out.details.get("indicators", list(directions))
-    comp_inds = []
-    for ind_id in used:
-        col = frame[f"ind__{ind_id}"].astype(float)
-        comp_inds.append(
-            {
-                "indicator_id": ind_id,
-                "weight": 1.0 / max(1, len(used)),
-                "mean": float(col.mean()),
-                "sd": float(col.std(ddof=1)) if col.notna().sum() > 1 else 0.0,
-                "direction": "negative" if directions.get(ind_id, "").endswith("less") else "positive",
-            }
-        )
+        raise PermanentJobError(f"{type(exc).__name__}: {exc}") from exc
+    standardisation = out.details.get("standardisation", {})
+    used = list(out.details.get("indicators", list(directions)))
+    comp_inds = [
+        {
+            "indicator_id": ind_id,
+            "weight": 1.0 / max(1, len(used)),
+            "mean": float(standardisation[ind_id]["mean"]),
+            "sd": float(standardisation[ind_id]["sd"]),
+            "direction": "negative" if directions.get(ind_id, "").endswith("less") else "positive",
+        }
+        for ind_id in used
+        if ind_id in standardisation
+    ]
     record = NormTableRecord(
         norm_table_version=i["norm_table_version"],
         trait=trait,
@@ -467,11 +640,16 @@ def norm_generation(db: Session, settings: Settings, ctx: JobContext) -> dict[st
         reference_population_id=uuid.UUID(i["reference_population_id"]) if i.get("reference_population_id") else None,
         cut_points=out.cut_points,
         sem=out.sem,
-        ci_level=float(i.get("ci_level", 0.90)),
+        ci_level=ci_level,
         provisional=True,
         effective_n=out.effective_n,
         method=out.method,
-        coefficients={"composite": {"method": "unit_weighted_z", "indicators": comp_inds}, **out.details},
+        coefficients={
+            **out.details,
+            "composite": {"method": "unit_weighted_z", "indicators": comp_inds},
+            "engine_provisional": out.provisional,
+            "provenance": {**out.details.get("provenance", {}), **provenance_svc.base_provenance(settings, snap)},
+        },
         status="draft",
         created_by=ctx.created_by,
         algorithm_version=out.engine,
@@ -482,7 +660,12 @@ def norm_generation(db: Session, settings: Settings, ctx: JobContext) -> dict[st
     )
     db.add(record)
     db.flush()
-    return {"norm_table_id": str(record.id), "cut_points": out.cut_points, "sem": out.sem}
+    return {
+        "norm_table_id": str(record.id),
+        "cut_points": out.cut_points,
+        "sem": out.sem,
+        "effective_n": out.effective_n,
+    }
 
 
 def report_preparation(db: Session, settings: Settings, ctx: JobContext) -> dict[str, Any]:
@@ -632,6 +815,7 @@ HANDLERS: dict[str, Handler] = {
     "event_validation": event_validation,
     "trial_eligibility": trial_eligibility,
     "feature_extraction": feature_extraction,
+    "batch_scoring": batch_scoring,
     "questionnaire_scoring": questionnaire_scoring,
     "participant_matching": participant_matching,
     "dataset_snapshot": dataset_snapshot,
@@ -648,4 +832,4 @@ HANDLERS: dict[str, Handler] = {
     "retention": retention,
 }
 
-__all__ = ["FAILURE_HOOKS", "HANDLERS", "JobContext", "pd"]
+__all__ = ["FAILURE_HOOKS", "HANDLERS", "JobContext"]

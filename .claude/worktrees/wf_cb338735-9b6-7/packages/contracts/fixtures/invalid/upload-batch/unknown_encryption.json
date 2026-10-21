@@ -1,0 +1,17 @@
+{
+  "schema_version": "1.0",
+  "batch_id": "01a15df9-b03c-7f13-a384-94949a4ff0b9",
+  "kiosk_id": "kiosk-001",
+  "kiosk_t_wall": "2026-10-21T10:35:00+05:30",
+  "sha256": "0000000000000000000000000000000000000000000000000000000000000001",
+  "event_count": 1,
+  "session_chunks": [
+    {
+      "encryption": "rot13",
+      "session_id": "01a15df9-9480-78bd-98a1-a021f6e0e2f9",
+      "first_seq": 0,
+      "last_seq": 0,
+      "event_count": 1
+    }
+  ]
+}

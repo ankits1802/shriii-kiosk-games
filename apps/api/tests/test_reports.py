@@ -265,3 +265,42 @@ def test_random_gate_states_never_leak(
         assert (art["report_mode"] == "player_report") == should_show, (hi_open, mr_open, status, pack)
         if not should_show:
             assert art["traits_shown"] == []
+
+
+def test_integrity_is_withheld_from_player_reports_even_when_validated(
+    client: TestClient, admin: dict[str, str], researcher: dict[str, str], kiosk: dict[str, Any], scene: dict[str, Any]
+) -> None:
+    """config/report_policy.yaml withholds integrity (BUILD_DECISIONS #6) on top of every gates.yaml rule."""
+    from shriii_api.services import report_policy  # noqa: PLC0415
+
+    assert report_policy.withheld_reason("integrity", "A") is not None
+    assert report_policy.withheld_reason("self_control", "B") is None
+    with session_scope() as db:
+        db.add(
+            TraitEstimate(
+                session_id=uuid.UUID(scene["session_id"]),
+                trait="integrity",
+                pathway="B",
+                language="hi-IN",
+                composite=0.9,
+                sem=0.05,  # the most reliable estimate: it would be shown first if it were allowed
+                band="pole_b",
+                not_enough_to_say=False,
+                is_current=True,
+                algorithm_version="test",
+                dictionary_version="0.1.0",
+                source_refs={},
+            )
+        )
+    for i in client.get("/api/v1/norms/interpretations", headers=admin).json():
+        if i["trait"] == "integrity":
+            client.post(f"/api/v1/norms/interpretations/{i['id']}/approve", headers=admin, json={"approvers": SIGNERS})
+    assert _trait(client, admin, "integrity", "validated_broad_style").status_code == 201
+    _open_everything(client, admin)
+    pack = client.get("/api/v1/admin/gates/release-pack/current", headers=admin).json()["pack"]
+    assert not any(a["trait"] == "integrity" for a in pack["phrase_allowlist"])
+    art = _report(client, kiosk, scene["session_id"])["artefact"]
+    assert [t["trait"] for t in art["traits_shown"]] == ["self_control"]
+    assert (
+        _evaluation(client, researcher, scene["session_id"])["suppressed"]["integrity"] == "withheld_from_player_report"
+    )

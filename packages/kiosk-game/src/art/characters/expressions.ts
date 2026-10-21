@@ -10,7 +10,21 @@
 import type { Expression } from '../../core/contracts.ts';
 
 /** Contract expressions plus the extra states the art kit supports. */
-export type ExtendedExpression = Expression | 'pleased' | 'impatient';
+export type ExtendedExpression = Expression | 'pleased' | 'impatient' | 'delighted';
+
+/** Every expression, in a calm-to-hostile display order (gallery, tests). */
+export const EXPRESSION_LIST: readonly ExtendedExpression[] = [
+  'neutral',
+  'calm',
+  'pleased',
+  'happy',
+  'delighted',
+  'thinking',
+  'surprised',
+  'impatient',
+  'annoyed',
+  'angry',
+];
 
 export type ExpressionSymbol = 'none' | 'sweat' | 'vein' | 'steam' | 'sparkle' | 'thought' | 'sigh';
 export type ArmPose = 'relaxed' | 'hips' | 'crossed' | 'chin' | 'open' | 'fist';
@@ -126,6 +140,24 @@ export const EXPRESSIONS: Readonly<Record<ExtendedExpression, ExpressionDef>> = 
     arms: 'relaxed',
     fidget: 'none',
   },
+  delighted: {
+    params: {
+      ...BASE,
+      browLift: 4.5,
+      eyeOpen: 0.1,
+      eyeSmile: 1,
+      smile: 1,
+      mouthOpen: 0.7,
+      mouthWidth: 1.28,
+      teeth: 0.8,
+      blush: 0.75,
+      tilt: 0.08,
+      lean: -0.02,
+    },
+    symbol: 'sparkle',
+    arms: 'open',
+    fidget: 'bounce',
+  },
   thinking: {
     params: {
       ...BASE,
@@ -235,6 +267,26 @@ export function toneExpression(level: 0 | 1 | 2 | 3 | 4): {
     case 4:
       return { expression: 'angry', intensity: 3 };
   }
+}
+
+/**
+ * The Stall's anger ladder (0 calm, 1 impatient, 2 annoyed, 3 angry). Level 3 is the hostile end of the
+ * customer tone scale (tone 4). A stimulus property only; never derived from the player.
+ */
+export const ANGER_LEVELS: readonly {
+  readonly expression: ExtendedExpression;
+  readonly intensity: 1 | 2 | 3;
+  readonly tone: 0 | 1 | 2 | 3 | 4;
+}[] = [
+  { expression: 'calm', intensity: 1, tone: 0 },
+  { expression: 'impatient', intensity: 1, tone: 1 },
+  { expression: 'annoyed', intensity: 1, tone: 2 },
+  { expression: 'angry', intensity: 3, tone: 4 },
+];
+
+/** Expressions whose parameters scale with intensity. */
+export function isIntensifiable(e: ExtendedExpression): boolean {
+  return e === 'angry' || e === 'annoyed' || e === 'impatient';
 }
 
 /** Scale an angry/annoyed expression by intensity 1..3 (exaggerates brows, mouth, lean, symbols). */

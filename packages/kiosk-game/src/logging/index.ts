@@ -1,5 +1,6 @@
 /** Logger SDK, outbox and uploader. */
 export * from './event-logger.ts';
+export * from './gated-logger.ts';
 export * from './hash.ts';
 export * from './outbox/batch.ts';
 export * from './outbox/dexie-outbox.ts';

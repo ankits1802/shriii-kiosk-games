@@ -340,6 +340,8 @@ def submit_administration(db: Session, adm: Administration, actor: str) -> tuple
             raise CriterionError(
                 422, "unexpected_key", f"expected_response applies to attention checks and .moves only ({r.item_id})"
             )
+    answered = {str(resolved[r.item_id][0]["item_id"]) for r in adm.responses if r.raw_response is not None}
+    planned = _planned_missing(definition, adm.planned_missing_items, answered=answered)
     now = datetime.now(UTC)
     rows: list[Response] = []
     for r in adm.responses:
@@ -368,6 +370,7 @@ def submit_administration(db: Session, adm: Administration, actor: str) -> tuple
             attention_check=bool(item["attention_check"]),
             attention_check_failed=failed,
             expected_response=r.expected_response,
+            planned_missing_items=planned,
             source=adm.source,
             import_id=adm.import_id,
             recorded_at=now,
@@ -383,9 +386,20 @@ def submit_administration(db: Session, adm: Administration, actor: str) -> tuple
         occasion_id=adm.occasion_id,
         instrument_id=adm.instrument_id,
         actor=actor,
-        planned_missing_items=frozenset(adm.planned_missing_items),
     )
     return rows, run
+
+
+def _planned_missing(definition: dict[str, Any], requested: list[str], *, answered: set[str]) -> list[str]:
+    """Validated, sorted planned-missing item ids: registry items of this instrument that were not answered."""
+    items = {i["item_id"] for i in definition["items"]}
+    unknown = sorted(set(requested) - items)
+    if unknown:
+        raise CriterionError(422, "unknown_item", f"planned-missing items are not part of the instrument: {unknown}")
+    clash = sorted(set(requested) & answered)
+    if clash:
+        raise CriterionError(422, "planned_missing_answered", f"items marked planned missing were answered: {clash}")
+    return sorted(set(requested))
 
 
 def _attention_failed(attention_check: bool, raw: float | None, expected: float | None) -> bool | None:
@@ -445,10 +459,17 @@ def rescore(
     planned_missing_items: frozenset[str] = frozenset(),
     job_id: uuid.UUID | None = None,
 ) -> ScoringRun:
-    """Score the current responses for one (pid, occasion, instrument) with the versioned key."""
+    """Score the current responses for one (pid, occasion, instrument) with the versioned key.
+
+    Planned-missing items are the union of ``planned_missing_items`` and those stored with the responses
+    (administration design), so corrections and key updates never turn a planned gap into non-response.
+    """
     responses = current_responses(db, pid=pid, study_id=study_id, occasion_id=occasion_id, instrument_id=instrument_id)
     if not responses:
         raise CriterionError(404, "no_responses", "nothing to score")
+    answered = {r.item_id.split(".", 1)[0] for r in responses if r.raw_response is not None}
+    stored = {i for r in responses for i in (r.planned_missing_items or [])}
+    planned_missing_items = frozenset((set(planned_missing_items) | stored) - answered)
     version = get_version(db, instrument_id, responses[0].instrument_version)
     definition = version.definition
     inputs = [
@@ -526,7 +547,13 @@ def rescore(
                 job_id=job_id,
             )
         )
-    run.manifest = {"scales": len(scales), "responses": len(responses), "attention_failed": careless, "actor": actor}
+    run.manifest = {
+        "scales": len(scales),
+        "responses": len(responses),
+        "attention_failed": careless,
+        "planned_missing_items": sorted(planned_missing_items),
+        "actor": actor,
+    }
     db.flush()
     return run
 
@@ -565,6 +592,7 @@ def correct_response(
         attention_check=original.attention_check,
         attention_check_failed=failed,
         expected_response=original.expected_response,
+        planned_missing_items=list(original.planned_missing_items or []),
         source=original.source,
         import_id=original.import_id,
         recorded_at=datetime.now(UTC),

@@ -20,6 +20,7 @@ Entry points probed (first match wins):
 from __future__ import annotations
 
 import importlib
+import json
 import logging
 import math
 import tempfile
@@ -284,6 +285,77 @@ def extract_indicators(
     result = fn(list(events), pathway=pathway)
     items: Iterable[Any] = _get(result, "indicators", result) if not isinstance(result, list) else result
     return _indicator_rows(items), engine_versions()["indicators"]
+
+
+@dataclass(slots=True)
+class GroupRow:
+    """A group-level estimate (private reports). Deliberately carries no session or participant key."""
+
+    indicator_id: str
+    construct_id: str | None
+    partition: dict[str, Any]
+    estimate: float | None
+    ci_low: float | None
+    ci_high: float | None
+    n_participants: int
+    n_reports: int
+    details: dict[str, Any]
+
+
+@dataclass(slots=True)
+class BatchScoring:
+    rows: dict[str, list[IndicatorRow]]
+    """session_id -> indicator rows (model-based indicators pooled within the batch partition)."""
+    group_rows: list[GroupRow]
+    algorithm: str
+    manifest: dict[str, Any]
+
+
+def _finite(value: Any) -> float | None:
+    if value is None:
+        return None
+    v = float(value)
+    return v if math.isfinite(v) else None
+
+
+def score_batch(events: Sequence[Mapping[str, Any]], pathway: str, *, allow_synthetic: bool = False) -> BatchScoring:
+    """Layer-2 indicators for many sessions at once (``shriii_scoring.engine.score_events``).
+
+    Batch scoring is required for model-based indicators (partial pooling within language x calibration
+    level) and for the group-level private-report estimators; per-session extraction leaves those null.
+    """
+    fn = _probe([("shriii_scoring.engine", "score_events")])
+    if fn is None:
+        raise AdapterUnavailableError("shriii_scoring.engine.score_events is not installed")
+    result = fn(list(events), pathways=(pathway,), allow_synthetic=allow_synthetic, on_missing_params="flag")
+    by_session: dict[str, list[Any]] = defaultdict(list)
+    for r in result.rows:
+        by_session[str(r.session_id)].append(r)
+    version = str(result.rows[0].algorithm_version) if result.rows else engine_versions()["indicators"]
+    groups = [
+        GroupRow(
+            indicator_id=str(g.indicator_id),
+            construct_id=str(g.construct) if g.construct else None,
+            partition={str(k): v for k, v in dict(g.partition).items()},
+            estimate=_finite(g.estimate),
+            ci_low=_finite(g.ci_low),
+            ci_high=_finite(g.ci_high),
+            n_participants=int(g.n_participants),
+            n_reports=int(g.n_reports),
+            details=dict(g.details),
+        )
+        for g in result.group_rows
+    ]
+    manifest = getattr(result, "manifest", None)
+    manifest_dict: dict[str, Any] = (
+        dict(manifest.to_dict()) if manifest is not None and hasattr(manifest, "to_dict") else {}
+    )
+    return BatchScoring(
+        rows={sid: _indicator_rows(rows) for sid, rows in by_session.items()},
+        group_rows=groups,
+        algorithm=f"shriii_scoring-{version}",
+        manifest=json.loads(json.dumps(manifest_dict, default=str)),
+    )
 
 
 # ---------------------------------------------------------------- criterion (layer 3)

@@ -39,8 +39,13 @@ interface Registered {
   readonly handle: TargetHandle;
 }
 
-/** Thrown by {@link ScreenKit.ensureActive} after the session signal aborted or the kit was destroyed. */
+/**
+ * Thrown by {@link ScreenKit.ensureActive} after the session signal aborted or the kit was destroyed.
+ * It is an expected abort, not a failure: `isAbort` makes `isAbortError()` (core/contracts) recognise
+ * it, so the session controller treats it as a normal abort and never as a crash.
+ */
 export class ScreenAbortedError extends Error {
+  readonly isAbort = true as const;
   constructor() {
     super('screen aborted');
     this.name = 'ScreenAbortedError';

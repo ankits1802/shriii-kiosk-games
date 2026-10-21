@@ -185,3 +185,13 @@ def drain_jobs() -> int:
     from shriii_api.worker.runner import drain  # noqa: PLC0415
 
     return drain()
+
+
+def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item]) -> None:
+    """``slow`` tests (registered in the root pyproject) run only with SHRIII_RUN_SLOW=1 or ``-m slow``."""
+    if os.environ.get("SHRIII_RUN_SLOW") == "1" or "slow" in (config.getoption("-m") or ""):
+        return
+    skip = pytest.mark.skip(reason="slow test: set SHRIII_RUN_SLOW=1 or run with -m slow")
+    for item in items:
+        if "slow" in item.keywords:
+            item.add_marker(skip)

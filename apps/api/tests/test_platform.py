@@ -104,7 +104,7 @@ def test_health_and_readiness(client: TestClient) -> None:
     ready = client.get("/readyz")
     assert ready.status_code == 200, ready.text
     assert ready.json()["checks"]["database"] == "ok" and ready.json()["checks"]["identity_database"] == "ok"
-    assert ready.json()["checks"]["migration"] == "0003"
+    assert ready.json()["checks"]["migration"] == "0004"
 
 
 def test_cors_allows_web_and_kiosk_origins(client: TestClient) -> None:

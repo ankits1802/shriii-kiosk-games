@@ -27,6 +27,7 @@ JOB_TYPES: Final[tuple[str, ...]] = (
     "event_validation",
     "trial_eligibility",
     "feature_extraction",
+    "batch_scoring",
     "questionnaire_scoring",
     "participant_matching",
     "dataset_snapshot",

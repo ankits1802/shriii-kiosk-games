@@ -211,16 +211,23 @@ def _one_factor_ml(cov: FloatArray, max_iter: int = 2000) -> tuple[FloatArray, F
         lam0 = -lam0
     psi0 = np.clip(1.0 - lam0**2, 0.05, 0.95)
 
-    def f(theta: FloatArray) -> float:
+    def f(theta: FloatArray) -> tuple[float, FloatArray]:
+        # F = log|S| + tr(R S^-1) with S = lam lam' + diag(psi); analytic gradient with G = S^-1 - S^-1 R S^-1:
+        # dF/dlam = 2 G lam, dF/dlog(psi) = diag(G) * psi.
         lam = theta[:p]
         psi = np.exp(theta[p:])
         sigma = np.outer(lam, lam) + np.diag(psi)
         sign, logdet = np.linalg.slogdet(sigma)
         if sign <= 0:
-            return 1e10
-        return float(logdet + np.trace(corr @ np.linalg.inv(sigma)))
+            return 1e10, np.zeros_like(theta)
+        inv = np.linalg.inv(sigma)
+        g = inv - inv @ corr @ inv
+        grad = np.concatenate([2.0 * g @ lam, np.diag(g) * psi])
+        return float(logdet + np.trace(corr @ inv)), np.asarray(grad, dtype=float)
 
-    res = optimize.minimize(f, np.concatenate([lam0, np.log(psi0)]), method="L-BFGS-B", options={"maxiter": max_iter})
+    res = optimize.minimize(
+        f, np.concatenate([lam0, np.log(psi0)]), jac=True, method="L-BFGS-B", options={"maxiter": max_iter}
+    )
     lam = res.x[:p]
     if lam.sum() < 0:
         lam = -lam
@@ -396,6 +403,25 @@ def icc(data: ArrayLike, kind: ICCKind = "ICC_A1", *, ci_level: float = 0.95) ->
         )
     ms = _mean_squares(x)
     a = 1.0 - ci_level
+    error_ms = ms.msw if kind in ("ICC1", "ICC1k") else ms.mse
+    if ms.msr <= 1e-15:
+        return EvidenceResult.unavailable(
+            kind, "icc_anova", "no between-target variance", n=n, status="insufficient", provenance=prov
+        )
+    if error_ms <= 1e-15 * max(ms.msr, 1.0) and (kind in ("ICC1", "ICC1k", "ICC_C1", "ICC_Ck") or ms.msc <= 1e-15):
+        # Identical ratings: the coefficient is 1 but the F-based interval is undefined (no error variance).
+        return EvidenceResult(
+            analysis=kind,
+            estimate=1.0,
+            ci_low=None,
+            ci_high=None,
+            ci_level=None,
+            n=n,
+            method="icc_anova_mcgraw_wong",
+            warnings=("no error variance (identical ratings): confidence interval undefined",),
+            details={"k": k, "msr": ms.msr, "msc": ms.msc, "mse": ms.mse, "msw": ms.msw},
+            provenance=prov,
+        )
 
     def fq(d1: float, d2: float) -> float:
         return float(stats.f.ppf(1.0 - a / 2.0, d1, d2))
@@ -493,6 +519,13 @@ def retest_reliability(
             )
             for k in names
         }
+    if float(np.std(np.concatenate([a, b]))) == 0.0 or float(np.std(a)) == 0.0 or float(np.std(b)) == 0.0:
+        return {
+            k: EvidenceResult.unavailable(
+                k, "retest_reliability", "no variance at one occasion", n=n, status="insufficient", provenance=prov
+            )
+            for k in names
+        }
     x = np.column_stack([a, b])
     out: dict[str, EvidenceResult] = {
         "icc_a1": icc(x, "ICC_A1", ci_level=ci_level),
@@ -501,11 +534,12 @@ def retest_reliability(
     r = float(np.corrcoef(a, b)[0, 1])
     zc = float(stats.norm.ppf(0.5 + ci_level / 2))
     half = zc / math.sqrt(n - 3)
+    z = math.atanh(min(max(r, -1 + 1e-12), 1 - 1e-12))  # |r| = 1 (identical occasions) has a degenerate CI
     out["pearson"] = EvidenceResult(
         "pearson_retest",
         r,
-        math.tanh(math.atanh(r) - half),
-        math.tanh(math.atanh(r) + half),
+        math.tanh(z - half),
+        math.tanh(z + half),
         ci_level,
         n,
         "pearson_fisher_z",

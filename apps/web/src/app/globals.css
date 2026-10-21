@@ -1,0 +1,202 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+/* next-themes toggles `.dark` on <html>. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/*
+ * SHRIII research console design tokens. Calm, research-grade, high-contrast text; one accent hue.
+ * Chart tokens follow the validated data-viz reference palette (categorical order is the CVD-safety
+ * mechanism: never reorder or cycle). Status colours are reserved for state and always ship with an
+ * icon + label.
+ */
+:root {
+  color-scheme: light;
+  --radius: 0.5rem;
+
+  --background: #f9f9f7;
+  --foreground: #0b0b0b;
+  --card: #ffffff;
+  --card-foreground: #0b0b0b;
+  --popover: #ffffff;
+  --popover-foreground: #0b0b0b;
+  --primary: #1c5cab;
+  --primary-foreground: #ffffff;
+  --secondary: #f0efec;
+  --secondary-foreground: #1f1f1d;
+  --muted: #f0efec;
+  --muted-foreground: #5c5b57;
+  --accent: #e9eef6;
+  --accent-foreground: #0d366b;
+  --destructive: #b42b2b;
+  --destructive-foreground: #ffffff;
+  --border: #e1e0d9;
+  --input: #d6d5ce;
+  --ring: #2a78d6;
+
+  --sidebar: #f3f3f0;
+  --sidebar-foreground: #1f1f1d;
+  --sidebar-accent: #e6e5e0;
+  --sidebar-accent-foreground: #0b0b0b;
+  --sidebar-border: #e1e0d9;
+
+  --success: #006300;
+  --warning: #8a5a00;
+  --info: #1c5cab;
+
+  /* Chart chrome */
+  --chart-surface: #fcfcfb;
+  --chart-ink: #0b0b0b;
+  --chart-ink-secondary: #52514e;
+  --chart-ink-muted: #898781;
+  --chart-grid: #e1e0d9;
+  --chart-axis: #c3c2b7;
+  /* Categorical (fixed order) */
+  --series-1: #2a78d6;
+  --series-2: #eb6834;
+  --series-3: #1baf7a;
+  --series-4: #eda100;
+  --series-5: #e87ba4;
+  --series-6: #008300;
+  --series-7: #4a3aa7;
+  --series-8: #e34948;
+  /* Diverging blue <-> red with a neutral gray midpoint */
+  --diverging-neg: #1c5cab;
+  --diverging-mid: #f0efec;
+  --diverging-pos: #c23b3a;
+  /* Sequential (blue) */
+  --seq-low: #cde2fb;
+  --seq-high: #0d366b;
+  /* Status (never themed, never a series) */
+  --status-good: #0ca30c;
+  --status-warning: #fab219;
+  --status-serious: #ec835a;
+  --status-critical: #d03b3b;
+}
+
+.dark {
+  color-scheme: dark;
+  --background: #0d0d0d;
+  --foreground: #f5f5f3;
+  --card: #161615;
+  --card-foreground: #f5f5f3;
+  --popover: #1a1a19;
+  --popover-foreground: #f5f5f3;
+  --primary: #5598e7;
+  --primary-foreground: #0b0b0b;
+  --secondary: #252523;
+  --secondary-foreground: #f0efec;
+  --muted: #232321;
+  --muted-foreground: #b0afa6;
+  --accent: #1b2a3f;
+  --accent-foreground: #cde2fb;
+  --destructive: #e66767;
+  --destructive-foreground: #0b0b0b;
+  --border: #2c2c2a;
+  --input: #383835;
+  --ring: #5598e7;
+
+  --sidebar: #121211;
+  --sidebar-foreground: #e6e5e0;
+  --sidebar-accent: #232321;
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: #2c2c2a;
+
+  --success: #0ca30c;
+  --warning: #fab219;
+  --info: #5598e7;
+
+  --chart-surface: #1a1a19;
+  --chart-ink: #ffffff;
+  --chart-ink-secondary: #c3c2b7;
+  --chart-ink-muted: #898781;
+  --chart-grid: #2c2c2a;
+  --chart-axis: #383835;
+  --series-1: #3987e5;
+  --series-2: #d95926;
+  --series-3: #199e70;
+  --series-4: #c98500;
+  --series-5: #d55181;
+  --series-6: #008300;
+  --series-7: #9085e9;
+  --series-8: #e66767;
+  --diverging-neg: #3987e5;
+  --diverging-mid: #383835;
+  --diverging-pos: #e66767;
+  --seq-low: #184f95;
+  --seq-high: #cde2fb;
+}
+
+@theme inline {
+  --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans", sans-serif;
+  --font-mono: ui-monospace, "SF Mono", "Cascadia Mono", Consolas, monospace;
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-info: var(--info);
+  --color-status-good: var(--status-good);
+  --color-status-warning: var(--status-warning);
+  --color-status-serious: var(--status-serious);
+  --color-status-critical: var(--status-critical);
+  --color-chart-surface: var(--chart-surface);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "cv11", "ss01";
+  }
+  /* Tables and axis-like columns align digits. */
+  table,
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      /* biome-ignore lint/complexity/noImportantStyles: reduced motion must beat component animations */
+      animation-duration: 0.01ms !important;
+      /* biome-ignore lint/complexity/noImportantStyles: reduced motion must beat component transitions */
+      transition-duration: 0.01ms !important;
+    }
+  }
+}

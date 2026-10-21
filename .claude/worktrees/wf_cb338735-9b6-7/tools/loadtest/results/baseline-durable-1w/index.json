@@ -1,0 +1,93 @@
+[
+  {
+    "name": "steady-50k",
+    "passed": false,
+    "ing02": {
+      "n": 93,
+      "p50_ms": 19535.5,
+      "p90_ms": 24421.9,
+      "p95_ms": 25515.4,
+      "p99_ms": 28920.4,
+      "max_ms": 29448.3,
+      "mean_ms": 18812.3
+    }
+  },
+  {
+    "name": "saturate-50k-sealed",
+    "passed": false,
+    "ing02": {
+      "n": 0,
+      "p50_ms": NaN,
+      "p90_ms": NaN,
+      "p95_ms": NaN,
+      "p99_ms": NaN,
+      "max_ms": NaN,
+      "mean_ms": NaN
+    }
+  },
+  {
+    "name": "retry-50k",
+    "passed": false,
+    "ing02": {
+      "n": 101,
+      "p50_ms": 32132.1,
+      "p90_ms": 41671.6,
+      "p95_ms": 46050.7,
+      "p99_ms": 50155.9,
+      "max_ms": 50305.2,
+      "mean_ms": 31084.2
+    }
+  },
+  {
+    "name": "dup-storm-20x",
+    "passed": false,
+    "ing02": {
+      "n": 163,
+      "p50_ms": 52261.1,
+      "p90_ms": 57167.2,
+      "p95_ms": 58235.2,
+      "p99_ms": 58837.8,
+      "max_ms": 59157.4,
+      "mean_ms": 47006.7
+    }
+  },
+  {
+    "name": "out-of-order-skew",
+    "passed": false,
+    "ing02": {
+      "n": 25,
+      "p50_ms": 38322.4,
+      "p90_ms": 46798.0,
+      "p95_ms": 47887.1,
+      "p99_ms": 52373.2,
+      "max_ms": 53704.9,
+      "mean_ms": 37003.2
+    }
+  },
+  {
+    "name": "reconnect-50k-backlog",
+    "passed": false,
+    "ing02": {
+      "n": 342,
+      "p50_ms": 31975.3,
+      "p90_ms": 56731.5,
+      "p95_ms": 58523.1,
+      "p99_ms": 60044.3,
+      "max_ms": 60580.6,
+      "mean_ms": 36613.8
+    }
+  },
+  {
+    "name": "mixed-research",
+    "passed": false,
+    "ing02": {
+      "n": 51,
+      "p50_ms": 24653.7,
+      "p90_ms": 54378.5,
+      "p95_ms": 56220.0,
+      "p99_ms": 58821.4,
+      "max_ms": 59681.1,
+      "mean_ms": 30119.3
+    }
+  }
+]

@@ -20,8 +20,10 @@ import type {
   VoicePlayOptions,
   VoiceService,
 } from '../../core/contracts.ts';
+import { loadGameContent } from '../../engine/content.ts';
 import { LINES } from '../../voice/catalogue/lines.generated.ts';
 import { createVoiceService, DEV_VOICE_PLACEHOLDER_ALLOWED } from '../../voice/VoiceService.ts';
+import { practiceConfigFromWarmup } from '../practiceConfig.ts';
 import type { OnboardingConfig, OnboardingServices } from '../types.ts';
 import { DEFAULT_ONBOARDING_CONFIG } from '../types.ts';
 import { createDevClock, DEV_LANGUAGES, DevRng, MemoryLogger } from './basics.ts';
@@ -108,7 +110,7 @@ export interface DevServices {
   dispose(): void;
 }
 
-/** Default dev onboarding config (warm-up timing mirrors content/games/shared/warmup.json L2). */
+/** Default dev onboarding config (practice rules derived from content/games/shared/warmup.json L2). */
 export function devOnboardingConfig(overrides: Partial<OnboardingConfig> = {}): OnboardingConfig {
   return {
     ...DEFAULT_ONBOARDING_CONFIG,
@@ -118,7 +120,7 @@ export function devOnboardingConfig(overrides: Partial<OnboardingConfig> = {}): 
     consentScriptId: 'consent.core.v0',
     consentVersionHash: 'b'.repeat(64),
     policyVersion: '0.1.0',
-    practice: { tapWindowMs: 2500, holdRequiredMs: 1200, passesRequired: 2, maxAttempts: 4 },
+    practice: practiceConfigFromWarmup(loadGameContent().get('warmup'), 'L2'),
     ...overrides,
   };
 }

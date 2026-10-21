@@ -78,6 +78,7 @@ class ResponseOut(ApiModel):
     audio_version: str | None
     attention_check: bool
     attention_check_failed: bool | None
+    planned_missing_items: list[str] = Field(default_factory=list)
     source: str
     recorded_at: datetime
     supersedes_id: uuid.UUID | None

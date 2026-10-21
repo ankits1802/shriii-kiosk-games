@@ -14,11 +14,13 @@ import type {
   MusicCueId,
   SfxId,
   SfxOptions,
+  Unsubscribe,
   VoicePlayback,
   VoicePlaybackResult,
   VoicePlayOptions,
   VoiceService,
 } from '../../core/contracts.ts';
+import { SpeakingTracker } from '../../voice/speaking.ts';
 
 export class SilentAudioService implements AudioService {
   private readonly clock: Clock;
@@ -64,6 +66,16 @@ export class SilentVoiceService implements VoiceService {
   private readonly output: () => AudioOutput;
   private current: { interrupt(): void } | null = null;
   private lastInstruction: LineId | null = null;
+  private readonly speakingTracker = new SpeakingTracker();
+
+  /** True while a (silent, timed) clip is "playing". */
+  get speaking(): boolean {
+    return this.speakingTracker.speaking;
+  }
+
+  onSpeakingChange(listener: (speaking: boolean) => void): Unsubscribe {
+    return this.speakingTracker.subscribe(listener);
+  }
 
   constructor(
     clock: Clock,
@@ -103,8 +115,13 @@ export class SilentVoiceService implements VoiceService {
     let interruptFn: () => void = () => undefined;
     const ended = new Promise<VoicePlaybackResult>((resolve) => {
       const ac = new AbortController();
+      const endSpeaking = refused || duration <= 0 ? () => undefined : this.speakingTracker.begin();
+      let done = false;
       const finish = (status: 'completed' | 'interrupted'): void => {
+        if (done) return;
+        done = true;
         ac.abort();
+        endSpeaking();
         const endMs = this.clock.now();
         resolve({
           lineId,

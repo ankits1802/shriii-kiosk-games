@@ -40,7 +40,8 @@ def export_openapi(out: Path) -> dict[str, Any]:
     from shriii_api.main import create_app  # noqa: PLC0415
 
     schema = create_app().openapi()
-    out.write_text(json.dumps(schema, indent=2, sort_keys=False, ensure_ascii=False) + "\n", encoding="utf-8")
+    # LF on every platform (the repository enforces eol=lf; write_text would emit CRLF on Windows).
+    out.write_bytes((json.dumps(schema, indent=2, sort_keys=False, ensure_ascii=False) + "\n").encode("utf-8"))
     return schema
 
 
@@ -60,6 +61,21 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--seed", type=int, default=7)
     p.add_argument("--occasions", type=int, default=1, choices=[1, 2])
     p.add_argument("--no-snapshot", action="store_true")
+    p = sub.add_parser(
+        "demo-pipeline",
+        help="End-to-end synthetic demo: simulate -> ingest via HTTP -> score -> snapshot -> analyses -> gates",
+    )
+    p.add_argument("--participants-per-language", type=int, default=400)
+    p.add_argument("--languages", default="hi-IN,ta-IN", help="comma-separated")
+    p.add_argument("--retests", type=int, default=100)
+    p.add_argument("--seed", type=int, default=None, help="default: derived from the clock (a new study per run)")
+    p.add_argument("--study-id", default=None)
+    p.add_argument("--workers", type=int, default=4, help="worker processes for the scoring and analysis jobs")
+    p.add_argument("--models", default=",".join(("ridge", "elastic_net", "random_forest", "xgboost")))
+    p.add_argument("--n-boot", type=int, default=500)
+    p.add_argument("--no-migrate", action="store_true")
+    p.add_argument("--skip-ingestion", action="store_true", help="resume --study-id after its scoring step")
+    p.add_argument("--json", action="store_true", help="print the full JSON summary instead of the digest")
     p = sub.add_parser("worker", help="Run the job worker")
     p.add_argument("--once", action="store_true", help="Drain the queue and exit")
     p = sub.add_parser("retention", help="Run the retention schedule")
@@ -109,6 +125,28 @@ def main(argv: list[str] | None = None) -> int:
                 build_snapshot=not args.no_snapshot,
             )
         )
+    elif args.cmd == "demo-pipeline":
+        from shriii_api.services.demo_pipeline import DemoConfig, render_summary, run_demo_pipeline  # noqa: PLC0415
+
+        config = DemoConfig(
+            participants_per_language=args.participants_per_language,
+            languages=tuple(x.strip() for x in args.languages.split(",") if x.strip()),
+            retests=args.retests,
+            seed=args.seed,
+            study_id=args.study_id,
+            workers=max(1, args.workers),
+            models=tuple(x.strip() for x in args.models.split(",") if x.strip()),
+            n_boot=args.n_boot,
+            skip_ingestion=args.skip_ingestion,
+        )
+        if config.skip_ingestion and not config.study_id:
+            parser.error("--skip-ingestion needs --study-id")
+        summary = run_demo_pipeline(settings, config, migrate_first=not args.no_migrate)
+        if args.json:
+            _print(summary)
+        else:
+            sys.stdout.write(render_summary(summary) + "\n")
+        return 1 if summary.get("failed_jobs") else 0
     elif args.cmd == "worker":
         from shriii_api.worker.runner import drain, run_forever  # noqa: PLC0415
 

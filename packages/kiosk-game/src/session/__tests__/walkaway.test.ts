@@ -98,4 +98,80 @@ describe('walkaway (KSK-04)', () => {
     vi.advanceTimersByTime(10_000);
     expect(log.at(-1)?.startsWith('abandon')).toBe(true);
   });
+
+  it('pauses while narration plays and restarts the count when it ends', () => {
+    const { log, monitor } = setup();
+    monitor.start('public');
+    vi.advanceTimersByTime(5000);
+    monitor.narrationStart();
+    expect(monitor.paused).toBe(true);
+    vi.advanceTimersByTime(60_000);
+    expect(log).toEqual([]);
+    monitor.narrationEnd();
+    expect(monitor.paused).toBe(false);
+    vi.advanceTimersByTime(7999);
+    expect(log).toEqual([]);
+    vi.advanceTimersByTime(1);
+    expect(log).toEqual(['prompt:reprompt@8']);
+  });
+
+  it('narration during a walkaway prompt does not stop the escalation', () => {
+    const { log, monitor } = setup();
+    monitor.start('public');
+    vi.advanceTimersByTime(8000);
+    expect(monitor.stage).toBe('reprompt');
+    monitor.narrationStart(); // the re-prompt line itself
+    expect(monitor.paused).toBe(false);
+    vi.advanceTimersByTime(12_000);
+    expect(log.at(-1)).toBe('prompt:still_there@20');
+    monitor.narrationEnd();
+    vi.advanceTimersByTime(35_000);
+    expect(log.at(-1)).toBe('abandon@55');
+  });
+
+  it('window and narration overlap: counting resumes only when both have ended', () => {
+    const { log, monitor } = setup();
+    monitor.start('public');
+    monitor.windowOpen();
+    monitor.narrationStart();
+    monitor.windowClose();
+    vi.advanceTimersByTime(30_000);
+    expect(log).toEqual([]);
+    monitor.narrationEnd();
+    vi.advanceTimersByTime(8000);
+    expect(log).toEqual(['prompt:reprompt@8']);
+  });
+
+  it('follows a voice service speaking observable', () => {
+    const { log, monitor } = setup();
+    const listeners = new Set<(s: boolean) => void>();
+    const voice = {
+      speaking: true,
+      onSpeakingChange(l: (s: boolean) => void) {
+        listeners.add(l);
+        return () => listeners.delete(l);
+      },
+    };
+    monitor.start('public');
+    const off = monitor.followNarration(voice);
+    expect(monitor.paused).toBe(true);
+    vi.advanceTimersByTime(30_000);
+    for (const l of listeners) l(false);
+    vi.advanceTimersByTime(8000);
+    expect(log).toEqual(['prompt:reprompt@8']);
+    off();
+    expect(listeners.size).toBe(0);
+    expect(monitor.followNarration({})()).toBeUndefined();
+  });
+
+  it('a narration that began before start keeps the fresh count suspended', () => {
+    const { log, monitor } = setup();
+    monitor.narrationStart();
+    monitor.start('public');
+    vi.advanceTimersByTime(20_000);
+    expect(log).toEqual([]);
+    monitor.narrationEnd();
+    vi.advanceTimersByTime(8000);
+    expect(log).toEqual(['prompt:reprompt@8']);
+  });
 });

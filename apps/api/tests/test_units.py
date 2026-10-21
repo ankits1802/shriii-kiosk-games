@@ -1,4 +1,4 @@
-"""Pure unit tests: JCS canonicalisation, pid check characters, crypto helpers, statistics fallbacks."""
+"""Pure unit tests: JCS canonicalisation, pid check characters, crypto helpers, validation adapter."""
 
 from __future__ import annotations
 
@@ -9,7 +9,6 @@ import numpy as np
 import pytest
 
 from shriii_api.adapters.scoring import reverse_code, score_instrument
-from shriii_api.adapters.validation import fisher_ci, icc_a1
 from shriii_api.canonical import canonical_json
 from shriii_api.security import (
     CROCKFORD,
@@ -92,30 +91,6 @@ def test_sealed_dek_round_trip() -> None:
         decrypt_chunk(os.urandom(32), nonce, ct)
     with pytest.raises(CryptoFailureError):
         unseal_dek(os.urandom(32), sealed)
-
-
-def test_icc_matches_pingouin() -> None:
-    pingouin = pytest.importorskip("pingouin")
-    import pandas as pd  # type: ignore[import-untyped]  # noqa: PLC0415
-
-    rng = np.random.default_rng(3)
-    true = rng.normal(size=40)
-    data = np.column_stack([true + rng.normal(scale=0.6, size=40), true + 0.2 + rng.normal(scale=0.6, size=40)])
-    icc, lo, hi = icc_a1(data)
-    long = pd.DataFrame(
-        {"subject": np.repeat(np.arange(40), 2), "occasion": np.tile([0, 1], 40), "score": data.reshape(-1)}
-    )
-    ref = pingouin.intraclass_corr(long, targets="subject", raters="occasion", ratings="score").set_index("Type")
-    row = ref.loc["ICC(A,1)"] if "ICC(A,1)" in ref.index else ref.loc["ICC2"]
-    assert icc == pytest.approx(float(row["ICC"]), abs=1e-10)
-    ci = row["CI95%"] if "CI95%" in row else row["CI95"]
-    assert lo == pytest.approx(float(ci[0]), abs=0.01) and hi == pytest.approx(float(ci[1]), abs=0.01)
-
-
-def test_fisher_ci() -> None:
-    lo, hi = fisher_ci(0.3, 103)
-    assert lo == pytest.approx(0.1130, abs=1e-3) and hi == pytest.approx(0.4664, abs=1e-3)
-    assert fisher_ci(0.3, 3) == (None, None)
 
 
 def test_reference_criterion_scoring() -> None:
@@ -234,40 +209,40 @@ def test_trait_estimates_use_the_band_reference() -> None:
     assert missing[0].band is None and missing[0].not_enough_to_say  # fail closed on a missing indicator
 
 
-def test_construct_validity_confirmatory_tests_are_holm_corrected() -> None:
+def test_construct_validity_runs_the_registered_hypotheses_with_family_corrections() -> None:
     import pandas as pd  # noqa: PLC0415
 
     from shriii_api.adapters.validation import run_analysis  # noqa: PLC0415
+    from shriii_api.services.provenance import dictionary_context  # noqa: PLC0415
 
     rng = np.random.default_rng(7)
-    n = 60
-    crit = rng.normal(size=n)
+    n = 240
+    latent = rng.normal(size=n)
     frame = pd.DataFrame(
         {
             "research_id": [f"r{i}" for i in range(n)],
-            "ind__strong": crit * 0.9 + rng.normal(scale=0.4, size=n),
-            "ind__weak": crit * 0.32 + rng.normal(scale=1.0, size=n),
-            "crit__bscs.total": crit,
+            "occasion_id": "T1",
+            "language": ["hi-IN", "ta-IN"] * (n // 2),
+            "pathway": "B",
+            # Commission rate is construct-keyed "higher_less": more self-control -> fewer commissions.
+            "ind__self_control.nogo_commission_rate": -0.7 * latent + rng.normal(scale=0.7, size=n),
+            "crit__bscs.total": 0.6 * latent + rng.normal(scale=0.8, size=n),
+            "crit__bfi2_xs.conscientiousness": 0.4 * latent + rng.normal(size=n),
         }
     )
-    indicators = [
-        {"id": "strong", "construct": "self_control", "direction": "higher_more"},
-        {"id": "weak", "construct": "self_control", "direction": "higher_more"},
-    ]
-    relation = {"criterion": "bscs.total", "expected_sign": "positive"}
-    context = {
-        "indicators": indicators,
-        "constructs": {"self_control": {"criterion_relations": {"convergent": [{**relation, "hypothesis_id": "H1"}]}}},
-        "hypothesis_ids": ["H1"],
-    }
-    gates = {"trait_gate": {"convergent": {"lower_bound_gt": 0.10, "correction": "holm"}}}
-    out = run_analysis("construct_validity", frame, params={}, context=context, gates=gates)
-    rows = {r.subject.split("~")[0]: r for r in out.results}
-    for row in rows.values():
-        assert not row.exploratory and row.details["holm_family_size"] == 2
-        assert row.details["p_holm"] >= row.details["p_lower_bound"]
-        assert row.passed == (row.details["p_holm"] <= row.details["holm_alpha"])
-    assert rows["strong"].passed is True
+    context = {**dictionary_context("B"), "hypothesis_ids": ["h1.self_control"], "provenance": {"snapshot_id": "s1"}}
+    out = run_analysis("construct_validity", frame, params={"n_boot": 200}, context=context)
+    assert out.engine.startswith("shriii_validation-")
+    rows = [r for r in out.results if r.hypothesis_id == "h1.self_control"]
+    pooled = next(r for r in rows if "language" not in r.subgroup)
+    assert not pooled.exploratory and pooled.passed is True and pooled.estimate is not None and pooled.estimate > 0.3
+    assert pooled.details["family"] == "primary" and pooled.details["p_adjusted"] >= pooled.details["p"]
+    assert pooled.threshold == pytest.approx(0.10)
+    assert pooled.provenance["snapshot_id"] == "s1" and pooled.provenance["algorithm_version"]
+    assert pooled.exclusions["rows_used"] == n
+    # Per-language rows exist for the gate cells and are labelled exploratory.
+    assert {r.subgroup.get("language") for r in rows} == {None, "hi-IN", "ta-IN"}
+    assert all(r.exploratory for r in rows if "language" in r.subgroup)
 
 
 def test_retest_reliability_needs_the_minimum_pairs_for_a_verdict() -> None:
@@ -281,8 +256,35 @@ def test_retest_reliability_needs_the_minimum_pairs_for_a_verdict() -> None:
     for i, t in enumerate(true):
         for occ in ("T1", "T2"):
             rows.append({"research_id": f"r{i}", "occasion_id": occ, "ind__x": t + rng.normal(scale=0.1)})
-    gates = {"trait_gate": {"retest": {"point_min": 0.6, "lower_bound_min": 0.4, "min_pairs_per_cell": 30}}}
-    out = run_analysis("reliability", pd.DataFrame(rows), params={}, context={}, gates=gates)
-    (row,) = out.results
-    assert row.estimate is not None and row.estimate > 0.9
-    assert row.passed is None and row.details["status"] == "insufficient"
+    gates = {
+        "trait_gate": {
+            "retest": {"point_min": 0.6, "lower_bound_min": 0.4, "min_pairs_per_cell": 30, "ci_level": 0.95},
+            "reliability": {"point_min": 0.7, "lower_bound_min": 0.6, "ci_level": 0.95},
+        },
+        "group_only_indicators": [],
+    }
+    out = run_analysis("reliability", pd.DataFrame(rows), params={}, context={"gates": gates})
+    (row,) = [r for r in out.results if r.subject == "x" and r.metric == "icc_a1"]
+    assert row.estimate is None and row.passed is None and row.details["status"] == "insufficient"
+    assert row.n == 10
+
+
+def test_adapter_reports_unavailable_engine(monkeypatch: pytest.MonkeyPatch) -> None:
+    import importlib  # noqa: PLC0415
+
+    import pandas as pd  # noqa: PLC0415
+
+    from shriii_api.adapters import validation as adapter  # noqa: PLC0415
+    from shriii_api.adapters.scoring import AdapterUnavailableError  # noqa: PLC0415
+
+    real = importlib.import_module
+
+    def fake(name: str, package: str | None = None) -> object:
+        if name == "shriii_validation":
+            raise ImportError("not installed")
+        return real(name, package)
+
+    monkeypatch.setattr(importlib, "import_module", fake)
+    with pytest.raises(AdapterUnavailableError, match="adapter_unavailable"):
+        adapter.run_analysis("descriptives", pd.DataFrame(), params={}, context={})
+    assert adapter.analyses() == adapter.STATIC_ANALYSES

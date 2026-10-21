@@ -100,6 +100,10 @@ class Settings(BaseSettings):
     # --- Paths ---
     repo_root: Path | None = Field(default=None, validation_alias="SHRIII_REPO_ROOT")
 
+    # --- Provenance ---
+    git_sha: str | None = None
+    """Source revision recorded on every validation result (``GIT_SHA``; read from git in dev checkouts)."""
+
     @field_validator("api_cors_origins", "oidc_algorithms", mode="before")
     @classmethod
     def _split_csv(cls, value: object) -> object:

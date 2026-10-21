@@ -1,0 +1,31 @@
+{
+  "name": "shriii-behavioural-games",
+  "version": "0.1.0",
+  "private": true,
+  "description": "SHRIII Kiosk Behavioural Games - research-grade behavioural assessment monorepo",
+  "packageManager": "pnpm@12.10.1",
+  "engines": {
+    "node": ">=24"
+  },
+  "type": "module",
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "test": "turbo run test",
+    "typecheck": "turbo run typecheck",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
+    "format": "biome format --write .",
+    "contracts:generate": "pnpm --filter @shriii/contracts generate",
+    "py:sync": "uv sync --all-packages",
+    "py:test": "uv run pytest",
+    "py:lint": "uv run ruff check . && uv run mypy",
+    "db:up": "docker compose up -d postgres",
+    "db:down": "docker compose down"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.5.15",
+    "turbo": "2.11.10",
+    "typescript": "7.0.2"
+  }
+}

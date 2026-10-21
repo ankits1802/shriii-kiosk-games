@@ -1,0 +1,23 @@
+{
+  "schema_version": "1.0",
+  "manifest_id": "content.pilot",
+  "content_pack_version": "0.1.0",
+  "bundle_hash": "0000000000000000000000000000000000000000000000000000000000000b0b",
+  "created_at": "2026-10-21T00:00:00Z",
+  "languages": ["hi-IN"],
+  "audio_clips": [],
+  "layouts": [],
+  "stimuli": [
+    {
+      "stimulus_id": "weighing.price_tag",
+      "stimulus_version": "1.0",
+      "module_id": "weighing_post",
+      "kind": "price",
+      "attributes": {
+        "anchor_trial": false,
+        "requires_numeracy": true,
+        "voice_forbidden": false
+      }
+    }
+  ]
+}

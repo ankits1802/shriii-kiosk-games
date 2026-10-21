@@ -13,6 +13,12 @@
  * - In-session withdrawal (EXIT with erase) purges local rows and queues a tombstone.
  * - Abandon or crash after consent keeps the consented events (no resume).
  * - Uploads are paused for the whole session (no upload activity during play).
+ *
+ * Error policy: expected aborts (`isAbortError`: a screen's `ScreenAbortedError`, a DOM
+ * `AbortError`, a thrown `ModuleAbortReason`, a legacy `Error('aborted')`) are a normal end of a
+ * screen and never crash the session; anything else reported through {@link SessionController.reportError}
+ * (error boundary, `window.onerror`, `unhandledrejection`) ends the session with `CRASH`
+ * (`session.abandoned{crash_recovery}`, consented events kept, no resume).
  */
 import type {
   A11YProfile,
@@ -33,14 +39,17 @@ import type {
   SurveyPlayAgainPayload,
 } from '@shriii/contracts';
 import { type Actor, createActor } from 'xstate';
-import type {
-  Clock,
-  ModuleId,
-  ModuleResult,
-  ModuleSessionInfo,
-  ReportModel,
-  SessionMachineEvent,
-  SessionSnapshot,
+import {
+  type Clock,
+  isAbortError,
+  type ModuleAbortReason,
+  type ModuleId,
+  type ModuleResult,
+  type ModuleSessionInfo,
+  type ReportModel,
+  type SessionMachineEvent,
+  type SessionSnapshot,
+  type Unsubscribe,
 } from '../core/contracts.ts';
 import {
   assignForm,
@@ -59,6 +68,7 @@ import { SessionClock } from '../engine/clock.ts';
 import type { GameContent } from '../engine/content.ts';
 import { isModuleId } from '../engine/content.ts';
 import type { ModuleRunner } from '../engine/module-host.ts';
+import { plannedModulesFor } from '../engine/registry.ts';
 import { createSessionRng, type Pcg32Rng } from '../engine/rng.ts';
 import {
   createSessionLogger,
@@ -143,8 +153,24 @@ export interface SessionControllerOptions {
     setLogger(logger: SessionEventLogger | null): void;
     setClock?(clock: Clock): void;
   } | null;
+  /**
+   * Voice service: while narration is audible the walkaway idle count is paused (KSK-04). Any object
+   * with the optional `speaking` / `onSpeakingChange` observable works.
+   */
+  readonly voice?: {
+    readonly speaking?: boolean;
+    onSpeakingChange?(listener: (speaking: boolean) => void): Unsubscribe;
+  } | null;
+  /**
+   * How long before the play ceiling the running module is asked to wrap up gracefully. Default: the
+   * running module's `budget.outro_ms` (enough time to play its outro).
+   */
+  readonly playWrapUpLeadMs?: number;
   readonly onError?: (error: unknown) => void;
 }
+
+/** How {@link SessionController.reportError} handled an error. */
+export type ErrorDisposition = 'abort' | 'crash' | 'ignored';
 
 interface ActiveSession {
   readonly sessionId: string;
@@ -264,6 +290,7 @@ export class SessionController {
       },
       () => this.session?.clock.now() ?? 0,
     );
+    if (options.voice) this.unsubscribers.push(this.walkaway.followNarration(options.voice));
     if (options.input) {
       this.unsubscribers.push(options.input.onActivity(() => this.walkaway.activity()));
       this.unsubscribers.push(
@@ -332,6 +359,44 @@ export class SessionController {
     s.a11ySlowPace = profile.slow_pace;
     s.context = { ...s.context, a11y: profile, headset: profile.headset };
     s.logger.log('a11y.profile', { profile });
+  }
+
+  /**
+   * Report an error from a screen, the React error boundary or a global handler. Expected aborts
+   * (see {@link isAbortError}) are a normal end and return `'abort'`; any other error during a
+   * session ends it with `CRASH` and returns `'crash'`. Outside a session (attract/wipe) errors are
+   * reported to `onError` only and return `'ignored'`.
+   */
+  reportError(error: unknown): ErrorDisposition {
+    if (isAbortError(error)) return 'abort';
+    this.opts.onError?.(error);
+    if (this.disposed || !this.session) return 'ignored';
+    return this.send({ type: 'CRASH' }) ? 'crash' : 'ignored';
+  }
+
+  /**
+   * Run a screen/flow promise for the current session: resolves with its value, or with null when it
+   * ended by an expected abort (walkaway, exit, wipe). Any other failure is reported as a crash and
+   * also resolves null, so callers never need their own abort handling.
+   */
+  async runScreen<T>(task: () => Promise<T>): Promise<T | null> {
+    try {
+      return await task();
+    } catch (err) {
+      this.reportError(err);
+      return null;
+    }
+  }
+
+  /**
+   * Ask the running module to wrap up gracefully (finish the trial, play the outro, complete).
+   * Returns false when no module is running or a wrap-up was already requested.
+   */
+  requestWrapUp(): boolean {
+    const w = this.moduleWrapUp;
+    if (!w || w.signal.aborted) return false;
+    w.abort('session_time');
+    return true;
   }
 
   /** Abort the running module (dev skip); the module ends with `explicit_exit`. */
@@ -445,7 +510,10 @@ export class SessionController {
   /* ---------------------------------------------------------------- internals */
 
   private moduleAbort: AbortController | null = null;
+  private moduleWrapUp: AbortController | null = null;
   private jumpPending = false;
+  /** Session-clock time the current `play` state was entered (play-ceiling wrap-up). */
+  private playEnteredAtMs: number | null = null;
 
   private beginSession(): ActiveSession {
     const o = this.opts;
@@ -470,11 +538,8 @@ export class SessionController {
     const pathway: Pathway = arm.startsWith('A') ? 'A' : 'B';
     const slotPeek = pathway === 'B' ? this.slotAssigner.peek() : null;
     const slot = slotPeek?.value ?? null;
-    const plannedRaw =
-      pathway === 'B'
-        ? [...plan.pathways.B.core_order, ...(slot ? [slot] : [])]
-        : [...plan.pathways.A.order];
-    const plannedModules = plannedRaw.filter(isModuleId);
+    // Pathway A: stall -> weighing_post -> road_home; Pathway B: 5 core + the seeded slot (plan).
+    const plannedModules = plannedModulesFor(plan, pathway, slot);
     const faceOrder = rng.stream('language_faces').shuffle(o.device.languages);
     const calibration = new CalibrationLock();
     const contextRef: { current: EventSessionContext } = {
@@ -777,6 +842,12 @@ export class SessionController {
     const prev = this.prevState;
     if (name !== prev) {
       this.prevState = name;
+      // Leaving play (ceiling reached, exit, crash) ends the running module: nothing of it may run
+      // under the report. A session abort already carries its own reason.
+      if (prev === 'play' && this.moduleAbort && !this.moduleAbort.signal.aborted) {
+        this.moduleAbort.abort({ kind: 'time_cap' } satisfies ModuleAbortReason);
+      }
+      if (prev === 'play') this.playEnteredAtMs = null;
       const s = this.session;
       if (s && name !== 'attract') {
         s.lastState = prev === 'wipe' ? s.lastState : prev;
@@ -800,6 +871,7 @@ export class SessionController {
         if (s && this.opts.runner) void this.runWarmup(s);
         break;
       case 'play':
+        this.playEnteredAtMs = s?.clock.now() ?? null;
         if (s && this.opts.runner) void this.runPlay(s);
         break;
       case 'report':
@@ -844,10 +916,14 @@ export class SessionController {
     if (s.abort.signal.aborted) ac.abort(s.abort.signal.reason);
     else s.abort.signal.addEventListener('abort', onSession, { once: true });
     this.moduleAbort = ac;
+    const wrapUp = new AbortController();
+    this.moduleWrapUp = wrapUp;
+    const wrapTimer = this.schedulePlayWrapUp(s, moduleId, wrapUp, ac.signal);
     s.currentModule = moduleId;
     this.publish();
     try {
       return await runner.run({
+        wrapUp: wrapUp.signal,
         moduleId,
         level,
         language: s.language ?? this.opts.device.languages[0],
@@ -858,11 +934,41 @@ export class SessionController {
         signal: ac.signal,
       });
     } finally {
+      wrapTimer.abort();
       s.abort.signal.removeEventListener('abort', onSession);
       if (this.moduleAbort === ac) this.moduleAbort = null;
+      if (this.moduleWrapUp === wrapUp) this.moduleWrapUp = null;
       if (s.currentModule === moduleId) s.currentModule = null;
       this.publish();
     }
+  }
+
+  /**
+   * During play, request the module's wrap-up `lead` ms before the play ceiling so it can finish
+   * gracefully before the statechart moves on to the report. Returns the timer's canceller.
+   */
+  private schedulePlayWrapUp(
+    s: ActiveSession,
+    moduleId: ModuleId,
+    wrapUp: AbortController,
+    moduleSignal: AbortSignal,
+  ): AbortController {
+    const timer = new AbortController();
+    const entered = this.playEnteredAtMs;
+    const snap = this.actor.getSnapshot();
+    if (entered === null || stateNameOf(snap) !== 'play') return timer;
+    const ceiling = snap.context.timers.ceilingsMs.play;
+    const lead =
+      this.opts.playWrapUpLeadMs ??
+      (this.opts.content.has(moduleId) ? this.opts.content.get(moduleId).budget.outro_ms : 0);
+    const waitMs = Math.max(0, entered + ceiling - lead - s.clock.now());
+    s.clock.delay(waitMs, timer.signal).then(
+      () => {
+        if (!moduleSignal.aborted && !wrapUp.signal.aborted) wrapUp.abort('session_time');
+      },
+      () => undefined,
+    );
+    return timer;
   }
 
   private async runWarmup(s: ActiveSession): Promise<void> {

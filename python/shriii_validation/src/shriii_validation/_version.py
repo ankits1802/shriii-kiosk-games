@@ -4,4 +4,4 @@ from __future__ import annotations
 
 from typing import Final
 
-VALIDATION_ALGORITHM_VERSION: Final = "0.1.0"
+VALIDATION_ALGORITHM_VERSION: Final = "0.2.0"

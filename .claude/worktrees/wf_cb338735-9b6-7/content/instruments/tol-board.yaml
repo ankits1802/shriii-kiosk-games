@@ -1,0 +1,244 @@
+# ToL board — criterion instrument registry entry (CRT-02/03/04).
+# Copyrighted item wording is NOT stored here: each item has a placeholder and item_text_source.
+# Real wording is loaded at administration time from the licensed source file.
+schema_version: '1.0'
+instrument_id: tol_board
+name: Tower of London short form (physical board)
+short_name: ToL board
+version: 1.0.0
+kind: performance
+citation: Shallice, T. (1982). Specific impairments of planning. Philosophical Transactions of the Royal Society of London B, 298, 199-209. Short
+  form of 8 problems on a physical board (CRT-02).
+constructs_measured:
+- problem_solving
+- task_organisation
+- initiative
+licensing:
+  holder: Public-domain paradigm; specific commercial versions (e.g. TOL-DX) are not used
+  licence: Paradigm in the public domain
+  permission_status: not_required
+  permission_document: null
+  allowed_use: Research use of an in-house problem set.
+  expiry: null
+  commercial_use: false
+  notes: null
+administration:
+  modes:
+  - read_aloud
+  audio_assisted: true
+  estimated_minutes: 8
+  blocks:
+  - performance
+  public_kiosk_allowed: false
+  instructions_key: criterion.tol.instructions
+response_scale:
+  type: performance
+  min: null
+  max: null
+  anchors: []
+  reverse_formula: null
+items:
+- item_id: tol_board.p1
+  number: 1
+  item_text: '[licensed item text — load from licensed source]'
+  item_text_source:
+    kind: performance_task
+    reference: In-house ToL problem 1; start/goal configuration and minimum moves stored in the administration file
+  subscales:
+  - excess_moves
+  - initial_thinking_time
+  - solved_within_limit
+  reverse_keyed: false
+  attention_check: false
+  block: performance
+  measures:
+  - moves
+  - initial_thinking_time_s
+  - solved_within_limit
+- item_id: tol_board.p2
+  number: 2
+  item_text: '[licensed item text — load from licensed source]'
+  item_text_source:
+    kind: performance_task
+    reference: In-house ToL problem 2; start/goal configuration and minimum moves stored in the administration file
+  subscales:
+  - excess_moves
+  - initial_thinking_time
+  - solved_within_limit
+  reverse_keyed: false
+  attention_check: false
+  block: performance
+  measures:
+  - moves
+  - initial_thinking_time_s
+  - solved_within_limit
+- item_id: tol_board.p3
+  number: 3
+  item_text: '[licensed item text — load from licensed source]'
+  item_text_source:
+    kind: performance_task
+    reference: In-house ToL problem 3; start/goal configuration and minimum moves stored in the administration file
+  subscales:
+  - excess_moves
+  - initial_thinking_time
+  - solved_within_limit
+  reverse_keyed: false
+  attention_check: false
+  block: performance
+  measures:
+  - moves
+  - initial_thinking_time_s
+  - solved_within_limit
+- item_id: tol_board.p4
+  number: 4
+  item_text: '[licensed item text — load from licensed source]'
+  item_text_source:
+    kind: performance_task
+    reference: In-house ToL problem 4; start/goal configuration and minimum moves stored in the administration file
+  subscales:
+  - excess_moves
+  - initial_thinking_time
+  - solved_within_limit
+  reverse_keyed: false
+  attention_check: false
+  block: performance
+  measures:
+  - moves
+  - initial_thinking_time_s
+  - solved_within_limit
+- item_id: tol_board.p5
+  number: 5
+  item_text: '[licensed item text — load from licensed source]'
+  item_text_source:
+    kind: performance_task
+    reference: In-house ToL problem 5; start/goal configuration and minimum moves stored in the administration file
+  subscales:
+  - excess_moves
+  - initial_thinking_time
+  - solved_within_limit
+  reverse_keyed: false
+  attention_check: false
+  block: performance
+  measures:
+  - moves
+  - initial_thinking_time_s
+  - solved_within_limit
+- item_id: tol_board.p6
+  number: 6
+  item_text: '[licensed item text — load from licensed source]'
+  item_text_source:
+    kind: performance_task
+    reference: In-house ToL problem 6; start/goal configuration and minimum moves stored in the administration file
+  subscales:
+  - excess_moves
+  - initial_thinking_time
+  - solved_within_limit
+  reverse_keyed: false
+  attention_check: false
+  block: performance
+  measures:
+  - moves
+  - initial_thinking_time_s
+  - solved_within_limit
+- item_id: tol_board.p7
+  number: 7
+  item_text: '[licensed item text — load from licensed source]'
+  item_text_source:
+    kind: performance_task
+    reference: In-house ToL problem 7; start/goal configuration and minimum moves stored in the administration file
+  subscales:
+  - excess_moves
+  - initial_thinking_time
+  - solved_within_limit
+  reverse_keyed: false
+  attention_check: false
+  block: performance
+  measures:
+  - moves
+  - initial_thinking_time_s
+  - solved_within_limit
+- item_id: tol_board.p8
+  number: 8
+  item_text: '[licensed item text — load from licensed source]'
+  item_text_source:
+    kind: performance_task
+    reference: In-house ToL problem 8; start/goal configuration and minimum moves stored in the administration file
+  subscales:
+  - excess_moves
+  - initial_thinking_time
+  - solved_within_limit
+  reverse_keyed: false
+  attention_check: false
+  block: performance
+  measures:
+  - moves
+  - initial_thinking_time_s
+  - solved_within_limit
+subscales:
+- scale_id: excess_moves
+  name: Excess moves
+  items:
+  - tol_board.p1
+  - tol_board.p2
+  - tol_board.p3
+  - tol_board.p4
+  - tol_board.p5
+  - tol_board.p6
+  - tol_board.p7
+  - tol_board.p8
+  score_type: sum
+  min_answered_prop: 0.8
+  parent: null
+  higher_means: More excess moves (less efficient planning)
+- scale_id: initial_thinking_time
+  name: Initial thinking time
+  items:
+  - tol_board.p1
+  - tol_board.p2
+  - tol_board.p3
+  - tol_board.p4
+  - tol_board.p5
+  - tol_board.p6
+  - tol_board.p7
+  - tol_board.p8
+  score_type: time_s
+  min_answered_prop: 0.8
+  parent: null
+  higher_means: Longer planning before the first move
+- scale_id: solved_within_limit
+  name: Problems solved within the limit
+  items:
+  - tol_board.p1
+  - tol_board.p2
+  - tol_board.p3
+  - tol_board.p4
+  - tol_board.p5
+  - tol_board.p6
+  - tol_board.p7
+  - tol_board.p8
+  score_type: count
+  min_answered_prop: 0.8
+  parent: null
+  higher_means: More problems solved
+scoring:
+  key_version: 1.0.0
+  prorate_min_prop: 0.8
+  attention_check_fail_flag: null
+  notes: Scored by the administrator in-app; problems 1-8 increase from 2 to 5 minimum moves.
+language_versions:
+- language: en-IN
+  itc_state: draft
+  approved: false
+  translation_permission: not_requested
+- language: hi-IN
+  itc_state: draft
+  approved: false
+  translation_permission: not_requested
+- language: mr-IN
+  itc_state: draft
+  approved: false
+  translation_permission: not_requested
+- language: ta-IN
+  itc_state: draft
+  approved: false
+  translation_permission: not_requested

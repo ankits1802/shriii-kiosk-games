@@ -1,0 +1,278 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://shriii.local/contracts/common.v1.schema.json",
+  "title": "Common definitions",
+  "description": "Shared scalar and enum definitions for all SHRIII v1 contracts.",
+  "$defs": {
+    "uuid": {
+      "type": "string",
+      "format": "uuid",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+      "description": "Lower-case RFC 9562 UUID."
+    },
+    "uuidv7": {
+      "type": "string",
+      "format": "uuid",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
+      "description": "Lower-case time-ordered UUIDv7 (RFC 9562). Used for event_id, session_id and batch_id."
+    },
+    "date_time": {
+      "type": "string",
+      "format": "date-time",
+      "description": "RFC 3339 timestamp with offset."
+    },
+    "semver": {
+      "type": "string",
+      "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(-[0-9A-Za-z.-]+)?(\\+[0-9A-Za-z.-]+)?$",
+      "description": "Semantic version."
+    },
+    "minor_schema_version": {
+      "type": "string",
+      "pattern": "^1\\.(0|[1-9]\\d*)$",
+      "description": "Contract schema version MAJOR.MINOR for major 1. Minors only add optional fields."
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$",
+      "description": "Lower-case hex SHA-256 digest."
+    },
+    "base64": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9+/]*={0,2}$",
+      "description": "Standard base64 (RFC 4648 section 4)."
+    },
+    "identifier": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9_.:-]{0,127}$",
+      "description": "Stable lower-case machine identifier (module, trial, stimulus, line, etc.)."
+    },
+    "closed_code": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9_.-]{0,63}$",
+      "description": "Closed-vocabulary response code. Never free text."
+    },
+    "language_tag": {
+      "type": "string",
+      "pattern": "^[a-z]{2,3}-[A-Z]{2}$",
+      "description": "BCP-47 language-region tag, e.g. hi-IN, mr-IN, ta-IN, en-IN."
+    },
+    "pid": {
+      "type": "string",
+      "pattern": "^[0-9A-HJKMNP-TV-Z]{6,26}$",
+      "description": "Pseudonymous participant ID (Crockford base32, check character included). Never contains identity data."
+    },
+    "kiosk_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]{1,63}$",
+      "description": "Kiosk device identifier."
+    },
+    "construct_id": {
+      "type": "string",
+      "enum": [
+        "self_control",
+        "emotional_regulation",
+        "composure",
+        "response_consistency",
+        "task_organisation",
+        "decisiveness",
+        "adaptability",
+        "persistence_of_style",
+        "stability",
+        "expressive_restraint",
+        "teamwork",
+        "judgement",
+        "problem_solving",
+        "integrity",
+        "initiative",
+        "risk_preference",
+        "persistence"
+      ],
+      "description": "Stable identifier of one of the 17 constructs (plan section 4.3)."
+    },
+    "pathway": {
+      "type": "string",
+      "enum": ["A", "B"],
+      "description": "Assessment pathway: A = linked narrative episodes, B = micro-game carousel."
+    },
+    "site_mode": {
+      "type": "string",
+      "enum": ["supervised", "open_public"]
+    },
+    "session_mode": {
+      "type": "string",
+      "enum": ["think_aloud", "pilot", "retest", "public", "substudy"]
+    },
+    "battery_arm": {
+      "type": "string",
+      "enum": ["B_fixed", "A_narrative", "B_adaptive", "A_D", "C"],
+      "description": "Pilot arm. B_adaptive, A_D and C are reserved for later waves."
+    },
+    "slot_form": {
+      "type": "string",
+      "enum": ["wait_or_now", "steady_hands", "four_stalls", "private_dice"],
+      "description": "Planned-missingness slot module assigned at session start (Pathway B)."
+    },
+    "calibration_level": {
+      "type": "string",
+      "enum": ["L1", "L2", "L3"]
+    },
+    "calibration_policy": {
+      "type": "string",
+      "enum": ["fixed_L2_with_L1_fallback", "classifier", "forced", "retest_locked"]
+    },
+    "phase": {
+      "type": "string",
+      "enum": ["practice", "warmup", "main", "pressure", "shift_pre", "shift_post"]
+    },
+    "input_mode": {
+      "type": "string",
+      "enum": ["touch", "voice", "voice_then_touch_confirm", "timeout", "none"]
+    },
+    "latency_anchor": {
+      "type": "string",
+      "enum": ["visual_onset", "audio_end", "go_signal"]
+    },
+    "report_mode": {
+      "type": "string",
+      "enum": ["thank_you", "demo", "player_report"]
+    },
+    "consent_kind": {
+      "type": "string",
+      "enum": [
+        "core",
+        "archive",
+        "contact",
+        "research_audio",
+        "asr_eval",
+        "coplay_substudy",
+        "criterion"
+      ]
+    },
+    "partner_type": {
+      "type": "string",
+      "enum": ["cooperative", "conditional_cooperator", "free_rider", "error_prone", "live"]
+    },
+    "timing_flag": {
+      "type": "string",
+      "enum": [
+        "ok",
+        "frame_drop",
+        "late_onset",
+        "audio_underrun",
+        "degrade_mode",
+        "uncertified_timing_profile",
+        "clock_anomaly",
+        "visibility_hidden"
+      ],
+      "description": "Timing quality of this event. Anything other than ok excludes the trial from timing-sensitive indicators."
+    },
+    "session_state": {
+      "type": "string",
+      "enum": [
+        "attract",
+        "languageSelect",
+        "consent",
+        "bands",
+        "practiceWarmup",
+        "play",
+        "report",
+        "survey",
+        "contactOptIn",
+        "farewell",
+        "wipe"
+      ],
+      "description": "Session lifecycle statechart state (KSK-02)."
+    },
+    "age_band": {
+      "type": "string",
+      "enum": ["18_24", "25_34", "35_44", "45_59", "60_plus", "prefer_not_to_say"],
+      "description": "Persisted age bands. An under-18 selection ends the session and is never persisted."
+    },
+    "literacy_band": {
+      "type": "string",
+      "enum": ["easily", "with_difficulty", "not_at_all", "prefer_not_to_say"]
+    },
+    "edu_band": {
+      "type": "string",
+      "enum": [
+        "none",
+        "primary",
+        "secondary",
+        "higher_secondary",
+        "graduate_plus",
+        "prefer_not_to_say"
+      ]
+    },
+    "gender": {
+      "type": "string",
+      "enum": ["woman", "man", "another", "prefer_not_to_say"]
+    },
+    "device_familiarity": {
+      "type": "string",
+      "enum": ["never", "sometimes", "daily", "prefer_not_to_say"]
+    },
+    "played_before": {
+      "type": "string",
+      "enum": ["yes", "no", "not_sure", "prefer_not_to_say"]
+    },
+    "itc_state": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "forward_translated",
+        "back_translated",
+        "expert_reviewed",
+        "recorded",
+        "audio_qc",
+        "think_aloud_tested",
+        "approved",
+        "flagged_for_revision"
+      ],
+      "description": "ITC adaptation workflow state (VOX-07)."
+    },
+    "battery_gate_status": {
+      "type": "string",
+      "enum": ["closed", "open"]
+    },
+    "trait_gate_status": {
+      "type": "string",
+      "enum": [
+        "unvalidated",
+        "research_only",
+        "validated_broad_style",
+        "validated_banded",
+        "withheld"
+      ]
+    },
+    "band": {
+      "type": "string",
+      "enum": ["pole_a", "centre", "pole_b"],
+      "description": "Internal ordinal band code. Both poles are strengths-framed; the phrase key carries the wording. Never shown as a number."
+    },
+    "phrase_key": {
+      "type": "string",
+      "pattern": "^[a-z][a-z_.]{2,127}$",
+      "description": "Allowlisted report phrase key. Digits are not permitted, so no numbers can leak into reports."
+    },
+    "normalized_point": {
+      "type": "array",
+      "items": {
+        "type": "number",
+        "minimum": 0,
+        "maximum": 1
+      },
+      "minItems": 2,
+      "maxItems": 2,
+      "description": "[x, y] normalised to the safe area, origin top-left."
+    },
+    "administration_mode": {
+      "type": "string",
+      "enum": ["self", "read_aloud"]
+    },
+    "player_slot": {
+      "type": "integer",
+      "enum": [1, 2],
+      "description": "Player slot in co-play; 1 for single-player sessions."
+    }
+  }
+}

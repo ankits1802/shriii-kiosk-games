@@ -1,17 +1,33 @@
 /**
- * Layered vector character rig.
+ * Articulated vector character rig (wave 2).
  *
- * Rig: shadow -> figure (lean/bounce) -> lower garment + feet -> upper group (breathing) -> torso, drape,
- * neck, head (tilt/nod: hair, face, features, headwear, glasses) and two jointed arms (shoulder + elbow),
- * plus an expression-symbol layer and an optional glowing lantern (the guide).
+ * A 3-D-aware cut-out rig: anatomical joint angles (shoulder abduction/flexion/twist, elbow, wrist; hip,
+ * knee, ankle; spine, head) are projected into the front, three-quarter or side view, so one gesture or
+ * gait reads correctly from any angle. Static parts (torso with garment and drape, lower garment, limb
+ * segments, hands per shape, feet, head layers) are drawn once per view and baked to textures with a
+ * crisp outline; only the face features and cloth ropes are live vector/mesh work, so a dozen
+ * characters cost well under 2 ms of CPU per frame.
  *
- * Life: breathing, blinking, idle head tilt and gaze, lip-sync while a voice clip plays, gestures (wave,
- * nod, point, walk in/out, celebrate, shrug) and expression states that tween smoothly. Expressions are
- * readable without colour: brow shape, eye lids, mouth shape, posture (hands on hips, crossed arms, fist)
- * and symbols (sweat drop, anger mark, steam, sparkle, thought bubble, sigh puff).
+ * Layers of motion, composed each frame: base stance + expression posture (eased) + idle life
+ * (breathing, weight shifts, glances, flourishes) -> locomotion (walk/run cycle with ground-locked feet)
+ * -> gesture (keyframed, retargeted per view, crossfaded) -> secondary motion (dupatta, pallu, pagri
+ * tail, gamcha, braid, earrings, a carried lantern). The face runs an expression state machine, blinks
+ * with randomised timing, makes saccades or holds a look-at target and lip-syncs visemes to the
+ * amplitude of the voice that is playing.
+ *
+ * Backwards compatible with the wave-1 `Character` API (and its extras: setTone, setAngerLevel,
+ * setIntensity, speakFor, pointAt, clearLook, entrance, exit); {@link RigCharacterSpec} adds optional
+ * fields.
  */
-import { gsap } from 'gsap';
-import { Container, Graphics, Sprite, type Ticker } from 'pixi.js';
+import {
+  Container,
+  Graphics,
+  MeshRope,
+  Point as PixiPoint,
+  Sprite,
+  Texture,
+  type Ticker,
+} from 'pixi.js';
 import { OutlineFilter } from 'pixi-filters';
 import type {
   Character,
@@ -21,26 +37,77 @@ import type {
   Point,
   VoicePlayback,
 } from '../../core/contracts.ts';
-import { drawLantern } from '../backdrop/props.ts';
-import { clamp, darken, lighten, mixColor } from '../color.ts';
-import { openArc, rgrad, softShadow, vgrad } from '../draw.ts';
+import { clamp, mixColor } from '../color.ts';
+import { softShadow } from '../draw.ts';
 import { FX_RADIUS, fxTexture } from '../fx/textures.ts';
 import type { Lighting } from '../lighting.ts';
+import { motionSettings } from '../motion.ts';
 import { MELA } from '../palettes.ts';
+import { HandLantern } from '../props/lantern.ts';
 import type { QualityProfile } from '../quality.ts';
 import { ArtRandom, hashString } from '../rand.ts';
 import type { TextureCache } from '../textures.ts';
-import { type Appearance, appearanceFor } from './appearance.ts';
+import { type Appearance, appearanceFor, withCloth } from './appearance.ts';
+import type { ExpressionSymbol, ExtendedExpression } from './expressions.ts';
+import { ClothChain, Pendulum } from './rig/cloth.ts';
+import { type RigDims, rigDims } from './rig/dims.ts';
 import {
-  type ArmPose,
-  EXPRESSIONS,
-  type ExpressionParams,
-  type ExpressionSymbol,
-  type ExtendedExpression,
-  intensify,
-  lerpParams,
-  toneExpression,
-} from './expressions.ts';
+  drawBraidStrip,
+  drawClothStrip,
+  drawFoot,
+  drawForearm,
+  drawHand,
+  drawLowerGarment,
+  drawShin,
+  drawThigh,
+  drawTorso,
+  drawUpperArm,
+} from './rig/drawBody.ts';
+import { drawFeatures } from './rig/drawFeatures.ts';
+import { drawHeadBase, drawHeadFront } from './rig/drawHead.ts';
+import { type ExpressionFrame, ExpressionMachine } from './rig/expressionMachine.ts';
+import { type AmplitudeSource, amplitudeOf, FaceController, type FaceState } from './rig/face.ts';
+import {
+  compileGesture,
+  eventsBetween,
+  GESTURES,
+  type GestureChannel,
+  type GestureDef,
+  type GestureName,
+  gestureLocalTime,
+  resolveChannel,
+  sampleGesture,
+} from './rig/gestures.ts';
+import {
+  RIG_VIEWS,
+  type RigView,
+  retargetArm,
+  type Side,
+  solveArm,
+  solveLeg,
+  VIEW_YAW,
+  viewForYaw,
+} from './rig/kinematics.ts';
+import { GAITS, type Gait, gaitSpeed, locomotionPose } from './rig/locomotion.ts';
+import {
+  angleDelta,
+  applyPartial,
+  armOf,
+  copyPose,
+  createPose,
+  type HandShape,
+  type LimbSide,
+  legOf,
+  type PartialPose,
+  POSE_KEYS,
+  POSTURE_HANDS,
+  POSTURES,
+  type Pose,
+  type Posture,
+  STAND,
+  setArm,
+} from './rig/pose.ts';
+import { SymbolLayer } from './rig/symbols.ts';
 
 export interface CharacterDeps {
   readonly ticker: Ticker;
@@ -49,357 +116,553 @@ export interface CharacterDeps {
   readonly cache: TextureCache;
 }
 
-interface ArmState {
-  u: number;
-  f: number;
+/** Contract spec plus optional rig fields (all optional: wave-1 specs work unchanged). */
+export interface RigCharacterSpec extends CharacterSpec {
+  /** Resting view (default front). */
+  readonly view?: RigView;
+  /** Cloth colour variant (0 = original clothes). */
+  readonly cloth?: number;
+  /** Idle variations (weight shifts, glances, flourishes); default true. */
+  readonly idleVariations?: boolean;
 }
 
-interface Arm {
+/** Everything `play()` accepts: contract animations, gestures and runs. */
+export type RigAnimation = CharacterAnimation | GestureName | 'run_in' | 'run_out';
+
+export interface PlayOptions {
+  /** Hand that performs a one-handed gesture (default: the screen-facing/near hand). */
+  readonly hand?: LimbSide;
+  /** Gesture events (e.g. `give`, `take`, `place`). */
+  readonly onEvent?: (name: string) => void;
+}
+
+export type HoldSlot = LimbSide | 'head';
+
+interface Seg {
+  readonly holder: Container;
+  art: Container | null;
+}
+
+interface ArmRig {
+  readonly side: Side;
+  readonly key: LimbSide;
   readonly root: Container;
-  readonly upper: Graphics;
-  readonly fore: Container;
-  readonly foreG: Graphics;
-  readonly side: -1 | 1;
+  readonly upper: Seg;
+  readonly fore: Seg;
+  readonly hand: Seg;
+  readonly socket: Container;
+  shape: HandShape | null;
+  layer: 'back' | 'front' | null;
 }
 
-const U_LEN = 50;
-const F_LEN = 46;
+interface LegRig {
+  readonly side: Side;
+  readonly key: LimbSide;
+  readonly root: Container;
+  readonly thigh: Seg;
+  readonly shin: Seg;
+  readonly foot: Seg;
+}
 
-/** Arm angles (upper, fore) for left (viewer-left, side -1) and right arms per pose. */
-const ARM_POSES: Readonly<Record<ArmPose, { l: ArmState; r: ArmState }>> = {
-  relaxed: { l: { u: 0.17, f: -0.24 }, r: { u: -0.17, f: 0.24 } },
-  hips: { l: { u: 0.75, f: -2.05 }, r: { u: -0.75, f: 2.05 } },
-  crossed: { l: { u: -0.18, f: -1.38 }, r: { u: 0.22, f: 1.3 } },
-  chin: { l: { u: -0.18, f: -1.38 }, r: { u: 0.3, f: 2.55 } },
-  open: { l: { u: 0.62, f: 0.35 }, r: { u: -0.62, f: -0.35 } },
-  fist: { l: { u: 0.75, f: -2.05 }, r: { u: -1.05, f: -1.75 } },
+interface Rope {
+  readonly chain: ClothChain;
+  readonly mesh: MeshRope;
+  readonly pts: PixiPoint[];
+  /** Attachment in body space (front view) and frame. */
+  readonly anchor: { x: number; y: number; z: number };
+  readonly frame: 'upper' | 'head';
+  layer: 'back' | 'front' | null;
+}
+
+interface ActiveGesture {
+  readonly def: GestureDef;
+  readonly main: LimbSide;
+  elapsed: number;
+  lastT: number;
+  holding: boolean;
+  releaseT: number;
+  resolve: (() => void) | null;
+  readonly onEvent: ((name: string) => void) | undefined;
+}
+
+interface Locomotion {
+  readonly gait: Gait;
+  phase: number;
+  weight: number;
+  /** Rig units still to travel along the figure's forward axis (null = walk in place). */
+  remaining: number | null;
+  /** Travel by moving the view in its parent (walkTo) instead of the internal offset. */
+  readonly moveView: boolean;
+  stopping: boolean;
+  resolve: (() => void) | null;
+  fadeOut: boolean;
+  restoreView: boolean;
+}
+
+type IdleName = 'shift_weight' | 'look_around' | 'clasp' | 'adjust' | 'sigh';
+
+interface IdleFlourish {
+  readonly duration: number;
+  readonly pose: PartialPose;
+}
+
+const IDLES: Readonly<Record<IdleName, IdleFlourish>> = {
+  shift_weight: {
+    duration: 3.2,
+    pose: {
+      pelvisShift: 5,
+      pelvisTilt: 0.04,
+      lKnee: 0.28,
+      lHip: 0.12,
+      lAnkle: 0.05,
+      headTilt: -0.03,
+    },
+  },
+  look_around: { duration: 2.6, pose: { headTurn: 0.3, headTilt: 0.03 } },
+  clasp: {
+    duration: 3.4,
+    pose: {
+      rAbd: 0.16,
+      rFlex: 0.32,
+      rTwist: -1.45,
+      rElbow: 1.32,
+      lAbd: 0.16,
+      lFlex: 0.3,
+      lTwist: -1.45,
+      lElbow: 1.28,
+    },
+  },
+  adjust: {
+    duration: 1.7,
+    pose: { rAbd: 0.25, rFlex: 0.55, rTwist: -1.4, rElbow: 2.25, rWrist: 0.2, headTilt: 0.06 },
+  },
+  sigh: { duration: 1.6, pose: { shoulderLift: 4, headNod: -0.06, spine: -0.02 } },
 };
+
+const OUTLINE_COLOR = 0x3a2018;
+/** Far-side limbs are shaded slightly so overlapping legs and arms stay readable. */
+const FAR_LIMB_TINT = 0xd6ccc4;
+const DEFAULT_SPAN = 440;
+
+const ARM_KEYS: ReadonlySet<string> = new Set(
+  (['l', 'r'] as const).flatMap((s) =>
+    ['Abd', 'Flex', 'Twist', 'Elbow', 'Wrist'].map((p) => `${s}${p}`),
+  ),
+);
+
+const VISEME_CODE: Readonly<Record<FaceState['viseme'], number>> = {
+  rest: 0,
+  mbp: 1,
+  ee: 2,
+  aa: 3,
+  oh: 4,
+  oo: 5,
+};
+
+/** Background bake jobs shared by all characters; at most one runs per ~frame. */
+const PREWARM: (() => void)[] = [];
+let lastPrewarm = 0;
+
+function pumpPrewarm(): void {
+  if (PREWARM.length === 0) return;
+  const now = typeof performance !== 'undefined' ? performance.now() : Date.now();
+  if (now - lastPrewarm < 14) return;
+  lastPrewarm = now;
+  PREWARM.shift()?.();
+}
 
 export class ProceduralCharacter implements Character {
   readonly view = new Container();
-  readonly spec: CharacterSpec;
+  readonly spec: RigCharacterSpec;
   readonly appearance: Appearance;
+  readonly dims: RigDims;
 
   private readonly deps: CharacterDeps;
   private readonly rnd: ArtRandom;
+  private readonly appearanceKey: string;
+  private readonly res: number;
   private readonly shadow = new Graphics();
   private readonly figure = new Container();
-  private readonly lowerG = new Graphics();
-  private readonly upperGroup = new Container();
-  private readonly torsoG = new Graphics();
-  private readonly drapeG = new Graphics();
+  private readonly legLayer = new Container();
+  private readonly lower = new Container();
+  private readonly upper = new Container();
+  private readonly clothBack = new Container();
+  private readonly clothFront = new Container();
+  private readonly armBack = new Container();
+  private readonly armFront = new Container();
+  private readonly torso = new Container();
   private readonly head = new Container();
-  private readonly hairBackG = new Graphics();
-  private readonly faceG = new Graphics();
-  private readonly featuresG = new Graphics();
-  private readonly hairFrontG = new Graphics();
-  private readonly glassesG = new Graphics();
-  private readonly symbols = new Container();
-  private readonly armL: Arm;
-  private readonly armR: Arm;
-  private lanternGlow: Sprite | null = null;
-  private lanternHolder: Container | null = null;
+  private readonly headBase = new Container();
+  private readonly headFront = new Container();
+  private readonly features = new Graphics();
+  private readonly headSocket = new Container();
+  private readonly symbols: SymbolLayer;
+  private readonly arms: Record<LimbSide, ArmRig>;
+  private readonly legs: Record<LimbSide, LegRig>;
+  private readonly ropes: Rope[] = [];
+  private readonly earL = new Pendulum(9, 4);
+  private readonly earR = new Pendulum(9, 4);
+  private readonly held = new Map<HoldSlot, { item: Container; upright: boolean }>();
+  private lantern: { lamp: HandLantern; swing: Pendulum; hand: LimbSide } | null = null;
 
-  // Geometry.
-  private readonly H0: number;
-  private readonly sw: number;
-  private readonly ww: number;
-  private readonly hw: number;
-  private readonly hipY: number;
-  private readonly waistY: number;
-  private readonly shoulderY: number;
-  private readonly neckTop: number;
-  private readonly headCY: number;
-
-  // State.
-  private expression: ExtendedExpression = 'neutral';
-  private intensity = 1;
-  private params: ExpressionParams = EXPRESSIONS.neutral.params;
-  private symbol: ExpressionSymbol = 'none';
-  private fidget: 'none' | 'foot_tap' | 'bounce' | 'shake' = 'none';
-  private readonly arms = { l: { ...ARM_POSES.relaxed.l }, r: { ...ARM_POSES.relaxed.r } };
-  private readonly motion = { bodyY: 0, bodyRot: 0, headRot: 0, nod: 0, x: 0, squash: 0 };
-  private blink = 0;
-  private nextBlink = 1.5;
-  private talk = 0;
-  private talking = false;
-  private gazeOverride: { x: number; y: number } | null = null;
-  private animating = false;
-  private elapsed = 0;
+  // Motion state.
+  private readonly machine: ExpressionMachine;
+  private readonly face: FaceController;
+  private frame: ExpressionFrame;
+  private faceState: FaceState;
+  private readonly basePose = createPose();
+  private readonly armBase = createPose();
+  private readonly pose = createPose();
+  private readonly snapshot = createPose();
+  private crossfade = 1;
+  private gesture: ActiveGesture | null = null;
+  private loco: Locomotion | null = null;
+  private idle: { name: IdleName; t: number; mirror: boolean } | null = null;
+  private nextIdle: number;
+  private bodyView: RigView;
+  private restingView: RigView;
+  private builtView: RigView | null = null;
+  private headView: { view: RigView; mirror: boolean } | null = null;
+  private turn: { t: number; to: RigView } | null = null;
+  private lookTarget: Point | null = null;
+  private headTurnLook = 0;
+  private headNodLook = 0;
+  private walkOffset = 0;
+  private prevWorldX = 0;
+  private prevVel = 0;
+  private elapsed: number;
+  private paused = false;
   private destroyed = false;
-  private symbolTime = 0;
-  private featureSig = '';
-  private readonly onTick = (t: Ticker): void => this.update(Math.min(0.1, t.deltaMS / 1000));
-  private exprTween: gsap.core.Tween | null = null;
+  private readonly sigScratch = new Int32Array(22);
+  private readonly sigLast = new Int32Array(22);
+  private sigDirty = true;
+  private talkingTicket = 0;
+  private readonly onTick = (t: Ticker): void => this.advance(Math.min(0.1, t.deltaMS / 1000));
   private unsubLight: (() => void) | null = null;
+  private shadowParams = { dir: 0, length: 0, alpha: 0.3, color: 0x000000 };
 
-  constructor(spec: CharacterSpec, deps: CharacterDeps) {
+  constructor(spec: RigCharacterSpec, deps: CharacterDeps) {
     this.spec = spec;
     this.deps = deps;
-    this.appearance = appearanceFor(spec.role, spec.variant ?? 0);
+    this.appearance = withCloth(appearanceFor(spec.role, spec.variant ?? 0), spec.cloth ?? 0);
+    this.dims = rigDims(this.appearance);
     this.rnd = new ArtRandom(hashString(spec.id));
-    const a = this.appearance;
-    this.H0 = 330 * a.height;
-    this.sw = 37 * a.build;
-    this.ww = (a.feminine ? 27 : 30) * a.build;
-    this.hw = (a.feminine ? 35 : 31) * a.build;
-    this.hipY = -0.46 * this.H0;
-    this.waistY = -0.51 * this.H0;
-    this.shoulderY = -0.64 * this.H0 + a.age * 3;
-    this.neckTop = -0.675 * this.H0 + a.age * 3;
-    this.headCY = this.neckTop - 40;
+    this.appearanceKey = hashString(JSON.stringify(this.appearance)).toString(36);
+    const dpr =
+      typeof globalThis.devicePixelRatio === 'number'
+        ? Math.min(2, globalThis.devicePixelRatio)
+        : 1;
+    const sc = Math.abs(spec.scale ?? 1);
+    this.res = Math.min(
+      4,
+      Math.max(0.5, Math.ceil(sc * dpr * deps.quality.bakeResolution * 2) / 2),
+    );
+    this.restingView = spec.view ?? 'front';
+    this.bodyView = this.restingView;
+    this.elapsed = this.rnd.range(0, 10);
+    this.nextIdle = this.rnd.range(3, 7);
 
     this.view.label = `character:${spec.id}`;
     this.view.eventMode = 'none';
-    this.armL = this.makeArm(-1);
-    this.armR = this.makeArm(1);
+    this.symbols = new SymbolLayer(this.dims.headCY);
+    this.arms = { l: this.makeArm('l'), r: this.makeArm('r') };
+    this.legs = { l: this.makeLeg('l'), r: this.makeLeg('r') };
 
+    this.upper.pivot.set(0, this.dims.waistY);
+    this.upper.position.set(0, this.dims.waistY);
+    this.head.pivot.set(0, this.dims.neckTop);
+    this.head.position.set(0, this.dims.neckTop);
+    this.headSocket.position.set(0, this.dims.headCY - this.dims.headRy - this.headwearHeight());
+    this.head.addChild(this.headBase, this.features, this.headFront, this.headSocket);
+    this.upper.addChild(
+      this.clothBack,
+      this.armBack,
+      this.torso,
+      this.clothFront,
+      this.head,
+      this.armFront,
+    );
+    this.figure.addChild(this.legLayer, this.lower, this.upper, this.symbols.view);
     this.view.addChild(this.shadow, this.figure);
-    this.upperGroup.pivot.set(0, this.waistY);
-    this.upperGroup.position.set(0, this.waistY);
-    this.head.pivot.set(0, this.neckTop);
-    this.head.position.set(0, this.neckTop);
-    this.head.addChild(this.hairBackG, this.faceG, this.featuresG, this.hairFrontG, this.glassesG);
-    this.upperGroup.addChild(this.torsoG, this.drapeG, this.head, this.armL.root, this.armR.root);
-    this.figure.addChild(this.lowerG, this.upperGroup, this.symbols);
-    // Crisp illustrated silhouette (medium/high tiers): reads clearly against the busy fair.
-    if (deps.quality.softShadows) {
-      this.figure.filters = [
-        new OutlineFilter({
-          thickness: 2.4 * (spec.scale ?? 1),
-          color: 0x3a2018,
-          alpha: 0.7,
-          quality: 0.25,
-        }),
-      ];
-    }
 
-    this.drawBody();
-    this.drawHead();
-    if (a.lantern) this.attachLantern();
+    this.machine = new ExpressionMachine('neutral');
+    this.face = new FaceController(hashString(`${spec.id}:face`));
+    this.frame = this.machine.update(0);
+    this.faceState = this.face.update(0);
+    this.buildRopes();
+    if (this.appearance.lantern) this.attachLantern();
 
     const facing = spec.facing ?? 'right';
-    const sc = spec.scale ?? 1;
     this.view.scale.set(facing === 'left' ? -sc : sc, sc);
 
-    if (spec.toneLevel !== undefined) this.setTone(spec.toneLevel);
-    else this.applyExpression(spec.role === 'guide' ? 'calm' : 'neutral', 0);
+    if (spec.toneLevel !== undefined) this.machine.setTone(spec.toneLevel);
+    else this.machine.set(spec.role === 'guide' ? 'calm' : 'neutral');
+    this.machine.settle();
+    this.frame = this.machine.update(0);
+    copyPose(this.armBase, this.postureTarget(this.frame.posture));
 
+    this.buildView(this.bodyView);
+    this.queuePrewarm();
     this.unsubLight = deps.lighting.subscribe((p) => {
       this.figure.tint = mixColor(p.lightTint, 0xffffff, 0.4);
-      this.drawShadow(p.shadowDir, p.shadowLength, p.shadowAlpha, p.shadow);
+      this.shadowParams = {
+        dir: p.shadowDir,
+        length: p.shadowLength,
+        alpha: p.shadowAlpha,
+        color: p.shadow,
+      };
+      this.drawShadow();
+      this.lantern?.lamp.setLit(p.lights);
     });
+    this.advance(0);
     deps.ticker.add(this.onTick);
-    this.elapsed = this.rnd.range(0, 10);
   }
 
-  /** Current expression. */
+  /* ========================================= public API ========================================= */
+
   get currentExpression(): ExtendedExpression {
-    return this.expression;
+    return this.machine.expression;
   }
 
-  /** Current symbol (for tests and the gallery). */
   get currentSymbol(): ExpressionSymbol {
-    return this.symbol;
+    return this.frame.symbol;
+  }
+
+  /** Current body view. */
+  get currentView(): RigView {
+    return this.bodyView;
+  }
+
+  /** Snapshot of the composed pose (tests, debugging). */
+  get currentPose(): Readonly<Pose> {
+    return this.pose;
+  }
+
+  /** Name of the active gesture, if any. */
+  get activeGesture(): GestureName | null {
+    return this.gesture?.def.name ?? null;
+  }
+
+  /** Current gait, if moving. */
+  get activeGait(): Gait | null {
+    return this.loco && !this.loco.stopping ? this.loco.gait : null;
+  }
+
+  /** Viseme currently on the lips. */
+  get currentViseme(): FaceState['viseme'] {
+    return this.faceState.viseme;
   }
 
   setExpression(expression: Expression | ExtendedExpression): void {
-    this.applyExpression(expression, 0.28);
+    this.machine.set(expression);
+  }
+
+  /** Brief reaction (e.g. surprised) that returns to the current expression. */
+  react(expression: ExtendedExpression, holdS = 0.9): void {
+    this.machine.flash(expression, holdS);
   }
 
   /** Customer tone (0 calm .. 4 hostile): a stimulus property for The Stall. */
   setTone(level: 0 | 1 | 2 | 3 | 4): void {
-    const t = toneExpression(level);
-    this.intensity = Math.max(1, t.intensity);
-    this.applyExpression(t.expression, 0.35);
+    this.machine.setTone(level);
   }
 
   /** Anger/rudeness level 0..3 (0 calm, 1 impatient, 2 annoyed, 3 angry). */
   setAngerLevel(level: 0 | 1 | 2 | 3): void {
-    this.setTone(level === 3 ? 4 : level);
+    this.machine.setAnger(level);
   }
 
   /** Exaggeration of the current negative expression (1..3). */
   setIntensity(intensity: 1 | 2 | 3): void {
-    this.intensity = intensity;
-    this.applyExpression(this.expression, 0.25);
+    this.machine.setIntensity(intensity);
   }
 
-  async speak(playback: VoicePlayback): Promise<void> {
-    this.talking = true;
+  /** Turn to a view (front, three-quarter, side). Animated with a quick turn unless `immediate`. */
+  setView(view: RigView, immediate = false): void {
+    this.restingView = view;
+    this.turnTo(view, immediate);
+  }
+
+  /** Face screen-left or screen-right. */
+  setFacing(facing: 'left' | 'right'): void {
+    const sc = Math.abs(this.view.scale.y);
+    this.view.scale.x = facing === 'left' ? -sc : sc;
+  }
+
+  get facing(): 'left' | 'right' {
+    return this.view.scale.x < 0 ? 'left' : 'right';
+  }
+
+  /** Enable/disable blinking (deterministic stills). */
+  setBlinking(enabled: boolean): void {
+    this.face.blinkEnabled = enabled;
+  }
+
+  /** Enable/disable idle saccades and flourishes. */
+  setIdleLife(enabled: boolean): void {
+    this.face.saccadesEnabled = enabled;
+    if (!enabled) this.idle = null;
+    this.nextIdle = enabled ? this.rnd.range(2, 5) : Number.POSITIVE_INFINITY;
+  }
+
+  /** Freeze clocks (gesture, gait, idle) while still rendering; used by the gallery's pose sheets. */
+  setPaused(paused: boolean): void {
+    this.paused = paused;
+  }
+
+  /**
+   * Lip-sync to a voice playback until it ends. The mouth follows the clip's amplitude when the playback
+   * (or `options.amplitude`) offers one; otherwise a speech-like envelope keeps the lips moving.
+   */
+  async speak(
+    playback: VoicePlayback,
+    options: { readonly amplitude?: AmplitudeSource } = {},
+  ): Promise<void> {
+    const ticket = ++this.talkingTicket;
+    await Promise.race([
+      playback.started.then(() => undefined),
+      playback.ended.then(() => undefined),
+    ]);
+    if (this.destroyed || ticket !== this.talkingTicket) return;
+    this.face.setTalking(true, options.amplitude ?? amplitudeOf(playback));
     try {
       await playback.ended;
     } finally {
-      this.talking = false;
+      if (ticket === this.talkingTicket) this.face.setTalking(false);
     }
   }
 
-  /** Lip-sync for a fixed duration (used when no playback object exists, e.g. gallery previews). */
-  async speakFor(ms: number): Promise<void> {
-    this.talking = true;
-    await new Promise((r) => setTimeout(r, ms));
-    this.talking = false;
+  /** Lip-sync for a fixed duration (gallery previews, scripted beats without a playback object). */
+  async speakFor(ms: number, amplitude?: AmplitudeSource): Promise<void> {
+    const ticket = ++this.talkingTicket;
+    this.face.setTalking(true, amplitude);
+    await new Promise((r) =>
+      setTimeout(r, Math.max(0, ms * Math.max(0, motionSettings.timeScale))),
+    );
+    if (ticket === this.talkingTicket) this.face.setTalking(false);
   }
 
-  play(animation: CharacterAnimation): Promise<void> {
+  /** Stop talking now. */
+  stopSpeaking(): void {
+    this.talkingTicket++;
+    this.face.setTalking(false);
+  }
+
+  play(animation: RigAnimation, options: PlayOptions = {}): Promise<void> {
     if (this.destroyed) return Promise.resolve();
-    gsap.killTweensOf(this.motion);
-    gsap.killTweensOf(this.arms.l);
-    gsap.killTweensOf(this.arms.r);
-    this.animating = animation !== 'idle';
-    const tl = gsap.timeline({ paused: true });
-    const back = ARM_POSES[EXPRESSIONS[this.expression].arms];
-    const dir = this.view.scale.x < 0 ? -1 : 1;
     switch (animation) {
       case 'idle':
-        tl.to(this.arms.l, { ...back.l, duration: 0.3 }).to(
-          this.arms.r,
-          { ...back.r, duration: 0.3 },
-          0,
-        );
-        break;
-      case 'wave':
-        tl.to(this.arms.r, { u: -2.55, f: -0.35, duration: 0.32, ease: 'back.out(1.6)' });
-        for (let i = 0; i < 3; i++)
-          tl.to(this.arms.r, { f: 0.35, duration: 0.18, ease: 'sine.inOut' }).to(this.arms.r, {
-            f: -0.45,
-            duration: 0.18,
-            ease: 'sine.inOut',
-          });
-        tl.to(this.motion, { headRot: 0.08, duration: 0.3 }, 0);
-        tl.to(this.arms.r, { ...back.r, duration: 0.35, ease: 'sine.inOut' }).to(
-          this.motion,
-          { headRot: 0, duration: 0.35 },
-          '<',
-        );
-        break;
-      case 'nod':
-        tl.to(this.motion, { nod: 0.16, duration: 0.16, ease: 'sine.inOut' })
-          .to(this.motion, { nod: -0.04, duration: 0.18, ease: 'sine.inOut' })
-          .to(this.motion, { nod: 0.14, duration: 0.16, ease: 'sine.inOut' })
-          .to(this.motion, { nod: 0, duration: 0.22, ease: 'sine.out' });
-        break;
-      case 'point':
-        tl.to(this.arms.r, { u: -1.5, f: -0.08, duration: 0.3, ease: 'back.out(1.4)' })
-          .to(this.motion, { bodyRot: 0.03, headRot: 0.06, duration: 0.3 }, 0)
-          .to(this.arms.r, { u: -1.42, duration: 0.25, yoyo: true, repeat: 3, ease: 'sine.inOut' })
-          .to(this.arms.r, { ...back.r, duration: 0.35 })
-          .to(this.motion, { bodyRot: 0, headRot: 0, duration: 0.35 }, '<');
-        break;
+        return this.toIdle();
       case 'walk_in':
-      case 'walk_out': {
-        const span = 520;
-        const from = animation === 'walk_in' ? -dir * span : 0;
-        const to = animation === 'walk_in' ? 0 : dir * span;
-        this.motion.x = from;
-        if (animation === 'walk_in') this.view.alpha = 1;
-        const steps = 6;
-        const dur = 1.25;
-        tl.fromTo(
-          this.motion,
-          { x: from },
-          { x: to, duration: dur, ease: animation === 'walk_in' ? 'power1.out' : 'power1.in' },
-        );
-        for (let i = 0; i < steps; i++) {
-          tl.to(
-            this.motion,
-            {
-              bodyY: -7,
-              bodyRot: 0.03 * (i % 2 ? 1 : -1),
-              duration: dur / steps / 2,
-              ease: 'sine.out',
-            },
-            (i * dur) / steps,
-          ).to(
-            this.motion,
-            { bodyY: 0, duration: dur / steps / 2, ease: 'sine.in' },
-            (i * dur) / steps + dur / steps / 2,
-          );
-          tl.to(
-            this.arms.l,
-            { u: 0.14 + (i % 2 ? 0.25 : -0.15), duration: dur / steps },
-            (i * dur) / steps,
-          );
-          tl.to(
-            this.arms.r,
-            { u: -0.14 + (i % 2 ? 0.15 : -0.25), duration: dur / steps },
-            (i * dur) / steps,
-          );
-        }
-        tl.to(this.motion, { bodyRot: 0, duration: 0.15 });
-        tl.to(this.arms.l, { ...back.l, duration: 0.2 }, '<').to(
-          this.arms.r,
-          { ...back.r, duration: 0.2 },
-          '<',
-        );
-        if (animation === 'walk_out') tl.to(this.view, { alpha: 0, duration: 0.25 }, dur - 0.25);
-        break;
+      case 'walk_out':
+      case 'run_in':
+      case 'run_out': {
+        const gait: Gait = animation.startsWith('run') ? 'run' : 'walk';
+        const into = animation.endsWith('_in');
+        return this.travelInternal(gait, into);
       }
-      case 'celebrate':
-        tl.to(this.arms.l, { u: 2.5, f: 0.2, duration: 0.25, ease: 'back.out(1.8)' })
-          .to(this.arms.r, { u: -2.5, f: -0.2, duration: 0.25, ease: 'back.out(1.8)' }, 0)
-          .to(this.motion, { bodyY: -22, squash: -0.04, duration: 0.22, ease: 'power2.out' }, 0.05)
-          .to(this.motion, { bodyY: 0, squash: 0.05, duration: 0.2, ease: 'power2.in' })
-          .to(this.motion, { bodyY: -16, squash: -0.03, duration: 0.2, ease: 'power2.out' })
-          .to(this.motion, { bodyY: 0, squash: 0, duration: 0.22, ease: 'bounce.out' })
-          .to(this.arms.l, { ...back.l, duration: 0.35 })
-          .to(this.arms.r, { ...back.r, duration: 0.35 }, '<');
-        this.flashSymbol('sparkle', 1.6);
-        break;
-      case 'shrug':
-        tl.to(this.arms.l, { u: 0.55, f: -1.2, duration: 0.25 })
-          .to(this.arms.r, { u: -0.55, f: 1.2, duration: 0.25 }, 0)
-          .to(this.motion, { headRot: -0.12, bodyY: -4, duration: 0.25 }, 0)
-          .to({}, { duration: 0.5 })
-          .to(this.arms.l, { ...back.l, duration: 0.3 })
-          .to(this.arms.r, { ...back.r, duration: 0.3 }, '<')
-          .to(this.motion, { headRot: 0, bodyY: 0, duration: 0.3 }, '<');
-        break;
+      default:
+        return this.startGesture(GESTURES[animation], options);
     }
+  }
+
+  /** Stop a held gesture (fold arms, carry, push, steer, lantern, foot tap) and blend back. */
+  stopGesture(): Promise<void> {
+    const g = this.gesture;
+    if (!g) return Promise.resolve();
+    g.holding = false;
+    if (!g.def.loop) return Promise.resolve();
     return new Promise((resolve) => {
-      tl.eventCallback('onComplete', () => {
-        this.animating = false;
+      const prev = g.resolve;
+      g.resolve = () => {
+        prev?.();
         resolve();
-      });
-      tl.eventCallback('onInterrupt', () => {
-        this.animating = false;
-        resolve();
-      });
-      tl.play();
+      };
     });
   }
 
-  /** Point the arm towards a stage point (guide pointing at a button) and hold until {@link play}('idle'). */
-  pointAt(point: Point): Promise<void> {
-    const local = this.view.toLocal(point);
-    const sx = this.armR.root.x;
-    const sy = this.shoulderY + 4;
-    const ang = Math.atan2(local.x - sx, local.y - sy);
-    const u = clamp(-ang, -2.8, 0.4);
-    this.animating = true;
-    this.lookAt(point);
+  /** Walk or run in place (treadmill) until {@link stopLocomotion}; for scenes that move the parent. */
+  setLocomotion(gait: Gait | null): void {
+    if (gait === null) {
+      void this.stopLocomotion();
+      return;
+    }
+    this.turnTo('side');
+    this.loco = this.newLoco(gait, null, false);
+  }
+
+  /** Stop walking/running (feet settle). */
+  stopLocomotion(): Promise<void> {
+    const l = this.loco;
+    if (!l) return Promise.resolve();
+    l.stopping = true;
     return new Promise((resolve) => {
-      gsap.to(this.arms.r, {
-        u,
-        f: -0.05,
-        duration: 0.35,
-        ease: 'back.out(1.4)',
-        onComplete: () => resolve(),
-        onInterrupt: () => resolve(),
-      });
+      const prev = l.resolve;
+      l.resolve = () => {
+        prev?.();
+        resolve();
+      };
     });
+  }
+
+  /**
+   * Walk (or run) to an x position in the parent's coordinates, turning to face the destination, then
+   * return to the resting view. Resolves on arrival.
+   */
+  walkTo(parentX: number, options: { readonly gait?: Gait } = {}): Promise<void> {
+    if (this.destroyed) return Promise.resolve();
+    const dx = parentX - this.view.x;
+    if (Math.abs(dx) < 1) return Promise.resolve();
+    this.setFacing(dx < 0 ? 'left' : 'right');
+    const dist = Math.abs(dx) / Math.max(1e-6, Math.abs(this.view.scale.y));
+    this.loco?.resolve?.();
+    this.turnTo('side');
+    return new Promise((resolve) => {
+      const l = this.newLoco(options.gait ?? 'walk', dist, true);
+      l.resolve = resolve;
+      l.restoreView = true;
+      this.loco = l;
+      this.settleInstantly();
+    });
+  }
+
+  /** Point the main arm at a stage point and hold until `play('idle')`/`stopGesture()`. */
+  pointAt(point: Point): Promise<void> {
+    const local = this.figure.toLocal(point, undefined, undefined, true);
+    const theta = VIEW_YAW[this.bodyView];
+    const sx = this.shoulderX(theta < 0.05 ? 1 : -1, theta);
+    const dx = local.x - sx;
+    const dy = local.y - this.dims.shoulderJointY;
+    const r = Math.atan2(-dx, dy);
+    const useLeft = theta < 0.05 && dx < 0;
+    const abd = clamp(useLeft ? r : -r, -0.3, 2.9);
+    this.lookAt(point);
+    const def: GestureDef = {
+      name: 'point',
+      duration: 0.4,
+      blendOut: 0.35,
+      retarget: true,
+      loop: { from: 0.38, to: 0.4 },
+      keys: [
+        {
+          t: 0.38,
+          pose: { mAbd: abd, mFlex: 0.12, mTwist: 0, mElbow: 0.06, mWrist: 0 },
+          ease: 'back',
+          hands: { m: 'point' },
+        },
+      ],
+    };
+    return this.startGesture(def, useLeft ? { hand: 'l' } : {});
   }
 
   lookAt(point: Point): void {
-    const local = this.head.toLocal(point);
-    const dx = local.x;
-    const dy = local.y - this.headCY;
-    this.gazeOverride = { x: clamp(dx / 260, -1, 1), y: clamp(dy / 260, -1, 1) };
+    this.lookTarget = { x: point.x, y: point.y };
   }
 
   /** Release a lookAt (eyes return to the expression's gaze). */
   clearLook(): void {
-    this.gazeOverride = null;
+    this.lookTarget = null;
+    this.face.setLook(null);
   }
 
   /** Guide entrance: walk in, then wave. */
@@ -414,164 +677,1106 @@ export class ProceduralCharacter implements Character {
     await this.play('walk_out');
   }
 
+  /**
+   * Hold an item in a hand (it follows the hand and stays upright) or on the head. Replaces and returns
+   * whatever was held there.
+   */
+  hold(
+    item: Container,
+    slot: HoldSlot,
+    options: { readonly upright?: boolean } = {},
+  ): Container | null {
+    const prev = this.release(slot);
+    const parent = slot === 'head' ? this.headSocket : this.arms[slot].socket;
+    parent.addChild(item);
+    item.position.set(0, 0);
+    this.held.set(slot, { item, upright: options.upright ?? true });
+    return prev;
+  }
+
+  /** Remove and return the item in a slot (the caller re-parents it). */
+  release(slot: HoldSlot): Container | null {
+    const h = this.held.get(slot);
+    if (!h) return null;
+    this.held.delete(slot);
+    h.item.removeFromParent();
+    h.item.rotation = 0;
+    h.item.scale.x = Math.abs(h.item.scale.x);
+    return h.item;
+  }
+
+  /** Item currently held in a slot. */
+  heldItem(slot: HoldSlot): Container | null {
+    return this.held.get(slot)?.item ?? null;
+  }
+
+  /** Global position of a hand's grip point (for hand-overs and placing on a scale). */
+  handPosition(hand: LimbSide): Point {
+    const p = this.arms[hand].socket.getGlobalPosition();
+    return { x: p.x, y: p.y };
+  }
+
+  /**
+   * Show one frame of a gesture (time in seconds) frozen, for pose sheets. Clocks stay paused until
+   * `setPaused(false)`.
+   */
+  showGestureFrame(name: GestureName, t: number, options: PlayOptions = {}): void {
+    void this.startGesture(GESTURES[name], options);
+    const g = this.gesture;
+    if (g) {
+      g.elapsed = t;
+      g.lastT = t;
+    }
+    this.crossfade = 1;
+    this.paused = true;
+    this.advance(0);
+  }
+
+  /** Show one frame of a gait cycle (phase 0..1) frozen, for pose sheets. */
+  showGaitFrame(gait: Gait, phase: number): void {
+    this.loco = this.newLoco(gait, null, false);
+    this.loco.phase = phase;
+    this.loco.weight = 1;
+    this.crossfade = 1;
+    this.turnTo(this.restingView === 'front' ? 'side' : this.restingView, true);
+    this.paused = true;
+    this.advance(0);
+  }
+
+  /** Advance the rig by `dt` seconds (the ticker calls this; tests can drive it directly). */
+  advance(dt: number): void {
+    if (this.destroyed) return;
+    pumpPrewarm();
+    const ts = motionSettings.timeScale;
+    const real = Math.max(0, dt);
+    const scaled = ts <= 0 ? 10 : real / ts;
+    const clockDt = this.paused ? 0 : Math.min(ts <= 0 ? 10 : 0.25, scaled);
+    this.elapsed += clockDt;
+    this.updateTurn(real);
+    this.updateExpression(clockDt > 0 ? clockDt : real);
+    this.composePose(clockDt);
+    this.applyPose(real, clockDt);
+    this.updateFace(this.paused ? 0 : real);
+    this.symbols.update(real, this.deps.quality.motionScale);
+  }
+
   destroy(): void {
     if (this.destroyed) return;
     this.destroyed = true;
     this.deps.ticker.remove(this.onTick);
     this.unsubLight?.();
-    this.exprTween?.kill();
-    gsap.killTweensOf(this.motion);
-    gsap.killTweensOf(this.arms.l);
-    gsap.killTweensOf(this.arms.r);
-    gsap.killTweensOf(this.view);
+    this.gesture?.resolve?.();
+    this.gesture = null;
+    this.loco?.resolve?.();
+    this.loco = null;
+    for (const h of this.held.values()) h.item.removeFromParent();
+    this.held.clear();
+    this.lantern?.lamp.destroy();
+    this.lantern = null;
     if (!this.view.destroyed) {
       this.view.removeFromParent();
       this.view.destroy({ children: true });
     }
   }
 
-  /* ============================================================================================ */
+  /* ======================================== composition ======================================== */
 
-  private applyExpression(e: Expression | ExtendedExpression, durationS: number): void {
-    const def = EXPRESSIONS[e];
-    this.expression = e;
-    const target =
-      e === 'angry' || e === 'annoyed' || e === 'impatient'
-        ? intensify(def.params, this.intensity)
-        : def.params;
-    this.symbol = def.symbol;
-    if ((e === 'annoyed' || e === 'impatient') && this.intensity >= 3) this.symbol = 'steam';
-    this.fidget = def.fidget;
-    this.exprTween?.kill();
-    const from = this.params;
-    if (durationS <= 0) {
-      this.params = target;
-    } else {
-      const s = { t: 0 };
-      this.exprTween = gsap.to(s, {
-        t: 1,
-        duration: durationS,
-        ease: 'sine.out',
-        onUpdate: () => {
-          this.params = lerpParams(from, target, s.t);
-        },
-      });
-    }
-    if (!this.animating) {
-      const pose = ARM_POSES[def.arms];
-      gsap.to(this.arms.l, {
-        ...pose.l,
-        duration: Math.max(0.01, durationS * 1.2),
-        ease: 'sine.inOut',
-      });
-      gsap.to(this.arms.r, {
-        ...pose.r,
-        duration: Math.max(0.01, durationS * 1.2),
-        ease: 'sine.inOut',
-      });
-    }
-    this.buildSymbols();
+  private updateExpression(dt: number): void {
+    this.frame = this.machine.update(dt);
+    if (this.frame.changed && this.rnd.chance(0.4)) this.face.triggerBlink();
+    this.symbols.set(this.frame.symbol, this.frame.intensity);
+    this.face.setRestGaze(this.frame.params.gazeX, this.frame.params.gazeY);
   }
 
-  private flashSymbol(sym: ExpressionSymbol, seconds: number): void {
-    const prev = this.symbol;
-    this.symbol = sym;
-    this.buildSymbols();
-    setTimeout(() => {
-      if (this.destroyed) return;
-      this.symbol = prev === sym ? EXPRESSIONS[this.expression].symbol : prev;
-      this.buildSymbols();
-    }, seconds * 1000);
+  private readonly postureCache = new Map<string, Pose>();
+
+  private cachedPostureTarget(posture: Posture): Pose {
+    const key = `${posture}:${this.bodyView}:${this.lantern?.hand ?? ''}`;
+    let p = this.postureCache.get(key);
+    if (!p) {
+      p = this.postureTarget(posture);
+      this.postureCache.set(key, p);
+    }
+    return p;
   }
 
-  private update(dt: number): void {
-    if (this.destroyed) return;
-    this.elapsed += dt;
-    const t = this.elapsed;
-    const ms = this.deps.quality.motionScale;
-    const p = this.params;
+  private postureTarget(posture: Posture): Pose {
+    const p = createPose(STAND);
+    // Postures are authored with `r` as the main arm (front view); turned views use the near arm.
+    applyPartial(
+      p,
+      VIEW_YAW[this.bodyView] < 0.05 ? POSTURES[posture] : mirrorArms(POSTURES[posture]),
+    );
+    if (this.lantern) applyPartial(p, lanternArm(this.lantern.hand));
+    return p;
+  }
 
-    // Breathing and idle sway.
-    const breath = Math.sin(t * 1.7);
-    this.upperGroup.scale.y = 1 + 0.012 * breath * ms - this.motion.squash;
-    this.upperGroup.scale.x = 1 + this.motion.squash * 0.6;
-    let fidgetY = 0;
-    let fidgetRot = 0;
-    if (this.fidget === 'foot_tap') fidgetY = Math.max(0, Math.sin(t * 7)) * -1.5 * ms;
-    if (this.fidget === 'bounce') fidgetY = -Math.abs(Math.sin(t * 3.2)) * 3 * ms;
-    if (this.fidget === 'shake') fidgetRot = Math.sin(t * 13) * 0.012 * this.intensity * ms;
-    this.figure.y = this.motion.bodyY + fidgetY;
-    this.figure.x = this.motion.x;
-    this.figure.rotation = this.motion.bodyRot + p.lean + fidgetRot;
-    this.head.rotation = p.tilt + this.motion.headRot + Math.sin(t * 0.6) * 0.025 * ms;
-    this.head.y = this.neckTop + this.motion.nod * 26 + breath * 0.6 * ms;
-    this.head.skew.x = this.motion.nod * 0.1;
+  private mainSide(def: GestureDef | null, requested?: LimbSide): LimbSide {
+    if (requested) return requested;
+    // Screen-directed gestures use the screen-right arm in front and three-quarter views (it does
+    // not cross the body) and the near arm in profile.
+    let main: LimbSide = this.bodyView === 'side' ? 'l' : 'r';
+    if (def && !def.holdsItem && this.held.has(main) && !this.held.has(main === 'l' ? 'r' : 'l'))
+      main = main === 'l' ? 'r' : 'l';
+    const other: LimbSide = main === 'l' ? 'r' : 'l';
+    if (def?.holdsItem && !this.held.has(main) && this.held.has(other)) main = other;
+    if (def?.name === 'hold_lantern' && this.lantern) main = this.lantern.hand;
+    return main;
+  }
 
-    // Blink every 2-6 s (120 ms close/open).
-    this.nextBlink -= dt;
-    if (this.nextBlink <= 0) {
-      this.blink += dt / 0.06;
-      if (this.blink >= 2) {
-        this.blink = 0;
-        this.nextBlink = this.rnd.range(2.2, 5.8);
+  private startGesture(def: GestureDef, options: PlayOptions): Promise<void> {
+    if (this.destroyed) return Promise.resolve();
+    const prev = this.gesture;
+    if (prev) prev.resolve?.();
+    this.beginCrossfade();
+    const main = this.mainSide(def, options.hand);
+    compileGesture(def, main);
+    if (def.expression) {
+      const base = this.machine.baseExpression;
+      if (base === 'neutral' || base === 'calm' || base === 'pleased' || base === 'happy')
+        this.machine.flash(def.expression, def.duration * 0.9);
+    }
+    if (def.sparkle) this.machine.flash('delighted', def.duration);
+    this.idle = null;
+    return new Promise((resolve) => {
+      this.gesture = {
+        def,
+        main,
+        elapsed: 0,
+        lastT: 0,
+        holding: def.loop !== undefined,
+        releaseT: 0,
+        resolve,
+        onEvent: options.onEvent,
+      };
+      if (motionSettings.timeScale <= 0) this.advance(0);
+    });
+  }
+
+  private toIdle(): Promise<void> {
+    const pending: Promise<void>[] = [];
+    if (this.gesture) {
+      if (this.gesture.def.loop) pending.push(this.stopGesture());
+      else {
+        this.beginCrossfade();
+        this.gesture.resolve?.();
+        this.gesture = null;
       }
     }
-    const blinkAmt = this.blink <= 0 ? 0 : this.blink < 1 ? this.blink : 2 - this.blink;
-
-    // Lip sync: syllable-like mouth motion at ~7-9 Hz with natural irregularity.
-    if (this.talking) {
-      const syl = 0.5 + 0.5 * Math.sin(t * 17.3) * Math.sin(t * 5.1 + 1.3);
-      this.talk += (clamp(syl * 0.85, 0, 0.75) - this.talk) * Math.min(1, dt * 18);
-    } else {
-      this.talk += (0 - this.talk) * Math.min(1, dt * 12);
+    if (this.loco) pending.push(this.stopLocomotion());
+    if (pending.length === 0) {
+      this.beginCrossfade();
+      return motionSettings.timeScale <= 0
+        ? Promise.resolve()
+        : new Promise((r) => setTimeout(r, 300 * motionSettings.timeScale));
     }
+    return Promise.all(pending).then(() => undefined);
+  }
+
+  private newLoco(gait: Gait, distance: number | null, moveView: boolean): Locomotion {
+    return {
+      gait,
+      phase: 0,
+      weight: 0,
+      remaining: distance,
+      moveView,
+      stopping: false,
+      resolve: null,
+      fadeOut: false,
+      restoreView: false,
+    };
+  }
+
+  private travelInternal(gait: Gait, into: boolean): Promise<void> {
+    this.loco?.resolve?.();
+    this.turnTo('side', into);
+    if (into) {
+      this.walkOffset = -DEFAULT_SPAN;
+      this.view.alpha = 1;
+      this.prevWorldX = this.worldX();
+    }
+    return new Promise((resolve) => {
+      const l = this.newLoco(gait, DEFAULT_SPAN, false);
+      l.resolve = resolve;
+      l.fadeOut = !into;
+      l.restoreView = into;
+      if (into) l.weight = 1;
+      this.loco = l;
+      this.settleInstantly();
+    });
+  }
+
+  /** With motion disabled (timeScale 0) run the few frames a move needs to complete now. */
+  private settleInstantly(): void {
+    if (motionSettings.timeScale > 0) return;
+    for (let i = 0; i < 4 && this.loco; i++) this.advance(0);
+  }
+
+  private beginCrossfade(): void {
+    copyPose(this.snapshot, this.pose);
+    this.crossfade = 0;
+  }
+
+  private turnTo(view: RigView, immediate = false): void {
+    if (immediate || this.builtView === null || motionSettings.timeScale <= 0) {
+      this.turn = null;
+      this.bodyView = view;
+      this.buildView(view);
+      return;
+    }
+    if (view === this.bodyView && !this.turn) return;
+    this.turn = { t: 0, to: view };
+  }
+
+  private updateTurn(dt: number): void {
+    if (!this.turn) {
+      this.figure.scale.x = 1;
+      return;
+    }
+    const dur = 0.2;
+    this.turn.t += dt / Math.max(0.05, motionSettings.timeScale || 1);
+    const u = Math.min(1, this.turn.t / dur);
+    if (u >= 0.5 && this.bodyView !== this.turn.to) {
+      this.bodyView = this.turn.to;
+      this.buildView(this.bodyView);
+    }
+    this.figure.scale.x = 1 - 0.16 * Math.sin(Math.PI * u);
+    if (u >= 1) {
+      this.turn = null;
+      this.figure.scale.x = 1;
+    }
+  }
+
+  private composePose(dt: number): void {
+    const ms = this.deps.quality.motionScale;
+    const t = this.elapsed;
+    const base = this.basePose;
+    // Expression posture, eased.
+    const target = this.cachedPostureTarget(this.frame.posture);
+    const k = dt > 0 ? 1 - Math.exp(-dt * 7) : 0;
+    for (const key of POSE_KEYS) this.armBase[key] += (target[key] - this.armBase[key]) * k;
+    copyPose(base, this.armBase);
+    const fr = this.frame;
+    base.lean += fr.params.lean;
+    base.headTilt += fr.params.tilt;
+    // Breathing and sway.
+    base.pelvisShift += Math.sin(t * 0.55) * 1.2 * ms;
+    base.headTilt += Math.sin(t * 0.6) * 0.022 * ms;
+    if (fr.fidget === 'shake') base.lean += Math.sin(t * 13) * 0.011 * fr.intensity * ms;
+    if (fr.fidget === 'bounce') base.rootY -= Math.abs(Math.sin(t * 3.2)) * 3 * ms;
+    if (fr.fidget === 'foot_tap' && !this.loco && this.gesture?.def.name !== 'foot_tap') {
+      const tap = Math.max(0, Math.sin(t * Math.PI * 2 * 1.4));
+      const m: LimbSide = VIEW_YAW[this.bodyView] < 0.05 ? 'r' : 'l';
+      base[m === 'r' ? 'rAnkle' : 'lAnkle'] = 0.4 * tap * Math.max(0.4, ms);
+      base[m === 'r' ? 'rKnee' : 'lKnee'] = 0.08;
+    }
+    // Talking: small emphasis nods.
+    base.headNod += this.faceState.envelope * 0.035 * ms;
+    // Look-at head turn.
+    base.headTurn += this.headTurnLook;
+    base.headNod += this.headNodLook;
+    // Idle flourishes.
+    this.updateIdle(dt, base);
+
+    const out = this.pose;
+    copyPose(out, base);
+    // Locomotion.
+    const l = this.loco;
+    if (l) {
+      const g = this.gesture;
+      const armsFree = !g?.def.keys.some((kf) => 'mAbd' in kf.pose || 'oAbd' in kf.pose);
+      const fade = dt > 0 ? dt / 0.2 : 0;
+      if (l.stopping) l.weight = Math.max(0, l.weight - fade);
+      else l.weight = Math.min(1, l.weight + fade);
+      l.phase = (l.phase + dt * GAITS[l.gait].cadence) % 1;
+      locomotionPose(out, l.phase, l.gait, l.weight, armsFree);
+    }
+    // Gesture.
+    const g = this.gesture;
+    if (g) {
+      g.elapsed += dt;
+      const kt = gestureLocalTime(g.def, g.elapsed, g.holding);
+      if (!g.holding && g.def.loop) g.releaseT += dt;
+      for (const ev of eventsBetween(g.def, g.lastT, kt)) g.onEvent?.(ev);
+      g.lastT = kt;
+      const s = sampleGesture(
+        g.def,
+        kt,
+        g.main,
+        out,
+        out,
+        g.def.loop && !g.holding ? g.releaseT : 0,
+      );
+      const prof = g.def.profile;
+      if (prof && this.bodyView === 'side')
+        for (const [ch, dv] of Object.entries(prof) as [GestureChannel, number][])
+          out[resolveChannel(ch, g.main)] += dv * s.weight;
+      if (g.def.retarget) this.retargetMain(out, g.main, s.weight);
+      if (g.def.loop && g.holding && g.resolve && g.elapsed >= g.def.loop.from) {
+        g.resolve();
+        g.resolve = null;
+      }
+      if (s.done) {
+        g.resolve?.();
+        this.gesture = null;
+      }
+    }
+    // Crossfade from the previous pose after interruptions.
+    if (this.crossfade < 1) {
+      this.crossfade = Math.min(1, this.crossfade + (dt > 0 ? dt / 0.22 : 0));
+      const w = this.crossfade * this.crossfade * (3 - 2 * this.crossfade);
+      for (const key of POSE_KEYS) {
+        const a = this.snapshot[key];
+        out[key] =
+          a +
+          (key === 'rootX' || key === 'rootY' || key === 'pelvisShift' || key === 'shoulderLift'
+            ? out[key] - a
+            : angleDelta(a, out[key])) *
+            w;
+      }
+    }
+  }
+
+  private retargetMain(p: Pose, main: LimbSide, weight: number): void {
+    const theta = VIEW_YAW[this.bodyView];
+    if (theta < 0.05 || weight <= 0) return;
+    const src = armOf(p, main);
+    const side: Side = main === 'l' ? -1 : 1;
+    const rt = retargetArm(src, side, theta);
+    setArm(p, main, {
+      abd: src.abd + angleDelta(src.abd, rt.abd) * weight,
+      flex: src.flex + angleDelta(src.flex, rt.flex) * weight,
+      twist: src.twist + angleDelta(src.twist, rt.twist) * weight,
+      elbow: src.elbow + angleDelta(src.elbow, rt.elbow) * weight,
+      wrist: src.wrist,
+    });
+  }
+
+  private updateIdle(dt: number, base: Pose): void {
+    const allowed =
+      this.spec.idleVariations !== false &&
+      !this.gesture &&
+      !this.loco &&
+      this.frame.posture === 'relaxed' &&
+      !this.face.isTalking;
+    if (!allowed) {
+      if (this.idle && dt > 0)
+        this.idle.t = Math.max(this.idle.t, IDLES[this.idle.name].duration - 0.4);
+    }
+    if (!this.idle && allowed && dt > 0) {
+      this.nextIdle -= dt;
+      if (this.nextIdle <= 0) {
+        const names: IdleName[] = ['shift_weight', 'look_around', 'clasp', 'shift_weight', 'sigh'];
+        if (this.appearance.drape !== 'none') names.push('adjust');
+        if (this.lantern || this.held.size > 0) names.splice(names.indexOf('clasp'), 1);
+        this.idle = { name: this.rnd.pick(names), t: 0, mirror: this.rnd.chance(0.5) };
+        this.nextIdle = this.rnd.range(4.5, 10);
+      }
+    }
+    const idle = this.idle;
+    if (!idle) return;
+    idle.t += dt;
+    const def = IDLES[idle.name];
+    if (idle.t >= def.duration) {
+      this.idle = null;
+      return;
+    }
+    const ramp = 0.45;
+    const u = Math.min(1, idle.t / ramp, (def.duration - idle.t) / ramp);
+    const w = u * u * (3 - 2 * u);
+    for (const key of POSE_KEYS) {
+      let v = def.pose[key];
+      if (v === undefined) continue;
+      let k2 = key;
+      if (idle.mirror) {
+        if (
+          key === 'pelvisShift' ||
+          key === 'pelvisTilt' ||
+          key === 'headTurn' ||
+          key === 'headTilt'
+        )
+          v = -v;
+        else if (key.startsWith('l') && key !== 'lean') k2 = `r${key.slice(1)}` as typeof key;
+        else if (key.startsWith('r') && key !== 'rootX' && key !== 'rootY')
+          k2 = `l${key.slice(1)}` as typeof key;
+      }
+      const isArm = ARM_KEYS.has(k2);
+      const holding =
+        isArm && (this.held.has(k2.charAt(0) as LimbSide) || this.lantern?.hand === k2.charAt(0));
+      if (holding) continue;
+      base[k2] += (v - (isArm ? base[k2] : 0)) * w;
+    }
+  }
+
+  /* ========================================== rendering ========================================= */
+
+  private applyPose(realDt: number, clockDt: number): void {
+    const p = this.pose;
+    const d = this.dims;
+    const theta = VIEW_YAW[this.bodyView];
+    const ct = Math.cos(theta);
+    const st = Math.sin(theta);
+    const ms = this.deps.quality.motionScale;
+
+    // Locomotion travel.
+    const l = this.loco;
+    if (l && clockDt > 0) {
+      const full = gaitSpeed(l.gait, d.thigh, d.shin);
+      const step = full * l.weight * clockDt;
+      if (l.remaining !== null) {
+        const move = Math.min(step, l.remaining);
+        l.remaining -= move;
+        if (l.moveView)
+          this.view.x += move * Math.sign(this.view.scale.x) * Math.abs(this.view.scale.y);
+        else this.walkOffset += move;
+        // Begin slowing so the last steps land on the mark (weight fades over 0.2 s).
+        if (l.remaining <= full * 0.1 + 0.5) l.stopping = true;
+      }
+      if (l.fadeOut && l.remaining !== null && l.remaining < 90)
+        this.view.alpha = Math.max(0, l.remaining / 90);
+      if (l.stopping && l.weight <= 0) {
+        if (l.fadeOut) {
+          this.view.alpha = 0;
+          this.walkOffset = 0;
+        }
+        if (!l.fadeOut && !l.moveView && l.remaining !== null) this.walkOffset = 0;
+        if (l.restoreView) this.turnTo(this.restingView);
+        this.loco = null;
+        l.resolve?.();
+      }
+    }
+
+    // Legs (ground-locked).
+    const legChains = (['l', 'r'] as const).map((k) => {
+      const side: Side = k === 'l' ? -1 : 1;
+      const chain = solveLeg(side, legOf(p, k), theta, d.thigh, d.shin);
+      const hip = { x: this.hipX(side, theta) + p.pelvisShift * ct, y: d.hipJointY };
+      return { k, side, chain, hip, depth: -side * d.hipJointX * st + chain.thigh.depth * 10 };
+    });
+    let lowest = Number.NEGATIVE_INFINITY;
+    for (const c of legChains) lowest = Math.max(lowest, c.hip.y + c.chain.ankle.y);
+    const grounded = this.gesture?.def.grounded !== false;
+    const gw = this.gesture && !grounded ? 1 : 0;
+    const groundOffset = d.ankleY - lowest;
+    const seatOffset = -d.hipJointY;
+    const offY = groundOffset * (1 - gw) + seatOffset * gw;
+    this.figure.x = this.walkOffset + p.rootX;
+    this.figure.y = offY + p.rootY;
+    this.figure.rotation = p.lean;
+    this.figure.scale.y = 1 - p.squash * 0.5;
+    if (!this.turn) this.figure.scale.x = 1 + p.squash * 0.4;
+
+    legChains.sort((a, b) => a.depth - b.depth);
+    legChains.forEach((c, i) => {
+      const leg = this.legs[c.k];
+      if (this.legLayer.getChildIndex(leg.root) !== i) this.legLayer.setChildIndex(leg.root, i);
+      const tint = i === 0 && st > 0.3 ? FAR_LIMB_TINT : 0xffffff;
+      if (leg.root.tint !== tint) leg.root.tint = tint;
+      leg.thigh.holder.position.set(c.hip.x, c.hip.y);
+      leg.thigh.holder.rotation = c.chain.thigh.rotation;
+      leg.thigh.holder.scale.y = Math.max(0.3, c.chain.thigh.scale);
+      leg.shin.holder.position.set(c.hip.x + c.chain.knee.x, c.hip.y + c.chain.knee.y);
+      leg.shin.holder.rotation = c.chain.shin.rotation;
+      leg.shin.holder.scale.y = Math.max(0.3, c.chain.shin.scale);
+      const ankle = legOf(p, c.k).ankle;
+      leg.foot.holder.position.set(c.hip.x + c.chain.ankle.x, c.hip.y + c.chain.ankle.y);
+      leg.foot.holder.rotation = -ankle * st;
+      const lift = Math.max(0, ankle) * ct;
+      leg.foot.holder.scale.y = 1 - 0.45 * lift;
+    });
+    // Skirts swing with the legs.
+    if (d.skirt) {
+      const lA = legChains.find((c) => c.k === 'l')?.chain;
+      const rA = legChains.find((c) => c.k === 'r')?.chain;
+      const avg = lA && rA ? (lA.ankle.x + rA.ankle.x) / 2 : 0;
+      const spread = lA && rA ? Math.abs(lA.ankle.x - rA.ankle.x) : 0;
+      this.lower.skew.x = clamp(-avg / 260, -0.25, 0.25);
+      this.lower.scale.x = 1 + Math.max(0, spread - 20) * 0.0035;
+    } else {
+      this.lower.skew.x = 0;
+      this.lower.scale.x = 1;
+    }
+    this.lower.x = p.pelvisShift * ct;
+
+    // Upper body.
+    const breath = Math.sin(this.elapsed * 1.7);
+    this.upper.rotation = p.spine * st + p.pelvisTilt * ct * 0.6;
+    this.upper.scale.y = 1 + 0.012 * breath * ms - p.spine * ct * 0.05;
+    this.upper.x = p.pelvisShift * ct * 0.7;
+    this.head.rotation = p.headTilt;
+    this.head.y = d.neckTop + p.headNod * 26 + breath * 0.6 * ms - p.shoulderLift * 0.3;
+    this.head.skew.x = p.headNod * 0.1;
+
+    // Head view follows body yaw + head turn.
+    const yaw = theta + p.headTurn;
+    const hv = viewForYaw(yaw);
+    const mirror = yaw < 0 && hv !== 'front';
+    if (!this.headView || this.headView.view !== hv || this.headView.mirror !== mirror) {
+      this.headView = { view: hv, mirror };
+      this.buildHead(hv);
+    }
+    this.head.scale.x = mirror ? -1 : 1;
+    const featureYaw = mirror ? -yaw : yaw;
+    this.headFront.x = (featureYaw - VIEW_YAW[hv]) * 10;
 
     // Arms.
-    this.applyArm(this.armL, this.arms.l);
-    this.applyArm(this.armR, this.arms.r);
-    if (this.lanternHolder && this.lanternGlow) {
-      const lp = this.armL.foreG.toGlobal({ x: 0, y: F_LEN + 6 });
-      const local = this.figure.toLocal(lp);
-      this.lanternHolder.position.set(local.x, local.y);
-      this.lanternHolder.rotation = -this.figure.rotation * 0.5 + Math.sin(t * 1.3) * 0.05 * ms;
-      const lights = this.deps.lighting.palette.lights;
-      this.lanternGlow.alpha = 0.35 + 0.55 * lights + 0.06 * Math.sin(t * 6.3) * Math.sin(t * 2.9);
+    for (const k of ['l', 'r'] as const) this.applyArm(this.arms[k], p, theta, st);
+
+    // Held items stay upright.
+    const baseRot = this.upper.rotation + this.figure.rotation;
+    for (const [slot, h] of this.held) {
+      if (slot === 'head') {
+        h.item.rotation = h.upright ? -(this.head.rotation + baseRot) * 0.7 : 0;
+        continue;
+      }
+      const arm = this.arms[slot];
+      const handRot = arm.hand.holder.rotation;
+      h.item.scale.x = Math.abs(h.item.scale.x) * (arm.hand.holder.scale.x < 0 ? -1 : 1);
+      h.item.rotation = h.upright
+        ? -(handRot + baseRot) * (arm.hand.holder.scale.x < 0 ? -1 : 1)
+        : 0;
     }
 
-    // Rebuild the face only when something visible changed (most idle frames are skipped).
-    const gz = this.gazeOverride ?? { x: p.gazeX, y: p.gazeY };
-    const sig = `${p.browAngle.toFixed(3)}|${p.browLift.toFixed(2)}|${p.browAsym.toFixed(2)}|${p.eyeOpen.toFixed(3)}|${p.eyeSmile.toFixed(3)}|${p.pupil.toFixed(2)}|${p.smile.toFixed(3)}|${p.mouthOpen.toFixed(3)}|${p.mouthWidth.toFixed(3)}|${p.teeth.toFixed(2)}|${p.blush.toFixed(2)}|${p.flush.toFixed(2)}|${blinkAmt.toFixed(2)}|${this.talk.toFixed(2)}|${gz.x.toFixed(2)}|${gz.y.toFixed(2)}`;
-    if (sig !== this.featureSig) {
-      this.featureSig = sig;
-      this.drawFeatures(p, blinkAmt, this.talk);
+    // Secondary motion.
+    const wx = this.worldX();
+    const vel = realDt > 0 ? (wx - this.prevWorldX) / realDt : 0;
+    const acc = realDt > 0 ? (vel - this.prevVel) / realDt : 0;
+    this.prevWorldX = wx;
+    this.prevVel = vel;
+    const fVel = { x: vel, y: 0 };
+    const fAcc = { x: clamp(acc, -4000, 4000), y: 0 };
+    this.updateRopes(realDt, theta, fVel, fAcc, ms);
+    this.earL.update(realDt, fAcc.x + (this.head.rotation - p.headTilt) * 0, ms);
+    this.earR.update(realDt, fAcc.x, ms);
+    if (this.lantern) {
+      const arm = this.arms[this.lantern.hand];
+      const handRot = arm.hand.holder.rotation;
+      const mirrorHand = arm.hand.holder.scale.x < 0 ? -1 : 1;
+      const sw = this.lantern.swing.update(realDt, fAcc.x * 0.6, ms);
+      this.lantern.lamp.view.rotation = (-(handRot + baseRot) + sw) * mirrorHand;
+      this.lantern.lamp.view.scale.x = mirrorHand;
+      this.lantern.lamp.update(realDt, ms);
     }
-    this.updateSymbols(dt);
+
+    // Shadow follows the feet; shrinks in the air.
+    this.shadow.x = this.figure.x;
+    const air = Math.max(0, -p.rootY);
+    this.shadow.scale.set(1 - Math.min(0.4, air / 60), 1 - Math.min(0.4, air / 60));
   }
 
-  private applyArm(arm: Arm, s: ArmState): void {
-    const sideSign = arm.side;
-    arm.root.rotation = s.u * (sideSign === -1 ? 1 : 1);
-    arm.fore.rotation = s.f;
+  private applyArm(arm: ArmRig, p: Pose, theta: number, st: number): void {
+    const d = this.dims;
+    const a = armOf(p, arm.key);
+    const chain = solveArm(arm.side, a, theta, d.upperArm, d.foreArm);
+    const sx = this.shoulderX(arm.side, theta);
+    const sy = d.shoulderJointY - p.shoulderLift;
+    const shoulderDepth = -arm.side * d.shoulderX * st;
+    const layer: 'back' | 'front' = shoulderDepth + chain.handDepth * 0.6 < -6 ? 'back' : 'front';
+    if (arm.layer !== layer) {
+      arm.layer = layer;
+      (layer === 'back' ? this.armBack : this.armFront).addChild(arm.root);
+      arm.root.tint = layer === 'back' ? FAR_LIMB_TINT : 0xffffff;
+    }
+    arm.upper.holder.position.set(sx, sy);
+    arm.upper.holder.rotation = chain.upper.rotation;
+    arm.upper.holder.scale.y = Math.max(0.25, chain.upper.scale);
+    arm.fore.holder.position.set(sx + chain.elbow.x, sy + chain.elbow.y);
+    arm.fore.holder.rotation = chain.fore.rotation;
+    arm.fore.holder.scale.y = Math.max(0.25, chain.fore.scale);
+    const foreOnTop = chain.fore.depth >= chain.upper.depth - 0.35;
+    const want = foreOnTop ? 1 : 0;
+    if (arm.root.getChildIndex(arm.fore.holder) !== want)
+      arm.root.setChildIndex(arm.fore.holder, want);
+    arm.hand.holder.position.set(sx + chain.wrist.x, sy + chain.wrist.y);
+    // Hands are drawn for the screen-right arm (thumb towards the body centre). The screen-left arm
+    // mirrors them; in turned views both thumbs lead in the facing direction.
+    const mx = theta < 0.05 ? (arm.side < 0 ? -1 : 1) : -1;
+    arm.hand.holder.scale.x = mx;
+    arm.hand.holder.rotation = chain.fore.rotation + a.wrist * mx;
+    const shape = this.handShapeFor(arm.key);
+    if (shape !== arm.shape) {
+      arm.shape = shape;
+      this.setSegArt(
+        arm.hand,
+        this.bakePart(`hand_${shape}`, (g) => drawHand(g, this.appearance, shape)),
+      );
+    }
   }
 
-  /* -------------------------------- drawing ------------------------------------------------- */
+  private handShapeFor(key: LimbSide): HandShape {
+    if (this.lantern?.hand === key || this.held.has(key)) {
+      const g = this.gesture;
+      if (g?.def.holdsItem && g.main === key) {
+        const hs = this.gestureHands();
+        return hs.m ?? 'grip';
+      }
+      return 'grip';
+    }
+    const g = this.gesture;
+    if (g) {
+      const hs = this.gestureHands();
+      const own = g.main === key ? hs.m : hs.o;
+      if (own) return own;
+    }
+    if (this.loco?.gait === 'run' && !this.loco.stopping) return 'fist';
+    if (this.idle?.name === 'clasp') return 'relaxed';
+    const [m, o] = POSTURE_HANDS[this.frame.posture];
+    const main: LimbSide = VIEW_YAW[this.bodyView] < 0.05 ? 'r' : 'l';
+    return key === main ? m : o;
+  }
 
-  private makeArm(side: -1 | 1): Arm {
+  private gestureHands(): { m?: HandShape; o?: HandShape } {
+    const g = this.gesture;
+    if (!g) return {};
+    const kt = gestureLocalTime(g.def, g.elapsed, g.holding);
+    const out: { m?: HandShape; o?: HandShape } = {};
+    if (!g.holding && g.def.loop && g.releaseT > g.def.blendOut * 0.5) return out;
+    if (!g.def.loop && kt > g.def.duration + g.def.blendOut * 0.5) return out;
+    for (const kf of g.def.keys) {
+      if (kf.t - 0.12 > Math.min(kt, g.def.duration)) break;
+      if (kf.hands?.m) out.m = kf.hands.m;
+      if (kf.hands?.o) out.o = kf.hands.o;
+    }
+    return out;
+  }
+
+  private updateFace(dt: number): void {
+    const d = this.dims;
+    // Look-at: eyes take the target, the head turns part of the way.
+    if (this.lookTarget) {
+      const local = this.figure.toLocal(this.lookTarget, undefined, undefined, true);
+      const dx = local.x - this.head.x;
+      const dy = local.y - d.headCY;
+      const turnTarget = clamp(dx / 900, -0.38, 0.38) * (VIEW_YAW[this.bodyView] > 1.2 ? 0.3 : 1);
+      const nodTarget = clamp(dy / 1400, -0.12, 0.16);
+      const k = dt > 0 ? 1 - Math.exp(-dt * 6) : 1;
+      this.headTurnLook += (turnTarget - this.headTurnLook) * k;
+      this.headNodLook += (nodTarget - this.headNodLook) * k;
+      this.face.setLook({ x: clamp(dx / 260, -1, 1), y: clamp(dy / 260, -1, 1) });
+    } else {
+      const k = dt > 0 ? 1 - Math.exp(-dt * 4) : 1;
+      this.headTurnLook -= this.headTurnLook * k;
+      this.headNodLook -= this.headNodLook * k;
+    }
+    this.faceState = this.face.update(dt);
+    const f = this.faceState;
+    const pr = this.frame.params;
+    const yaw = VIEW_YAW[this.bodyView] + this.pose.headTurn;
+    const mirror = this.headView?.mirror ?? false;
+    const fy = mirror ? -yaw : yaw;
+    const env = f.envelope;
+    const params = env > 0.02 ? { ...pr, browLift: pr.browLift + env * 1.6 } : pr;
+    const gazeX = mirror ? -f.gazeX : f.gazeX;
+    // Redraw only when a visible value changed (quantised; most idle frames are skipped).
+    const q = this.sigScratch;
+    q[0] = Math.round(params.browAngle * 1000);
+    q[1] = Math.round(params.browLift * 100);
+    q[2] = Math.round(params.browAsym * 100);
+    q[3] = Math.round(params.eyeOpen * 1000);
+    q[4] = Math.round(params.eyeSmile * 1000);
+    q[5] = Math.round(params.pupil * 100);
+    q[6] = Math.round(params.smile * 1000);
+    q[7] = Math.round(params.mouthOpen * 1000);
+    q[8] = Math.round(params.mouthWidth * 1000);
+    q[9] = Math.round(params.teeth * 100);
+    q[10] = Math.round(params.blush * 100);
+    q[11] = Math.round(params.flush * 100);
+    q[12] = Math.round(f.blink * 100);
+    q[13] = Math.round(gazeX * 100);
+    q[14] = Math.round(f.gazeY * 100);
+    q[15] = Math.round(f.mouthOpen * 100);
+    q[16] = Math.round(f.mouthWidth * 100);
+    q[17] = Math.round(f.mouthRound * 100);
+    q[18] = VISEME_CODE[f.viseme];
+    q[19] = Math.round(fy * 1000);
+    q[20] = Math.round(this.earL.angle * 100);
+    q[21] = Math.round(this.earR.angle * 100);
+    let same = !this.sigDirty;
+    for (let k = 0; k < q.length && same; k++) if (q[k] !== this.sigLast[k]) same = false;
+    if (same) return;
+    this.sigLast.set(q);
+    this.sigDirty = false;
+    drawFeatures(
+      this.features,
+      this.appearance,
+      d,
+      params,
+      {
+        blink: f.blink,
+        gazeX,
+        gazeY: f.gazeY,
+        mouthOpen: f.mouthOpen,
+        mouthWidth: f.mouthWidth,
+        mouthRound: f.mouthRound,
+        pressed: f.viseme === 'mbp',
+      },
+      fy,
+      { l: this.earL.angle, r: this.earR.angle },
+    );
+  }
+
+  /* ========================================= building ========================================== */
+
+  private makeSeg(): Seg {
+    return { holder: new Container(), art: null };
+  }
+
+  private setSegArt(seg: Seg, art: Container): void {
+    if (seg.art) {
+      seg.art.removeFromParent();
+      seg.art.destroy({ children: true });
+    }
+    seg.art = art;
+    seg.holder.addChildAt(art, 0);
+  }
+
+  private makeArm(key: LimbSide): ArmRig {
     const root = new Container();
-    root.position.set(side * (this.sw - 3), this.shoulderY + 4);
-    const upper = new Graphics();
-    const fore = new Container();
-    fore.position.set(0, U_LEN);
-    const foreG = new Graphics();
-    fore.addChild(foreG);
-    root.addChild(upper, fore);
-    return { root, upper, fore, foreG, side };
+    root.label = `arm-${key}`;
+    const arm: ArmRig = {
+      side: key === 'l' ? -1 : 1,
+      key,
+      root,
+      upper: this.makeSeg(),
+      fore: this.makeSeg(),
+      hand: this.makeSeg(),
+      socket: new Container(),
+      shape: null,
+      layer: null,
+    };
+    arm.socket.position.set(0, 10 * this.appearance.build);
+    arm.hand.holder.addChild(arm.socket);
+    root.addChild(arm.upper.holder, arm.fore.holder, arm.hand.holder);
+    return arm;
   }
 
-  private drawShadow(dir: number, length: number, alpha: number, color: number): void {
+  private makeLeg(key: LimbSide): LegRig {
+    const root = new Container();
+    root.label = `leg-${key}`;
+    const leg: LegRig = {
+      side: key === 'l' ? -1 : 1,
+      key,
+      root,
+      thigh: this.makeSeg(),
+      shin: this.makeSeg(),
+      foot: this.makeSeg(),
+    };
+    root.addChild(leg.thigh.holder, leg.shin.holder, leg.foot.holder);
+    this.legLayer.addChild(root);
+    return leg;
+  }
+
+  private headwearHeight(): number {
+    switch (this.appearance.headwear) {
+      case 'turban':
+        return 28;
+      case 'pagri':
+        return 18;
+      case 'cap':
+      case 'topi':
+        return 10;
+      case 'pallu_head':
+        return 8;
+      default:
+        return this.appearance.hairStyle === 'bun' ? 6 : 2;
+    }
+  }
+
+  /** Bake (or fetch) a static part. */
+  private bakePart(part: string, draw: (g: Graphics) => void): Container {
+    const cache = this.deps.cache;
+    const key = `rig:${this.appearanceKey}:${part}:${this.res}`;
+    return cache.bake(
+      key,
+      () => {
+        const g = new Graphics();
+        draw(g);
+        if (cache.canBake) {
+          // Thickness is in logical (rig) units; the filter samples at the bake resolution.
+          const outline = new OutlineFilter({
+            thickness: 2.2,
+            color: OUTLINE_COLOR,
+            alpha: 0.72,
+            quality: 0.6,
+          });
+          // Filters default to resolution 1: render the outline at the bake resolution (crisp).
+          outline.resolution = this.res;
+          g.filters = [outline];
+        }
+        return g;
+      },
+      { padding: 6, resolution: this.res },
+    );
+  }
+
+  /** Bake the other views' parts in the background (one part per frame across all characters). */
+  private queuePrewarm(): void {
+    if (!this.deps.cache.canBake) return;
+    const a = this.appearance;
+    const d = this.dims;
+    for (const view of RIG_VIEWS) {
+      const theta = VIEW_YAW[view];
+      const parts: [string, (g: Graphics) => void][] = [
+        [`torso_${view}`, (g) => drawTorso(g, a, d, theta)],
+        [`lower_${view}`, (g) => drawLowerGarment(g, a, d, theta)],
+        [`foot_${view}`, (g) => drawFoot(g, a, d, theta)],
+        [`headbase_${view}`, (g) => drawHeadBase(g, a, d, theta)],
+        [`headfront_${view}`, (g) => drawHeadFront(g, a, d, theta)],
+      ];
+      for (const [part, draw] of parts)
+        PREWARM.push(() => {
+          if (!this.destroyed) this.bakePart(part, draw).destroy({ children: true });
+        });
+    }
+    for (const shape of ['open', 'fist', 'point', 'grip', 'flat'] as const)
+      PREWARM.push(() => {
+        if (!this.destroyed)
+          this.bakePart(`hand_${shape}`, (g) => drawHand(g, a, shape)).destroy({ children: true });
+      });
+  }
+
+  private buildView(view: RigView): void {
+    if (this.builtView === view) return;
+    this.builtView = view;
+    const a = this.appearance;
+    const d = this.dims;
+    const theta = VIEW_YAW[view];
+    for (const c of this.torso.removeChildren()) c.destroy({ children: true });
+    this.torso.addChild(this.bakePart(`torso_${view}`, (g) => drawTorso(g, a, d, theta)));
+    for (const c of this.lower.removeChildren()) c.destroy({ children: true });
+    const lowerArt = this.bakePart(`lower_${view}`, (g) => drawLowerGarment(g, a, d, theta));
+    // Skirts skew about the waist.
+    this.lower.pivot.set(0, d.skirt ? d.waistY : 0);
+    this.lower.y = d.skirt ? d.waistY : 0;
+    this.lower.addChild(lowerArt);
+    for (const k of ['l', 'r'] as const) {
+      const arm = this.arms[k];
+      if (!arm.upper.art) {
+        this.setSegArt(
+          arm.upper,
+          this.bakePart('upperarm', (g) => drawUpperArm(g, a, d)),
+        );
+        this.setSegArt(
+          arm.fore,
+          this.bakePart('forearm', (g) => drawForearm(g, a, d)),
+        );
+      }
+      const leg = this.legs[k];
+      if (!leg.thigh.art) {
+        this.setSegArt(
+          leg.thigh,
+          this.bakePart('thigh', (g) => drawThigh(g, a, d)),
+        );
+        this.setSegArt(
+          leg.shin,
+          this.bakePart('shin', (g) => drawShin(g, a, d)),
+        );
+      }
+      this.setSegArt(
+        leg.foot,
+        this.bakePart(`foot_${view}`, (g) => drawFoot(g, a, d, theta)),
+      );
+      // Mirror the near foot direction: feet point the way the body faces.
+      leg.foot.holder.scale.x = 1;
+    }
+    for (const r of this.ropes) {
+      r.layer = null;
+      const anchor = this.ropeAnchor(r, theta);
+      r.chain.reset(anchor.x, anchor.y);
+    }
+    this.headView = null;
+  }
+
+  private buildHead(view: RigView): void {
+    const a = this.appearance;
+    const d = this.dims;
+    const theta = VIEW_YAW[view];
+    for (const c of this.headBase.removeChildren()) c.destroy({ children: true });
+    for (const c of this.headFront.removeChildren()) c.destroy({ children: true });
+    this.headBase.addChild(this.bakePart(`headbase_${view}`, (g) => drawHeadBase(g, a, d, theta)));
+    this.headFront.addChild(
+      this.bakePart(`headfront_${view}`, (g) => drawHeadFront(g, a, d, theta)),
+    );
+    this.sigDirty = true;
+  }
+
+  private ropeTexture(id: string, draw: (g: Graphics) => void): Texture {
+    const t = this.deps.cache.texture(
+      `rig:${this.appearanceKey}:rope_${id}:${this.res}`,
+      () => {
+        const g = new Graphics();
+        draw(g);
+        return g;
+      },
+      { padding: 1, resolution: this.res },
+    );
+    return t ?? Texture.WHITE;
+  }
+
+  private addRope(
+    id: string,
+    draw: (g: Graphics) => void,
+    thickness: number,
+    anchor: { x: number; y: number; z: number },
+    frame: 'upper' | 'head',
+    length: number,
+    rest: { x: number; y: number },
+    stiffness: number,
+  ): void {
+    const segments = 5;
+    const chain = new ClothChain(
+      {
+        segments,
+        length,
+        restDir: rest,
+        stiffness,
+        damping: 0.982,
+        drag: 1.6,
+        wind: 26,
+        phase: this.rnd.range(0, 10),
+      },
+      0,
+      0,
+    );
+    const pts = chain.points.map((p) => new PixiPoint(p.x, p.y));
+    const mesh = new MeshRope({
+      texture: this.ropeTexture(id, draw),
+      points: pts,
+      textureScale: 0,
+      width: thickness,
+    });
+    mesh.label = `rope:${id}`;
+    this.ropes.push({ chain, mesh, pts, anchor, frame, layer: null });
+  }
+
+  private buildRopes(): void {
+    const a = this.appearance;
+    const d = this.dims;
+    const top = d.shoulderY;
+    switch (a.drape) {
+      case 'dupatta':
+        for (const sx of [-1, 1]) {
+          this.addRope(
+            `dupatta${sx}`,
+            (g) => drawClothStrip(g, a.drapeColor, mixColor(a.drapeColor, 0xffffff, 0.4), 15),
+            15,
+            { x: sx * (d.sw + 1), y: top + 10, z: 6 },
+            'upper',
+            d.hipY - top + 4,
+            { x: sx * 0.08, y: 1 },
+            7,
+          );
+        }
+        break;
+      case 'pallu':
+        this.addRope(
+          'pallu',
+          (g) => drawClothStrip(g, a.drapeColor, a.lowerBorder, 24),
+          24,
+          { x: d.sw * 0.82, y: top + 2, z: -d.backDepth * 0.8 },
+          'upper',
+          112 * (d.H0 / 330),
+          { x: 0.12, y: 1 },
+          5,
+        );
+        break;
+      case 'gamcha':
+        this.addRope(
+          'gamcha',
+          (g) => drawClothStrip(g, a.drapeColor, mixColor(a.drapeColor, 0xffffff, 0.55), 16),
+          16,
+          { x: -d.sw * 0.65 + 9, y: top + 20, z: d.chestDepth * 0.9 },
+          'upper',
+          48,
+          { x: 0, y: 1 },
+          8,
+        );
+        break;
+      default:
+        break;
+    }
+    if (a.headwear === 'pagri')
+      this.addRope(
+        'pagri',
+        (g) => drawClothStrip(g, a.headwearColor, mixColor(a.headwearColor, 0x000000, 0.25), 12),
+        12,
+        { x: 28, y: d.headCY - 6, z: -32 },
+        'head',
+        58,
+        { x: 0.1, y: 1 },
+        6,
+      );
+    if (a.hairStyle === 'braid')
+      this.addRope(
+        'braid',
+        (g) => drawBraidStrip(g, a.hair, 15),
+        15,
+        { x: 24, y: d.headCY + 22, z: -22 },
+        'head',
+        104,
+        { x: 0.12, y: 1 },
+        9,
+      );
+  }
+
+  private ropeAnchor(r: Rope, theta: number): { x: number; y: number; depth: number } {
+    const ct = Math.cos(theta);
+    const st = Math.sin(theta);
+    let x = r.anchor.x * ct + r.anchor.z * st;
+    let y = r.anchor.y;
+    const depth = r.anchor.z * ct - r.anchor.x * st;
+    if (r.frame === 'head') {
+      const h = this.head;
+      const lx = (x - h.pivot.x) * h.scale.x;
+      const ly = y - h.pivot.y;
+      const c = Math.cos(h.rotation);
+      const s = Math.sin(h.rotation);
+      x = h.x + lx * c - ly * s;
+      y = h.y + lx * s + ly * c;
+    }
+    return { x, y, depth };
+  }
+
+  private updateRopes(
+    dt: number,
+    theta: number,
+    vel: { x: number; y: number },
+    acc: { x: number; y: number },
+    ms: number,
+  ): void {
+    for (const r of this.ropes) {
+      const a = this.ropeAnchor(r, theta);
+      const layer: 'back' | 'front' = a.depth < -2 ? 'back' : 'front';
+      if (r.layer !== layer) {
+        r.layer = layer;
+        (layer === 'back' ? this.clothBack : this.clothFront).addChild(r.mesh);
+      }
+      r.chain.update(dt, a, vel, acc, ms);
+      r.chain.points.forEach((p, i) => {
+        const q = r.pts[i];
+        if (q) q.set(p.x, p.y);
+      });
+    }
+  }
+
+  private shoulderX(side: Side, theta: number): number {
+    return side * this.dims.shoulderX * Math.cos(theta);
+  }
+
+  private hipX(side: Side, theta: number): number {
+    return side * this.dims.hipJointX * Math.cos(theta);
+  }
+
+  private worldX(): number {
+    const sc = Math.abs(this.view.scale.y) || 1;
+    return this.view.x / sc + this.figure.x * Math.sign(this.view.scale.x || 1);
+  }
+
+  private drawShadow(): void {
     const g = this.shadow;
+    const { dir, length, alpha, color } = this.shadowParams;
     g.clear();
-    const w = this.hw * 1.5;
+    const w = this.dims.hw * 1.5;
     softShadow(g, 0, 0, w, 10, color, Math.min(0.5, alpha * 1.4));
     const len = 1 + length * 0.8;
     g.ellipse(dir * w * length * 0.5, 0, w * len, 7).fill({
@@ -580,963 +1785,38 @@ export class ProceduralCharacter implements Character {
     });
   }
 
-  private drawBody(): void {
-    const a = this.appearance;
-    const { sw, ww, hw, hipY, waistY, shoulderY, neckTop } = this;
-    const g = this.lowerG;
-    g.clear();
-    const skin = a.skin;
-    const skinShade = darken(skin, 0.18);
-
-    // Feet and chappals.
-    for (const fx of [-13, 13]) {
-      g.ellipse(fx * a.build, -3, 12, 5).fill(darken(MELA.wood, 0.25));
-      g.ellipse(fx * a.build, -6, 9, 5).fill(skin);
-      g.moveTo(fx * a.build - 6, -6)
-        .quadraticCurveTo(fx * a.build, -11, fx * a.build + 6, -6)
-        .stroke({ width: 2.4, color: darken(MELA.wood, 0.1) });
-    }
-
-    const lc = a.lowerColor;
-    const lb = a.lowerBorder;
-    const ankle = -10;
-    switch (a.lower) {
-      case 'sari':
-      case 'lehenga': {
-        g.moveTo(-ww, waistY)
-          .bezierCurveTo(-hw * 1.05, hipY, -hw * 1.2, -60, -hw * 1.32, ankle)
-          .quadraticCurveTo(0, ankle + 6, hw * 1.32, ankle)
-          .bezierCurveTo(hw * 1.2, -60, hw * 1.05, hipY, ww, waistY)
-          .closePath()
-          .fill(
-            vgrad([
-              [0, lighten(lc, 0.08)],
-              [1, darken(lc, 0.18)],
-            ]),
-          );
-        // Front pleats.
-        for (let k = -3; k <= 3; k++) {
-          g.moveTo(k * 2.5, hipY + 10)
-            .quadraticCurveTo(k * 5, -70, k * 7.5, ankle + 2)
-            .stroke({ width: 1.6, color: darken(lc, 0.28), alpha: 0.7 });
-        }
-        // Border band with motif dots.
-        g.moveTo(-hw * 1.3, ankle - 2)
-          .quadraticCurveTo(0, ankle + 4, hw * 1.3, ankle - 2)
-          .lineTo(hw * 1.24, ankle - 16)
-          .quadraticCurveTo(0, ankle - 10, -hw * 1.24, ankle - 16)
-          .closePath()
-          .fill(lb);
-        for (let k = -5; k <= 5; k++)
-          g.circle(k * hw * 0.22, ankle - 8, 1.8).fill(lighten(lb, 0.5));
-        break;
-      }
-      case 'nauvari': {
-        for (const sx of [-1, 1]) {
-          g.moveTo(0, hipY + 6)
-            .lineTo(sx * hw * 1.05, waistY + 4)
-            .quadraticCurveTo(sx * hw * 1.25, -80, sx * hw * 0.85, -40)
-            .lineTo(sx * hw * 0.2, -40)
-            .closePath()
-            .fill(
-              vgrad([
-                [0, lc],
-                [1, darken(lc, 0.2)],
-              ]),
-            );
-          g.moveTo(sx * hw * 0.85, -40)
-            .lineTo(sx * hw * 0.2, -40)
-            .stroke({ width: 6, color: lb });
-          // Calves.
-          g.roundRect(sx * 13 * a.build - 6, -42, 12, 36, 5).fill(skin);
-        }
-        g.moveTo(-hw * 0.9, waistY + 10)
-          .lineTo(hw * 0.5, -60)
-          .stroke({ width: 5, color: lb, alpha: 0.9 });
-        break;
-      }
-      case 'mekhela': {
-        g.moveTo(-ww, waistY)
-          .lineTo(-hw * 1.1, ankle)
-          .lineTo(hw * 1.1, ankle)
-          .lineTo(ww, waistY)
-          .closePath()
-          .fill(
-            vgrad([
-              [0, lc],
-              [1, darken(lc, 0.15)],
-            ]),
-          );
-        g.rect(-hw * 1.08, ankle - 30, hw * 2.16, 16).fill(lb);
-        for (let k = -4; k <= 4; k++) {
-          const x = k * hw * 0.24;
-          g.poly([x - 4, ankle - 22, x, ankle - 28, x + 4, ankle - 22, x, ankle - 16]).fill(
-            lighten(lb, 0.55),
-          );
-        }
-        g.rect(-hw * 1.1, ankle - 8, hw * 2.2, 5).fill(lb);
-        break;
-      }
-      case 'dhoti': {
-        for (const sx of [-1, 1])
-          g.roundRect(sx * 13 * a.build - 6.5, -60, 13, 56, 6).fill(skinShade);
-        g.moveTo(-ww, waistY)
-          .bezierCurveTo(-hw * 1.15, hipY, -hw * 1.2, -80, -hw * 1.05, -52)
-          .lineTo(-4, -64)
-          .lineTo(4, -64)
-          .lineTo(hw * 1.05, -52)
-          .bezierCurveTo(hw * 1.2, -80, hw * 1.15, hipY, ww, waistY)
-          .closePath()
-          .fill(
-            vgrad([
-              [0, lc],
-              [1, darken(lc, 0.12)],
-            ]),
-          );
-        for (let k = -2; k <= 2; k++)
-          g.moveTo(k * 3, hipY + 4)
-            .quadraticCurveTo(k * 2, -90, k * 1.5, -64)
-            .stroke({ width: 1.5, color: darken(lc, 0.25) });
-        g.moveTo(-hw * 1.05, -52)
-          .lineTo(-4, -64)
-          .stroke({ width: 3, color: lb });
-        g.moveTo(hw * 1.05, -52)
-          .lineTo(4, -64)
-          .stroke({ width: 3, color: lb });
-        break;
-      }
-      case 'mundu': {
-        g.moveTo(-ww, waistY)
-          .lineTo(-hw * 1.08, ankle)
-          .lineTo(hw * 1.08, ankle)
-          .lineTo(ww, waistY)
-          .closePath()
-          .fill(
-            vgrad([
-              [0, lc],
-              [1, darken(lc, 0.12)],
-            ]),
-          );
-        g.rect(-hw * 1.08, ankle - 12, hw * 2.16, 7).fill(lb);
-        g.moveTo(hw * 0.35, waistY + 2)
-          .lineTo(hw * 0.45, ankle)
-          .stroke({ width: 5, color: lb });
-        break;
-      }
-      case 'salwar': {
-        for (const sx of [-1, 1]) {
-          g.moveTo(sx * 2, hipY)
-            .quadraticCurveTo(sx * hw * 1.35, -70, sx * hw * 0.65, -12)
-            .lineTo(sx * hw * 0.2, -12)
-            .quadraticCurveTo(sx * 6, -60, sx * 2, hipY)
-            .fill(
-              vgrad([
-                [0, lc],
-                [1, darken(lc, 0.15)],
-              ]),
-            );
-          g.roundRect(sx * hw * 0.42 - 9, -16, 18, 7, 3).fill(lb);
-        }
-        break;
-      }
-      case 'pants': {
-        for (const sx of [-1, 1]) {
-          g.moveTo(sx * 1, waistY + 6)
-            .lineTo(sx * hw, waistY + 6)
-            .lineTo(sx * (hw * 0.62), -8)
-            .lineTo(sx * 4, -8)
-            .closePath()
-            .fill(
-              vgrad([
-                [0, lc],
-                [1, darken(lc, 0.2)],
-              ]),
-            );
-          g.moveTo(sx * hw * 0.55, hipY)
-            .lineTo(sx * hw * 0.45, -12)
-            .stroke({ width: 1.2, color: lighten(lc, 0.2), alpha: 0.5 });
-        }
-        break;
-      }
-    }
-
-    // Torso + top garment.
-    const t = this.torsoG;
-    t.clear();
-    const uc = a.upperColor;
-    const trim = a.upperTrim;
-    const top = shoulderY;
-    const neckW = 9;
-    let hemY = waistY + 4;
-    let hemHalf = ww * 1.04;
-    if (a.upper === 'kurta') {
-      hemY = hipY + 46;
-      hemHalf = hw * 1.18;
-    } else if (a.upper === 'kurta_long' || a.upper === 'kameez') {
-      hemY = -72;
-      hemHalf = hw * (a.upper === 'kameez' ? 1.38 : 1.25);
-    } else if (a.upper === 'shirt' || a.upper === 'vest_shirt') {
-      hemY = hipY + 14;
-      hemHalf = hw * 1.06;
-    }
-    // Neck.
-    t.roundRect(-neckW, neckTop - 6, neckW * 2, shoulderY - neckTop + 14, 6).fill(skinShade);
-    t.moveTo(-sw - 1, top + 12)
-      .bezierCurveTo(-sw - 2, top - 1, -sw + 5, top - 7, -sw + 15, top - 7)
-      .lineTo(-neckW - 3, top - 8)
-      .quadraticCurveTo(0, top + (a.upper === 'blouse' ? 12 : 4), neckW + 3, top - 8)
-      .lineTo(sw - 15, top - 7)
-      .bezierCurveTo(sw - 5, top - 7, sw + 2, top - 1, sw + 1, top + 12)
-      .bezierCurveTo(sw * 0.96, waistY - 30, ww * 1.02, waistY - 10, hemHalf * 0.98, hemY)
-      .quadraticCurveTo(0, hemY + 4, -hemHalf * 0.98, hemY)
-      .bezierCurveTo(-ww * 1.02, waistY - 10, -sw * 0.96, waistY - 30, -sw - 1, top + 12)
-      .closePath()
-      .fill(
-        vgrad([
-          [0, lighten(uc, 0.1)],
-          [1, darken(uc, 0.18)],
-        ]),
-      );
-    // Side shading for volume.
-    t.moveTo(sw * 0.55, top)
-      .quadraticCurveTo(sw * 0.9, waistY - 20, hemHalf * 0.9, hemY)
-      .lineTo(hemHalf * 0.98, hemY)
-      .bezierCurveTo(ww, waistY - 10, sw, waistY - 30, sw, top + 6)
-      .closePath()
-      .fill({
-        color: 0x000000,
-        alpha: 0.1,
-      });
-    // Neckline trim.
-    t.moveTo(-neckW - 3, top - 7)
-      .quadraticCurveTo(0, top + (a.upper === 'blouse' ? 12 : 4), neckW + 3, top - 7)
-      .stroke({ width: 3, color: trim });
-    if (a.upper === 'blouse' && a.drape !== 'pallu' && a.drape !== 'chador') {
-      // Midriff band (covered by the pallu/chador when present).
-      t.rect(-ww * 0.95, waistY - 14, ww * 1.9, 10).fill(skinShade);
-      t.moveTo(-ww * 0.95, waistY - 14)
-        .lineTo(ww * 0.95, waistY - 14)
-        .stroke({ width: 2.5, color: trim });
-    }
-    if (a.upper === 'kurta' || a.upper === 'kurta_long' || a.upper === 'kameez') {
-      t.moveTo(0, top + 2)
-        .lineTo(0, top + 40)
-        .stroke({ width: 2, color: darken(uc, 0.25) });
-      for (let k = 0; k < 4; k++) t.circle(0, top + 10 + k * 9, 1.8).fill(trim);
-      t.moveTo(-hemHalf * 0.98, hemY)
-        .quadraticCurveTo(0, hemY + 4, hemHalf * 0.98, hemY)
-        .stroke({ width: 4, color: trim });
-      if (a.upper === 'kameez') {
-        for (let k = -3; k <= 3; k++) t.circle(k * 5, top + 6 + Math.abs(k) * 1.5, 1.8).fill(trim);
-      }
-    }
-    if (a.upper === 'shirt' || a.upper === 'vest_shirt') {
-      t.poly([-neckW - 3, top - 7, -2, top + 8, -neckW - 10, top + 2]).fill(lighten(uc, 0.2));
-      t.poly([neckW + 3, top - 7, 2, top + 8, neckW + 10, top + 2]).fill(lighten(uc, 0.2));
-      t.moveTo(0, top + 6)
-        .lineTo(0, hemY)
-        .stroke({ width: 1.5, color: darken(uc, 0.2) });
-      for (let k = 0; k < 5; k++) t.circle(2.5, top + 14 + k * 14, 1.6).fill(darken(uc, 0.3));
-      if (a.upper === 'vest_shirt') {
-        for (const sx of [-1, 1]) {
-          t.moveTo(sx * 3, top + 6)
-            .lineTo(sx * (sw - 6), top + 2)
-            .bezierCurveTo(
-              sx * sw * 0.96,
-              waistY - 20,
-              sx * ww,
-              waistY,
-              sx * hemHalf * 0.95,
-              hemY - 2,
-            )
-            .lineTo(sx * 6, hemY + 2)
-            .closePath()
-            .fill(trim);
-        }
-      }
-    }
-
-    // Drape.
-    const d = this.drapeG;
-    d.clear();
-    const dc = a.drapeColor;
-    switch (a.drape) {
-      case 'pallu':
-        d.moveTo(-ww * 1.05, waistY + 18)
-          .lineTo(-ww * 0.2, waistY + 24)
-          .lineTo(sw * 0.9, top + 2)
-          .lineTo(sw * 0.25, top - 6)
-          .closePath()
-          .fill(
-            vgrad([
-              [0, lighten(dc, 0.1)],
-              [1, darken(dc, 0.12)],
-            ]),
-          );
-        d.moveTo(-ww * 0.2, waistY + 24)
-          .lineTo(sw * 0.9, top + 2)
-          .stroke({ width: 6, color: a.lowerBorder });
-        for (let k = 1; k < 4; k++)
-          d.moveTo(-ww + k * 8, waistY + 18)
-            .lineTo(sw * 0.3 + k * 9, top - 2)
-            .stroke({ width: 1.2, color: darken(dc, 0.3), alpha: 0.5 });
-        break;
-      case 'chador':
-        d.moveTo(ww * 1.05, waistY + 10)
-          .lineTo(ww * 0.25, waistY + 16)
-          .lineTo(-sw * 0.9, top + 2)
-          .lineTo(-sw * 0.2, top - 6)
-          .closePath()
-          .fill(dc);
-        d.moveTo(ww * 0.25, waistY + 16)
-          .lineTo(-sw * 0.9, top + 2)
-          .stroke({ width: 7, color: a.lowerBorder });
-        for (let k = 0; k < 5; k++) {
-          const tt = (k + 0.5) / 5;
-          const x = ww * 0.25 + (-sw * 0.9 - ww * 0.25) * tt;
-          const y = waistY + 16 + (top + 2 - waistY - 16) * tt;
-          d.poly([x - 3, y + 6, x, y + 1, x + 3, y + 6]).fill(lighten(a.lowerBorder, 0.4));
-        }
-        break;
-      case 'dupatta':
-        d.moveTo(-sw + 2, top + 2)
-          .quadraticCurveTo(0, top + 46, sw - 2, top + 2)
-          .lineTo(sw + 2, top + 14)
-          .quadraticCurveTo(0, top + 60, -sw - 2, top + 14)
-          .closePath()
-          .fill(dc);
-        for (const sx of [-1, 1])
-          d.roundRect(sx * (sw + 2) - 7, top + 6, 14, -top + hipY - 6, 6).fill(darken(dc, 0.12));
-        d.moveTo(-sw - 2, top + 14)
-          .quadraticCurveTo(0, top + 60, sw + 2, top + 14)
-          .stroke({ width: 2.5, color: lighten(dc, 0.35) });
-        break;
-      case 'gamcha': {
-        d.roundRect(-sw * 0.65, top - 4, 18, 70, 6).fill(dc);
-        for (let k = 0; k < 7; k++)
-          d.moveTo(-sw * 0.65, top + 6 + k * 9)
-            .lineTo(-sw * 0.65 + 18, top + 6 + k * 9)
-            .stroke({ width: 1.5, color: lighten(dc, 0.5), alpha: 0.8 });
-        for (let k = 0; k < 2; k++)
-          d.moveTo(-sw * 0.65 + 6 + k * 6, top - 4)
-            .lineTo(-sw * 0.65 + 6 + k * 6, top + 66)
-            .stroke({ width: 1.5, color: lighten(dc, 0.5), alpha: 0.8 });
-        break;
-      }
-      case 'shawl':
-        d.moveTo(-sw - 6, top + 22)
-          .quadraticCurveTo(-sw, top - 8, 0, top - 2)
-          .quadraticCurveTo(sw, top - 8, sw + 6, top + 22)
-          .lineTo(sw * 0.55, top + 48)
-          .quadraticCurveTo(0, top + 30, -sw * 0.55, top + 48)
-          .closePath()
-          .fill(
-            vgrad([
-              [0, lighten(dc, 0.1)],
-              [1, darken(dc, 0.15)],
-            ]),
-          );
-        for (let k = -6; k <= 6; k++)
-          d.moveTo(k * 5, top + 34 + Math.abs(k) * 1.6)
-            .lineTo(k * 5, top + 40 + Math.abs(k) * 1.6)
-            .stroke({ width: 1.4, color: lighten(dc, 0.4) });
-        break;
-      case 'none':
-        break;
-    }
-
-    this.drawArm(this.armL);
-    this.drawArm(this.armR);
-  }
-
-  private drawArm(arm: Arm): void {
-    const a = this.appearance;
-    const sleeveFull = a.upper !== 'blouse' && a.upper !== 'vest_shirt';
-    const sleeve = a.upper === 'vest_shirt' ? a.upperColor : a.upperColor;
-    const skin = a.skin;
-    const w = 13 * a.build;
-    const u = arm.upper;
-    u.clear();
-    u.roundRect(-w / 2, -4, w, U_LEN + 8, w / 2).fill(skin);
-    const sleeveLen = sleeveFull
-      ? U_LEN + 4
-      : a.upper === 'vest_shirt'
-        ? U_LEN * 0.55
-        : U_LEN * 0.42;
-    u.roundRect(-w / 2 - 1.5, -6, w + 3, sleeveLen + 6, w / 2).fill(darken(sleeve, 0.05));
-    u.moveTo(-w / 2 - 1.5, sleeveLen - 1)
-      .lineTo(w / 2 + 1.5, sleeveLen - 1)
-      .stroke({ width: 2.5, color: a.upperTrim });
-    const f = arm.foreG;
-    f.clear();
-    const fw = w * 0.92;
-    f.roundRect(-fw / 2, -4, fw, F_LEN + 4, fw / 2).fill(skin);
-    if (sleeveFull) {
-      f.roundRect(-fw / 2 - 1.5, -6, fw + 3, F_LEN - 4, fw / 2).fill(darken(sleeve, 0.08));
-      f.moveTo(-fw / 2 - 1.5, F_LEN - 10)
-        .lineTo(fw / 2 + 1.5, F_LEN - 10)
-        .stroke({ width: 2.5, color: a.upperTrim });
-    }
-    if (a.bangles) {
-      for (let k = 0; k < 3; k++)
-        f.moveTo(-fw / 2 - 1, F_LEN - 10 + k * 3.2)
-          .lineTo(fw / 2 + 1, F_LEN - 10 + k * 3.2)
-          .stroke({ width: 2.2, color: k === 1 ? MELA.vermilion : MELA.brass });
-    }
-    // Hand with thumb.
-    f.circle(0, F_LEN + 6, 8.5 * a.build).fill(skin);
-    f.ellipse(-arm.side * 6, F_LEN + 2, 3.5, 5).fill(skin);
-    f.circle(0, F_LEN + 6, 8.5 * a.build).stroke({
-      width: 1,
-      color: darken(skin, 0.25),
-      alpha: 0.5,
-    });
-  }
-
-  private drawHead(): void {
-    const a = this.appearance;
-    const cy = this.headCY;
-    const skin = a.skin;
-    const hb = this.hairBackG;
-    const hf = this.hairFrontG;
-    hb.clear();
-    hf.clear();
-    const hair = a.hair;
-    const hairDark = darken(hair, 0.2);
-
-    // Back hair.
-    switch (a.hairStyle) {
-      case 'bun':
-        hb.circle(0, cy - 4, 43).fill(hairDark);
-        hb.circle(0, cy - 46, 19).fill(hair);
-        hb.circle(-5, cy - 50, 7).fill({ color: lighten(hair, 0.25), alpha: 0.5 });
-        break;
-      case 'braid':
-        hb.circle(0, cy - 4, 43).fill(hairDark);
-        for (let k = 0; k < 9; k++)
-          hb.ellipse(30 + k * 1.2, cy + 26 + k * 13, 8 - k * 0.3, 8).fill(k % 2 ? hair : hairDark);
-        hb.circle(41, cy + 26 + 9 * 13, 4).fill(MELA.vermilion);
-        break;
-      case 'long_open':
-        hb.roundRect(-46, cy - 40, 92, 110, 40).fill(hairDark);
-        break;
-      case 'bob':
-        hb.roundRect(-47, cy - 44, 94, 84, 38).fill(hairDark);
-        break;
-      default:
-        break;
-    }
-    if (a.headwear === 'pallu_head') {
-      hb.moveTo(-50, cy + 40)
-        .quadraticCurveTo(-56, cy - 50, 0, cy - 56)
-        .quadraticCurveTo(56, cy - 50, 50, cy + 40)
-        .lineTo(60, cy + 80)
-        .lineTo(-60, cy + 80)
-        .closePath()
-        .fill(darken(a.headwearColor, 0.12));
-    }
-
-    // Face, ears.
-    const f = this.faceG;
-    f.clear();
-    for (const sx of [-1, 1]) {
-      f.ellipse(sx * 39, cy + 4, 8, 11).fill(darken(skin, 0.06));
-      f.ellipse(sx * 39, cy + 4, 4, 6).fill(darken(skin, 0.2));
-      if (a.earrings) {
-        f.circle(sx * 39, cy + 18, 3.2).fill(MELA.brass);
-        if (a.feminine) f.circle(sx * 39, cy + 24, 2.2).fill(MELA.brassLight);
-      }
-    }
-    f.ellipse(0, cy - 2, 39, 44).fill(skin);
-    f.ellipse(0, cy + 14, 33, 32).fill(skin);
-    // Soft forehead light and jaw shade.
-    f.ellipse(-8, cy - 22, 20, 12).fill({ color: 0xffffff, alpha: 0.08 });
-    f.ellipse(0, cy + 44, 22, 6).fill({ color: darken(skin, 0.3), alpha: 0.18 });
-
-    // Front hair / headwear.
-    const parting = a.feminine;
-    switch (a.hairStyle) {
-      case 'bun':
-      case 'braid':
-      case 'long_open':
-      case 'bob':
-      case 'short':
-        hf.moveTo(-41, cy + (a.hairStyle === 'bob' ? 18 : 2))
-          .bezierCurveTo(-46, cy - 40, -20, cy - 52, 0, cy - 50)
-          .bezierCurveTo(20, cy - 52, 46, cy - 40, 41, cy + (a.hairStyle === 'bob' ? 18 : 2))
-          .quadraticCurveTo(38, cy - 18, parting ? 24 : 30, cy - 26)
-          .quadraticCurveTo(parting ? 10 : 6, cy - 34, parting ? 0 : -18, cy - (parting ? 36 : 30))
-          .quadraticCurveTo(parting ? -10 : -30, cy - 34, -26, cy - 26)
-          .quadraticCurveTo(-38, cy - 18, -41, cy + (a.hairStyle === 'bob' ? 18 : 2))
-          .closePath()
-          .fill(hair);
-        hf.moveTo(-26, cy - 40)
-          .quadraticCurveTo(-10, cy - 50, 6, cy - 48)
-          .stroke({ width: 3, color: lighten(hair, 0.3), alpha: 0.4 });
-        if (parting && a.bindi)
-          hf.moveTo(0, cy - 36)
-            .lineTo(0, cy - 48)
-            .stroke({ width: 2, color: MELA.vermilion, alpha: 0.85 });
-        break;
-      case 'bald_sides':
-        for (const sx of [-1, 1]) {
-          hf.moveTo(sx * 41, cy + 2)
-            .quadraticCurveTo(sx * 46, cy - 24, sx * 30, cy - 34)
-            .quadraticCurveTo(sx * 36, cy - 14, sx * 36, cy + 4)
-            .closePath()
-            .fill(hair);
-        }
-        break;
-      default:
-        break;
-    }
-    const hw = a.headwearColor;
-    switch (a.headwear) {
-      case 'pagri':
-        hf.moveTo(-44, cy - 14)
-          .bezierCurveTo(-52, cy - 62, 52, cy - 62, 44, cy - 14)
-          .quadraticCurveTo(0, cy - 30, -44, cy - 14)
-          .fill(
-            vgrad([
-              [0, lighten(hw, 0.15)],
-              [1, darken(hw, 0.12)],
-            ]),
-          );
-        for (let k = 0; k < 4; k++)
-          hf.moveTo(-42 + k * 4, cy - 18 - k * 9)
-            .quadraticCurveTo(0, cy - 40 - k * 9, 42 - k * 4, cy - 18 - k * 9)
-            .stroke({ width: 2.2, color: darken(hw, 0.25), alpha: 0.7 });
-        hf.moveTo(-30, cy - 30)
-          .quadraticCurveTo(0, cy - 66, 30, cy - 44)
-          .stroke({ width: 5, color: lighten(hw, 0.25), alpha: 0.6 });
-        hf.ellipse(46, cy - 10, 7, 16).fill(darken(hw, 0.1));
-        break;
-      case 'turban':
-        hf.moveTo(-43, cy - 10)
-          .bezierCurveTo(-48, cy - 50, -20, cy - 70, 0, cy - 72)
-          .bezierCurveTo(20, cy - 70, 48, cy - 50, 43, cy - 10)
-          .quadraticCurveTo(0, cy - 26, -43, cy - 10)
-          .fill(
-            vgrad([
-              [0, lighten(hw, 0.12)],
-              [1, darken(hw, 0.15)],
-            ]),
-          );
-        hf.moveTo(-38, cy - 16)
-          .quadraticCurveTo(-6, cy - 40, 10, cy - 70)
-          .stroke({ width: 2.5, color: darken(hw, 0.3), alpha: 0.7 });
-        hf.moveTo(38, cy - 16)
-          .quadraticCurveTo(6, cy - 40, -10, cy - 70)
-          .stroke({ width: 2.5, color: darken(hw, 0.3), alpha: 0.7 });
-        break;
-      case 'cap':
-        hf.moveTo(-40, cy - 18)
-          .bezierCurveTo(-44, cy - 62, 44, cy - 62, 40, cy - 18)
-          .closePath()
-          .fill(hw);
-        hf.ellipse(0, cy - 18, 46, 9).fill(darken(hw, 0.2));
-        hf.circle(0, cy - 56, 3).fill(darken(hw, 0.25));
-        break;
-      case 'topi':
-        hf.moveTo(-36, cy - 26)
-          .lineTo(-30, cy - 48)
-          .quadraticCurveTo(0, cy - 56, 30, cy - 48)
-          .lineTo(36, cy - 26)
-          .quadraticCurveTo(0, cy - 34, -36, cy - 26)
-          .fill(hw);
-        hf.moveTo(-30, cy - 34)
-          .quadraticCurveTo(0, cy - 42, 30, cy - 34)
-          .stroke({ width: 1.5, color: darken(hw, 0.15) });
-        break;
-      case 'gajra':
-        for (let k = 0; k < 9; k++) {
-          const ang = Math.PI + (k / 8) * Math.PI;
-          hf.circle(Math.cos(ang) * 21, cy - 46 + Math.sin(ang) * 13 + 6, 4).fill(hw);
-          hf.circle(Math.cos(ang) * 21, cy - 46 + Math.sin(ang) * 13 + 6, 1.4).fill(0xf2e8a0);
-        }
-        break;
-      case 'pallu_head':
-        hf.moveTo(-46, cy + 30)
-          .quadraticCurveTo(-50, cy - 46, 0, cy - 52)
-          .quadraticCurveTo(50, cy - 46, 46, cy + 30)
-          .quadraticCurveTo(38, cy - 30, 0, cy - 34)
-          .quadraticCurveTo(-38, cy - 30, -46, cy + 30)
-          .fill(hw);
-        hf.moveTo(-40, cy - 30)
-          .quadraticCurveTo(0, cy - 44, 40, cy - 30)
-          .stroke({ width: 3, color: a.upperTrim });
-        break;
-      default:
-        break;
-    }
-
-    // Glasses.
-    const gl = this.glassesG;
-    gl.clear();
-    if (a.glasses) {
-      for (const sx of [-1, 1]) {
-        gl.circle(sx * 15, cy + 1, 11.5).stroke({ width: 2.2, color: 0x3a2a24 });
-        gl.moveTo(sx * 15 - 6, cy - 6)
-          .lineTo(sx * 15 - 2, cy - 8)
-          .stroke({ width: 1.6, color: 0xffffff, alpha: 0.6 });
-      }
-      gl.moveTo(-4, cy)
-        .quadraticCurveTo(0, cy - 3, 4, cy)
-        .stroke({ width: 2, color: 0x3a2a24 });
-      gl.moveTo(-26, cy - 1)
-        .lineTo(-38, cy - 2)
-        .stroke({ width: 2, color: 0x3a2a24 });
-      gl.moveTo(26, cy - 1)
-        .lineTo(38, cy - 2)
-        .stroke({ width: 2, color: 0x3a2a24 });
-    }
-  }
-
-  /** Eyes, brows, nose, mouth, cheeks, facial hair; redrawn every frame from parameters (cheap). */
-  private drawFeatures(p: ExpressionParams, blink: number, talk: number): void {
-    const a = this.appearance;
-    const g = this.featuresG;
-    g.clear();
-    const cy = this.headCY;
-    const skin = a.skin;
-    const ink = 0x2a1a14;
-    const browCol = a.hair === 0xd8d4d0 ? 0x9a928c : darken(a.hair, 0.1);
-    const gaze = this.gazeOverride ?? { x: p.gazeX, y: p.gazeY };
-
-    // Flush (anger) and blush (warmth): colour is an extra cue only.
-    if (p.flush > 0.01)
-      g.ellipse(0, cy - 8, 32, 26).fill({ color: 0xd83a2a, alpha: p.flush * 0.22 });
-    if (p.blush > 0.01)
-      for (const sx of [-1, 1])
-        g.ellipse(sx * 24, cy + 14, 8, 5).fill({ color: 0xf06a6a, alpha: p.blush * 0.42 });
-
-    // Stress lines on the forehead (shape cue for anger, readable without colour).
-    if (p.browAngle > 0.25) {
-      const n = p.browAngle > 0.45 ? 3 : 2;
-      for (let k = 0; k < n; k++)
-        g.moveTo(-6 + k * 6 - 3, cy - 30 - k)
-          .lineTo(-6 + k * 6 + 3, cy - 33 - k)
-          .stroke({ width: 1.6, color: darken(skin, 0.35), alpha: 0.8 });
-    }
-
-    // Beard sits under the mouth.
-    if (a.facialHair === 'beard') {
-      g.moveTo(-36, cy + 4)
-        .quadraticCurveTo(-36, cy + 52, 0, cy + 58)
-        .quadraticCurveTo(36, cy + 52, 36, cy + 4)
-        .quadraticCurveTo(30, cy + 30, 0, cy + 32)
-        .quadraticCurveTo(-30, cy + 30, -36, cy + 4)
-        .fill(a.hair);
-    } else if (a.facialHair === 'stubble') {
-      g.ellipse(0, cy + 30, 26, 16).fill({ color: darken(skin, 0.3), alpha: 0.18 });
-    }
-
-    // Eyes.
-    const open = p.eyeOpen * (1 - blink);
-    for (const sx of [-1, 1] as const) {
-      const ex = sx * 15;
-      const ey = cy + 1;
-      const ry = 9.5 * Math.max(1, p.eyeOpen);
-      if (open < 0.12) {
-        // Closed: happy closed eyes curve up (∩), blinks are flat lines.
-        const up = p.eyeSmile > 0.5 ? -4 : 1;
-        g.moveTo(ex - 8, ey + 1)
-          .quadraticCurveTo(ex, ey + up, ex + 8, ey + 1)
-          .stroke({ width: 2.8, color: ink, cap: 'round' });
-        continue;
-      }
-      g.ellipse(ex, ey, 8.2, ry).fill(0xffffff);
-      const ix = ex + gaze.x * 3;
-      const iy = ey + gaze.y * 3;
-      g.circle(ix, iy, 6.6).fill(0x4a2c1a);
-      g.circle(ix, iy, 6.6).stroke({ width: 1, color: 0x2a160c });
-      g.circle(ix, iy, 3.3 * p.pupil).fill(0x0e0806);
-      g.circle(ix - 2.2, iy - 2.6, 2.1).fill(0xffffff);
-      g.circle(ix + 2, iy + 2, 0.9).fill(0xffffff);
-      // Upper lid (skin) cut by openness and slanted by the brow angle (angry inner corners down).
-      const lidBase = ey - ry + (1 - Math.min(open, 1)) * ry * 1.7;
-      const slope = sx * -p.browAngle * 0.75;
-      const lidAt = (x: number): number => lidBase + slope * (x - ex);
-      g.poly([
-        ex - 12,
-        ey - ry - 6,
-        ex + 12,
-        ey - ry - 6,
-        ex + 12,
-        lidAt(ex + 12),
-        ex - 12,
-        lidAt(ex - 12),
-      ]).fill(skin);
-      // Lash line along the lid (follows the eye top when fully open).
-      if (open >= 0.98 && Math.abs(p.browAngle) < 0.05) {
-        openArc(g, ex, ey, 8.6, Math.PI * 1.08, Math.PI * 1.92).stroke({
-          width: 2.6,
-          color: ink,
-          cap: 'round',
-        });
-      } else {
-        g.moveTo(ex - 8.5, lidAt(ex - 8.5))
-          .lineTo(ex + 8.5, lidAt(ex + 8.5))
-          .stroke({ width: 2.6, color: ink, cap: 'round' });
-      }
-      if (a.feminine)
-        g.moveTo(ex + sx * 8, lidAt(ex + sx * 8))
-          .lineTo(ex + sx * 11, lidAt(ex + sx * 8) - 3)
-          .stroke({ width: 1.8, color: ink, cap: 'round' });
-      // Smiling eyes: cheeks push the lower lid up.
-      if (p.eyeSmile > 0.02) g.ellipse(ex, ey + ry * (1.75 - p.eyeSmile * 0.85), 11, 8).fill(skin);
-      // Elder crow's feet.
-      if (a.age > 0.6)
-        g.moveTo(ex + sx * 11, ey + 2)
-          .lineTo(ex + sx * 15, ey + 4)
-          .stroke({ width: 1.2, color: darken(skin, 0.3), alpha: 0.7 });
-    }
-
-    // Brows.
-    for (const sx of [-1, 1] as const) {
-      const ex = sx * 15;
-      const lift = p.browLift + (sx === 1 ? p.browAsym : -p.browAsym * 0.3);
-      const by = cy - 15 - lift;
-      const inner = ex - sx * 9;
-      const outer = ex + sx * 10;
-      g.moveTo(outer, by + 1)
-        .quadraticCurveTo(ex, by - 4, inner, by + p.browAngle * 14 - (p.browAngle < 0 ? 0 : 0))
-        .stroke({ width: 4.6, color: browCol, cap: 'round' });
-    }
-
-    // Nose.
-    g.moveTo(-3.5, cy + 15)
-      .quadraticCurveTo(0, cy + 19, 3.5, cy + 15)
-      .stroke({ width: 2, color: darken(skin, 0.3), cap: 'round' });
-    g.moveTo(0, cy + 4)
-      .quadraticCurveTo(-2, cy + 10, -1.5, cy + 13)
-      .stroke({ width: 1.4, color: darken(skin, 0.18), alpha: 0.7 });
-    if (a.noseRing) g.circle(-5, cy + 17, 3).stroke({ width: 1.4, color: MELA.brass });
-    if (a.bindi) g.circle(0, cy - 21, 2.8).fill(MELA.kumkum);
-    if (a.tilak) {
-      g.moveTo(0, cy - 34)
-        .lineTo(0, cy - 20)
-        .stroke({ width: 3, color: MELA.saffron });
-      g.circle(0, cy - 19, 2).fill(MELA.kumkum);
-    }
-
-    // Mouth.
-    const my = cy + 27;
-    const mw = 11 * p.mouthWidth;
-    const o = clamp(p.mouthOpen + talk * (1 - p.mouthOpen * 0.5), 0, 1);
-    const s = p.smile;
-    const lip = 0x8a3a32;
-    if (o > 0.06) {
-      const depth = 4 + o * 13;
-      g.moveTo(-mw, my - s * 1.5)
-        .quadraticCurveTo(0, my - 2 - s * 2 + (s < 0 ? 3 : 0), mw, my - s * 1.5)
-        .quadraticCurveTo(0, my + depth + s * 4, -mw, my - s * 1.5)
-        .fill(0x5a1a1c);
-      if (p.teeth > 0.3)
-        g.moveTo(-mw * 0.8, my - s * 1.2)
-          .quadraticCurveTo(0, my + 1, mw * 0.8, my - s * 1.2)
-          .lineTo(mw * 0.7, my + 2)
-          .quadraticCurveTo(0, my + 4, -mw * 0.7, my + 2)
-          .closePath()
-          .fill(0xfaf6f0);
-      g.ellipse(0, my + depth * 0.7, mw * 0.45, depth * 0.22).fill(0xd9746a);
-      g.moveTo(-mw, my - s * 1.5)
-        .quadraticCurveTo(0, my + depth + s * 4, mw, my - s * 1.5)
-        .stroke({ width: 1.6, color: lip });
-    } else {
-      g.moveTo(-mw, my - s * 2)
-        .quadraticCurveTo(0, my + s * 7, mw, my - s * 2)
-        .stroke({ width: 2.8, color: lip, cap: 'round' });
-      if (s > 0.6)
-        for (const sx of [-1, 1])
-          g.moveTo(sx * (mw + 1), my - s * 2 - 1)
-            .lineTo(sx * (mw + 3), my - s * 2 - 3)
-            .stroke({ width: 1.6, color: lip, cap: 'round' });
-    }
-    if (a.age > 0.6)
-      for (const sx of [-1, 1])
-        g.moveTo(sx * (mw + 6), my - 8)
-          .quadraticCurveTo(sx * (mw + 9), my - 2, sx * (mw + 6), my + 4)
-          .stroke({ width: 1.3, color: darken(skin, 0.28), alpha: 0.7 });
-    if (a.facialHair === 'moustache' || a.facialHair === 'beard') {
-      g.moveTo(-15, my - 3)
-        .quadraticCurveTo(-8, my - 11, 0, my - 7)
-        .quadraticCurveTo(8, my - 11, 15, my - 3)
-        .quadraticCurveTo(8, my - 5, 0, my - 4)
-        .quadraticCurveTo(-8, my - 5, -15, my - 3)
-        .fill(a.hair === 0xd8d4d0 ? 0xc8c2bc : darken(a.hair, 0.05));
-    }
-  }
-
-  /* -------------------------------- symbols -------------------------------------------------- */
-
-  private buildSymbols(): void {
-    for (const c of this.symbols.removeChildren()) c.destroy({ children: true });
-    this.symbolTime = 0;
-    const cy = this.headCY;
-    const sym = this.symbol;
-    if (sym === 'none') return;
-    const add = (g: Graphics, x: number, y: number, label: string): void => {
-      g.position.set(x, y);
-      g.label = label;
-      this.symbols.addChild(g);
-    };
-    switch (sym) {
-      case 'sweat': {
-        const g = new Graphics();
-        g.moveTo(0, -10)
-          .quadraticCurveTo(9, 4, 0, 9)
-          .quadraticCurveTo(-9, 4, 0, -10)
-          .fill(0xdff3ff)
-          .stroke({ width: 2, color: 0x2a4a6a });
-        add(g, 46, cy - 26, 'sweat');
-        break;
-      }
-      case 'vein': {
-        const count = this.intensity >= 3 ? 2 : 1;
-        for (let i = 0; i < count; i++) {
-          const g = new Graphics();
-          for (let q = 0; q < 4; q++) {
-            const ang = (q / 4) * Math.PI * 2 + Math.PI / 4;
-            const cx = Math.cos(ang) * 6;
-            const cyy = Math.sin(ang) * 6;
-            g.moveTo(cx + Math.cos(ang + 1.2) * 6, cyy + Math.sin(ang + 1.2) * 6)
-              .quadraticCurveTo(
-                cx * 0.2,
-                cyy * 0.2,
-                cx + Math.cos(ang - 1.2) * 6,
-                cyy + Math.sin(ang - 1.2) * 6,
-              )
-              .stroke({ width: 6, color: 0x2a0a0a })
-              .moveTo(cx + Math.cos(ang + 1.2) * 6, cyy + Math.sin(ang + 1.2) * 6)
-              .quadraticCurveTo(
-                cx * 0.2,
-                cyy * 0.2,
-                cx + Math.cos(ang - 1.2) * 6,
-                cyy + Math.sin(ang - 1.2) * 6,
-              )
-              .stroke({ width: 3, color: 0xe0402a });
-          }
-          add(g, i === 0 ? 30 : -34, cy - 46 + i * 6, 'vein');
-        }
-        break;
-      }
-      case 'steam': {
-        for (let i = 0; i < (this.intensity >= 3 ? 4 : 2); i++) {
-          const g = new Graphics();
-          g.circle(0, 0, 9)
-            .circle(8, -4, 7)
-            .circle(-7, -3, 6)
-            .fill({ color: 0xffffff, alpha: 0.95 })
-            .stroke({ width: 2, color: 0x6a5a5a });
-          add(g, (i % 2 === 0 ? 1 : -1) * (40 + (i >> 1) * 8), cy - 46, `steam${i}`);
-        }
-        const v = new Graphics();
-        for (let q = 0; q < 4; q++) {
-          const ang = (q / 4) * Math.PI * 2 + Math.PI / 4;
-          v.moveTo(Math.cos(ang) * 10, Math.sin(ang) * 10)
-            .lineTo(Math.cos(ang) * 4, Math.sin(ang) * 4)
-            .stroke({ width: 5, color: 0x2a0a0a })
-            .moveTo(Math.cos(ang) * 10, Math.sin(ang) * 10)
-            .lineTo(Math.cos(ang) * 4, Math.sin(ang) * 4)
-            .stroke({ width: 2.5, color: 0xe0402a });
-        }
-        add(v, 30, cy - 44, 'vein');
-        break;
-      }
-      case 'sparkle': {
-        for (let i = 0; i < 3; i++) {
-          const g = new Graphics();
-          g.poly([0, -9, 2.2, -2.2, 9, 0, 2.2, 2.2, 0, 9, -2.2, 2.2, -9, 0, -2.2, -2.2])
-            .fill(0xfff2b0)
-            .stroke({ width: 1.2, color: 0xb8862a });
-          add(g, [-66, 64, 58][i] ?? 0, cy + ([-34, -52, 18][i] ?? 0), `sparkle${i}`);
-        }
-        break;
-      }
-      case 'thought': {
-        const g = new Graphics();
-        g.circle(0, 0, 4)
-          .circle(10, -12, 6)
-          .circle(24, -28, 9)
-          .fill({ color: 0xffffff, alpha: 0.95 })
-          .stroke({ width: 2, color: 0x5a4a4a });
-        add(g, 40, cy - 40, 'thought');
-        break;
-      }
-      case 'sigh': {
-        const g = new Graphics();
-        g.circle(0, 0, 6)
-          .circle(9, -2, 5)
-          .circle(16, 1, 4)
-          .fill({ color: 0xffffff, alpha: 0.9 })
-          .stroke({ width: 1.6, color: 0x6a5a5a });
-        add(g, -30, cy + 26, 'sigh');
-        break;
-      }
-    }
-  }
-
-  private updateSymbols(dt: number): void {
-    if (this.symbols.children.length === 0) return;
-    this.symbolTime += dt;
-    const t = this.symbolTime;
-    const ms = Math.max(0.3, this.deps.quality.motionScale);
-    const cy = this.headCY;
-    for (const c of this.symbols.children) {
-      const label = c.label;
-      if (label === 'sweat') {
-        c.y = cy - 26 + ((t * 10) % 14) * ms;
-        c.alpha = 1 - ((t * 10) % 14) / 20;
-      } else if (label === 'vein') {
-        // Throb at ~1.6 Hz (well under the 3 Hz limit).
-        c.scale.set(1 + 0.12 * Math.max(0, Math.sin(t * Math.PI * 2 * 1.6)) * ms);
-      } else if (label.startsWith('steam')) {
-        const i = Number(label.slice(5));
-        const phase = (t * 0.9 + i * 0.37) % 1;
-        c.y = cy - 46 - phase * 40 * ms;
-        c.alpha = 1 - phase;
-        c.scale.set(0.6 + phase * 0.8);
-      } else if (label.startsWith('sparkle')) {
-        const i = Number(label.slice(7));
-        c.alpha = 0.5 + 0.5 * Math.sin(t * 2.4 + i * 2);
-        c.rotation = t * 0.8;
-      } else if (label === 'thought') {
-        c.y = cy - 40 + Math.sin(t * 1.5) * 3 * ms;
-      } else if (label === 'sigh') {
-        const phase = (t * 0.5) % 1;
-        c.x = -30 - phase * 30 * ms;
-        c.alpha = 1 - phase;
-      }
-    }
-  }
-
-  /* -------------------------------- lantern (guide) ------------------------------------------ */
-
   private attachLantern(): void {
-    const holder = new Container();
-    const lan = drawLantern(1.25, MELA.marigold);
-    holder.addChild(lan.view);
-    const glow = new Sprite(fxTexture(this.deps.cache, 'glow'));
+    const lamp = new HandLantern(1.05, MELA.marigold);
+    const tex = fxTexture(this.deps.cache, 'glow');
+    const glow = new Sprite(tex);
     glow.anchor.set(0.5);
     glow.blendMode = 'add';
     glow.tint = 0xffb04a;
-    const l = lan.lights[0];
-    glow.position.set(l?.x ?? 0, l?.y ?? 30);
-    glow.scale.set(((l?.r ?? 50) * 2.4) / FX_RADIUS.glow);
-    holder.addChild(glow);
-    this.lanternGlow = glow;
-    this.lanternHolder = holder;
-    this.figure.addChild(holder);
-    // Hold the lantern with a slightly bent arm.
-    this.arms.l.u = 0.35;
-    this.arms.l.f = -0.9;
+    glow.scale.set((50 * 2.4) / FX_RADIUS.glow);
+    lamp.setGlow(glow);
+    const hand: LimbSide = 'l';
+    this.arms[hand].socket.addChild(lamp.view);
+    lamp.view.position.set(0, -4);
+    this.lantern = { lamp, swing: new Pendulum(40, 2.6), hand };
+    applyPartial(this.armBase, lanternArm(hand));
   }
 }
 
-/** Build glow-friendly radial gradient (exported for the gallery swatches). */
-export const characterSwatch = (c: number): ReturnType<typeof rgrad> =>
-  rgrad([
-    [0, lighten(c, 0.4)],
-    [1, c],
-  ]);
+/** Arm posture that carries a lantern in `hand` (overrides the expression posture for that arm). */
+export function lanternArm(hand: LimbSide): PartialPose {
+  const a = { Abd: 0.32, Flex: 0.5, Twist: -0.2, Elbow: 1.0, Wrist: 0.1 };
+  const out: PartialPose = {};
+  for (const [k, v] of Object.entries(a)) out[`${hand}${k}` as keyof PartialPose] = v;
+  return out;
+}
+
+/** Swap left/right arm channels of a partial pose. */
+export function mirrorArms(p: PartialPose): PartialPose {
+  const out: PartialPose = {};
+  for (const [k, v] of Object.entries(p) as [keyof PartialPose, number][]) {
+    const m = /^([lr])(Abd|Flex|Twist|Elbow|Wrist)$/.exec(k);
+    if (m) out[`${m[1] === 'l' ? 'r' : 'l'}${m[2]}` as keyof PartialPose] = v;
+    else out[k] = v;
+  }
+  return out;
+}

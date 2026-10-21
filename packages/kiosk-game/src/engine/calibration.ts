@@ -4,7 +4,8 @@
  * The level is decided once per session from (in precedence order): retest lock (T1 level), forced
  * level (counterbalanced subsample), a11y slow-pace choice (L1, flagged), practice struggle (L1,
  * flagged), then the policy: `fixed_L2_with_L1_fallback` (pilot default) or `classifier` (rules from
- * `calibration-rules.json`). All cut-offs live in that file or in the warm-up config, never in code.
+ * `content/games/shared/calibration.json`). All cut-offs live in that file or in the warm-up config,
+ * never in code. The rules file is validated at load (fail closed on a malformed file).
  *
  * Warm-up metrics are derived from the logged warm-up events themselves (`response`, `input.hold`),
  * so the warm-up module needs no side channel and the calibration is reproducible from raw events.
@@ -16,8 +17,8 @@ import type {
   GameConfig,
   PracticeSummaryPayload,
 } from '@shriii/contracts';
+import rulesJson from '../../../../content/games/shared/calibration.json' with { type: 'json' };
 import type { CalibrationDecision } from '../core/contracts.ts';
-import rulesJson from './calibration-rules.json' with { type: 'json' };
 
 type Skill = 'tap' | 'hold' | 'choice' | 'drag';
 
@@ -29,7 +30,7 @@ export interface CalibrationCondition {
   readonly warmup_accuracy_gte?: number;
 }
 
-/** Shape of `calibration-rules.json`. */
+/** Shape of `content/games/shared/calibration.json`. */
 export interface CalibrationRules {
   readonly version: string;
   readonly default_policy: CalibrationPolicy;
@@ -49,8 +50,66 @@ export interface CalibrationRules {
   };
 }
 
-/** The bundled rules. */
-export const CALIBRATION_RULES = rulesJson as unknown as CalibrationRules;
+const LEVELS: ReadonlySet<string> = new Set(['L1', 'L2', 'L3']);
+const POLICIES: ReadonlySet<string> = new Set([
+  'fixed_L2_with_L1_fallback',
+  'classifier',
+  'forced',
+  'retest_locked',
+]);
+const CONDITION_KEYS: ReadonlySet<string> = new Set([
+  'warmup_rt_ms_lt',
+  'warmup_rt_ms_gte',
+  'warmup_accuracy_lt',
+  'warmup_accuracy_gte',
+]);
+
+/**
+ * Validate a raw calibration rules document (`content/games/shared/calibration.json`).
+ * @throws TypeError naming the first invalid path.
+ */
+export function parseCalibrationRules(raw: unknown): CalibrationRules {
+  const fail = (path: string, msg: string): never => {
+    throw new TypeError(`calibration.json${path}: ${msg}`);
+  };
+  if (raw === null || typeof raw !== 'object') return fail('', 'must be an object');
+  const r = raw as Record<string, unknown>;
+  if (typeof r.version !== 'string') fail('/version', 'must be a string');
+  if (typeof r.default_policy !== 'string' || !POLICIES.has(r.default_policy))
+    fail('/default_policy', 'unknown policy');
+  for (const k of ['fixed_level', 'fallback_level', 'slow_pace_level'] as const) {
+    if (typeof r[k] !== 'string' || !LEVELS.has(r[k] as string)) fail(`/${k}`, 'must be L1|L2|L3');
+  }
+  const w = r.warmup as Record<string, unknown> | undefined;
+  if (!w || typeof w !== 'object') return fail('/warmup', 'must be an object');
+  const sb = w.skill_blocks;
+  if (!sb || typeof sb !== 'object' || Object.values(sb).some((v) => typeof v !== 'string'))
+    fail('/warmup/skill_blocks', 'must map skills to block ids');
+  if (!Array.isArray(w.rt_blocks) || w.rt_blocks.some((v) => typeof v !== 'string'))
+    fail('/warmup/rt_blocks', 'must be a list of block ids');
+  const c = r.classifier as Record<string, unknown> | undefined;
+  if (!c || typeof c !== 'object') return fail('/classifier', 'must be an object');
+  if (!Array.isArray(c.rules)) return fail('/classifier/rules', 'must be a list');
+  c.rules.forEach((rule: unknown, i: number) => {
+    const rr = rule as { level?: unknown; when?: unknown } | null;
+    if (!rr || typeof rr.level !== 'string' || !LEVELS.has(rr.level))
+      fail(`/classifier/rules/${i}/level`, 'must be L1|L2|L3');
+    const when = rr?.when;
+    if (!when || typeof when !== 'object' || Object.keys(when).length === 0)
+      fail(`/classifier/rules/${i}/when`, 'must hold at least one condition');
+    for (const [k, v] of Object.entries(when as Record<string, unknown>)) {
+      if (!CONDITION_KEYS.has(k)) fail(`/classifier/rules/${i}/when/${k}`, 'unknown condition');
+      if (typeof v !== 'number' || !Number.isFinite(v))
+        fail(`/classifier/rules/${i}/when/${k}`, 'must be a finite number');
+    }
+  });
+  if (typeof c.otherwise !== 'string' || !LEVELS.has(c.otherwise))
+    fail('/classifier/otherwise', 'must be L1|L2|L3');
+  return raw as CalibrationRules;
+}
+
+/** The bundled rules from `content/games/shared/calibration.json` (validated at load). */
+export const CALIBRATION_RULES: CalibrationRules = parseCalibrationRules(rulesJson);
 
 /** Inputs for a calibration decision. */
 export interface CalibrationInputs {

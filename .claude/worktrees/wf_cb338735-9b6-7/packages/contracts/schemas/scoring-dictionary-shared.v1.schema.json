@@ -1,0 +1,433 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://shriii.local/contracts/scoring-dictionary-shared.v1.schema.json",
+  "title": "ScoringDictionaryShared",
+  "description": "scoring/dictionary/shared.yaml: the competency model (17 constructs) plus shared exclusion, missing-data and transformation catalogues (SCR-01).",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "$ref": "common.v1.schema.json#/$defs/minor_schema_version"
+    },
+    "document": {
+      "const": "shared"
+    },
+    "dictionary_id": {
+      "$ref": "common.v1.schema.json#/$defs/identifier"
+    },
+    "version": {
+      "$ref": "common.v1.schema.json#/$defs/semver"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["draft", "frozen", "amended"]
+    },
+    "frozen_at": {
+      "anyOf": [
+        {
+          "$ref": "common.v1.schema.json#/$defs/date_time"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "sha256": {
+      "anyOf": [
+        {
+          "$ref": "common.v1.schema.json#/$defs/sha256"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "governance_record": {
+      "anyOf": [
+        {
+          "$ref": "common.v1.schema.json#/$defs/identifier"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "construct_count": {
+      "const": 17
+    },
+    "exclusion_rules": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "title": "ExclusionRule",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "$ref": "common.v1.schema.json#/$defs/identifier"
+          },
+          "applies_to": {
+            "type": "string",
+            "enum": ["event", "trial", "session", "indicator"]
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4000
+          },
+          "when": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "title": "RuleCondition",
+              "additionalProperties": false,
+              "properties": {
+                "field": {
+                  "type": "string",
+                  "pattern": "^[a-z_][a-z0-9_.]*$"
+                },
+                "op": {
+                  "type": "string",
+                  "enum": [
+                    "eq",
+                    "ne",
+                    "lt",
+                    "lte",
+                    "gt",
+                    "gte",
+                    "in",
+                    "not_in",
+                    "is_null",
+                    "not_null"
+                  ]
+                },
+                "value": {
+                  "description": "Comparison value (omitted for is_null/not_null)."
+                }
+              },
+              "required": ["field", "op"]
+            },
+            "minItems": 1
+          }
+        },
+        "required": ["id", "applies_to", "description", "when"]
+      },
+      "minItems": 1
+    },
+    "missing_data_policies": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "title": "MissingDataPolicy",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "$ref": "common.v1.schema.json#/$defs/identifier"
+          },
+          "method": {
+            "type": "string",
+            "enum": [
+              "indicator_na",
+              "fiml",
+              "multiple_imputation",
+              "planned_missing_mcar",
+              "not_applicable"
+            ]
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4000
+          }
+        },
+        "required": ["id", "method", "description"]
+      },
+      "minItems": 1
+    },
+    "transformations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "title": "Transformation",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "$ref": "common.v1.schema.json#/$defs/identifier"
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4000
+          }
+        },
+        "required": ["id", "description"]
+      },
+      "minItems": 1
+    },
+    "constructs": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/construct"
+      },
+      "minItems": 17
+    }
+  },
+  "required": [
+    "schema_version",
+    "document",
+    "dictionary_id",
+    "version",
+    "status",
+    "frozen_at",
+    "sha256",
+    "governance_record",
+    "construct_count",
+    "exclusion_rules",
+    "missing_data_policies",
+    "transformations",
+    "constructs"
+  ],
+  "$defs": {
+    "construct": {
+      "type": "object",
+      "title": "Construct",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "$ref": "common.v1.schema.json#/$defs/construct_id"
+        },
+        "number": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 17
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "kind": {
+          "type": "string",
+          "enum": ["E", "S", "M"]
+        },
+        "tier": {
+          "type": "integer",
+          "enum": [1, 2]
+        },
+        "restricted": {
+          "type": "boolean",
+          "description": "Restricted constructs (integrity, risk) are capped at broad style or withheld."
+        },
+        "modelled_as": {
+          "type": "string",
+          "enum": ["trait_indicator", "repeated_measure_property"]
+        },
+        "definition": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        "theoretical_justification": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        "ecd": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "claim": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 4000
+            },
+            "evidence": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 4000
+            },
+            "tasks": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              },
+              "minItems": 1
+            }
+          },
+          "required": ["claim", "evidence", "tasks"]
+        },
+        "pathways": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "A": {
+              "$ref": "#/$defs/pathway_status"
+            },
+            "B": {
+              "$ref": "#/$defs/pathway_status"
+            }
+          },
+          "required": ["A", "B"]
+        },
+        "criterion_relations": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "convergent": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/criterion_relation"
+              }
+            },
+            "discriminant": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/criterion_relation"
+              }
+            },
+            "nomological": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "title": "NomologicalPrediction",
+                "additionalProperties": false,
+                "properties": {
+                  "id": {
+                    "$ref": "common.v1.schema.json#/$defs/identifier"
+                  },
+                  "prediction": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 4000
+                  },
+                  "criterion": {
+                    "type": "string",
+                    "pattern": "^[a-z0-9_]+(\\.[a-z0-9_]+)?$",
+                    "description": "Criterion reference <instrument_id>.<scale_id> (or a bare instrument id for single-score criteria)."
+                  },
+                  "expected_sign": {
+                    "type": "string",
+                    "enum": ["positive", "negative"]
+                  }
+                },
+                "required": ["id", "prediction", "criterion", "expected_sign"]
+              }
+            }
+          },
+          "required": ["convergent", "discriminant", "nomological"]
+        },
+        "report": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "max_status": {
+              "$ref": "common.v1.schema.json#/$defs/trait_gate_status"
+            },
+            "phrase_keys": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "pole_a": {
+                  "$ref": "common.v1.schema.json#/$defs/phrase_key"
+                },
+                "centre": {
+                  "$ref": "common.v1.schema.json#/$defs/phrase_key"
+                },
+                "pole_b": {
+                  "$ref": "common.v1.schema.json#/$defs/phrase_key"
+                }
+              },
+              "required": ["pole_a", "centre", "pole_b"]
+            }
+          },
+          "required": ["max_status", "phrase_keys"]
+        },
+        "notes": {
+          "type": ["string", "null"],
+          "minLength": 1,
+          "maxLength": 4000
+        }
+      },
+      "required": [
+        "id",
+        "number",
+        "name",
+        "kind",
+        "tier",
+        "restricted",
+        "modelled_as",
+        "definition",
+        "theoretical_justification",
+        "ecd",
+        "pathways",
+        "criterion_relations",
+        "report",
+        "notes"
+      ]
+    },
+    "pathway_status": {
+      "type": "object",
+      "title": "PathwayStatus",
+      "additionalProperties": false,
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": ["scored", "withheld", "group_only"]
+        },
+        "reason": {
+          "type": ["string", "null"],
+          "minLength": 1,
+          "maxLength": 4000
+        }
+      },
+      "required": ["status", "reason"]
+    },
+    "criterion_relation": {
+      "type": "object",
+      "title": "CriterionRelation",
+      "additionalProperties": false,
+      "properties": {
+        "criterion": {
+          "type": "string",
+          "pattern": "^[a-z0-9_]+(\\.[a-z0-9_]+)?$",
+          "description": "Criterion reference <instrument_id>.<scale_id> (or a bare instrument id for single-score criteria)."
+        },
+        "block": {
+          "type": "string",
+          "enum": ["X", "A", "B", "C", "performance", "teamwork", "retest"]
+        },
+        "expected_sign": {
+          "type": ["string", "null"],
+          "enum": ["positive", "negative", null]
+        },
+        "expected_r_low": {
+          "type": ["number", "null"],
+          "minimum": -1,
+          "maximum": 1
+        },
+        "expected_r_high": {
+          "type": ["number", "null"],
+          "minimum": -1,
+          "maximum": 1
+        },
+        "hypothesis_id": {
+          "anyOf": [
+            {
+              "$ref": "common.v1.schema.json#/$defs/identifier"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "note": {
+          "type": ["string", "null"],
+          "minLength": 1,
+          "maxLength": 4000
+        }
+      },
+      "required": ["criterion", "block", "expected_sign", "hypothesis_id"]
+    }
+  }
+}

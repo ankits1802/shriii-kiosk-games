@@ -6,7 +6,7 @@ import uuid
 from datetime import datetime
 from typing import Annotated, Any
 
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, Query, Request
 from pydantic import BaseModel, Field
 from sqlalchemy import select
 
@@ -14,7 +14,14 @@ from shriii_api.api.deps import DbSession, SettingsDep, ensure_study_access, rai
 from shriii_api.api.schemas import ApiModel, JobRef, Limit, Offset
 from shriii_api.auth.rbac import Perm, Principal
 from shriii_api.db.models.kiosk_raw import GameSession
-from shriii_api.db.models.scored import Construct, FeatureDefinition, IndicatorDefinition, IndicatorValue, TraitMapping
+from shriii_api.db.models.scored import (
+    Construct,
+    FeatureDefinition,
+    GroupIndicatorValue,
+    IndicatorDefinition,
+    IndicatorValue,
+    TraitMapping,
+)
 from shriii_api.worker.queue import enqueue
 
 router = APIRouter(prefix="/features", tags=["features"])
@@ -233,3 +240,69 @@ def extract(
         )
     set_audit(request, action="features.extract", sessions=len(body.session_ids))
     return [JobRef.model_validate(j) for j in jobs]
+
+
+class GroupIndicatorOut(ApiModel):
+    study_id: str
+    pathway: str
+    partition: dict[str, Any]
+    indicator_id: str
+    construct_id: str | None
+    estimate: float | None
+    ci_low: float | None
+    ci_high: float | None
+    n_participants: int
+    n_reports: int
+    suppressed: bool
+    details: dict[str, Any]
+    algorithm_version: str
+    scoring_run_id: uuid.UUID | None
+    computed_at: datetime
+
+
+@router.post(
+    "/batch-scoring",
+    response_model=JobRef,
+    status_code=202,
+    summary="Enqueue batch scoring of a study x pathway (model-based and group-level indicators)",
+)
+def batch_scoring(
+    request: Request,
+    db: DbSession,
+    settings: SettingsDep,
+    principal: Annotated[Principal, Depends(require(Perm.FEATURES_RUN))],
+    study_id: str,
+    pathway: Annotated[str, Query(pattern=r"^[AB]$")],
+) -> JobRef:
+    ensure_study_access(request, principal, study_id)
+    job = enqueue(
+        db,
+        "batch_scoring",
+        {"study_id": study_id, "pathway": pathway},
+        created_by=principal.sub,
+        settings=settings,
+        force_new=True,
+        priority=70,
+    )
+    set_audit(request, action="features.batch_scoring", study_id=study_id, pathway=pathway)
+    return JobRef.model_validate(job)
+
+
+@router.get(
+    "/group-indicators",
+    response_model=list[GroupIndicatorOut],
+    summary="Group-level estimates (private reports): partitions only, never individuals; small cells suppressed",
+)
+def group_indicators(
+    request: Request,
+    db: DbSession,
+    principal: Annotated[Principal, Depends(require(Perm.FEATURES_READ))],
+    study_id: str,
+    include_history: bool = False,
+) -> list[GroupIndicatorOut]:
+    ensure_study_access(request, principal, study_id)
+    stmt = select(GroupIndicatorValue).where(GroupIndicatorValue.study_id == study_id)
+    if not include_history:
+        stmt = stmt.where(GroupIndicatorValue.is_current.is_(True))
+    rows = db.execute(stmt.order_by(GroupIndicatorValue.indicator_id, GroupIndicatorValue.id)).scalars()
+    return [GroupIndicatorOut.model_validate(r) for r in rows]

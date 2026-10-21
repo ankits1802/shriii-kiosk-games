@@ -7,7 +7,9 @@ import type {
   GameModule,
   InputService,
   Layout,
+  LoggedEvent,
   ModuleContext,
+  ModuleId,
   ModuleResult,
 } from '../../core/contracts.ts';
 import { abortReasonOf } from '../../core/contracts.ts';
@@ -20,6 +22,7 @@ import { loadGameContent } from '../content.ts';
 import { genericModuleFallback } from '../fallbacks/generic-module.ts';
 import { SilentAudioService, SilentVoiceService } from '../fallbacks/silent-audio.ts';
 import { ModuleHost, type ModuleRunRequest } from '../module-host.ts';
+import { GameModuleRegistry } from '../registry.ts';
 import { createSessionRng } from '../rng.ts';
 
 const content = loadGameContent();
@@ -108,13 +111,19 @@ function harness(registry: Record<string, () => GameModule> = {}) {
 }
 
 class StubModule implements GameModule {
-  readonly id = 'balloon' as const;
+  readonly id: ModuleId;
   readonly kind = 'micro' as const;
   readonly constructs = [];
   readonly indicators = [];
   ctx: ModuleContext | null = null;
   destroyed = 0;
-  constructor(private readonly behaviour: 'complete' | 'hang' | 'throw' | 'self_log') {}
+  lateReceipt: LoggedEvent | null = null;
+  constructor(
+    private readonly behaviour: 'complete' | 'hang' | 'throw' | 'self_log' | 'late_log',
+    id: ModuleId = 'balloon',
+  ) {
+    this.id = id;
+  }
   async init(ctx: ModuleContext): Promise<void> {
     this.ctx = ctx;
   }
@@ -152,6 +161,18 @@ class StubModule implements GameModule {
         return Promise.reject(new Error('boom'));
       case 'hang':
         return new Promise(() => undefined); // ignores its abort signal
+      case 'late_log':
+        // Ignores its abort and keeps logging long after the host ended it.
+        ctx.signal.addEventListener('abort', () => {
+          setTimeout(() => {
+            this.lateReceipt = ctx.logger.log('idle', {
+              duration_ms: 1,
+              state: 'play',
+              after_response_window: true,
+            });
+          }, 5_000);
+        });
+        return new Promise(() => undefined);
     }
   }
   destroy(): void {
@@ -202,7 +223,7 @@ describe('ModuleHost (ENG-05)', () => {
     const hang = new StubModule('hang');
     const { host, request } = harness({
       balloon: () => hang,
-      tower: () => new StubModule('throw') as unknown as GameModule,
+      tower: () => new StubModule('throw', 'tower'),
     });
     const ac = new AbortController();
     const p = host.run(request('balloon', ac.signal));
@@ -249,5 +270,131 @@ describe('ModuleHost (ENG-05)', () => {
       fallback: () => null,
     });
     expect((await noFallback.run(request('balloon'))).endedReason).toBe('skipped');
+  });
+
+  it('drops every event a module logs after its module_end (logger gate)', async () => {
+    const stub = new StubModule('late_log');
+    const late: string[] = [];
+    const { host, request, events } = harness({ balloon: () => stub });
+    const gated = new ModuleHost({
+      ...(host as unknown as { opts: ConstructorParameters<typeof ModuleHost>[0] }).opts,
+      onLateEvent: (type, id) => late.push(`${id}:${type}`),
+    });
+    const ac = new AbortController();
+    const p = gated.run(request('balloon', ac.signal));
+    await vi.advanceTimersByTimeAsync(10);
+    ac.abort({ kind: 'walkaway' });
+    await vi.advanceTimersByTimeAsync(500);
+    expect((await p).endedReason).toBe('walkaway');
+    await vi.advanceTimersByTimeAsync(6_000);
+    expect(stub.lateReceipt).toMatchObject({ valid: false, seq: -1 });
+    expect(late).toEqual(['balloon:idle']);
+    const ev = await events();
+    expect(ev.at(-1)?.event_type).toBe('module_end');
+    expect(ev.some((e) => e.event_type === 'idle')).toBe(false);
+    expect(checkSessionSequence(ev)).toEqual([]);
+  });
+
+  it('requests a soft-cap wrap-up at budget.soft_cap_ms and reports wrappedUp', async () => {
+    const cfg = content.get('balloon');
+    let wrapAt: number | null = null;
+    const wrapping: GameModule = {
+      id: 'balloon',
+      kind: 'micro',
+      constructs: [],
+      indicators: [],
+      ctx: null as ModuleContext | null,
+      async init(ctx: ModuleContext) {
+        (this as unknown as { ctx: ModuleContext }).ctx = ctx;
+      },
+      run(this: { ctx: ModuleContext }) {
+        const ctx = this.ctx;
+        return new Promise<ModuleResult>((resolve) => {
+          ctx.wrapUp?.onRequest((reason) => {
+            expect(reason).toBe('soft_cap');
+            wrapAt = ctx.clock.now();
+            resolve({
+              moduleId: 'balloon',
+              endedReason: 'completed',
+              durationMs: 0,
+              trialsCompleted: 5,
+              scorableTrials: 5,
+              contextShiftIndex: null,
+            });
+          });
+        });
+      },
+      destroy() {},
+    } as GameModule & { ctx: ModuleContext | null };
+    const { host, request } = harness({ balloon: () => wrapping });
+    const p = host.run(request('balloon'));
+    await vi.advanceTimersByTimeAsync(cfg.budget.soft_cap_ms - 1);
+    expect(wrapAt).toBeNull();
+    await vi.advanceTimersByTimeAsync(2);
+    const r = await p;
+    expect(r).toMatchObject({ endedReason: 'completed', wrappedUp: true });
+    expect(wrapAt).not.toBeNull();
+  });
+
+  it('a session wrap-up request reaches the module before the soft cap', async () => {
+    let reason: string | null = null;
+    const stub = new StubModule('hang');
+    const { host, request } = harness({ balloon: () => stub });
+    const wrap = new AbortController();
+    const ac = new AbortController();
+    const p = host.run({ ...request('balloon', ac.signal), wrapUp: wrap.signal });
+    await vi.advanceTimersByTimeAsync(10);
+    stub.ctx?.wrapUp?.onRequest((r) => {
+      reason = r;
+    });
+    expect(stub.ctx?.wrapUp?.requested).toBe(false);
+    wrap.abort();
+    expect(reason).toBe('session_time');
+    expect(stub.ctx?.wrapUp?.signal.aborted).toBe(true);
+    ac.abort({ kind: 'explicit_exit' });
+    await vi.advanceTimersByTimeAsync(500);
+    expect(await p).toMatchObject({ endedReason: 'explicit_exit', wrappedUp: true });
+  });
+
+  it('uses the registered module and the placeholder only for unregistered ids', async () => {
+    const resolved: string[] = [];
+    const registry = new GameModuleRegistry();
+    registry.register('balloon', () => new StubModule('complete'));
+    const { host, request } = harness();
+    const live = new ModuleHost({
+      ...(host as unknown as { opts: ConstructorParameters<typeof ModuleHost>[0] }).opts,
+      registry,
+      onResolved: (id, source) => resolved.push(`${id}:${source}`),
+    });
+    expect((await live.run(request('balloon'))).trialsCompleted).toBe(3);
+    // A factory returning the wrong module falls back to the placeholder.
+    registry.register('tower', () => new StubModule('complete'));
+    const errSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    const p = live.run(request('tower'));
+    await vi.advanceTimersByTimeAsync(130_000);
+    await p;
+    errSpy.mockRestore();
+    expect(resolved).toEqual(['balloon:registered', 'tower:fallback']);
+  }, 30_000);
+
+  it('a module that rethrows its abort ends with the abort reason, not as a failure', async () => {
+    const rethrow: GameModule = {
+      id: 'balloon',
+      kind: 'micro',
+      constructs: [],
+      indicators: [],
+      init: async () => undefined,
+      run: () => Promise.reject({ kind: 'walkaway' }),
+      destroy: () => undefined,
+    };
+    const err = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    const { host, request } = harness({ balloon: () => rethrow });
+    const ac = new AbortController();
+    ac.abort({ kind: 'walkaway' });
+    const p = host.run(request('balloon', ac.signal));
+    await vi.advanceTimersByTimeAsync(10);
+    expect((await p).endedReason).toBe('walkaway');
+    expect(err).not.toHaveBeenCalled();
+    err.mockRestore();
   });
 });

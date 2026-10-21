@@ -14,6 +14,7 @@ import type {
   Clock,
   DevFlags,
   Layout,
+  ModuleFactoryLookup,
   ModuleRegistry,
   ReportModel,
   SessionSnapshot,
@@ -26,6 +27,7 @@ import { BasicArtKit } from '../engine/fallbacks/basic-art.ts';
 import { genericModuleFallback } from '../engine/fallbacks/generic-module.ts';
 import { SilentAudioService, SilentVoiceService } from '../engine/fallbacks/silent-audio.ts';
 import { ModuleHost } from '../engine/module-host.ts';
+import { moduleRegistry } from '../engine/registry.ts';
 import { measureRefreshHz } from '../engine/timing.ts';
 import { DomInputService } from '../input/input-service.ts';
 import { CSS_PX_PER_MM, physicalMetrics } from '../input/metrics.ts';
@@ -51,7 +53,11 @@ export interface KioskRuntimeOptions {
   /** Throw on undersized targets (dev builds). */
   readonly strictTargets?: boolean;
   readonly device?: Partial<KioskDeviceConfig>;
-  readonly registry?: ModuleRegistry;
+  /**
+   * Module factories. Default: the shared {@link moduleRegistry} that episodes and micro-games
+   * register into; ids without a factory run the generic placeholder module.
+   */
+  readonly registry?: ModuleRegistry | ModuleFactoryLookup;
   readonly artFactory?: (app: Application, layout: Layout) => ArtKit;
   readonly audioFactory?: (clock: Clock) => AudioService;
   readonly voiceFactory?: (clock: Clock, audio: AudioService) => VoiceService;
@@ -75,7 +81,7 @@ export interface KioskRuntime {
 }
 
 /** Layout that tracks the host element size. */
-function createHostLayout(host: HTMLElement, pxPerMm: number): Layout & { refresh(): void } {
+export function createHostLayout(host: HTMLElement, pxPerMm: number): Layout & { refresh(): void } {
   const listeners = new Set<(l: Layout) => void>();
   const metrics = physicalMetrics(pxPerMm);
   const layout = {
@@ -182,7 +188,7 @@ export async function createKioskRuntime(
   const uploader = new BatchUploader({ outbox, apiBase: options.apiBase ?? null });
   const runner = new ModuleHost({
     content,
-    registry: options.registry ?? {},
+    registry: options.registry ?? moduleRegistry,
     dev: options.dev,
     fallback: genericModuleFallback(content),
     services: {
@@ -212,6 +218,7 @@ export async function createKioskRuntime(
     device,
     refreshHz,
     input,
+    voice,
     ...(options.arm ? { arm: options.arm } : {}),
     ...(options.calibrationPolicy ? { calibrationPolicy: options.calibrationPolicy } : {}),
     ...(options.validate ? { validate: options.validate } : {}),

@@ -425,6 +425,17 @@ export interface VoiceService {
   preload(lineIds: readonly LineId[]): Promise<void>;
   /** Switch language (before consent freely; after consent the switch is logged). */
   setLanguage(language: LanguageTag): Promise<void>;
+  /**
+   * True while any narration clip is audibly playing (from the clip start until it ends or is
+   * interrupted). Optional for backward compatibility; the engine treats a missing value as "not
+   * speaking". The walkaway timer pauses while this is true (KSK-04: idle counts only after prompts).
+   */
+  readonly speaking?: boolean;
+  /**
+   * Subscribe to {@link VoiceService.speaking} transitions (called only on change, never with the
+   * current value). Optional for backward compatibility.
+   */
+  onSpeakingChange?(listener: (speaking: boolean) => void): Unsubscribe;
 }
 
 /** Optional closed-vocabulary speech input (VOX-04). Touch always works without it. */
@@ -922,6 +933,57 @@ export function abortReasonOf(signal: AbortSignal): ModuleAbortReason | null {
   return { kind: 'crash' };
 }
 
+const ABORT_KINDS: ReadonlySet<string> = new Set<ModuleAbortReason['kind']>([
+  'walkaway',
+  'explicit_exit',
+  'withdrawn',
+  'time_cap',
+  'crash',
+]);
+
+/**
+ * True when `error` is an expected abort rather than a failure: a typed screen/module abort error
+ * (anything with `isAbort === true`, e.g. the onboarding `ScreenAbortedError`), a DOM `AbortError`,
+ * a {@link ModuleAbortReason} thrown by `signal.throwIfAborted()` / `Clock.delay`, or a legacy
+ * `Error('aborted')`. Session code treats these as a normal abort (never as a crash).
+ */
+export function isAbortError(error: unknown): boolean {
+  if (error === null || typeof error !== 'object') return error === 'aborted';
+  const e = error as { isAbort?: unknown; name?: unknown; message?: unknown; kind?: unknown };
+  if (e.isAbort === true) return true;
+  if (e.name === 'AbortError' || e.name === 'ScreenAbortedError') return true;
+  if (typeof e.kind === 'string' && ABORT_KINDS.has(e.kind) && !(error instanceof Error)) {
+    return true;
+  }
+  if (typeof e.message === 'string') {
+    const m = e.message.trim().toLowerCase();
+    return m === 'aborted' || m === 'screen aborted' || m === 'module aborted';
+  }
+  return false;
+}
+
+/** Why a module is asked to wrap up gracefully (ENG-05). */
+export type WrapUpReason = 'soft_cap' | 'session_time';
+
+/**
+ * Soft-cap wrap-up signal (ENG-05). When requested, a module should finish its current trial, skip
+ * remaining optional trials (block minimums stay protected) and play its outro, then resolve `run()`
+ * with `endedReason: 'completed'`. Unlike {@link ModuleContext.signal} this never aborts anything; the
+ * hard cap still ends the module with `time_cap`.
+ */
+export interface WrapUpSignal {
+  /** True once a wrap-up was requested. */
+  readonly requested: boolean;
+  /** Why, or null before a request. */
+  readonly reason: WrapUpReason | null;
+  /** Session-clock time of the request, or null. */
+  readonly requestedAtMs: number | null;
+  /** Aborted (with the {@link WrapUpReason} as reason) when a wrap-up is requested; race waits on it. */
+  readonly signal: AbortSignal;
+  /** Called once when the wrap-up is requested (immediately if it already was). */
+  onRequest(listener: (reason: WrapUpReason) => void): Unsubscribe;
+}
+
 /** How a module ended (matches `module_end.ended_reason`). */
 export type ModuleEndedReason =
   | 'completed'
@@ -941,6 +1003,8 @@ export interface ModuleResult {
   readonly scorableTrials: number;
   /** Trial index of the logged context shift, null when the module has none. */
   readonly contextShiftIndex: number | null;
+  /** True when the module ended after a soft-cap wrap-up request (set by the module host). */
+  readonly wrappedUp?: boolean;
 }
 
 /** Session facts a module may read (no identity data). */
@@ -994,6 +1058,12 @@ export interface ModuleContext<TConfig extends GameConfig = GameConfig> {
   /** Aborted on walkaway/exit/withdrawal/hard cap; reason via {@link abortReasonOf}. */
   readonly signal: AbortSignal;
   readonly dev: DevFlags;
+  /**
+   * Soft-cap wrap-up request (ENG-05): requested at `config.budget.soft_cap_ms` or when the session's
+   * play time runs out. Always provided by the module host; optional only so hand-built test
+   * contexts stay valid.
+   */
+  readonly wrapUp?: WrapUpSignal;
 }
 
 /**
@@ -1019,8 +1089,14 @@ export interface GameModule<TConfig extends GameConfig = GameConfig> {
 /** Creates fresh module instances (one per session). */
 export type GameModuleFactory<TConfig extends GameConfig = GameConfig> = () => GameModule<TConfig>;
 
-/** Registry of module factories keyed by id. */
+/** Registry of module factories keyed by id (plain record form). */
 export type ModuleRegistry = Readonly<Partial<Record<ModuleId, GameModuleFactory>>>;
+
+/** Live registry lookup (implemented by the engine's `GameModuleRegistry`). */
+export interface ModuleFactoryLookup {
+  /** The factory registered for `id`, or undefined. */
+  get(id: ModuleId): GameModuleFactory | undefined;
+}
 
 /** Produces the deterministic trial schedule for a module (ENG-09). */
 export interface TrialScheduler {

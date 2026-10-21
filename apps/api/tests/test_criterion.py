@@ -384,3 +384,63 @@ def test_performance_task_scored_by_the_engine(
     assert client.post("/api/v1/assessment-responses", headers=researcher, json=bad).json()["detail"]["code"] == (
         "performance_key_required"
     )
+
+
+def test_planned_missing_items_are_stored_and_survive_a_correction(
+    client: TestClient, admin: dict[str, str], researcher: dict[str, str], battery: dict[str, Any]
+) -> None:
+    """Planned-missing items are persisted with the responses and reused on every rescore."""
+    approve = client.post(
+        "/api/v1/instruments/grit_s/versions/1.0.0/languages/hi-IN",
+        headers=admin,
+        json={"itc_state": "approved", "approvers": ["pi-a", "ethics-b"]},
+    )
+    assert approve.status_code == 200, approve.text
+    licence = client.post(
+        "/api/v1/instruments/grit_s/licensing",
+        headers=admin,
+        json={
+            "holder": "Duckworth",
+            "licence": "research",
+            "permission_status": "granted",
+            "permission_document": "DOC-GRIT",
+            "allowed_use": "pilot",
+        },
+    )
+    assert licence.status_code == 201, licence.text
+    consistency = ["grit_s.i01", "grit_s.i03", "grit_s.i05", "grit_s.i06"]
+    perseverance = dict.fromkeys(("grit_s.i02", "grit_s.i04", "grit_s.i07", "grit_s.i08"), 4.0)
+    body = _administration(battery["pid"], perseverance, instrument_id="grit_s", planned_missing_items=consistency)
+    first = client.post("/api/v1/assessment-responses", headers=researcher, json=body)
+    assert first.status_code == 201, first.text
+    out = first.json()
+    assert all(r["planned_missing_items"] == consistency for r in out["responses"])
+    scales = {s["scale_id"]: s for s in out["scores"]}
+    assert scales["consistency"]["planned_missing"] is True and scales["consistency"]["na_reason"] == "planned_missing"
+    assert scales["perseverance"]["score"] is not None
+    target = out["responses"][0]
+    fixed = client.post(
+        f"/api/v1/assessment-responses/{target['response_id']}/correct",
+        headers=researcher,
+        json={"raw_response": 2.0, "reason": "transcription error"},
+    )
+    assert fixed.status_code == 200, fixed.text
+    current = {
+        s["scale_id"]: s
+        for s in client.get(
+            "/api/v1/assessment-responses/scores", headers=researcher, params={"study_id": STUDY, "pid": battery["pid"]}
+        ).json()
+        if s["instrument_id"] == "grit_s"
+    }
+    assert (
+        current["consistency"]["planned_missing"] is True and current["consistency"]["na_reason"] == "planned_missing"
+    )
+    # A planned-missing item cannot also be answered, and unknown items are refused.
+    clash = _administration(
+        battery["pid"], perseverance, instrument_id="grit_s", occasion_id="T2", planned_missing_items=["grit_s.i02"]
+    )
+    assert client.post("/api/v1/assessment-responses", headers=researcher, json=clash).status_code == 422
+    unknown = _administration(
+        battery["pid"], perseverance, instrument_id="grit_s", occasion_id="T2", planned_missing_items=["bscs.i01"]
+    )
+    assert client.post("/api/v1/assessment-responses", headers=researcher, json=unknown).status_code == 422

@@ -4099,6 +4099,154 @@
         }
       }
     },
+    "/api/v1/features/batch-scoring": {
+      "post": {
+        "tags": [
+          "features"
+        ],
+        "summary": "Enqueue batch scoring of a study x pathway (model-based and group-level indicators)",
+        "operationId": "batch_scoring_api_v1_features_batch_scoring_post",
+        "parameters": [
+          {
+            "name": "study_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Study Id"
+            }
+          },
+          {
+            "name": "pathway",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[AB]$",
+              "title": "Pathway"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobRef"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/features/group-indicators": {
+      "get": {
+        "tags": [
+          "features"
+        ],
+        "summary": "Group-level estimates (private reports): partitions only, never individuals; small cells suppressed",
+        "operationId": "group_indicators_api_v1_features_group_indicators_get",
+        "parameters": [
+          {
+            "name": "study_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Study Id"
+            }
+          },
+          {
+            "name": "include_history",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false,
+              "title": "Include History"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/GroupIndicatorOut"
+                  },
+                  "title": "Response Group Indicators Api V1 Features Group Indicators Get"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/validation/datasets": {
       "post": {
         "tags": [
@@ -4687,6 +4835,79 @@
         ],
         "responses": {
           "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RunOut"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/validation/datasets/{snapshot_id}/gate-evaluation": {
+      "post": {
+        "tags": [
+          "validation"
+        ],
+        "summary": "Evaluate trait and battery gates from the snapshot's latest results (evaluate-only, never promotes)",
+        "operationId": "gate_evaluation_api_v1_validation_datasets__snapshot_id__gate_evaluation_post",
+        "parameters": [
+          {
+            "name": "snapshot_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Snapshot Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GateEvaluationIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
             "description": "Successful Response",
             "content": {
               "application/json": {
@@ -11648,6 +11869,11 @@
               }
             ],
             "title": "N"
+          },
+          "details": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Details"
           }
         },
         "type": "object",
@@ -12014,6 +12240,164 @@
           "source_path"
         ],
         "title": "GameVersionOut"
+      },
+      "GateEvaluationIn": {
+        "properties": {
+          "pathway": {
+            "type": "string",
+            "pattern": "^[AB]$",
+            "title": "Pathway"
+          },
+          "languages": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Languages",
+            "description": "Default: every language with results"
+          },
+          "site_modes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Site Modes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "pathway"
+        ],
+        "title": "GateEvaluationIn"
+      },
+      "GroupIndicatorOut": {
+        "properties": {
+          "study_id": {
+            "type": "string",
+            "title": "Study Id"
+          },
+          "pathway": {
+            "type": "string",
+            "title": "Pathway"
+          },
+          "partition": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Partition"
+          },
+          "indicator_id": {
+            "type": "string",
+            "title": "Indicator Id"
+          },
+          "construct_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Construct Id"
+          },
+          "estimate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Estimate"
+          },
+          "ci_low": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ci Low"
+          },
+          "ci_high": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ci High"
+          },
+          "n_participants": {
+            "type": "integer",
+            "title": "N Participants"
+          },
+          "n_reports": {
+            "type": "integer",
+            "title": "N Reports"
+          },
+          "suppressed": {
+            "type": "boolean",
+            "title": "Suppressed"
+          },
+          "details": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Details"
+          },
+          "algorithm_version": {
+            "type": "string",
+            "title": "Algorithm Version"
+          },
+          "scoring_run_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scoring Run Id"
+          },
+          "computed_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Computed At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "study_id",
+          "pathway",
+          "partition",
+          "indicator_id",
+          "construct_id",
+          "estimate",
+          "ci_low",
+          "ci_high",
+          "n_participants",
+          "n_reports",
+          "suppressed",
+          "details",
+          "algorithm_version",
+          "scoring_run_id",
+          "computed_at"
+        ],
+        "title": "GroupIndicatorOut"
       },
       "HTTPValidationError": {
         "properties": {
@@ -13578,9 +13962,13 @@
             "type": "string",
             "enum": [
               "ridge",
+              "elastic_net",
+              "random_forest",
+              "xgboost",
               "gradient_boosting"
             ],
             "title": "Algorithm",
+            "description": "gradient_boosting is an alias of xgboost",
             "default": "ridge"
           },
           "params": {
@@ -15108,6 +15496,13 @@
             ],
             "title": "Attention Check Failed"
           },
+          "planned_missing_items": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Planned Missing Items"
+          },
           "source": {
             "type": "string",
             "title": "Source"
@@ -15295,6 +15690,16 @@
             "additionalProperties": true,
             "type": "object",
             "title": "Details"
+          },
+          "exclusions": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Exclusions"
+          },
+          "provenance": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Provenance"
           }
         },
         "type": "object",
@@ -15459,7 +15864,7 @@
           "analysis": {
             "type": "string",
             "title": "Analysis",
-            "description": "One of descriptives, reliability, construct_validity, fairness, factor_structure, measurement_invariance, dif, incremental_validity, mtmm"
+            "description": "One of descriptives, reliability, construct_validity, mtmm, factor_structure, measurement_invariance, dif, fairness, incremental_validity"
           },
           "params": {
             "additionalProperties": true,

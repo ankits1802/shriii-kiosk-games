@@ -3,11 +3,17 @@
  *
  * - Logs `module_start` before `init()` and `module_end` after the module settles. If a module also
  *   logs them itself, the duplicates are dropped (the host's records are canonical).
+ * - Gates the module's logger: once the module has ended, nothing it (or the input layer routed to
+ *   it) logs is written, so no event of a module can follow its `module_end`.
+ * - Requests a graceful wrap-up through `ctx.wrapUp` at `budget.soft_cap_ms` (or when the session
+ *   asks via `request.wrapUp`); the module finishes its current trial and outro and completes.
  * - Enforces the hard cap: at `budget.hard_cap_ms` the context signal aborts with
  *   `{kind:'time_cap'}`; a module that does not settle within the grace period is ended by the host.
  * - Propagates session aborts (walkaway, exit, withdrawal, crash) through the same signal.
  * - Never throws: init/run errors end the module with `ended_reason: 'error'`.
  * - Routes the input layer's raw-tap logging to the module-scoped logger while the module runs.
+ * - Resolves modules through the {@link GameModuleRegistry} (or a plain record); the generic
+ *   placeholder module is used only when no factory is registered for the id.
  */
 import type {
   CalibrationLevel,
@@ -27,6 +33,7 @@ import {
   type EventLogger,
   type GameModule,
   type InputService,
+  isAbortError,
   type Layout,
   type LoggedEvent,
   type LogOptions,
@@ -34,6 +41,7 @@ import {
   type ModuleAbortReason,
   type ModuleContext,
   type ModuleEndedReason,
+  type ModuleFactoryLookup,
   type ModuleId,
   type ModuleRegistry,
   type ModuleResult,
@@ -41,7 +49,10 @@ import {
   type SeededRng,
   type VoiceService,
 } from '../core/contracts.ts';
+import { GatedLogger, LoggerGate, warnOnLateEvents } from '../logging/gated-logger.ts';
 import type { GameContent } from './content.ts';
+import { type ModuleSource, resolveModule } from './registry.ts';
+import { WrapUpController } from './wrap-up.ts';
 
 /** Services shared by every module (owned by the engine). */
 export interface PlayServices {
@@ -70,6 +81,8 @@ export interface ModuleRunRequest {
   readonly session: ModuleSessionInfo;
   /** Session abort (walkaway, exit, withdrawal, crash). */
   readonly signal: AbortSignal;
+  /** Session-level wrap-up request (play time running out); aborting it requests a wrap-up. */
+  readonly wrapUp?: AbortSignal;
 }
 
 /** Anything that can run modules for the session controller. */
@@ -79,13 +92,18 @@ export interface ModuleRunner {
 
 export interface ModuleHostOptions {
   readonly content: GameContent;
-  readonly registry: ModuleRegistry;
+  /** Plain record or a live {@link GameModuleRegistry} (looked up at each run). */
+  readonly registry: ModuleRegistry | ModuleFactoryLookup;
   readonly services: PlayServices;
   readonly dev: DevFlags;
   /** Used when the registry has no factory for a module (e.g. the generic fallback module). */
   readonly fallback?: (moduleId: ModuleId) => GameModule | null;
   /** How long a module may take to settle after an abort before the host ends it (default 2 s). */
   readonly abortGraceMs?: number;
+  /** Notified when a module instance is resolved (dev overlay, harness, tests). */
+  readonly onResolved?: (moduleId: ModuleId, source: ModuleSource) => void;
+  /** Notified for events a module logs after its end (dropped). Default: dev warning. */
+  readonly onLateEvent?: (type: EventType, moduleId: string) => void;
 }
 
 const ABORT_TO_ENDED: Readonly<Record<ModuleAbortReason['kind'], ModuleEndedReason>> = {
@@ -156,9 +174,10 @@ export class ModuleHost implements ModuleRunner {
     });
     if (!content.has(id)) return skipped();
     const config = content.get(id);
-    const factory = registry[id];
-    const module = factory ? factory() : (this.opts.fallback?.(id) ?? null);
-    if (!module) return skipped();
+    const resolved = resolveModule(registry, id, this.opts.fallback);
+    if (!resolved) return skipped();
+    const module = resolved.module;
+    this.opts.onResolved?.(id, resolved.source);
 
     const clock = req.clock;
     const startMs = clock.now();
@@ -177,7 +196,16 @@ export class ModuleHost implements ModuleRunner {
       hard_cap_ms: config.budget.hard_cap_ms,
       config_hash: content.configHash(id),
     });
-    const logger = new HostedLogger(scoped, () => startReceipt);
+    // Gate: once the module has ended nothing it still holds may write events (ENG-05/ENG-07).
+    const gate = new LoggerGate(
+      id,
+      this.opts.onLateEvent ?? (import.meta.env?.DEV ? warnOnLateEvents() : undefined),
+    );
+    const logger: EventLogger = new GatedLogger(
+      new HostedLogger(scoped, () => startReceipt),
+      gate,
+      () => clock.now(),
+    );
 
     // Abort plumbing: session abort or hard cap.
     const controller = new AbortController();
@@ -189,6 +217,17 @@ export class ModuleHost implements ModuleRunner {
       () => controller.abort({ kind: 'time_cap' } satisfies ModuleAbortReason),
       () => undefined,
     );
+    // Soft cap: graceful wrap-up request (the module decides how to finish).
+    const wrapUp = new WrapUpController(() => clock.now());
+    clock.delay(config.budget.soft_cap_ms, capTimer.signal).then(
+      () => wrapUp.request('soft_cap'),
+      () => undefined,
+    );
+    const onSessionWrapUp = (): void => {
+      wrapUp.request('session_time');
+    };
+    if (req.wrapUp?.aborted) wrapUp.request('session_time');
+    else req.wrapUp?.addEventListener('abort', onSessionWrapUp, { once: true });
 
     const stage = services.createStage(id);
     const ctx: ModuleContext = {
@@ -209,6 +248,7 @@ export class ModuleHost implements ModuleRunner {
       session: req.session,
       signal: controller.signal,
       dev,
+      wrapUp: wrapUp.signal,
     };
     services.input.setLogger?.(logger);
 
@@ -217,8 +257,9 @@ export class ModuleHost implements ModuleRunner {
       await module.init(ctx);
       result = await this.raceAbort(module.run(), controller.signal, clock, id, startMs);
     } catch (err) {
-      console.error(`[module-host] ${id} failed`, err);
       const reason = abortReasonOf(controller.signal);
+      // A module that rethrows its abort (legacy behaviour) ended normally; anything else failed.
+      if (!(reason && isAbortError(err))) console.error(`[module-host] ${id} failed`, err);
       result = {
         moduleId: id,
         endedReason: reason ? ABORT_TO_ENDED[reason.kind] : 'error',
@@ -230,6 +271,9 @@ export class ModuleHost implements ModuleRunner {
     } finally {
       capTimer.abort();
       req.signal.removeEventListener('abort', onParentAbort);
+      req.wrapUp?.removeEventListener('abort', onSessionWrapUp);
+      // Close before module_end: anything the module logs from here on is dropped.
+      gate.close();
       try {
         module.destroy();
       } catch (err) {
@@ -244,7 +288,12 @@ export class ModuleHost implements ModuleRunner {
     }
 
     const durationMs = Math.round((clock.now() - startMs) * 1000) / 1000;
-    const final: ModuleResult = { ...result, moduleId: id, durationMs };
+    const final: ModuleResult = {
+      ...result,
+      moduleId: id,
+      durationMs,
+      ...(wrapUp.requested ? { wrappedUp: true } : {}),
+    };
     scoped.log('module_end', {
       module_id: config.module_id,
       ended_reason: final.endedReason,

@@ -17,9 +17,9 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
-import pandas as pd  # type: ignore[import-untyped]
-import pyarrow as pa  # type: ignore[import-untyped]
-import pyarrow.parquet as pq  # type: ignore[import-untyped]
+import pandas as pd
+import pyarrow as pa
+import pyarrow.parquet as pq
 from sqlalchemy import delete, func, select
 from sqlalchemy.orm import Session
 
@@ -179,6 +179,7 @@ def build_snapshot(db: Session, settings: Settings, snapshot: DatasetSnapshot, j
     rows: list[dict[str, Any]] = []
     members: set[str] = set()
     exclusions: list[dict[str, Any]] = []
+    indicator_status: Counter[tuple[str, str]] = Counter()
     for m in collect_matches(db, study_id, spec.get("occasion_ids")):
         completed = sorted(
             (s for s in m.sessions if s.status == "completed"), key=lambda s: s.completed_at or s.started_at
@@ -234,7 +235,11 @@ def build_snapshot(db: Session, settings: Settings, snapshot: DatasetSnapshot, j
             for iv in db.execute(
                 select(IndicatorValue).where(IndicatorValue.session_id == session.session_id, IndicatorValue.is_current)
             ).scalars():
-                row[f"ind__{iv.indicator_id}"] = iv.value
+                # Only usable individual values enter analyses: insufficient trials, planned-missing slots,
+                # engine errors, group-only and individually unscorable indicators stay missing (by status).
+                usable = iv.status == "ok" and iv.value is not None
+                row[f"ind__{iv.indicator_id}"] = iv.value if usable else None
+                indicator_status[(iv.indicator_id, iv.status)] += 1
         for sc in m.scores:
             row[f"crit__{sc.instrument_id}.{sc.scale_id}"] = sc.score
         rows.append(row)
@@ -289,6 +294,7 @@ def build_snapshot(db: Session, settings: Settings, snapshot: DatasetSnapshot, j
             "by_reason_literacy": breakdown("literacy"),
         },
         "supersedes": str(snapshot.supersedes_id) if snapshot.supersedes_id else None,
+        "indicator_status_counts": {f"{k[0]}|{k[1]}": v for k, v in sorted(indicator_status.items())},
     }
     path.with_suffix(".manifest.json").write_text(json.dumps(manifest, indent=2, default=str), encoding="utf-8")
     db.execute(delete(SnapshotMember).where(SnapshotMember.snapshot_id == snapshot.snapshot_id))
@@ -311,4 +317,5 @@ def load_snapshot_frame(settings: Settings, snapshot: DatasetSnapshot) -> pd.Dat
     path = Path(settings.data_dir) / snapshot.parquet_path
     if snapshot.sha256 and sha256_hex(path.read_bytes()) != snapshot.sha256:
         raise ValueError("snapshot file does not match its recorded sha256")
-    return pq.read_table(path).to_pandas()
+    frame: pd.DataFrame = pq.read_table(path).to_pandas()
+    return frame

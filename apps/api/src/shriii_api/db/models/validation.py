@@ -17,6 +17,7 @@ from sqlalchemy import (
     Text,
     UniqueConstraint,
     func,
+    text,
 )
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -152,6 +153,10 @@ class StatisticalResult(Base):
     method: Mapped[str] = mapped_column(String(128))
     subgroup: Mapped[dict[str, Any]] = mapped_column(default=dict)
     details: Mapped[dict[str, Any]] = mapped_column(default=dict)
+    exclusions: Mapped[dict[str, Any]] = mapped_column(default=dict, server_default=text("'{}'::jsonb"))
+    """Rows available / used / excluded (and why) for this estimate."""
+    provenance: Mapped[dict[str, Any]] = mapped_column(default=dict, server_default=text("'{}'::jsonb"))
+    """Snapshot id and sha256, dictionary sha256, algorithm version, git sha, inputs hash, seed."""
 
 
 class IndicatorDecision(Base, CreatedAtMixin):

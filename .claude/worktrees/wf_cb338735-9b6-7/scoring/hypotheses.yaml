@@ -1,0 +1,165 @@
+# SHRIII pre-registration registry (CRT-11, plan sections 4.3, 7.4-7.8).
+# Frozen together with gates.yaml after both v1 dictionary freezes and before Stage 2 unblinding;
+# amendments are timestamped governance records (PLT-09). Results outside this registry are exploratory.
+#
+# Every confirmatory/secondary result must cite a hypothesis id from this file.
+# Tests use OBSERVED correlations only (disattenuated r is secondary and never feeds gates).
+schema_version: "1.0"
+registry_id: shriii-prereg
+version: 0.1.0
+status: draft
+frozen_at: null
+sha256: null
+governance_record: null
+prereg_id: null
+
+defaults:
+  r0: 0.10                 # pre-registered minimum: lower CI bound must exceed this
+  ci_level: 0.95
+  alpha: 0.05
+  bootstrap_resamples: 5000
+  permutation_resamples: 5000
+  correlation: pearson     # Spearman reported alongside as robustness
+  estimates: observed
+
+families:
+  - id: primary
+    kind: confirmatory
+    correction: holm
+    alpha: 0.05
+    description: One convergent lower-bound hypothesis per Tier-1 construct (8 tests, Holm-corrected) on pooled languages and arms where invariance allows.
+  - id: secondary
+    kind: secondary
+    correction: bh_fdr
+    alpha: 0.05
+    description: Tier-2 convergent hypotheses and additional criteria for Tier-1 constructs.
+  - id: discriminant_pattern
+    kind: secondary
+    correction: bh_fdr
+    alpha: 0.05
+    description: Own-greater-than-discriminant pattern per construct using the r_contrast-CV statistic (Westen & Rosenthal, 2003) with permutation CIs.
+  - id: nomological
+    kind: secondary
+    correction: bh_fdr
+    alpha: 0.05
+    description: Pre-registered nomological predictions for the style (S) constructs.
+  - id: retest
+    kind: secondary
+    correction: none
+    alpha: 0.05
+    description: Retest stability (ICC(A,1)) for style constructs, evaluated against gates.yaml thresholds; estimation, not significance testing.
+  - id: exploratory
+    kind: exploratory
+    correction: bh_fdr
+    alpha: 0.05
+    description: Direction-unspecified or weak expected relations; labelled exploratory.
+  - id: group_level
+    kind: group_level
+    correction: none
+    alpha: 0.05
+    description: Group-level integrity estimators (private report). Never individual.
+
+hypotheses:
+  # ------------------------------------------------------------------ primary (Tier 1, Holm over 8)
+  - { id: h1.self_control, family: primary, construct: self_control, pathways: [A, B], type: convergent_lower_bound, indicators: [self_control.nogo_commission_rate], criterion: bscs.total, convergent_criteria: [], discriminant_criteria: [], expected_sign: positive, r0: 0.10, statistic: observed_r_lower_bound, pooling: pooled_languages_and_arms_if_invariant, notes: Shared-paradigm indicator id; arms pooled when invariance holds. }
+  - { id: h1.emotional_regulation, family: primary, construct: emotional_regulation, pathways: [A], type: convergent_lower_bound, indicators: [emotional_regulation.tone_after_provocation], criterion: ders16.total, convergent_criteria: [], discriminant_criteria: [], expected_sign: negative, r0: 0.10, statistic: observed_r_lower_bound, pooling: pooled_if_invariant, notes: Pathway A only. }
+  - { id: h1.decisiveness, family: primary, construct: decisiveness, pathways: [A, B], type: convergent_lower_bound, indicators: [decisiveness.time_to_collect, decisiveness.time_to_commit], criterion: gdms.avoidant, convergent_criteria: [], discriminant_criteria: [], expected_sign: negative, r0: 0.10, statistic: observed_r_lower_bound, pooling: pooled_languages_and_arms_if_invariant, notes: Unit-weighted composite of the pathway's primary decisiveness indicator. }
+  - { id: h1.adaptability, family: primary, construct: adaptability, pathways: [A, B], type: convergent_lower_bound, indicators: [adaptability.perseverative_errors, adaptability.post_reversal_errors], criterion: card_sort_criterion.perseverative_errors, convergent_criteria: [], discriminant_criteria: [], expected_sign: negative, r0: 0.10, statistic: observed_r_lower_bound, pooling: pooled_languages_and_arms_if_invariant, notes: null }
+  - { id: h1.teamwork, family: primary, construct: teamwork, pathways: [A, B], type: convergent_lower_bound, indicators: [teamwork.mean_contribution], criterion: bfi2_xs.agreeableness, convergent_criteria: [], discriminant_criteria: [], expected_sign: positive, r0: 0.10, statistic: observed_r_lower_bound, pooling: pooled_languages_and_arms_if_invariant, notes: Provisional interim criterion under exception teamwork_provisional_criterion. }
+  - { id: h1.problem_solving, family: primary, construct: problem_solving, pathways: [A, B], type: convergent_lower_bound, indicators: [problem_solving.excess_moves, problem_solving.excess_route_cost], criterion: tol_board.excess_moves, convergent_criteria: [], discriminant_criteria: [], expected_sign: negative, r0: 0.10, statistic: observed_r_lower_bound, pooling: pooled_languages_and_arms_if_invariant, notes: "Pathway-specific primary indicators (Tower in B, route cost in A)." }
+  - { id: h1.risk_preference, family: primary, construct: risk_preference, pathways: [B], type: convergent_lower_bound, indicators: [risk_preference.adjusted_pumps], criterion: general_risk.risk_willingness, convergent_criteria: [], discriminant_criteria: [], expected_sign: positive, r0: 0.10, statistic: observed_r_lower_bound, pooling: pooled_if_invariant, notes: Restricted construct; capped at broad style. }
+  - { id: h1.persistence, family: primary, construct: persistence, pathways: [A, B], type: convergent_lower_bound, indicators: [persistence.time_on_unsolvable, persistence.retries_on_blocked_route], criterion: grit_s.total, convergent_criteria: [], discriminant_criteria: [], expected_sign: positive, r0: 0.10, statistic: observed_r_lower_bound, pooling: pooled_languages_and_arms_if_invariant, notes: null }
+
+  # ------------------------------------------------------------------ secondary convergent
+  - { id: h2.self_control.conscientiousness, family: secondary, construct: self_control, pathways: [A, B], type: convergent_lower_bound, indicators: [self_control.nogo_commission_rate], criterion: bfi2_xs.conscientiousness, convergent_criteria: [], discriminant_criteria: [], expected_sign: positive, r0: 0.10, statistic: observed_r_lower_bound, pooling: pooled_languages_and_arms_if_invariant, notes: null }
+  - { id: h2.emotional_regulation.reappraisal, family: secondary, construct: emotional_regulation, pathways: [A], type: convergent_lower_bound, indicators: [emotional_regulation.tone_after_provocation], criterion: erq.reappraisal, convergent_criteria: [], discriminant_criteria: [], expected_sign: positive, r0: 0.10, statistic: observed_r_lower_bound, pooling: pooled_if_invariant, notes: Rotating block A; FIML for planned missingness. }
+  - { id: h2.composure, family: secondary, construct: composure, pathways: [A, B], type: convergent_lower_bound, indicators: [composure.pressure_slope_accuracy], criterion: bfi2_xs.negative_emotionality, convergent_criteria: [], discriminant_criteria: [], expected_sign: negative, r0: 0.10, statistic: observed_r_lower_bound, pooling: pooled_languages_and_arms_if_invariant, notes: Difference-based; may remain research_only. }
+  - { id: h2.composure.ders, family: secondary, construct: composure, pathways: [A, B], type: convergent_lower_bound, indicators: [composure.pressure_slope_accuracy], criterion: ders16.total, convergent_criteria: [], discriminant_criteria: [], expected_sign: negative, r0: 0.10, statistic: observed_r_lower_bound, pooling: pooled_languages_and_arms_if_invariant, notes: null }
+  - { id: h2.task_organisation, family: secondary, construct: task_organisation, pathways: [A], type: convergent_lower_bound, indicators: [task_organisation.errand_order_efficiency], criterion: bfi2_s.organization, convergent_criteria: [], discriminant_criteria: [], expected_sign: positive, r0: 0.10, statistic: observed_r_lower_bound, pooling: pooled_if_invariant, notes: Facet from rotating block C. }
+  - { id: h2.task_organisation.rational, family: secondary, construct: task_organisation, pathways: [A], type: convergent_lower_bound, indicators: [task_organisation.errand_order_efficiency], criterion: gdms.rational, convergent_criteria: [], discriminant_criteria: [], expected_sign: positive, r0: 0.10, statistic: observed_r_lower_bound, pooling: pooled_if_invariant, notes: null }
+  - { id: h2.adaptability.cfi, family: secondary, construct: adaptability, pathways: [A, B], type: convergent_lower_bound, indicators: [adaptability.perseverative_errors, adaptability.post_reversal_errors], criterion: cfi.total, convergent_criteria: [], discriminant_criteria: [], expected_sign: positive, r0: 0.10, statistic: observed_r_lower_bound, pooling: pooled_languages_and_arms_if_invariant, notes: Rotating block B. }
+  - { id: h2.stability, family: secondary, construct: stability, pathways: [A, B], type: convergent_lower_bound, indicators: [stability.shift_slope], criterion: bfi2_xs.negative_emotionality, convergent_criteria: [], discriminant_criteria: [], expected_sign: negative, r0: 0.10, statistic: observed_r_lower_bound, pooling: pooled_languages_and_arms_if_invariant, notes: null }
+  - { id: h2.expressive_restraint, family: secondary, construct: expressive_restraint, pathways: [A, B], type: convergent_lower_bound, indicators: [expressive_restraint.premature_taps], criterion: erq.suppression, convergent_criteria: [], discriminant_criteria: [], expected_sign: positive, r0: 0.10, statistic: observed_r_lower_bound, pooling: pooled_languages_and_arms_if_invariant, notes: null }
+  - { id: h2.expressive_restraint.extraversion, family: secondary, construct: expressive_restraint, pathways: [A, B], type: convergent_lower_bound, indicators: [expressive_restraint.premature_taps], criterion: bfi2_xs.extraversion, convergent_criteria: [], discriminant_criteria: [], expected_sign: negative, r0: 0.10, statistic: observed_r_lower_bound, pooling: pooled_languages_and_arms_if_invariant, notes: null }
+  - { id: h2.teamwork.observed, family: secondary, construct: teamwork, pathways: [A, B], type: convergent_lower_bound, indicators: [teamwork.mean_contribution], criterion: observed_cooperation.total, convergent_criteria: [], discriminant_criteria: [], expected_sign: positive, r0: 0.10, statistic: observed_r_lower_bound, pooling: pooled_languages_and_arms_if_invariant, notes: "Inter-rater ICC(A,1) lower bound must reach .60 before this criterion is used." }
+  - { id: h2.teamwork.partner, family: secondary, construct: teamwork, pathways: [A], type: convergent_lower_bound, indicators: [teamwork.turn_waiting, teamwork.coplay_credit_share], criterion: partner_rating.total, convergent_criteria: [], discriminant_criteria: [], expected_sign: positive, r0: 0.10, statistic: observed_r_lower_bound, pooling: pooled_if_invariant, notes: Live-dyad substudy (target >= 120 dyads pooled). }
+  - { id: h2.judgement, family: secondary, construct: judgement, pathways: [A], type: convergent_lower_bound, indicators: [judgement.credit_taking], criterion: hexaco_hh.honesty_humility, convergent_criteria: [], discriminant_criteria: [], expected_sign: positive, r0: 0.10, statistic: observed_r_lower_bound, pooling: pooled_if_invariant, notes: null }
+  - { id: h2.judgement.moral_identity, family: secondary, construct: judgement, pathways: [A], type: convergent_lower_bound, indicators: [judgement.credit_taking], criterion: moral_identity.internalization, convergent_criteria: [], discriminant_criteria: [], expected_sign: positive, r0: 0.10, statistic: observed_r_lower_bound, pooling: pooled_if_invariant, notes: Rotating block A. }
+  - { id: h2.problem_solving.intellect, family: secondary, construct: problem_solving, pathways: [A, B], type: convergent_lower_bound, indicators: [problem_solving.excess_moves, problem_solving.excess_route_cost], criterion: bfi2_s.intellectual_curiosity, convergent_criteria: [], discriminant_criteria: [], expected_sign: positive, r0: 0.10, statistic: observed_r_lower_bound, pooling: pooled_languages_and_arms_if_invariant, notes: Facet from rotating block C. }
+  - { id: h2.integrity, family: secondary, construct: integrity, pathways: [A], type: convergent_lower_bound, indicators: [integrity.bribe_acceptance, integrity.overpayment_return], criterion: hexaco_hh.honesty_humility, convergent_criteria: [], discriminant_criteria: [], expected_sign: positive, r0: 0.10, statistic: observed_r_lower_bound, pooling: pooled_if_invariant, notes: Weighing Post indicators only; dice never enters individual MTMM. }
+  - { id: h2.initiative, family: secondary, construct: initiative, pathways: [A, B], type: convergent_lower_bound, indicators: [initiative.unprompted_share, initiative.optional_actions_unprompted], criterion: bfi2_xs.conscientiousness, convergent_criteria: [], discriminant_criteria: [], expected_sign: positive, r0: 0.10, statistic: observed_r_lower_bound, pooling: pooled_languages_and_arms_if_invariant, notes: null }
+  - { id: h2.initiative.assertiveness, family: secondary, construct: initiative, pathways: [A, B], type: convergent_lower_bound, indicators: [initiative.unprompted_share, initiative.optional_actions_unprompted], criterion: bfi2_s.assertiveness, convergent_criteria: [], discriminant_criteria: [], expected_sign: positive, r0: 0.10, statistic: observed_r_lower_bound, pooling: pooled_languages_and_arms_if_invariant, notes: null }
+  - { id: h2.initiative.grit, family: secondary, construct: initiative, pathways: [A, B], type: convergent_lower_bound, indicators: [initiative.unprompted_share, initiative.optional_actions_unprompted], criterion: grit_s.total, convergent_criteria: [], discriminant_criteria: [], expected_sign: positive, r0: 0.10, statistic: observed_r_lower_bound, pooling: pooled_languages_and_arms_if_invariant, notes: null }
+
+  # ------------------------------------------------------------------ exploratory
+  - { id: h3.decisiveness.rational, family: exploratory, construct: decisiveness, pathways: [A, B], type: convergent_lower_bound, indicators: [decisiveness.time_to_collect, decisiveness.time_to_commit], criterion: gdms.rational, convergent_criteria: [], discriminant_criteria: [], expected_sign: null, r0: null, statistic: observed_r_lower_bound, pooling: per_language_and_pooled, notes: Direction not pre-specified. }
+  - { id: h3.risk_preference.bscs, family: exploratory, construct: risk_preference, pathways: [B], type: convergent_lower_bound, indicators: [risk_preference.adjusted_pumps], criterion: bscs.total, convergent_criteria: [], discriminant_criteria: [], expected_sign: negative, r0: null, statistic: observed_r_lower_bound, pooling: per_language_and_pooled, notes: Weak expected relation. }
+
+  # ------------------------------------------------------------------ discriminant pattern (r_contrast-CV)
+  - { id: hp.self_control, family: discriminant_pattern, construct: self_control, pathways: [A, B], type: discriminant_pattern, indicators: [], criterion: null, convergent_criteria: [bscs.total, bfi2_xs.conscientiousness], discriminant_criteria: [bfi2_xs.extraversion, gdms.spontaneous], expected_sign: positive, r0: null, statistic: r_contrast_cv, pooling: pooled_languages_and_arms_if_invariant, notes: null }
+  - { id: hp.emotional_regulation, family: discriminant_pattern, construct: emotional_regulation, pathways: [A], type: discriminant_pattern, indicators: [], criterion: null, convergent_criteria: [ders16.total, erq.reappraisal], discriminant_criteria: [cfi.total, hexaco_hh.honesty_humility], expected_sign: positive, r0: null, statistic: r_contrast_cv, pooling: pooled_if_invariant, notes: null }
+  - { id: hp.composure, family: discriminant_pattern, construct: composure, pathways: [A, B], type: discriminant_pattern, indicators: [], criterion: null, convergent_criteria: [bfi2_xs.negative_emotionality, ders16.total], discriminant_criteria: [hexaco_hh.honesty_humility, grit_s.total], expected_sign: positive, r0: null, statistic: r_contrast_cv, pooling: pooled_languages_and_arms_if_invariant, notes: null }
+  - { id: hp.response_consistency, family: discriminant_pattern, construct: response_consistency, pathways: [A, B], type: discriminant_pattern, indicators: [], criterion: null, convergent_criteria: [bfi2_xs.conscientiousness], discriminant_criteria: [bfi2_xs.open_mindedness], expected_sign: positive, r0: null, statistic: r_contrast_cv, pooling: pooled_languages_and_arms_if_invariant, notes: Nomological pattern for a style construct. }
+  - { id: hp.task_organisation, family: discriminant_pattern, construct: task_organisation, pathways: [A], type: discriminant_pattern, indicators: [], criterion: null, convergent_criteria: [bfi2_s.organization, gdms.rational], discriminant_criteria: [erq.suppression], expected_sign: positive, r0: null, statistic: r_contrast_cv, pooling: pooled_if_invariant, notes: null }
+  - { id: hp.decisiveness, family: discriminant_pattern, construct: decisiveness, pathways: [A, B], type: discriminant_pattern, indicators: [], criterion: null, convergent_criteria: [gdms.avoidant], discriminant_criteria: [ders16.total], expected_sign: positive, r0: null, statistic: r_contrast_cv, pooling: pooled_languages_and_arms_if_invariant, notes: null }
+  - { id: hp.adaptability, family: discriminant_pattern, construct: adaptability, pathways: [A, B], type: discriminant_pattern, indicators: [], criterion: null, convergent_criteria: [card_sort_criterion.perseverative_errors, cfi.total], discriminant_criteria: [hexaco_hh.honesty_humility, grit_s.total], expected_sign: positive, r0: null, statistic: r_contrast_cv, pooling: pooled_languages_and_arms_if_invariant, notes: null }
+  - { id: hp.stability, family: discriminant_pattern, construct: stability, pathways: [A, B], type: discriminant_pattern, indicators: [], criterion: null, convergent_criteria: [bfi2_xs.negative_emotionality], discriminant_criteria: [bfi2_xs.open_mindedness], expected_sign: positive, r0: null, statistic: r_contrast_cv, pooling: pooled_languages_and_arms_if_invariant, notes: null }
+  - { id: hp.expressive_restraint, family: discriminant_pattern, construct: expressive_restraint, pathways: [A, B], type: discriminant_pattern, indicators: [], criterion: null, convergent_criteria: [erq.suppression, bfi2_xs.extraversion], discriminant_criteria: [cfi.total], expected_sign: positive, r0: null, statistic: r_contrast_cv, pooling: pooled_languages_and_arms_if_invariant, notes: null }
+  - { id: hp.teamwork, family: discriminant_pattern, construct: teamwork, pathways: [A, B], type: discriminant_pattern, indicators: [], criterion: null, convergent_criteria: [bfi2_xs.agreeableness, observed_cooperation.total], discriminant_criteria: [bscs.total], expected_sign: positive, r0: null, statistic: r_contrast_cv, pooling: pooled_languages_and_arms_if_invariant, notes: null }
+  - { id: hp.judgement, family: discriminant_pattern, construct: judgement, pathways: [A], type: discriminant_pattern, indicators: [], criterion: null, convergent_criteria: [hexaco_hh.honesty_humility, moral_identity.internalization], discriminant_criteria: [gdms.spontaneous], expected_sign: positive, r0: null, statistic: r_contrast_cv, pooling: pooled_if_invariant, notes: null }
+  - { id: hp.problem_solving, family: discriminant_pattern, construct: problem_solving, pathways: [A, B], type: discriminant_pattern, indicators: [], criterion: null, convergent_criteria: [tol_board.excess_moves, bfi2_s.intellectual_curiosity], discriminant_criteria: [erq.suppression, erq.reappraisal], expected_sign: positive, r0: null, statistic: r_contrast_cv, pooling: pooled_languages_and_arms_if_invariant, notes: null }
+  - { id: hp.integrity, family: discriminant_pattern, construct: integrity, pathways: [A], type: discriminant_pattern, indicators: [], criterion: null, convergent_criteria: [hexaco_hh.honesty_humility], discriminant_criteria: [bscs.total, cfi.total], expected_sign: positive, r0: null, statistic: r_contrast_cv, pooling: pooled_if_invariant, notes: Weighing indicators only. }
+  - { id: hp.initiative, family: discriminant_pattern, construct: initiative, pathways: [A, B], type: discriminant_pattern, indicators: [], criterion: null, convergent_criteria: [bfi2_xs.conscientiousness, bfi2_s.assertiveness, grit_s.total], discriminant_criteria: [ders16.total], expected_sign: positive, r0: null, statistic: r_contrast_cv, pooling: pooled_languages_and_arms_if_invariant, notes: null }
+  - { id: hp.risk_preference, family: discriminant_pattern, construct: risk_preference, pathways: [B], type: discriminant_pattern, indicators: [], criterion: null, convergent_criteria: [general_risk.risk_willingness], discriminant_criteria: [hexaco_hh.honesty_humility], expected_sign: positive, r0: null, statistic: r_contrast_cv, pooling: pooled_if_invariant, notes: null }
+  - { id: hp.persistence, family: discriminant_pattern, construct: persistence, pathways: [A, B], type: discriminant_pattern, indicators: [], criterion: null, convergent_criteria: [grit_s.total], discriminant_criteria: [erq.suppression], expected_sign: positive, r0: null, statistic: r_contrast_cv, pooling: pooled_languages_and_arms_if_invariant, notes: null }
+
+  # ------------------------------------------------------------------ nomological (style constructs)
+  - { id: hn.response_consistency.1, family: nomological, construct: response_consistency, pathways: [A, B], type: nomological, indicators: [response_consistency.loc_scale_sigma], criterion: bfi2_xs.conscientiousness, convergent_criteria: [], discriminant_criteria: [], expected_sign: positive, r0: null, statistic: observed_r_lower_bound, pooling: pooled_languages_and_arms_if_invariant, notes: Construct-keyed (less variability = more consistency). }
+  - { id: hn.persistence_of_style.1, family: nomological, construct: persistence_of_style, pathways: [A, B], type: nomological, indicators: [persistence_of_style.cross_segment_style_r], criterion: bfi2_xs.conscientiousness, convergent_criteria: [], discriminant_criteria: [], expected_sign: positive, r0: null, statistic: observed_r_lower_bound, pooling: pooled_languages_and_arms_if_invariant, notes: null }
+  - { id: hn.stability.1, family: nomological, construct: stability, pathways: [A, B], type: nomological, indicators: [stability.shift_slope], criterion: bfi2_xs.negative_emotionality, convergent_criteria: [], discriminant_criteria: [], expected_sign: negative, r0: null, statistic: observed_r_lower_bound, pooling: pooled_languages_and_arms_if_invariant, notes: null }
+
+  # ------------------------------------------------------------------ retest (style constructs; thresholds in gates.yaml)
+  - { id: hr.response_consistency, family: retest, construct: response_consistency, pathways: [A, B], type: retest_stability, indicators: [response_consistency.rt_rvi], criterion: null, convergent_criteria: [], discriminant_criteria: [], expected_sign: null, r0: null, statistic: icc_a1, pooling: per_language_and_pooled, notes: Parallel form at T2; form modelled. }
+  - { id: hr.persistence_of_style, family: retest, construct: persistence_of_style, pathways: [A, B], type: retest_stability, indicators: [persistence_of_style.cross_segment_style_r], criterion: null, convergent_criteria: [], discriminant_criteria: [], expected_sign: null, r0: null, statistic: icc_a1, pooling: per_language_and_pooled, notes: null }
+  - { id: hr.stability, family: retest, construct: stability, pathways: [A, B], type: retest_stability, indicators: [stability.shift_slope], criterion: null, convergent_criteria: [], discriminant_criteria: [], expected_sign: null, r0: null, statistic: icc_a1, pooling: per_language_and_pooled, notes: null }
+
+  # ------------------------------------------------------------------ group level
+  - { id: hg.integrity.dice_overreport, family: group_level, construct: integrity, pathways: [B], type: group_level, indicators: [integrity.dice_overreport_rate], criterion: hexaco_hh.honesty_humility, convergent_criteria: [], discriminant_criteria: [], expected_sign: negative, r0: null, statistic: group_rate_difference, pooling: per_language_and_pooled, notes: Over-report rate is higher in the lowest HEXACO-HH tertile than in the highest. Group level only. }
+  - { id: hg.integrity.honest_population_null, family: group_level, construct: integrity, pathways: [B], type: group_level, indicators: [integrity.dice_overreport_rate], criterion: null, convergent_criteria: [], discriminant_criteria: [], expected_sign: null, r0: null, statistic: tost_group_rate, pooling: per_language_and_pooled, notes: Simulator check - estimator equivalent to 0 within +-0.03 for an honest population (SCR-08 AC). }
+
+targets:
+  completion: { supervised: 0.85, open_public: 0.60 }
+  play_again: 0.70
+  per: [language, arm, site_mode]
+
+exceptions:
+  - id: teamwork_provisional_criterion
+    construct: teamwork
+    description: Interim criterion is BFI-2 Agreeableness plus an administrator-rated observed cooperation task, because a scripted partner cannot give a rating.
+    cap_status: validated_broad_style
+    lifted_when: Partner-rating evidence from the live-dyad substudy passes the trait-gate convergent rule and inter-rater ICC(A,1) lower bound >= .60.
+
+research_only_path:
+  - { step: 1, rule: A construct failing trait-gate rules B1-B3 after Stage 3 becomes research_only; it is collected only if it contributes to the battery gate or to wave-2 redesign. }
+  - { step: 2, rule: "Wave 2 may add trials or redesign tasks (ENG-13), which needs a new dictionary version and a pre-registration amendment." }
+  - { step: 3, rule: Two consecutive failures lead to a recommendation to drop the construct from player reports permanently. }
+  - { step: 4, rule: A memo to stakeholders after Stage 3 lists the reportable subset. }
+
+coverage:
+  - { construct: self_control, A: confirmatory, B: confirmatory }
+  - { construct: emotional_regulation, A: confirmatory, B: withheld }
+  - { construct: composure, A: exploratory, B: exploratory }
+  - { construct: response_consistency, A: exploratory, B: exploratory }
+  - { construct: task_organisation, A: exploratory, B: withheld }
+  - { construct: decisiveness, A: confirmatory, B: confirmatory }
+  - { construct: adaptability, A: confirmatory, B: confirmatory }
+  - { construct: persistence_of_style, A: exploratory, B: exploratory }
+  - { construct: stability, A: exploratory, B: exploratory }
+  - { construct: expressive_restraint, A: exploratory, B: exploratory }
+  - { construct: teamwork, A: confirmatory, B: confirmatory }
+  - { construct: judgement, A: exploratory, B: withheld }
+  - { construct: problem_solving, A: confirmatory, B: confirmatory }
+  - { construct: integrity, A: exploratory, B: group_only }
+  - { construct: initiative, A: exploratory, B: exploratory }
+  - { construct: risk_preference, A: withheld, B: confirmatory }
+  - { construct: persistence, A: confirmatory, B: confirmatory }

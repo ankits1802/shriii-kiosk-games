@@ -1,0 +1,138 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://shriii.local/contracts/criterion-response.v1.schema.json",
+  "title": "CriterionResponse",
+  "description": "One item-level criterion battery response (plan section 6.2, CRT-02/05). Append-only; corrections supersede.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "$ref": "common.v1.schema.json#/$defs/minor_schema_version"
+    },
+    "response_id": {
+      "$ref": "common.v1.schema.json#/$defs/uuid"
+    },
+    "pid": {
+      "$ref": "common.v1.schema.json#/$defs/pid"
+    },
+    "study_id": {
+      "$ref": "common.v1.schema.json#/$defs/identifier"
+    },
+    "wave": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "occasion_id": {
+      "$ref": "common.v1.schema.json#/$defs/identifier"
+    },
+    "instrument_id": {
+      "$ref": "common.v1.schema.json#/$defs/identifier"
+    },
+    "instrument_version": {
+      "$ref": "common.v1.schema.json#/$defs/semver"
+    },
+    "language_version": {
+      "$ref": "common.v1.schema.json#/$defs/identifier"
+    },
+    "block": {
+      "type": "string",
+      "enum": ["X", "A", "B", "C", "performance", "teamwork", "retest_short"]
+    },
+    "item_id": {
+      "$ref": "common.v1.schema.json#/$defs/identifier"
+    },
+    "raw_response": {
+      "type": ["integer", "number", "null"],
+      "description": "Numeric closed response on the item's scale; null = not answered."
+    },
+    "response_latency_ms": {
+      "type": ["number", "null"],
+      "minimum": 0
+    },
+    "administration_mode": {
+      "$ref": "common.v1.schema.json#/$defs/administration_mode"
+    },
+    "administrator_id": {
+      "anyOf": [
+        {
+          "$ref": "common.v1.schema.json#/$defs/identifier"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "rater_role": {
+      "type": ["string", "null"],
+      "enum": ["self", "partner", "administrator", "observer", null]
+    },
+    "rated_pid": {
+      "anyOf": [
+        {
+          "$ref": "common.v1.schema.json#/$defs/pid"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "device_id": {
+      "$ref": "common.v1.schema.json#/$defs/identifier"
+    },
+    "audio_version": {
+      "anyOf": [
+        {
+          "$ref": "common.v1.schema.json#/$defs/semver"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "attention_check": {
+      "type": "boolean"
+    },
+    "source": {
+      "type": "string",
+      "enum": ["in_app", "import_csv", "import_xlsx", "odk"]
+    },
+    "recorded_at": {
+      "$ref": "common.v1.schema.json#/$defs/date_time"
+    },
+    "supersedes_id": {
+      "anyOf": [
+        {
+          "$ref": "common.v1.schema.json#/$defs/uuid"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "required": [
+    "schema_version",
+    "response_id",
+    "pid",
+    "study_id",
+    "wave",
+    "occasion_id",
+    "instrument_id",
+    "instrument_version",
+    "language_version",
+    "block",
+    "item_id",
+    "raw_response",
+    "response_latency_ms",
+    "administration_mode",
+    "administrator_id",
+    "rater_role",
+    "rated_pid",
+    "device_id",
+    "audio_version",
+    "attention_check",
+    "source",
+    "recorded_at",
+    "supersedes_id"
+  ]
+}

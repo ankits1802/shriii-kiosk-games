@@ -1,0 +1,41 @@
+[
+  {
+    "name": "single-kiosk",
+    "passed": false,
+    "ing02": {
+      "n": 9,
+      "p50_ms": 964.5,
+      "p90_ms": 1329.4,
+      "p95_ms": 1463.9,
+      "p99_ms": 1571.4,
+      "max_ms": 1598.3,
+      "mean_ms": 1033.7
+    }
+  },
+  {
+    "name": "saturate-50k",
+    "passed": false,
+    "ing02": {
+      "n": 188,
+      "p50_ms": 30844.0,
+      "p90_ms": 36650.1,
+      "p95_ms": 40416.9,
+      "p99_ms": 56530.2,
+      "max_ms": 57397.6,
+      "mean_ms": 30850.7
+    }
+  },
+  {
+    "name": "reconnect-50k-backlog",
+    "passed": false,
+    "ing02": {
+      "n": 329,
+      "p50_ms": 41749.8,
+      "p90_ms": 54801.2,
+      "p95_ms": 56982.6,
+      "p99_ms": 58372.5,
+      "max_ms": 59524.3,
+      "mean_ms": 39930.3
+    }
+  }
+]

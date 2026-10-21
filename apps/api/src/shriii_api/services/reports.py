@@ -4,7 +4,8 @@ Display rule (plan section 7.7 C): a trait is shown iff battery gate (DB, langua
 site_mode) is open with >= the required language groups AND the trait gate is validated_banded or
 validated_broad_style (in the DB and in the release pack) AND the session is valid for report AND the
 estimate is not "not enough to say" AND the release pack is valid, unexpired and matches the
-dictionary AND ``report_mode = player_report``. Any failure or exception yields ``thank_you`` with no
+dictionary AND ``report_mode = player_report`` AND the trait is not withheld by
+``config/report_policy.yaml`` (integrity: BUILD_DECISIONS #6). Any failure or exception yields ``thank_you`` with no
 traits. Demo reports are produced on the kiosk from fictional profiles and are refused here.
 """
 
@@ -26,6 +27,7 @@ from shriii_api.db.models.scored import TraitEstimate
 from shriii_api.errors import DomainError
 from shriii_api.security import new_report_token, token_digest
 from shriii_api.services import gates as gate_svc
+from shriii_api.services import report_policy
 from shriii_api.services import sessions as session_svc
 from shriii_api.settings import Settings
 
@@ -99,6 +101,9 @@ def _evaluate(db: Session, settings: Settings, session_row: GameSession, request
     suppressed: dict[str, str] = {}
     candidates: list[tuple[float, dict[str, Any]]] = []
     for est in estimates:
+        if report_policy.withheld_reason(est.trait, pathway) is not None:
+            suppressed[est.trait] = "withheld_from_player_report"
+            continue
         db_gate = gate_svc.current_trait_gate(db, est.trait, language or "", pathway or "")
         if db_gate is None or db_gate.status not in gate_svc.DISPLAYABLE:
             suppressed[est.trait] = "trait_gate_not_validated"

@@ -31,7 +31,9 @@ class ModelCreate(BaseModel):
     comparison: Literal["game_to_criterion", "battery_to_outcome", "game_to_outcome", "game_plus_battery_to_outcome"]
     target: str = Field(description="Snapshot column, e.g. crit__bscs.total")
     features: list[str] = Field(min_length=1, description="Snapshot columns (ind__* / crit__*)")
-    algorithm: Literal["ridge", "gradient_boosting"] = "ridge"
+    algorithm: Literal["ridge", "elastic_net", "random_forest", "xgboost", "gradient_boosting"] = Field(
+        default="ridge", description="gradient_boosting is an alias of xgboost"
+    )
     params: dict[str, Any] = Field(default_factory=dict)
     snapshot_id: uuid.UUID
     holdout_cohort: str | None = Field(default=None, description="Cohort kept untouched for final confirmation")
@@ -72,6 +74,7 @@ class EvaluationOut(ApiModel):
     value: float | None
     sd: float | None
     n: int | None
+    details: dict[str, Any] = Field(default_factory=dict)
 
 
 def _model(db: DbSession, request: Request, principal: Principal, model_id: uuid.UUID) -> ModelVersion:
