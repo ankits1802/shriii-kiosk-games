@@ -213,7 +213,8 @@
         "min_accuracy": { "$ref": "#/$defs/rate" },
         "max_gap_pp": { "type": "number" },
         "min_heldout_speakers": { "type": "integer" },
-        "max_false_accept_rate": { "$ref": "#/$defs/rate" }
+        "max_false_accept_rate": { "$ref": "#/$defs/rate" },
+        "false_accept_judge_at": { "enum": ["worst", "reference"] }
       }
     },
     "host": {

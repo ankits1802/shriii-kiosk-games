@@ -11,6 +11,7 @@ from __future__ import annotations
 import base64
 import hashlib
 import json
+import os
 import re
 from dataclasses import dataclass
 from pathlib import Path
@@ -64,7 +65,11 @@ def generate_key(key_id: str, private_path: Path, public_path: Path) -> SigningK
         serialization.Encoding.PEM, serialization.PrivateFormat.PKCS8, serialization.NoEncryption()
     )
     private_path.parent.mkdir(parents=True, exist_ok=True)
-    private_path.write_bytes(pem)
+    # Owner-only permissions from creation (O_EXCL also closes the exists() race). Windows ignores the
+    # mode; keep keys out of shared folders there.
+    fd = os.open(private_path, os.O_WRONLY | os.O_CREAT | os.O_EXCL | getattr(os, "O_BINARY", 0), 0o600)
+    with os.fdopen(fd, "wb") as fh:
+        fh.write(pem)
     key = SigningKey(key_id=key_id, private=private)
     public_path.parent.mkdir(parents=True, exist_ok=True)
     public_path.write_bytes(

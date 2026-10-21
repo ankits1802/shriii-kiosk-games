@@ -262,6 +262,74 @@ describe('KeywordSpeechInput listening', () => {
   });
 });
 
+describe('KeywordSpeechInput robustness', () => {
+  it('closes a capture that finishes opening after the window closed, before resolving', async () => {
+    const engine = new ScriptedEngine([]);
+    const g = grammar();
+    await engine.prepare(g);
+    const order: string[] = [];
+    let releaseOpen: () => void = () => undefined;
+    const slowSource = {
+      open: () =>
+        new Promise<{ close: () => Promise<void> }>((resolve) => {
+          releaseOpen = () =>
+            resolve({
+              close: async () => {
+                order.push('capture_closed');
+              },
+            });
+        }),
+    };
+    const input = new KeywordSpeechInput({
+      engine,
+      source: slowSource,
+      grammar: g,
+      gate: new Gate(),
+    });
+    input.onMicState((e) => order.push(`mic_${e.state}`));
+    const ctrl = new AbortController();
+    const pending = input.listen('stall.offer', ['yes', 'no'], ctrl.signal).then((r) => {
+      order.push('resolved');
+      return r;
+    });
+    ctrl.abort(); // window closes while getUserMedia (or similar) is still pending
+    await new Promise((r) => setTimeout(r, 20));
+    expect(order).toEqual(['mic_open']); // not reported closed while the real capture may open
+    releaseOpen();
+    expect(await pending).toEqual({ label: null, confidence: null });
+    expect(order).toEqual(['mic_open', 'capture_closed', 'mic_closed', 'resolved']);
+    expect(input.isMicOpen).toBe(false);
+  });
+
+  it('does not wedge when the engine never answers the end-of-window flush', async () => {
+    const engine = new ScriptedEngine([]);
+    const g = grammar();
+    await engine.prepare(g);
+    const create = engine.createSession.bind(engine);
+    engine.createSession = (vocab) => ({
+      ...create(vocab),
+      finish: () => new Promise(() => undefined), // e.g. remote host died
+    });
+    const source = new ArrayFrameSource(utterance());
+    const input = new KeywordSpeechInput({
+      engine,
+      source,
+      grammar: g,
+      gate: new Gate(),
+      finishTimeoutMs: 50,
+    });
+    const w = window(200);
+    expect(await input.listen('stall.offer', ['yes', 'no'], w.signal)).toEqual({
+      label: null,
+      confidence: null,
+    });
+    // the adapter is free for the next prompt
+    const w2 = window(200);
+    await input.listen('stall.offer', ['yes', 'no'], w2.signal);
+    expect(source.openCount).toBe(2);
+  });
+});
+
 describe('VAD gating and privacy', () => {
   it('feeds the engine nothing when there is no speech', async () => {
     const r = await rig([], noise(2, QUIET, 3));

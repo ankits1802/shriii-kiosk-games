@@ -39,7 +39,8 @@ from shriii_audio.signing import (
 )
 
 SCHEMA_FILE = "content-manifest.v1.schema.json"
-CARRY_OVER_STATES = {"audio_qc", "think_aloud_tested", "approved"}
+# A review decision (including a flag) stays with the exact bytes it was made on.
+CARRY_OVER_STATES = {"audio_qc", "think_aloud_tested", "approved", "flagged_for_revision"}
 PROMOTABLE_STATES = {"think_aloud_tested", "approved", "flagged_for_revision"}
 
 
@@ -70,6 +71,27 @@ def load_manifest(pack_dir: Path, language: str) -> dict[str, Any] | None:
     if not isinstance(data, dict):
         raise ManifestError(f"{path}: not an object")
     return data
+
+
+def load_trusted_manifest(pack_dir: Path, language: str, key: SigningKey) -> dict[str, Any] | None:
+    """Load an existing manifest only if its detached signature verifies with ``key``.
+
+    Review states are carried over and promoted from the manifest on disk, so an unsigned or edited
+    manifest must never feed them: otherwise anyone with write access to ``out/packs`` could mark a clip
+    ``approved`` and have the next run re-sign it.
+    """
+    path = pack_dir / manifest_name(language)
+    if not path.is_file():
+        return None
+    sig_path = pack_dir / signature_name(language)
+    if not sig_path.is_file():
+        raise ManifestError(f"{path.name} has no signature file; refusing to trust its review states")
+    try:
+        signature = json.loads(sig_path.read_text(encoding="utf-8"))
+        verify_file(path, signature, key.private.public_key(), key.key_id)
+    except (SigningError, ValueError, KeyError) as exc:
+        raise ManifestError(f"{path.name} does not verify with key {key.key_id!r}: {exc}") from exc
+    return load_manifest(pack_dir, language)
 
 
 def _clip_entry(
@@ -141,7 +163,12 @@ def build_manifests(
     created = (now or datetime.now(UTC)).replace(microsecond=0).isoformat().replace("+00:00", "Z")
     written: list[WrittenManifest] = []
     for lang in batch.languages:
-        previous = load_manifest(pack_dir, lang)
+        try:
+            previous = load_trusted_manifest(pack_dir, lang, key)
+        except ManifestError as exc:
+            if merge_previous:
+                raise ManifestError(f"{exc} (re-run with --no-merge to rebuild the pack from this batch)") from exc
+            previous = None  # fresh rebuild: nothing is carried over from an untrusted manifest
         speaker = (speakers or {}).get(lang)
         entries: dict[str, dict[str, Any]] = {}
         if merge_previous and previous is not None:
@@ -199,7 +226,7 @@ def promote(pack_dir: Path, approvals_file: Path, key: SigningKey) -> list[Writt
         by_lang.setdefault(a["language"], []).append(a)
     written = []
     for lang, items in sorted(by_lang.items()):
-        manifest = load_manifest(pack_dir, lang)
+        manifest = load_trusted_manifest(pack_dir, lang, key)
         if manifest is None:
             raise ManifestError(f"no manifest for {lang} in {pack_dir}")
         index = {e["key"]: e for e in manifest["audio_clips"]}

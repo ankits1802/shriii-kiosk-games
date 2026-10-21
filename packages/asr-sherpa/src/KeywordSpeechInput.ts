@@ -47,6 +47,12 @@ export interface KeywordSpeechInputOptions {
   readonly vad?: VoiceActivityDetector;
   /** Non-speech audio needed in the first window before the noise floor is decided. */
   readonly noiseMeasureMs?: number;
+  /**
+   * Upper bound on the engine's end-of-window flush. A remote or wedged engine can never keep the
+   * adapter busy (which would block every later prompt): past this, the window is decided on the
+   * detections already seen.
+   */
+  readonly finishTimeoutMs?: number;
   /** Timer functions (injectable for tests). */
   readonly setTimer?: (fn: () => void, ms: number) => unknown;
   readonly clearTimer?: (handle: unknown) => void;
@@ -65,6 +71,7 @@ export class KeywordSpeechInput implements SpeechInput {
   private readonly vad: VoiceActivityDetector;
   private readonly ring: SampleRing;
   private readonly noiseMeasureMs: number;
+  private readonly finishTimeoutMs: number;
   private readonly setTimer: (fn: () => void, ms: number) => unknown;
   private readonly clearTimer: (handle: unknown) => void;
   private readonly micListeners = new Set<Listener<MicStateEvent>>();
@@ -84,6 +91,7 @@ export class KeywordSpeechInput implements SpeechInput {
     this.gate = options.gate;
     this.vad = options.vad ?? new EnergyVad();
     this.noiseMeasureMs = options.noiseMeasureMs ?? 300;
+    this.finishTimeoutMs = options.finishTimeoutMs ?? 2000;
     this.ring = new SampleRing(
       Math.round((ASR_SAMPLE_RATE * this.grammar.policy.vad_preroll_ms) / 1000),
     );
@@ -160,7 +168,8 @@ export class KeywordSpeechInput implements SpeechInput {
       const best = new Map<string, number>(); // code -> highest tier
       let finished = false;
       let inSpeech = false;
-      let handle: CaptureHandle | null = null;
+      // Settles with the capture handle once the source has opened (null if opening failed).
+      let opening: Promise<CaptureHandle | null> = Promise.resolve(null);
       let settleTimer: unknown = null;
       let proposed: string | null = null;
 
@@ -187,14 +196,18 @@ export class KeywordSpeechInput implements SpeechInput {
         this.clearTimer(capTimer);
         if (settleTimer !== null) this.clearTimer(settleTimer);
         signal.removeEventListener('abort', onAbort);
-        const close = handle ? handle.close() : Promise.resolve();
-        void close
+        // Wait for a still-pending open to settle so the real capture is closed before the mic is
+        // reported closed and before the result is returned (deferred one microtask so a finish
+        // triggered synchronously inside source.open() still sees the opening promise).
+        void Promise.resolve()
+          .then(() => opening)
+          .then((h) => (h ? h.close() : undefined))
           .catch(() => undefined)
           .then(async () => {
             this.setMic(false, promptId, reason);
             if (reason !== 'noise' && reason !== 'error') {
               try {
-                record(await session.finish());
+                record(await this.boundedFinish(session));
               } catch {
                 /* engine flush failure: decide on what we have */
               }
@@ -250,13 +263,25 @@ export class KeywordSpeechInput implements SpeechInput {
       };
 
       this.setMic(true, promptId);
-      this.source
+      opening = this.source
         .open(onFrame, () => finish('error'))
-        .then((h) => {
-          handle = h;
-          if (finished) void h.close().catch(() => undefined);
-        })
-        .catch(() => finish('error'));
+        .then(
+          (h) => h,
+          () => {
+            finish('error');
+            return null;
+          },
+        );
+    });
+  }
+
+  private boundedFinish(session: KeywordSession): Promise<readonly KeywordDetection[]> {
+    let timer: unknown = null;
+    const timeout = new Promise<readonly KeywordDetection[]>((resolve) => {
+      timer = this.setTimer(() => resolve([]), this.finishTimeoutMs);
+    });
+    return Promise.race([Promise.resolve(session.finish()), timeout]).finally(() => {
+      if (timer !== null) this.clearTimer(timer);
     });
   }
 

@@ -78,7 +78,10 @@ are listed:
    speakers.
 3. At least `sample.min_heldout_speakers` held-out speakers and `sample.min_trials_per_code` trials
    per code.
-4. The false-accept rate at the reference SNR is at most `false_accepts.max_rate` (3%, VOX-05).
+4. The false-accept rate (noise-only plus out-of-vocabulary trials) is at most
+   `false_accepts.max_rate` (3%, VOX-05) at every noisy SNR condition (`judge_at: worst`, the
+   default; 0 dB is the loudest market noise), or at the reference SNR only with
+   `judge_at: reference`.
 5. p95 latency is at most `latency.max_p95_ms`, and p95 RTF is at most `latency.max_rtf`.
 6. A propose threshold exists.
 

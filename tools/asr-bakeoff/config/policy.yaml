@@ -28,6 +28,10 @@ false_accepts:
   # (VOX-05 AC: <= 3 % with recorded 75 dBA market noise).
   max_rate: 0.03
   ci_level: 0.95
+  # Which noise conditions the cap applies to. `worst`: every noisy SNR condition must meet it (the
+  # 0 dB condition is the loudest market noise, closest to the 75 dBA AC). `reference`: only the
+  # accuracy reference SNR (10 dB, the quietest noise; weaker).
+  judge_at: worst
 
 latency:
   # Decision latency from end of audio to result, and real-time factor, on the kiosk SKU.

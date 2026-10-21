@@ -6,14 +6,14 @@ from pathlib import Path
 
 import pytest
 import yaml
-from openpyxl import load_workbook
+from openpyxl import Workbook, load_workbook
 
 from shriii_audio.catalogue import CatalogueError, load_catalogue
 from shriii_audio.cli import main
 from shriii_audio.config import QcConfig
 from shriii_audio.contracts import ContractError
 from shriii_audio.paths import default_catalogue
-from shriii_audio.scripts import Translation, load_direction, script_rows, write_scripts
+from shriii_audio.scripts import Translation, _cell, load_direction, script_rows, write_scripts
 
 
 def test_real_catalogue_loads() -> None:
@@ -117,3 +117,18 @@ def test_cli_scripts(tmp_path: Path) -> None:
     assert main(["scripts", "--out", str(tmp_path), "--language", "hi-IN", "--translations", f"hi-IN={tr}"]) == 0
     html = (tmp_path / "scripts" / "recording-script.hi-IN.html").read_text(encoding="utf-8")
     assert "नमस्ते!" in html and "nuh-MUS-tay" in html
+
+
+def test_text_starting_with_equals_is_never_a_formula(tmp_path: Path) -> None:
+    wb = Workbook()
+    ws = wb.active
+    assert ws is not None
+    _cell(ws, 1, 1, '=HYPERLINK("http://example.invalid","x")')
+    _cell(ws, 1, 2, 1.5)
+    path = tmp_path / "t.xlsx"
+    wb.save(path)
+    back = load_workbook(path).active
+    assert back is not None
+    assert back.cell(1, 1).data_type == "s"
+    assert back.cell(1, 1).value == '=HYPERLINK("http://example.invalid","x")'
+    assert back.cell(1, 2).value == 1.5

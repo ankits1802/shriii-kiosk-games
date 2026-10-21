@@ -75,4 +75,38 @@ describe('RemoteKeywordEngine over a MessageChannel', () => {
     channel.port1.close();
     channel.port2.close();
   });
+
+  it('drops malformed requests and survives a session that cannot be created', async () => {
+    let handler: (m: unknown) => void = () => undefined;
+    const replies: unknown[] = [];
+    const transport = {
+      postMessage: (m: unknown) => replies.push(m),
+      onMessage: (h: (m: unknown) => void) => {
+        handler = h;
+        return () => undefined;
+      },
+    };
+    const engine = new ScriptedEngine([]);
+    await engine.prepare(grammar());
+    const stop = serveKeywordEngine(engine, transport);
+    expect(() => {
+      handler({ t: 'accept', sid: 1, samples: [0.5, 0.5] });
+      handler({ t: 'open', sid: 'x', vocabulary: ['yes'] });
+      handler({ t: 'open', sid: 1, vocabulary: [1, 2] });
+      handler({ t: 'bogus' });
+      handler(null);
+    }).not.toThrow();
+    expect(engine.sessions).toHaveLength(0);
+    engine.createSession = () => {
+      throw new Error('native failure');
+    };
+    expect(() => handler({ t: 'open', sid: 2, vocabulary: ['yes'] })).not.toThrow();
+    const frame = new Float32Array([0.1, 0.2]);
+    handler({ t: 'accept', sid: 2, samples: frame });
+    expect(isZero(frame)).toBe(true);
+    handler({ t: 'finish', id: 9, sid: 2 });
+    await new Promise((r) => setTimeout(r, 0));
+    expect(replies).toContainEqual({ t: 'finished', id: 9, sid: 2, list: [] });
+    stop();
+  });
 });

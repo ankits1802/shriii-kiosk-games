@@ -6,6 +6,7 @@ import dataclasses
 import json
 from datetime import date
 from pathlib import Path
+from typing import Literal
 
 import pytest
 from conftest import SMALL_VOCAB
@@ -13,11 +14,11 @@ from conftest import SMALL_VOCAB
 from shriii_asr_bakeoff.asr_config import build_asr_config, write_asr_configs
 from shriii_asr_bakeoff.audio import load_16k
 from shriii_asr_bakeoff.cli import main
-from shriii_asr_bakeoff.config import TOOL_ROOT, Conditions, EngineSpec, load_engines, load_policy
+from shriii_asr_bakeoff.config import TOOL_ROOT, Conditions, EngineSpec, Snr, load_engines, load_policy
 from shriii_asr_bakeoff.dataset import DatasetError, load_dataset
 from shriii_asr_bakeoff.engines import create_engine
 from shriii_asr_bakeoff.report import render
-from shriii_asr_bakeoff.runner import EngineLanguageArtifacts, run_bakeoff
+from shriii_asr_bakeoff.runner import EngineLanguageArtifacts, Trial, run_bakeoff, summarise
 from shriii_asr_bakeoff.schema import SchemaError, validate
 
 KWS_DIR = (
@@ -214,3 +215,35 @@ def test_real_sherpa_kws_engine_spots_keyword() -> None:
     assert rec.score is not None and rec.score >= 0.15
     assert engine.recognize(audio, ["forever"]).label is None
     engine.close()
+
+
+def test_false_accept_gate_judges_the_loudest_noise_by_default(small_dataset: Path) -> None:
+    dataset = load_dataset(small_dataset)
+    vocab = dataclasses.replace(SMALL_VOCAB, prompts={"generic.yes_no": ("yes", "no")})
+
+    def t(split: str, kind: str, truth: str | None, snr: Snr, label: str | None) -> Trial:
+        return Trial("e", "hi-IN", split, "generic.yes_no", kind, truth, snr, None, None, label, 0.9, 1.0, 1.0, 0.1)
+
+    trials = [t("calib", "keyword", "yes", 10.0, "yes") for _ in range(10)]
+    trials += [t("heldout", "noise_only", None, 10.0, None) for _ in range(20)]
+    # 0 dB (loudest market noise): 5 of 20 noise windows produce a label -> 25 % false accepts
+    trials += [t("heldout", "noise_only", None, 0.0, "yes" if k < 5 else None) for k in range(20)]
+    conditions = Conditions(
+        seed=1,
+        snr_db=(10.0, 0.0),
+        noise_dir=Path("unused"),
+        synthetic_fallback=True,
+        noise_only_per_prompt=20,
+        oov_per_prompt=0,
+        window_s=1.0,
+    )
+
+    def fa_reasons(judge_at: Literal["worst", "reference"]) -> list[str]:
+        policy = dataclasses.replace(load_policy(), false_accept_judge_at=judge_at)
+        lang, *_ = summarise(trials, "hi-IN", dataset, vocab, policy, conditions, 0.0)
+        return [r for r in lang["prompts"][0]["reasons"] if r.startswith("false-accept")]
+
+    assert load_policy().false_accept_judge_at == "worst"
+    worst = fa_reasons("worst")
+    assert len(worst) == 1 and "at 0 dB" in worst[0]
+    assert fa_reasons("reference") == []  # the weaker setting only looks at 10 dB

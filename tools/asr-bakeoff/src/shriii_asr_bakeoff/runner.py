@@ -299,8 +299,15 @@ def summarise(
     rtf = [t.latency_ms / 1000 / t.audio_s for t in held if t.audio_s > 0]
     audio_s = sum(t.audio_s for t in held)
     heldout_speakers = len({s.speaker_id for s in dataset.speakers_for(language, "heldout")})
-    ref_neg = [t for t in held if t.kind in ("noise_only", "oov") and t.snr_db == ref]
-    fa_ref = proportion(sum(accepted(t) for t in ref_neg), len(ref_neg), lvl)
+    # False-accept gate: per noisy SNR condition (keyword-free trials pooled across sources), judged at
+    # the reference SNR only or at every condition (worst case), as the policy says.
+    fa_snrs = [s for s in conditions.snr_db if s != "clean"]
+    if policy.false_accept_judge_at == "reference":
+        fa_snrs = [s for s in fa_snrs if s == ref]
+    fa_by_snr: list[tuple[Snr, dict[str, Any]]] = []
+    for snr in fa_snrs:
+        neg = [t for t in held if t.kind in ("noise_only", "oov") and t.snr_db == snr]
+        fa_by_snr.append((snr, proportion(sum(accepted(t) for t in neg), len(neg), lvl)))
     p95 = percentile(lat, 95)
     rtf95 = percentile(rtf, 95)
 
@@ -327,8 +334,11 @@ def summarise(
             n_c = sum(1 for t in rows if t.truth == c)
             if n_c < policy.min_trials_per_code:
                 reasons.append(f"code {c}: {n_c} trials < {policy.min_trials_per_code}")
-        if fa_ref["p"] is None or fa_ref["p"] > policy.max_false_accept_rate:
-            reasons.append(f"false-accept rate at {ref:g} dB {fa_ref['p']} > {policy.max_false_accept_rate}")
+        if not fa_by_snr:
+            reasons.append("no keyword-free trials at the judged noise conditions")
+        for snr, fa in fa_by_snr:
+            if fa["p"] is None or fa["p"] > policy.max_false_accept_rate:
+                reasons.append(f"false-accept rate at {snr:g} dB {fa['p']} > {policy.max_false_accept_rate}")
         if p95 > policy.max_p95_latency_ms:
             reasons.append(f"p95 latency {p95:.0f} ms > {policy.max_p95_latency_ms:g} ms")
         if rtf95 > policy.max_rtf:
@@ -469,6 +479,7 @@ def run_bakeoff(
             "max_gap_pp": policy.max_gap_pp,
             "min_heldout_speakers": policy.min_heldout_speakers,
             "max_false_accept_rate": policy.max_false_accept_rate,
+            "false_accept_judge_at": policy.false_accept_judge_at,
         },
         "host": {
             "platform": platform.platform(),

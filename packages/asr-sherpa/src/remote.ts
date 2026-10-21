@@ -49,8 +49,33 @@ type EngineReply =
       readonly list: readonly KeywordDetection[];
     };
 
+const isId = (v: unknown): v is number => typeof v === 'number' && Number.isSafeInteger(v);
+
+/**
+ * Structural validation of a request from the other context. The host may sit in a more privileged
+ * process (Electron main), so malformed messages are dropped instead of reaching the engine.
+ */
 function isRequest(m: unknown): m is EngineRequest {
-  return typeof m === 'object' && m !== null && typeof (m as { t?: unknown }).t === 'string';
+  if (typeof m !== 'object' || m === null) return false;
+  const r = m as Record<string, unknown>;
+  switch (r.t) {
+    case 'prepare':
+      return isId(r.id) && typeof r.grammar === 'object' && r.grammar !== null;
+    case 'open':
+      return (
+        isId(r.sid) &&
+        Array.isArray(r.vocabulary) &&
+        r.vocabulary.every((c) => typeof c === 'string')
+      );
+    case 'accept':
+      return isId(r.sid) && r.samples instanceof Float32Array;
+    case 'finish':
+      return isId(r.id) && isId(r.sid);
+    case 'dispose':
+      return isId(r.sid);
+    default:
+      return false;
+  }
 }
 
 /**
@@ -72,7 +97,12 @@ export function serveKeywordEngine(engine: KeywordEngine, transport: MessageTran
         break;
       case 'open':
         sessions.get(m.sid)?.dispose();
-        sessions.set(m.sid, engine.createSession(m.vocabulary));
+        sessions.delete(m.sid);
+        try {
+          sessions.set(m.sid, engine.createSession(m.vocabulary));
+        } catch {
+          /* no session: accepts are dropped (and wiped) and finish answers with no detections */
+        }
         break;
       case 'accept': {
         const s = sessions.get(m.sid);
@@ -89,10 +119,12 @@ export function serveKeywordEngine(engine: KeywordEngine, transport: MessageTran
       }
       case 'finish': {
         const s = sessions.get(m.sid);
-        Promise.resolve(s ? s.finish() : []).then(
-          (list) => reply({ t: 'finished', id: m.id, sid: m.sid, list }),
-          () => reply({ t: 'finished', id: m.id, sid: m.sid, list: [] }),
-        );
+        Promise.resolve()
+          .then(() => (s ? s.finish() : []))
+          .then(
+            (list) => reply({ t: 'finished', id: m.id, sid: m.sid, list }),
+            () => reply({ t: 'finished', id: m.id, sid: m.sid, list: [] }),
+          );
         break;
       }
       case 'dispose':
@@ -123,6 +155,7 @@ export class RemoteKeywordEngine implements KeywordEngine {
     this.name = name;
     this.transport = transport;
     this.off = transport.onMessage((m) => {
+      if (typeof m !== 'object' || m === null) return;
       const r = m as EngineReply;
       if (r.t === 'detections') this.queues.get(r.sid)?.push(...r.list);
       else if (r.t === 'prepared' || r.t === 'finished') {

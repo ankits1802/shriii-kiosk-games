@@ -43,6 +43,7 @@ class Policy:
     min_heldout_speakers: int
     min_trials_per_code: int
     max_false_accept_rate: float
+    false_accept_judge_at: Literal["worst", "reference"]
     max_p95_latency_ms: float
     max_rtf: float
     propose_min_precision: float
@@ -66,6 +67,9 @@ def load_policy(path: Path | None = None) -> Policy:
         judge = acc["judge_on"]
         if judge not in ("point", "lower_ci"):
             raise ConfigError("accuracy.judge_on must be point or lower_ci")
+        fa_judge = fa.get("judge_at", "worst")
+        if fa_judge not in ("worst", "reference"):
+            raise ConfigError("false_accepts.judge_at must be worst or reference")
         runtime = {k: float(v) for k, v in raw["runtime"].items()}
         for k in ("noise_max_dbfs", "max_listen_ms", "vad_preroll_ms", "settle_ms"):
             if k not in runtime:
@@ -81,6 +85,7 @@ def load_policy(path: Path | None = None) -> Policy:
             min_heldout_speakers=int(samp["min_heldout_speakers"]),
             min_trials_per_code=int(samp["min_trials_per_code"]),
             max_false_accept_rate=float(fa["max_rate"]),
+            false_accept_judge_at=fa_judge,
             max_p95_latency_ms=float(lat["max_p95_ms"]),
             max_rtf=float(lat["max_rtf"]),
             propose_min_precision=float(tiers["propose_min_precision"]),

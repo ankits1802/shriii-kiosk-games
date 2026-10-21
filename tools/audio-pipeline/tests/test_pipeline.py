@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import json
+import os
+import stat
 from pathlib import Path
 
 import pytest
@@ -16,7 +18,7 @@ from shriii_audio.config import QcConfig
 from shriii_audio.contracts import validate
 from shriii_audio.process import BatchResult, process_directory
 from shriii_audio.report import write_report
-from shriii_audio.signing import SigningKey, load_public_key, sha256_file
+from shriii_audio.signing import SigningError, SigningKey, generate_key, load_public_key, sha256_file
 from shriii_audio.status import write_status
 
 pytestmark = pytest.mark.ffmpeg
@@ -230,6 +232,74 @@ def test_promote_and_carry_over(
     assert entry["review_state"] == "audio_qc"
     # clips not in this batch were merged from the previous manifest
     assert {e["key"] for e in hi["audio_clips"]} == {"guide.hello", "guide.bye", "guide.takes", "guide.long"}
+
+
+def test_review_states_only_come_from_a_verified_manifest(
+    batch: BatchResult,
+    signing_key: tuple[SigningKey, Path],
+    tmp_path: Path,
+) -> None:
+    key, _ = signing_key
+    out = tmp_path / "out"
+    manifest.build_manifests(batch, out, key, pack_version="0.2.0")
+    packs = out / "packs"
+    mpath = packs / "manifest.hi-IN.json"
+    original = mpath.read_bytes()
+
+    # Hand-editing review_state to "approved" must not be carried over or re-signed.
+    forged = json.loads(original)
+    for e in forged["audio_clips"]:
+        e["review_state"] = "approved"
+    mpath.write_text(json.dumps(forged), encoding="utf-8")
+    with pytest.raises(manifest.ManifestError, match="does not verify"):
+        manifest.build_manifests(batch, out, key, pack_version="0.2.1")
+    approvals = tmp_path / "approvals.yaml"
+    hello = next(e for e in forged["audio_clips"] if e["key"] == "guide.hello")
+    approvals.write_text(
+        yaml.safe_dump(
+            {
+                "approvals": [
+                    {
+                        "line_id": "guide.hello",
+                        "language": "hi-IN",
+                        "sha256": hello["sha256"],
+                        "state": "flagged_for_revision",
+                        "by": "lead-hi",
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+    with pytest.raises(manifest.ManifestError, match="does not verify"):
+        manifest.promote(packs, approvals, key)
+    # --no-merge rebuilds from the batch and ignores the untrusted states.
+    manifest.build_manifests(batch, out, key, pack_version="0.2.1", merge_previous=False)
+    hi = json.loads(mpath.read_text(encoding="utf-8"))
+    assert {e["review_state"] for e in hi["audio_clips"]} == {"audio_qc"}
+
+    # A missing signature file is refused too.
+    sig = packs / "manifest.hi-IN.sig.json"
+    sig_bytes = sig.read_bytes()
+    sig.unlink()
+    with pytest.raises(manifest.ManifestError, match="no signature"):
+        manifest.promote(packs, approvals, key)
+    sig.write_bytes(sig_bytes)
+
+    # A flag sticks to the exact bytes it was raised on when the same audio is re-processed.
+    manifest.promote(packs, approvals, key)
+    manifest.build_manifests(batch, out, key, pack_version="0.2.2")
+    hi = json.loads(mpath.read_text(encoding="utf-8"))
+    assert next(e for e in hi["audio_clips"] if e["key"] == "guide.hello")["review_state"] == "flagged_for_revision"
+
+
+def test_private_key_is_owner_only_and_never_overwritten(tmp_path: Path) -> None:
+    pem = tmp_path / "k.pem"
+    generate_key("audio-test-2", pem, tmp_path / "k.pub.json")
+    if os.name == "posix":
+        assert stat.S_IMODE(pem.stat().st_mode) == 0o600
+    with pytest.raises(SigningError, match="refusing to overwrite"):
+        generate_key("audio-test-2", pem, tmp_path / "k2.pub.json")
 
 
 def test_status_and_report(batch: BatchResult, qc: QcConfig, tmp_path: Path, catalogue_file: Path) -> None:

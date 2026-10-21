@@ -158,6 +158,15 @@ COLUMNS: list[tuple[str, int]] = [
 ]
 
 
+def _cell(ws: Any, row: int, column: int, value: Any) -> Any:
+    """Write a cell; text is always stored as text, so a script line starting with "=" never becomes a
+    live formula in the actor's or reviewer's spreadsheet."""
+    cell = ws.cell(row=row, column=column, value=value)
+    if isinstance(value, str) and value.startswith("="):
+        cell.data_type = "s"
+    return cell
+
+
 def write_xlsx(rows: list[ScriptRow], language: str, catalogue: Catalogue, path: Path, direction: Direction) -> Path:
     wb = Workbook()
     ws = wb.active
@@ -202,7 +211,7 @@ def write_xlsx(rows: list[ScriptRow], language: str, catalogue: Catalogue, path:
             "",
         ]
         for c, v in enumerate(values, start=1):
-            cell = ws.cell(row=r, column=c, value=v)
+            cell = _cell(ws, r, c, v)
             cell.alignment = wrap
             if not row.ready:
                 cell.fill = not_ready
@@ -230,8 +239,8 @@ def write_xlsx(rows: list[ScriptRow], language: str, catalogue: Catalogue, path:
         *[("", g) for g in direction.general],
     ]
     for i, (k, v) in enumerate(meta, start=1):
-        info.cell(row=i, column=1, value=k).font = Font(bold=True)
-        info.cell(row=i, column=2, value=v).alignment = Alignment(wrap_text=True)
+        _cell(info, i, 1, k).font = Font(bold=True)
+        _cell(info, i, 2, v).alignment = Alignment(wrap_text=True)
     info.column_dimensions["A"].width = 36
     info.column_dimensions["B"].width = 100
     path.parent.mkdir(parents=True, exist_ok=True)
