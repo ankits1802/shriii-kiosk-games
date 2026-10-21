@@ -1,0 +1,2 @@
+# R sources, scripts and the Rscript entry point run inside Linux containers: keep LF endings.
+* text=auto eol=lf

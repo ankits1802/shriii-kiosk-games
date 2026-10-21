@@ -1,0 +1,4 @@
+#!/usr/bin/env Rscript
+# shriiipsy command line entry point (JSON in / JSON out). See R/cli.R for the protocol.
+status <- shriiipsy::cli_main(commandArgs(trailingOnly = TRUE))
+quit(save = "no", status = status)

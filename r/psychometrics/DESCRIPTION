@@ -1,0 +1,44 @@
+Package: shriiipsy
+Type: Package
+Title: SHRIII Psychometrics Backend (Invariance, IRT, DIF, Mixed Models, Norming)
+Version: 0.1.0
+Authors@R: person("SHRIII", "Research Engineering", role = c("aut", "cre"), email = "research-eng@shriii.invalid")
+Description: The R side of the SHRIII validation engine (plan VAL-01, VAL-04, VAL-05, VAL-07, VAL-08a,
+    VAL-08, VAL-09, VAL-11). Multi-group CFA measurement invariance (configural, thresholds, metric,
+    scalar, strict) with lavaan and semTools including WLSMV for ordinal items, change-in-fit decision
+    rules and a pre-registered partial invariance search; graded response models and likelihood-ratio
+    IRT DIF with anchor selection (mirt); ordinal logistic DIF (lordif); explanatory IRT / GLMM DIF for
+    trial-level game data (lme4, glmmTMB); logistic mixed models for person random slopes and their
+    model-based reliability; weighted continuous norming (cNORM, GAMLSS); ICC, alpha and correlation
+    cross-checks (irr, psych); Bayesian approximate invariance (blavaan). Exposed as a JSON-in /
+    JSON-out command line over Parquet or CSV inputs, returning typed results with estimate, CI, n,
+    method, warnings and provenance.
+License: file LICENSE
+Encoding: UTF-8
+Depends: R (>= 4.6.0)
+Imports:
+    blavaan,
+    cNORM,
+    digest,
+    gamlss,
+    gamlss.dist,
+    glmmTMB,
+    irr,
+    jsonlite,
+    lavaan,
+    lme4,
+    lordif,
+    methods,
+    mirt,
+    nanoparquet,
+    psych,
+    semTools,
+    tools,
+    stats,
+    utils,
+    yaml
+Suggests:
+    testthat (>= 3.0.0),
+    withr
+Config/testthat/edition: 3
+Config/shriii/ppm_snapshot: 2026-10-15

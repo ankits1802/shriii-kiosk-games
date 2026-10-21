@@ -1,0 +1,118 @@
+# Contract compatibility (PLT-02 policy, PLT-04 AC "an incompatible schema PR fails unless it bumps the major
+# version and includes migration notes"). Compares packages/contracts/schemas on the PR head with the merge base
+# on main: breaking changes inside an existing *.vN.schema.json fail; forward changes (new enum values or event
+# types) pass with a warning because the backend must deploy before kiosks send them.
+name: Schema compatibility
+
+on:
+  pull_request:
+    paths:
+      - packages/contracts/schemas/**
+      - packages/contracts/migrations/**
+      - .github/scripts/schema_compat.py
+      - .github/workflows/schema-compat.yml
+  push:
+    branches: [main]
+    paths:
+      - packages/contracts/schemas/**
+  merge_group:
+  workflow_dispatch:
+    inputs:
+      base_ref:
+        description: Git ref to compare against
+        required: false
+        default: origin/main
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: schema-compat-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  compat:
+    name: Backward / forward compatibility vs main
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.14"
+      - name: Resolve base revision
+        id: base
+        env:
+          EVENT: ${{ github.event_name }}
+          PR_BASE_REF: ${{ github.base_ref }}
+          MERGE_GROUP_BASE: ${{ github.event.merge_group.base_sha }}
+          PUSH_BEFORE: ${{ github.event.before }}
+          BASE_REF_INPUT: ${{ inputs.base_ref || 'origin/main' }}
+        run: |
+          if [ "$EVENT" = "pull_request" ]; then
+            base="$(git merge-base "origin/${PR_BASE_REF}" HEAD)"
+          elif [ "$EVENT" = "merge_group" ]; then
+            base="$MERGE_GROUP_BASE"
+          elif [ "$EVENT" = "push" ]; then
+            base="$PUSH_BEFORE"
+            # New branch or force push: 'before' is all zeros or no longer reachable; compare with the parent.
+            if ! git cat-file -e "${base}^{commit}" 2>/dev/null; then base="$(git rev-parse HEAD~1)"; fi
+          else
+            base="$(git rev-parse --verify "${BASE_REF_INPUT}^{commit}")"
+          fi
+          echo "sha=$base" >> "$GITHUB_OUTPUT"
+          echo "Comparing against $base"
+      - name: Extract base schemas
+        run: |
+          mkdir -p "$RUNNER_TEMP/base"
+          if git cat-file -e "${{ steps.base.outputs.sha }}:packages/contracts/schemas" 2>/dev/null; then
+            git archive "${{ steps.base.outputs.sha }}" packages/contracts/schemas | tar -x -C "$RUNNER_TEMP/base"
+          fi
+          mkdir -p "$RUNNER_TEMP/base/packages/contracts/schemas"
+      - name: Compare
+        id: compare
+        run: |
+          set +e
+          python .github/scripts/schema_compat.py \
+            --base "$RUNNER_TEMP/base/packages/contracts/schemas" \
+            --head packages/contracts/schemas \
+            --migrations packages/contracts/migrations \
+            --out schema-compat.md
+          status=$?
+          cat schema-compat.md >> "$GITHUB_STEP_SUMMARY"
+          python .github/scripts/schema_compat.py \
+            --base "$RUNNER_TEMP/base/packages/contracts/schemas" \
+            --head packages/contracts/schemas \
+            --migrations packages/contracts/migrations --json > schema-compat.json
+          if grep -q '"severity": "forward"' schema-compat.json; then
+            echo "::warning title=Forward-incompatible contract change::Deploy the backend before any kiosk release that emits the new values (see job summary)."
+          fi
+          exit $status
+      - name: Comment on the PR
+        if: always() && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const fs = require('fs');
+            if (!fs.existsSync('schema-compat.md')) return;
+            const body = '<!-- schema-compat -->\n' + fs.readFileSync('schema-compat.md', 'utf8');
+            const { owner, repo } = context.repo;
+            const issue_number = context.issue.number;
+            const comments = await github.paginate(github.rest.issues.listComments, { owner, repo, issue_number });
+            const mine = comments.find((c) => c.body && c.body.startsWith('<!-- schema-compat -->'));
+            if (mine) {
+              await github.rest.issues.updateComment({ owner, repo, comment_id: mine.id, body });
+            } else if (!body.includes('No contract changes.')) {
+              await github.rest.issues.createComment({ owner, repo, issue_number, body });
+            }
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: schema-compat
+          path: |
+            schema-compat.md
+            schema-compat.json
+          if-no-files-found: ignore

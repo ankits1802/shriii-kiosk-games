@@ -10,3 +10,12 @@ minimumReleaseAgeExclude:
   - "@turbo/windows-arm64@2.11.10"
   - turbo@2.11.10
   - vite@8.3.5
+# Dependency build scripts are denied by default (pnpm 11+ supply-chain policy). Approve only what needs one:
+#   esbuild             postinstall verifies/links the platform binary used by Vite and the Electron main build.
+#   electron-winstaller install script only selects a 7-Zip binary for Squirrel.Windows installers; the kiosk
+#                       ships an unpacked Windows dir (electron-builder.yml win.target: dir), so it stays denied.
+# electron itself has no install script (the binary is fetched by `pnpm --filter @shriii/kiosk-electron
+# electron:install`), and the outbox uses node:sqlite, so there are no native modules to build.
+allowBuilds:
+  esbuild: true
+  electron-winstaller: false

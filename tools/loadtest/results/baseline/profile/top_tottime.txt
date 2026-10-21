@@ -1,0 +1,53 @@
+         5905480 function calls (5303821 primitive calls) in 28.156 seconds
+
+   Ordered by: internal time
+   List reduced from 931 to 45 due to restriction <45>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+     6400   11.626    0.002   11.626    0.002 {built-in method select.select}
+47914/6000    1.917    0.000    4.630    0.001 strictness.py:25(unknown_fields)
+ 194864/6    1.168    0.000    1.867    0.311 canonical.py:84(_fast_prepare)
+  1797813    1.093    0.000    1.097    0.000 {built-in method builtins.isinstance}
+     3006    0.974    0.000    1.224    0.000 {method 'validate_python' of 'pydantic_core._pydantic_core.SchemaValidator' objects}
+396568/72000    0.809    0.000    4.084    0.000 strictness.py:37(_walk)
+     3000    0.670    0.000    0.687    0.000 {method 'to_python' of 'pydantic_core._pydantic_core.SchemaSerializer' objects}
+     9032    0.575    0.000    0.575    0.000 encoder.py:207(iterencode)
+   463235    0.571    0.000    0.576    0.000 {built-in method builtins.getattr}
+       20    0.507    0.025    0.708    0.035 _queries.py:376(_split_query)
+    18076    0.423    0.000    1.415    0.000 compiler.py:3951(visit_bindparam)
+        6    0.345    0.058    2.606    0.434 crud.py:1564(_extend_values_for_multiparams)
+       20    0.344    0.017    1.099    0.055 _queries.py:198(_query2pg_nocache)
+   190019    0.336    0.000    0.336    0.000 {method 'isascii' of 'str' objects}
+    54583    0.326    0.000    0.326    0.000 weakref.py:325(__getitem__)
+   396722    0.320    0.000    0.321    0.000 {method 'update' of 'dict' objects}
+    54632    0.300    0.000    0.439    0.000 coercions.py:323(expect)
+    33036    0.281    0.000    0.401    0.000 uuid.py:178(__init__)
+    47914    0.261    0.000    0.395    0.000 _utils.py:425(__get__)
+    18076    0.224    0.000    1.954    0.000 crud.py:520(_create_bind_param)
+    21048    0.217    0.000    0.822    0.000 bulk_persistence.py:407(_get_orm_crud_kv_pairs)
+     3000    0.210    0.000    7.613    0.003 ingestion.py:505(_prepare)
+    18208    0.206    0.000    0.226    0.000 elements.py:2060(__init__)
+    24064    0.200    0.000    0.412    0.000 base.py:2214(render_bind_cast)
+        6    0.196    0.033   22.071    3.678 ingestion.py:567(_process_chunk)
+42161/6009    0.178    0.000    2.684    0.000 visitors.py:116(_compiler_dispatch)
+     9080    0.163    0.000    0.163    0.000 _pipeline_base.py:108(_communicate_gen)
+    18076    0.162    0.000    0.162    0.000 {method 'search' of 're.Pattern' objects}
+     6000    0.154    0.000    0.265    0.000 ingestion.py:189(_uuid_or_none)
+    36977    0.125    0.000    0.125    0.000 typing.py:2308(cast)
+    18076    0.119    0.000    0.602    0.000 compiler.py:4281(bindparam_string)
+    36170    0.110    0.000    0.397    0.000 type_api.py:932(dialect_impl)
+   186931    0.106    0.000    0.106    0.000 {method 'append' of 'list' objects}
+     3024    0.103    0.000    0.124    0.000 uuid.py:331(__str__)
+     3000    0.095    0.000    0.782    0.000 main.py:472(model_dump)
+     6004    0.089    0.000    0.160    0.000 _base.py:43(_check_uuid)
+   108208    0.086    0.000    0.086    0.000 {method 'replace' of 'str' objects}
+     3130    0.081    0.000    0.511    0.000 _queries.py:94(dump)
+      802    0.080    0.000    0.080    0.000 {method 'copy' of 'dict' objects}
+   132247    0.071    0.000    0.071    0.000 {method 'items' of 'dict' objects}
+    24064    0.069    0.000    0.212    0.000 compiler.py:1011(process)
+     3000    0.065    0.000    0.339    0.000 ingestion.py:196(_identity)
+     3006    0.064    0.000    0.064    0.000 {method 'isoformat' of 'datetime.datetime' objects}
+    18112    0.061    0.000    0.231    0.000 coercions.py:439(expect_as_key)
+       10    0.059    0.006    0.059    0.006 decoder.py:351(raw_decode)
+
+

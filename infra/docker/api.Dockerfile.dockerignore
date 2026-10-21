@@ -1,0 +1,19 @@
+# Build context filter for infra/docker/api.Dockerfile (BuildKit reads <Dockerfile>.dockerignore).
+# Allow-list: only what the backend image needs.
+*
+!pyproject.toml
+!uv.lock
+!apps/api/
+!python/
+!packages/contracts/schemas/
+!scoring/
+!content/
+!infra/docker/healthcheck.py
+**/__pycache__
+**/*.pyc
+**/.pytest_cache
+**/.mypy_cache
+**/.ruff_cache
+**/.venv
+**/tests/
+**/.data

@@ -1,0 +1,97 @@
+# Electron kiosk runtime (KSK-01): typecheck and unit tests for apps/kiosk-electron and the packages it ships
+# (outbox-sqlite, session-crypto TS + Python reference, escpos-printer), the real-Electron self-test under Xvfb,
+# then an unsigned electron-builder pack for Linux (`--linux dir`) and the same self-test against the packed
+# binary. Runs when the runtime or one of its packages changes, and on every push to main.
+name: Kiosk Electron
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    paths:
+      - apps/kiosk-electron/**
+      - apps/kiosk/**
+      - packages/contracts/**
+      - packages/kiosk-game/**
+      - packages/outbox-sqlite/**
+      - packages/session-crypto/**
+      - packages/escpos-printer/**
+      - package.json
+      - pnpm-lock.yaml
+      - pnpm-workspace.yaml
+      - .nvmrc
+      - .github/workflows/kiosk-electron.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: kiosk-electron-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  FORCE_COLOR: "1"
+  TURBO_TELEMETRY_DISABLED: "1"
+  # No signing material in CI: never look for a code-signing identity.
+  CSC_IDENTITY_AUTO_DISCOVERY: "false"
+  PYTHON_VERSION: "3.14"
+
+jobs:
+  electron:
+    name: Build, test and pack (Linux, unsigned)
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Typecheck (kiosk-electron and its workspace dependencies)
+        run: pnpm --filter "@shriii/kiosk-electron..." typecheck
+      - name: Unit tests (kiosk-electron, outbox-sqlite, session-crypto, escpos-printer)
+        run: >-
+          pnpm --filter @shriii/kiosk-electron --filter @shriii/outbox-sqlite
+          --filter @shriii/session-crypto --filter @shriii/escpos-printer test
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: session-crypto Python reference decryptor (shared test vectors)
+        working-directory: packages/session-crypto/python
+        run: uv run --isolated --no-project --with-editable . --with pytest pytest -q
+      - name: Electron runtime libraries and Xvfb
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq --no-install-recommends xvfb xauth libgtk-3-0t64 libnss3 libasound2t64 \
+            libgbm1 libxss1 libxshmfence1 libdrm2 libxkbcommon0 libatk-bridge2.0-0t64 libcups2t64
+      - name: Electron binary cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/electron
+          key: electron-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: electron-${{ runner.os }}-
+      - name: Download Electron binary
+        run: pnpm --filter @shriii/kiosk-electron electron:install
+      - name: Self-test (unpacked, real Electron under Xvfb)
+        working-directory: apps/kiosk-electron
+        run: |
+          node scripts/build.mjs
+          xvfb-run -a -s "-screen 0 1280x800x24" node scripts/smoke.mjs -- --no-sandbox
+      - name: Pack (electron-builder --linux dir, unsigned)
+        working-directory: apps/kiosk-electron
+        run: |
+          node scripts/build.mjs --with-renderer
+          pnpm exec electron-builder --linux dir --x64 --config electron-builder.yml --publish never
+      - name: Self-test (packed binary under Xvfb)
+        working-directory: apps/kiosk-electron
+        run: xvfb-run -a -s "-screen 0 1280x800x24" node scripts/smoke.mjs --exe release/linux-unpacked/shriii-kiosk -- --no-sandbox
+      - name: Archive packed app (keeps executable bits)
+        run: tar -C apps/kiosk-electron/release -czf kiosk-electron-linux-unpacked.tar.gz linux-unpacked
+      - uses: actions/upload-artifact@v4
+        with:
+          name: kiosk-electron-linux-unpacked
+          path: kiosk-electron-linux-unpacked.tar.gz
+          retention-days: 7

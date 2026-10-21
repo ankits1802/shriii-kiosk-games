@@ -1,0 +1,39 @@
+# Closed vocabularies per language (DRAFT: phrases must pass ITC review, VOX-07, before field use).
+# Codes are the SayOrTouch response codes; every prompt's vocabulary must be a subset of its touch options.
+# Codes are always quoted: YAML 1.1 reads bare yes/no as booleans.
+# `phrases` are the accepted spoken forms (native script first, then common variants). Romanisations are
+# for reviewers only.
+schema_version: '1.0'
+status: draft
+
+prompts:
+  generic.yes_no: ["yes", "no"]
+  generic.wait: [wait]
+  stall.share_offer: [share, "no"]
+  weigh.accept_wait: ["yes", "wait"]
+
+languages:
+  en-IN:
+    codes:
+      "yes": {phrases: ["yes", "yeah"]}
+      "no": {phrases: ["no"]}
+      wait: {phrases: ["wait"]}
+      share: {phrases: ["share"]}
+  hi-IN:
+    codes:
+      "yes": {phrases: ["हाँ", "हाँ जी", "जी हाँ"], romanised: [haan, haan ji, ji haan]}
+      "no": {phrases: ["नहीं", "ना"], romanised: [nahin, naa]}
+      wait: {phrases: ["रुको", "रुकिए"], romanised: [ruko, rukiye]}
+      share: {phrases: ["बाँटो", "बाँट दो"], romanised: [baanto, baant do]}
+  mr-IN:
+    codes:
+      "yes": {phrases: ["हो", "होय"], romanised: [ho, hoy]}
+      "no": {phrases: ["नाही"], romanised: [naahi]}
+      wait: {phrases: ["थांबा", "थांब"], romanised: [thaamba, thaamb]}
+      share: {phrases: ["वाटा", "वाटून द्या"], romanised: [vaata, vaatun dya]}
+  ta-IN:
+    codes:
+      "yes": {phrases: ["ஆமாம்", "சரி"], romanised: [aamaam, sari]}
+      "no": {phrases: ["இல்லை", "வேண்டாம்"], romanised: [illai, vendaam]}
+      wait: {phrases: ["காத்திரு", "இருங்க"], romanised: [kaathiru, irunga]}
+      share: {phrases: ["பகிர்", "பங்கு போடு"], romanised: [pagir, pangu podu]}

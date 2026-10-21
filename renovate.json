@@ -1,0 +1,131 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "description": "SHRIII dependency updates with soak periods (PLT-04). Releases must age before Renovate proposes them; majors age longer; security fixes skip the soak.",
+  "extends": [
+    "config:recommended",
+    ":semanticCommits",
+    ":dependencyDashboard",
+    "helpers:pinGitHubActionDigestsToSemver",
+    "docker:pinDigests",
+    ":maintainLockFilesWeekly"
+  ],
+  "timezone": "Asia/Kolkata",
+  "schedule": ["before 9am on monday"],
+  "labels": ["dependencies"],
+  "prConcurrentLimit": 8,
+  "prHourlyLimit": 4,
+  "minimumReleaseAge": "7 days",
+  "internalChecksFilter": "strict",
+  "rangeStrategy": "pin",
+  "postUpdateOptions": ["pnpmDedupe"],
+  "vulnerabilityAlerts": {
+    "enabled": true,
+    "minimumReleaseAge": null,
+    "schedule": ["at any time"],
+    "labels": ["dependencies", "security"]
+  },
+  "osvVulnerabilityAlerts": true,
+  "packageRules": [
+    {
+      "description": "Patch updates of dev tooling may automerge after the soak once CI is green.",
+      "matchDepTypes": ["devDependencies", "dev"],
+      "matchUpdateTypes": ["patch"],
+      "automerge": true,
+      "automergeType": "pr"
+    },
+    {
+      "description": "Psychometric and scoring numerics change results: soak 21 days, review by the research lead, no automerge.",
+      "matchPackageNames": [
+        "numpy",
+        "scipy",
+        "pandas",
+        "polars",
+        "statsmodels",
+        "pingouin",
+        "semopy",
+        "factor_analyzer",
+        "scikit-learn",
+        "xgboost",
+        "pyarrow"
+      ],
+      "minimumReleaseAge": "21 days",
+      "automerge": false,
+      "groupName": "scientific python stack",
+      "addLabels": ["science-review"]
+    },
+    {
+      "description": "Kiosk timing-critical runtime (rendering, audio, statecharts): soak 21 days, grouped.",
+      "matchPackageNames": [
+        "pixi.js",
+        "pixi-filters",
+        "gsap",
+        "xstate",
+        "electron",
+        "react",
+        "react-dom"
+      ],
+      "minimumReleaseAge": "21 days",
+      "automerge": false,
+      "groupName": "kiosk runtime"
+    },
+    {
+      "description": "Group the FastAPI / SQLAlchemy backend stack.",
+      "matchPackageNames": [
+        "fastapi",
+        "uvicorn",
+        "pydantic",
+        "pydantic-settings",
+        "sqlalchemy",
+        "alembic",
+        "psycopg"
+      ],
+      "groupName": "backend stack"
+    },
+    {
+      "description": "Group JS toolchain (TypeScript, Vite, Vitest, Biome, Turborepo).",
+      "matchPackageNames": [
+        "typescript",
+        "vite",
+        "vitest",
+        "@vitejs/plugin-react",
+        "@biomejs/biome",
+        "turbo"
+      ],
+      "groupName": "js toolchain"
+    },
+    {
+      "description": "PostgreSQL major follows what RDS offers (PLT-08); never bump it automatically.",
+      "matchDatasources": ["docker"],
+      "matchPackageNames": ["postgres"],
+      "matchUpdateTypes": ["major"],
+      "enabled": false
+    },
+    {
+      "description": "Python base image major/minor follows .python-version; review manually.",
+      "matchDatasources": ["docker"],
+      "matchPackageNames": ["python"],
+      "matchUpdateTypes": ["major", "minor"],
+      "enabled": false
+    },
+    {
+      "description": "GitHub Actions: group non-major updates monthly.",
+      "matchManagers": ["github-actions"],
+      "matchUpdateTypes": ["minor", "patch", "digest", "pinDigest"],
+      "groupName": "github actions",
+      "schedule": ["before 9am on the first day of the month"]
+    },
+    {
+      "description": "OpenTofu providers and modules: soak 14 days, grouped.",
+      "matchManagers": ["terraform"],
+      "minimumReleaseAge": "14 days",
+      "groupName": "opentofu providers"
+    },
+    {
+      "description": "Major updates soak for 30 days and never automerge (last rule, so group rules above cannot shorten the soak).",
+      "matchUpdateTypes": ["major"],
+      "minimumReleaseAge": "30 days",
+      "automerge": false,
+      "addLabels": ["major"]
+    }
+  ]
+}

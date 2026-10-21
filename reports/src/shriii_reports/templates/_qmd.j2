@@ -1,0 +1,98 @@
+{#- Quarto (.qmd) macro set: Pandoc Markdown with YAML front matter and Quarto callout blocks.
+    Render with `quarto render <file>.qmd`. Same macro names and signatures as _md.j2. -#}
+{% macro doc_start() -%}
+---
+title: {{ report.title | yaml_str }}
+subtitle: {{ (report.study_id ~ ' - ' ~ report.stage ~ ((' - wave ' ~ report.wave) if report.wave else '') ~ ' - ' ~ (report.status | upper)) | yaml_str }}
+{% if report.authors %}
+author:
+{% for a in report.authors %}
+  - {{ a | yaml_str }}
+{% endfor %}
+{% endif %}
+date: {{ prov.generated_at | yaml_str }}
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    embed-resources: true
+    number-sections: false
+  pdf:
+    toc: true
+execute:
+  enabled: false
+shriii:
+  analysis_run_id: {{ prov.analysis_run_id | yaml_str }}
+  snapshot_sha256: {{ prov.snapshot_sha256 | yaml_str }}
+  bundle_sha256: {{ bundle_sha256 | yaml_str }}
+---
+
+{% endmacro %}
+
+{% macro doc_end() -%}
+{% endmacro %}
+
+{% macro h(level, text) -%}
+{{ '#' * level }} {{ text | prose }}
+
+{% endmacro %}
+
+{% macro p(text) -%}
+{{ text | prose }}
+
+{% endmacro %}
+
+{% macro ul(items) -%}
+{% for i in items %}
+- {{ i | prose }}
+{% endfor %}
+
+{% endmacro %}
+
+{% macro table(headers, rows) -%}
+| {% for c in headers %}{{ c | cell }} | {% endfor %}
+
+|{% for c in headers %} --- |{% endfor %}
+
+{% for r in rows %}
+| {% for c in r %}{{ c | cell }} | {% endfor %}
+
+{% endfor %}
+
+{% endmacro %}
+
+{% macro kv(pairs) -%}
+| Item | Value |
+| --- | --- |
+{% for k, v in pairs %}
+| {{ k | cell }} | {{ v | cell }} |
+{% endfor %}
+
+{% endmacro %}
+
+{% macro callout(kind, title, body) -%}
+::: {.callout-{{ 'warning' if kind in ('warning', 'draft', 'integrity') else 'note' }}}
+## {{ kind | capitalize }}: {{ title | prose }}
+
+{{ body | prose }}
+:::
+
+{% endmacro %}
+
+{% macro review(who, text) -%}
+::: {.callout-important}
+## Review required: {{ who | prose }}
+
+{{ text | prose }}
+:::
+
+{% endmacro %}
+
+{% macro placeholder(text) -%}
+::: {.callout-tip}
+## To be completed
+
+{{ text | prose }}
+:::
+
+{% endmacro %}

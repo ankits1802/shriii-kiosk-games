@@ -1,0 +1,42 @@
+{
+  "name": "@shriii/asr-sherpa",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Closed-vocabulary, opt-in-per-prompt SpeechInput adapter (VOX-04) on sherpa-onnx keyword spotting with VAD gating inside prompt windows, confidence tiers and no audio retention",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./sherpa": {
+      "types": "./src/sherpa/index.ts",
+      "default": "./src/sherpa/index.ts"
+    },
+    "./web": {
+      "types": "./src/web/index.ts",
+      "default": "./src/web/index.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc --noEmit -p tsconfig.json",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run",
+    "test:smoke": "vitest run test/smoke.real-model.test.ts",
+    "lint": "biome check .",
+    "fetch-models": "node scripts/fetch-models.ts"
+  },
+  "peerDependencies": {
+    "@shriii/kiosk-game": "workspace:*"
+  },
+  "optionalDependencies": {
+    "sherpa-onnx-node": "1.13.8"
+  },
+  "devDependencies": {
+    "@shriii/kiosk-game": "workspace:*",
+    "@types/node": "^24.19.2",
+    "typescript": "7.0.2",
+    "vitest": "5.0.5"
+  }
+}

@@ -1,0 +1,351 @@
+diff --git a/apps/api/openapi.json b/apps/api/openapi.json
+index 7998df4..b1b1800 100644
+--- a/apps/api/openapi.json
++++ b/apps/api/openapi.json
+@@ -906,7 +906,7 @@
+           "events"
+         ],
+         "summary": "Upload an idempotent event batch",
+-        "description": "Accepts an ``UploadBatch`` (packages/contracts upload-batch.v1). ``sha256`` must equal the SHA-256 of the RFC 8785 (JCS) serialisation of ``session_chunks``. Replays with the same ``batch_id`` return the stored result (``duplicate_batch=true``). Each event gets ``accepted | duplicate | parked | rejected_terminal | retryable``; scorable events wait in consent parking until core consent arrives; ``server_received_at`` is set by the server.",
++        "description": "Accepts an ``UploadBatch`` (packages/contracts upload-batch.v1). ``sha256`` must equal the SHA-256 of the RFC 8785 (JCS) serialisation of ``session_chunks``. Replays with the same ``batch_id`` return the stored result (``duplicate_batch=true``). Each event gets ``accepted | duplicate | parked | rejected_terminal | retryable``; scorable events wait in consent parking until core consent arrives; ``server_received_at`` is set by the server. When all processing slots are busy the server answers 503 with ``Retry-After``; kiosks retry the same body later (nothing was stored).",
+         "operationId": "upload_batch_api_v1_events_batch_post",
+         "requestBody": {
+           "content": {
+@@ -960,6 +960,9 @@
+           },
+           "422": {
+             "description": "Batch envelope invalid / chunk cannot be decrypted"
++          },
++          "503": {
++            "description": "Ingestion busy; retry after the Retry-After delay"
+           }
+         }
+       }
+diff --git a/apps/api/src/shriii_api/api/v1/events.py b/apps/api/src/shriii_api/api/v1/events.py
+index 5e8e84e..33950d7 100644
+--- a/apps/api/src/shriii_api/api/v1/events.py
++++ b/apps/api/src/shriii_api/api/v1/events.py
+@@ -4,17 +4,31 @@ from __future__ import annotations
+ 
+ from typing import Annotated, Any
+ 
+-from fastapi import APIRouter, Depends, Request
++import anyio
++from fastapi import APIRouter, Depends, HTTPException, Request
+ from shriii_contracts import UploadBatch, UploadBatchResult
++from starlette.concurrency import run_in_threadpool
+ 
+ from shriii_api.api.deps import DbSession, SettingsDep, require, set_audit
+ from shriii_api.auth.rbac import Perm, Principal
+ from shriii_api.services.ingestion import ingest_batch
++from shriii_api.settings import Settings
+ 
+ router = APIRouter(prefix="/events", tags=["events"])
+ 
+ _BATCH_SCHEMA = UploadBatch.model_json_schema(ref_template="#/components/schemas/{model}")
+ 
++_limiters: dict[int, anyio.CapacityLimiter] = {}
++
++
++def _limiter(settings: Settings) -> anyio.CapacityLimiter:
++    """Per-process admission control for ingestion (created lazily inside the event loop)."""
++    size = max(1, settings.ingest_max_concurrency)
++    limiter = _limiters.get(size)
++    if limiter is None:
++        limiter = _limiters[size] = anyio.CapacityLimiter(size)
++    return limiter
++
+ 
+ @router.post(
+     "/batch",
+@@ -24,7 +38,9 @@ _BATCH_SCHEMA = UploadBatch.model_json_schema(ref_template="#/components/schemas
+         "SHA-256 of the RFC 8785 (JCS) serialisation of ``session_chunks``. Replays with the same "
+         "``batch_id`` return the stored result (``duplicate_batch=true``). Each event gets "
+         "``accepted | duplicate | parked | rejected_terminal | retryable``; scorable events wait in "
+-        "consent parking until core consent arrives; ``server_received_at`` is set by the server."
++        "consent parking until core consent arrives; ``server_received_at`` is set by the server. "
++        "When all processing slots are busy the server answers 503 with ``Retry-After``; kiosks retry "
++        "the same body later (nothing was stored)."
+     ),
+     response_model=UploadBatchResult,
+     openapi_extra={
+@@ -38,6 +54,7 @@ _BATCH_SCHEMA = UploadBatch.model_json_schema(ref_template="#/components/schemas
+         409: {"description": "batch_id reused for different content"},
+         413: {"description": "Batch too large"},
+         422: {"description": "Batch envelope invalid / chunk cannot be decrypted"},
++        503: {"description": "Ingestion busy; retry after the Retry-After delay"},
+     },
+ )
+ async def upload_batch(
+@@ -47,9 +64,21 @@ async def upload_batch(
+     principal: Annotated[Principal, Depends(require(Perm.EVENTS_INGEST))],
+ ) -> dict[str, Any]:
+     body = await request.body()
+-    from starlette.concurrency import run_in_threadpool  # noqa: PLC0415
+-
+-    result = await run_in_threadpool(ingest_batch, db, body, principal, settings)
++    limiter = _limiter(settings)
++    try:
++        with anyio.fail_after(settings.ingest_queue_timeout_s):
++            await limiter.acquire()
++    except TimeoutError:
++        set_audit(request, action="events.batch", resource_type="batch", outcome_detail="ingest_busy")
++        raise HTTPException(
++            status_code=503,
++            detail={"code": "ingest_busy", "message": "all ingestion slots are busy; retry later"},
++            headers={"Retry-After": str(settings.ingest_retry_after_s)},
++        ) from None
++    try:
++        result = await run_in_threadpool(ingest_batch, db, body, principal, settings)
++    finally:
++        limiter.release()
+     set_audit(
+         request,
+         action="events.batch",
+diff --git a/apps/api/src/shriii_api/cli.py b/apps/api/src/shriii_api/cli.py
+index 88fea2b..6c31b94 100644
+--- a/apps/api/src/shriii_api/cli.py
++++ b/apps/api/src/shriii_api/cli.py
+@@ -76,6 +76,12 @@ def main(argv: list[str] | None = None) -> int:
+     p.add_argument("--host", default="127.0.0.1")
+     p.add_argument("--port", type=int, default=8000)
+     p.add_argument("--reload", action="store_true")
++    p.add_argument(
++        "--workers",
++        type=int,
++        default=1,
++        help="uvicorn worker processes (ingestion is CPU-bound per process; use about one per core)",
++    )
+     args = parser.parse_args(argv)
+     settings = get_settings()
+ 
+@@ -141,7 +147,14 @@ def main(argv: list[str] | None = None) -> int:
+     elif args.cmd == "serve":
+         import uvicorn  # noqa: PLC0415
+ 
+-        uvicorn.run("shriii_api.main:create_app", factory=True, host=args.host, port=args.port, reload=args.reload)
++        uvicorn.run(
++            "shriii_api.main:create_app",
++            factory=True,
++            host=args.host,
++            port=args.port,
++            reload=args.reload,
++            workers=None if args.reload else max(1, args.workers),
++        )
+     return 0
+ 
+ 
+diff --git a/apps/api/src/shriii_api/services/ingestion.py b/apps/api/src/shriii_api/services/ingestion.py
+index c7d471c..0314e4e 100644
+--- a/apps/api/src/shriii_api/services/ingestion.py
++++ b/apps/api/src/shriii_api/services/ingestion.py
+@@ -31,7 +31,9 @@ from datetime import UTC, date, datetime, timedelta
+ from typing import Any, Literal
+ 
+ from pydantic import BaseModel, ConfigDict, Field, ValidationError
+-from shriii_contracts import EVENT_ADAPTER, check_event_invariants, payload_ext, unknown_fields
++from psycopg.types.json import Jsonb
++from shriii_contracts import EVENT_ADAPTER, check_event_invariants, unknown_fields
++from shriii_contracts.strictness import filter_forbidden
+ from sqlalchemy import delete, select, text
+ from sqlalchemy.dialects.postgresql import insert
+ from sqlalchemy.orm import Session
+@@ -324,14 +326,46 @@ def _event_row(
+     }
+ 
+ 
++_EVENT_COLUMNS: tuple[str, ...] = tuple(c.name for c in Event.__table__.columns)
++_EVENT_JSON_COLUMNS = frozenset({"payload", "payload_ext", "envelope"})
++_EVENT_COPY_SQL = f"COPY kiosk_raw.events ({', '.join(_EVENT_COLUMNS)}) FROM STDIN"
++
++
+ def _insert_events(ctx: _Ctx, rows: list[dict[str, Any]]) -> None:
++    """Bulk-load event rows with COPY on the session's own connection (same transaction).
++
++    COPY avoids per-row ORM bind processing and statement round trips; PostgreSQL routes rows to the
++    ``server_received_date`` partitions, which are created first.
++    """
+     if not rows:
+         return
+     for day in {r["server_received_date"] for r in rows}:
+         if day not in ctx.partitions:
+             ensure_event_partition(ctx.db, day)
+             ctx.partitions.add(day)
+-    ctx.db.execute(insert(Event), rows)  # executemany (pipelined by psycopg)
++    driver = ctx.db.connection().connection.driver_connection
++    with driver.cursor() as cur, cur.copy(_EVENT_COPY_SQL) as copy:
++        for row in rows:
++            copy.write_row(
++                tuple(
++                    Jsonb(row[c]) if c in _EVENT_JSON_COLUMNS and row[c] is not None else row[c]
++                    for c in _EVENT_COLUMNS
++                )
++            )
++
++
++_DEDUP_INSERT = text(
++    """
++    INSERT INTO kiosk_raw.event_dedup (event_id, session_id, seq, batch_id, state, server_received_at)
++    SELECT t.event_id, :session_id, t.seq, :batch_id, t.state, :received_at
++    FROM unnest(CAST(:event_ids AS uuid[]), CAST(:seqs AS integer[]), CAST(:states AS varchar[]))
++         AS t(event_id, seq, state)
++    ON CONFLICT DO NOTHING
++    RETURNING event_id
++    """
++)
++"""One constant statement with array parameters (cached plan, no per-batch SQL compilation) instead of a
++multi-row VALUES list with 3,000 bind parameters."""
+ 
+ 
+ def _set_dedup_state(ctx: _Ctx, event_ids: list[uuid.UUID], state: str) -> None:
+@@ -542,9 +576,11 @@ def _prepare(ctx: _Ctx, raw: Any, chunk_session: uuid.UUID, tombstoned: bool) ->
+     if reason is not None:
+         _reject(ctx, raw, (event_id, session_id_str, seq), reason[0], path=reason[1], message=reason[2])
+         return None
+-    ext = payload_ext(event)
++    unknown = unknown_fields(event)  # one model walk serves both payload_ext and the strip list
++    ext = filter_forbidden(unknown)
+     envelope = event.model_dump(mode="json", by_alias=True)
+-    _strip(envelope, sorted(unknown_fields(event), key=len, reverse=True))
++    if unknown:
++        _strip(envelope, sorted(unknown, key=len, reverse=True))
+     envelope["server"] = {
+         "server_received_at": ctx.received_at.isoformat(),
+         "clock_offset_estimate_ms": ctx.clock_offset_ms,
+@@ -644,22 +680,15 @@ def _process_chunk(ctx: _Ctx, raws: list[Any], chunk_session: uuid.UUID, state:
+     dedup_state = {"accepted": "accepted", "parked": "parked", "rejected_terminal": "dead"}
+     inserted = set(
+         db.execute(
+-            insert(EventDedup)
+-            .values(
+-                [
+-                    {
+-                        "event_id": uuid.UUID(p.event_id),
+-                        "session_id": chunk_session,
+-                        "seq": p.seq,
+-                        "batch_id": ctx.batch_id,
+-                        "state": dedup_state[status],
+-                        "server_received_at": ctx.received_at,
+-                    }
+-                    for p, status, _ in decided
+-                ]
+-            )
+-            .on_conflict_do_nothing()
+-            .returning(EventDedup.event_id)
++            _DEDUP_INSERT,
++            {
++                "session_id": chunk_session,
++                "batch_id": ctx.batch_id,
++                "received_at": ctx.received_at,
++                "event_ids": [uuid.UUID(p.event_id) for p, _, _ in decided],
++                "seqs": [p.seq for p, _, _ in decided],
++                "states": [dedup_state[status] for _, status, _ in decided],
++            },
+         ).scalars()
+     )
+     event_rows: list[dict[str, Any]] = []
+diff --git a/apps/api/src/shriii_api/settings.py b/apps/api/src/shriii_api/settings.py
+index 0ad9635..34c14d3 100644
+--- a/apps/api/src/shriii_api/settings.py
++++ b/apps/api/src/shriii_api/settings.py
+@@ -73,6 +73,11 @@ class Settings(BaseSettings):
+     accept_plaintext_chunks: bool | None = None
+     """``none_dev`` chunks; defaults to True only in dev/test."""
+     max_batch_bytes: int = 1_048_576
++    ingest_max_concurrency: int = 4
++    """Batches processed at once per API process; more would only share the GIL and the DB pool."""
++    ingest_queue_timeout_s: float = 5.0
++    """How long a batch may wait for a processing slot before the server answers 503 + Retry-After."""
++    ingest_retry_after_s: int = 5
+     consent_parking_ttl_hours: int = 72
+     clock_offset_anomaly_ms: float = 300_000.0
+     """Absolute kiosk clock offset beyond which a session gets a ``clock_offset_anomaly`` flag."""
+diff --git a/python/shriii_contracts/src/shriii_contracts/strictness.py b/python/shriii_contracts/src/shriii_contracts/strictness.py
+index 57ba4fa..b0e5711 100644
+--- a/python/shriii_contracts/src/shriii_contracts/strictness.py
++++ b/python/shriii_contracts/src/shriii_contracts/strictness.py
+@@ -7,6 +7,7 @@ writer-side rule that our own outgoing records carry no unknown fields.
+ 
+ from __future__ import annotations
+ 
++from functools import cache
+ from typing import Any
+ 
+ from pydantic import BaseModel
+@@ -22,29 +23,43 @@ class UnknownFieldsError(ValueError):
+         self.paths = paths
+ 
+ 
++@cache
++def _field_keys(cls: type[BaseModel]) -> tuple[tuple[str, str], ...]:
++    """(attribute name, JSON key) per declared field, computed once per model class."""
++    return tuple((name, info.alias or name) for name, info in cls.model_fields.items())
++
++
++_SCALARS = (str, int, float, bool, bytes)
++
++
+ def unknown_fields(model: BaseModel, prefix: str = "") -> dict[str, Any]:
+-    """Return every tolerated unknown field, keyed by JSON pointer, recursing into nested models."""
++    """Return every tolerated unknown field, keyed by JSON pointer, recursing into nested models.
++
++    Iterative walk over ``__dict__`` (no per-level dict merging, scalars skipped early); this runs for
++    every ingested event, so it is on the ingestion hot path.
++    """
+     found: dict[str, Any] = {}
+-    for key, value in (model.model_extra or {}).items():
+-        found[f"{prefix}/{key}"] = value
+-    for name, info in type(model).model_fields.items():
+-        attr = getattr(model, name)
+-        key = info.alias or name
+-        found.update(_walk(attr, f"{prefix}/{key}"))
++    stack: list[tuple[Any, str]] = [(model, prefix)]
++    while stack:
++        value, path = stack.pop()
++        if isinstance(value, BaseModel):
++            extra = value.__pydantic_extra__
++            if extra:
++                for key, item in extra.items():
++                    found[f"{path}/{key}"] = item
++            attrs = value.__dict__
++            for name, key in _field_keys(type(value)):
++                child = attrs.get(name)
++                if child is None or isinstance(child, _SCALARS):
++                    continue
++                stack.append((child, f"{path}/{key}"))
++        elif isinstance(value, list):
++            for i, item in enumerate(value):
++                if isinstance(item, (BaseModel, list)):
++                    stack.append((item, f"{path}/{i}"))
+     return found
+ 
+ 
+-def _walk(value: Any, path: str) -> dict[str, Any]:
+-    if isinstance(value, BaseModel):
+-        return unknown_fields(value, path)
+-    if isinstance(value, list):
+-        out: dict[str, Any] = {}
+-        for i, item in enumerate(value):
+-            out.update(_walk(item, f"{path}/{i}"))
+-        return out
+-    return {}
+-
+-
+ def assert_no_unknown_fields(model: BaseModel) -> None:
+     """Writer-side strictness: raise :class:`UnknownFieldsError` if any unknown field exists."""
+     extra = unknown_fields(model)
+@@ -58,8 +73,9 @@ def payload_ext(model: BaseModel) -> dict[str, Any]:
+     Forbidden names (free text, transcripts, audio, ASR alternatives) are dropped even when a newer
+     client sends them, so they can never reach storage.
+     """
+-    return {
+-        path: value
+-        for path, value in unknown_fields(model).items()
+-        if path.rsplit("/", 1)[-1] not in FORBIDDEN_FIELD_NAMES
+-    }
++    return filter_forbidden(unknown_fields(model))
++
++
++def filter_forbidden(unknown: dict[str, Any]) -> dict[str, Any]:
++    """``payload_ext`` from an ``unknown_fields`` result (lets callers walk the model only once)."""
++    return {path: value for path, value in unknown.items() if path.rsplit("/", 1)[-1] not in FORBIDDEN_FIELD_NAMES}

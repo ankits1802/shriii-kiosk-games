@@ -1,0 +1,538 @@
+{
+  "schema": "shriii-report-bundle",
+  "schema_version": "1.0",
+  "report": {
+    "kind": "technical_manual",
+    "title": "SHRIII technical manual (fixture skeleton)",
+    "study_id": "SHRIII",
+    "stage": "manual",
+    "languages": [
+      "hi-IN",
+      "mr-IN",
+      "ta-IN"
+    ],
+    "pathways": [
+      "A",
+      "B"
+    ],
+    "status": "draft"
+  },
+  "provenance": {
+    "analysis_run_id": "run-manual-fixture",
+    "snapshot_id": "0193f1c2-7a00-7000-8000-000000005201",
+    "snapshot_sha256": "5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f",
+    "generated_at": "2026-10-21T00:00:00+00:00",
+    "git_sha": "1b01cae",
+    "image_digest": "sha256:abababababababababababababababababababababababababababababababab",
+    "prereg_id": "osf.io/fixture",
+    "protocol_version": "1.0.0",
+    "hypotheses_sha256": "eb48e8143fd7ed2d3944f513d2e6491ba010d45ef59493e274cd11899a34d483",
+    "gates_sha256": "e4929191de6e201f5623c4b34b7961233427d74a57acb0ae99904b49b17119d3",
+    "dictionary_sha256": {
+      "shared": "c242ae47dad1260387c4f6407bed8977c8bcc6ab85e8a8265c3f52cc6479459e",
+      "A": "9241132200671411a894a7837ebf3c4fa040427b1b26fefd37da9e53e43dfa3d",
+      "B": "c5850a37983b49924ff34d74008a19629ff4c134909118fa21831057ecb12762"
+    },
+    "validation_algorithm_version": "0.1.0",
+    "scoring_run_id": "scoring-run-fixture-1",
+    "erasures_applied": 3,
+    "seeds": {
+      "bootstrap": 20261021,
+      "permutation": 7
+    }
+  },
+  "sample": {
+    "enrolled": 1402,
+    "consented": 1371,
+    "analysed": 1310,
+    "withdrawn": 9,
+    "cells": [
+      {
+        "group": {
+          "language": "hi-IN",
+          "arm": "B_fixed"
+        },
+        "n": 222,
+        "target": 225
+      },
+      {
+        "group": {
+          "language": "hi-IN",
+          "arm": "A_narrative"
+        },
+        "n": 219,
+        "target": 225
+      },
+      {
+        "group": {
+          "language": "mr-IN",
+          "arm": "B_fixed"
+        },
+        "n": 220,
+        "target": 225
+      },
+      {
+        "group": {
+          "language": "mr-IN",
+          "arm": "A_narrative"
+        },
+        "n": 216,
+        "target": 225
+      },
+      {
+        "group": {
+          "language": "ta-IN",
+          "arm": "B_fixed"
+        },
+        "n": 218,
+        "target": 225
+      },
+      {
+        "group": {
+          "language": "ta-IN",
+          "arm": "A_narrative"
+        },
+        "n": 215,
+        "target": 225
+      }
+    ]
+  },
+  "results": [
+    {
+      "section": "reliability",
+      "subject": "decisiveness.composite",
+      "metric": "cronbach_alpha",
+      "evidence": {
+        "analysis": "cronbach_alpha",
+        "estimate": 0.7940638211087279,
+        "ci_low": 0.7674467193873181,
+        "ci_high": 0.8185813856040758,
+        "ci_level": 0.95,
+        "n": 600,
+        "method": "cronbach_alpha_feldt_ci",
+        "status": "ok",
+        "assumptions": [
+          {
+            "name": "unidimensionality_eigen_ratio",
+            "passed": true,
+            "statistic": 4.107379428987301,
+            "detail": "first / second eigenvalue of the item correlation matrix (>= 3 suggests one factor)"
+          },
+          {
+            "name": "no_negative_item_rest_correlations",
+            "passed": true,
+            "statistic": 0.49998864150676203,
+            "detail": "all positive"
+          },
+          {
+            "name": "tau_equivalence_loading_spread",
+            "passed": true,
+            "statistic": 1.16810327791187,
+            "detail": "max / min standardised one-factor loading (<= 1.5 is roughly tau-equivalent)"
+          }
+        ],
+        "warnings": [],
+        "details": {
+          "k": 6
+        },
+        "provenance": {
+          "analysis": "cronbach_alpha",
+          "algorithm_version": "0.1.0",
+          "computed_at": "2026-10-21T00:00:00+00:00",
+          "inputs_sha256": "985f7a2b73e76b6734763c211db93d6f75e7f225434d4f6f7ddbf06b8a702c13",
+          "seed": null,
+          "params": {
+            "ci_level": 0.95
+          },
+          "library_versions": {
+            "numpy": "pinned",
+            "scipy": "pinned"
+          }
+        }
+      },
+      "result_id": "s2-rel-1",
+      "pathway": "B",
+      "threshold": 0.7,
+      "threshold_rule": ">= 0.70 point and >= 0.60 lower bound",
+      "passed": true
+    },
+    {
+      "section": "convergent",
+      "subject": "self_control",
+      "metric": "observed_r",
+      "evidence": {
+        "analysis": "pearson",
+        "estimate": 0.194899392586538,
+        "ci_low": 0.14224006135524772,
+        "ci_high": 0.24645860250199075,
+        "ci_level": 0.95,
+        "n": 1310,
+        "method": "pearson_fisher_z",
+        "status": "ok",
+        "assumptions": [],
+        "warnings": [],
+        "details": {
+          "p": 1.1127952207190604e-12
+        },
+        "provenance": {
+          "analysis": "correlation:pearson",
+          "algorithm_version": "0.1.0",
+          "computed_at": "2026-10-21T00:00:00+00:00",
+          "inputs_sha256": "fc383b1926c245776f4786d6202ea99d5bc98c118dc6a6b89606ce13e25fc7ad",
+          "seed": 0,
+          "params": {
+            "ci": "fisher"
+          },
+          "library_versions": {
+            "numpy": "pinned",
+            "scipy": "pinned"
+          }
+        }
+      },
+      "result_id": "s2-h1.self_control",
+      "hypothesis_id": "h1.self_control",
+      "family": "primary",
+      "confirmatory": true,
+      "subject_kind": "trait",
+      "threshold": 0.1,
+      "threshold_rule": "sign +; keyed lower bound > 0.1",
+      "passed": true
+    },
+    {
+      "section": "convergent",
+      "subject": "decisiveness",
+      "metric": "observed_r",
+      "evidence": {
+        "analysis": "pearson",
+        "estimate": -0.09491561971367474,
+        "ci_low": -0.14831398528623943,
+        "ci_high": -0.04096540662694791,
+        "ci_level": 0.95,
+        "n": 1310,
+        "method": "pearson_fisher_z",
+        "status": "ok",
+        "assumptions": [],
+        "warnings": [],
+        "details": {
+          "p": 0.0005820206838116938
+        },
+        "provenance": {
+          "analysis": "correlation:pearson",
+          "algorithm_version": "0.1.0",
+          "computed_at": "2026-10-21T00:00:00+00:00",
+          "inputs_sha256": "972a15625f36846ab6bc293e7d5b13b21beaf61008a249e3e93ef3860b92be9f",
+          "seed": 0,
+          "params": {
+            "ci": "fisher"
+          },
+          "library_versions": {
+            "numpy": "pinned",
+            "scipy": "pinned"
+          }
+        }
+      },
+      "result_id": "s2-h1.decisiveness",
+      "hypothesis_id": "h1.decisiveness",
+      "family": "primary",
+      "confirmatory": true,
+      "subject_kind": "trait",
+      "threshold": 0.1,
+      "threshold_rule": "sign -; keyed lower bound > 0.1",
+      "passed": false
+    },
+    {
+      "section": "convergent",
+      "subject": "persistence",
+      "metric": "observed_r",
+      "evidence": {
+        "analysis": "pearson",
+        "estimate": 0.13806515707189423,
+        "ci_low": 0.08453649308142062,
+        "ci_high": 0.19079921816408946,
+        "ci_level": 0.95,
+        "n": 1310,
+        "method": "pearson_fisher_z",
+        "status": "ok",
+        "assumptions": [],
+        "warnings": [],
+        "details": {
+          "p": 5.265122979596272e-07
+        },
+        "provenance": {
+          "analysis": "correlation:pearson",
+          "algorithm_version": "0.1.0",
+          "computed_at": "2026-10-21T00:00:00+00:00",
+          "inputs_sha256": "f02fb53236384dc56ec6ac327af880e6eff783418923ec73842a761d16b2e29a",
+          "seed": 0,
+          "params": {
+            "ci": "fisher"
+          },
+          "library_versions": {
+            "numpy": "pinned",
+            "scipy": "pinned"
+          }
+        }
+      },
+      "result_id": "s2-h1.persistence",
+      "hypothesis_id": "h1.persistence",
+      "family": "primary",
+      "confirmatory": true,
+      "subject_kind": "trait",
+      "threshold": 0.1,
+      "threshold_rule": "sign +; keyed lower bound > 0.1",
+      "passed": false
+    },
+    {
+      "section": "convergent",
+      "subject": "self_control",
+      "metric": "observed_r",
+      "evidence": {
+        "analysis": "pearson",
+        "estimate": 0.15218099774429225,
+        "ci_low": 0.09883481430995747,
+        "ci_high": 0.20465498537909468,
+        "ci_level": 0.95,
+        "n": 1310,
+        "method": "pearson_fisher_z",
+        "status": "ok",
+        "assumptions": [],
+        "warnings": [],
+        "details": {
+          "p": 3.111627866762739e-08
+        },
+        "provenance": {
+          "analysis": "correlation:pearson",
+          "algorithm_version": "0.1.0",
+          "computed_at": "2026-10-21T00:00:00+00:00",
+          "inputs_sha256": "515121915e9b3d6a0707fd87eb2d14a0424c1446f63fd293ad14acf8bee73ed9",
+          "seed": 0,
+          "params": {
+            "ci": "fisher"
+          },
+          "library_versions": {
+            "numpy": "pinned",
+            "scipy": "pinned"
+          }
+        }
+      },
+      "result_id": "s2-h2-sc-c",
+      "hypothesis_id": "h2.self_control.conscientiousness",
+      "family": "secondary",
+      "subject_kind": "trait",
+      "threshold": 0.1,
+      "threshold_rule": "lower bound > 0.1",
+      "passed": false
+    },
+    {
+      "section": "convergent",
+      "subject": "self_control.ezd_drift_nogo",
+      "metric": "observed_r",
+      "evidence": {
+        "analysis": "spearman",
+        "estimate": 0.07614512123846803,
+        "ci_low": 0.021996868533613437,
+        "ci_high": 0.12984794437330952,
+        "ci_level": 0.95,
+        "n": 1310,
+        "method": "spearman_fisher_z",
+        "status": "ok",
+        "assumptions": [],
+        "warnings": [],
+        "details": {
+          "p": 0.005826952498973829
+        },
+        "provenance": {
+          "analysis": "correlation:spearman",
+          "algorithm_version": "0.1.0",
+          "computed_at": "2026-10-21T00:00:00+00:00",
+          "inputs_sha256": "544459f9967d93712adb492849804b84a99c7f73f22d2c9fe2ef32af6881f577",
+          "seed": 0,
+          "params": {
+            "ci": "fisher"
+          },
+          "library_versions": {
+            "numpy": "pinned",
+            "scipy": "pinned"
+          }
+        }
+      },
+      "result_id": "s2-expl-1",
+      "subject_kind": "indicator",
+      "pathway": "B"
+    },
+    {
+      "section": "convergent",
+      "subject": "self_control",
+      "metric": "observed_r",
+      "evidence": {
+        "analysis": "pearson",
+        "estimate": 0.19692265539437007,
+        "ci_low": -0.22429129535591263,
+        "ci_high": 0.5561406882652882,
+        "ci_level": 0.95,
+        "n": 24,
+        "method": "pearson_fisher_z",
+        "status": "ok",
+        "assumptions": [],
+        "warnings": [],
+        "details": {
+          "p": 0.35637438557103424
+        },
+        "provenance": {
+          "analysis": "correlation:pearson",
+          "algorithm_version": "0.1.0",
+          "computed_at": "2026-10-21T00:00:00+00:00",
+          "inputs_sha256": "6d16b23483f9997ef7317624279fcaa4802d36e0e98017e4c1ae1c023186ddda",
+          "seed": 0,
+          "params": {
+            "ci": "fisher"
+          },
+          "library_versions": {
+            "numpy": "pinned",
+            "scipy": "pinned"
+          }
+        }
+      },
+      "result_id": "s2-cell-small",
+      "hypothesis_id": "h1.self_control",
+      "family": "primary",
+      "confirmatory": true,
+      "language": "ta-IN",
+      "subgroup": {
+        "arm": "A_narrative",
+        "literacy": "not_at_all"
+      }
+    },
+    {
+      "section": "retest",
+      "subject": "self_control",
+      "metric": "icc_a1",
+      "evidence": {
+        "analysis": "ICC_A1",
+        "estimate": 0.6903676148884077,
+        "ci_low": 0.5721671963400582,
+        "ci_high": 0.7804985335396357,
+        "ci_level": 0.95,
+        "n": 100,
+        "method": "icc_anova_mcgraw_wong",
+        "status": "ok",
+        "assumptions": [],
+        "warnings": [],
+        "details": {
+          "k": 2,
+          "F": 5.438531789515703,
+          "p": 7.894606618835375e-16,
+          "msr": 1.8001584014451835,
+          "msc": 0.17704643718885063,
+          "mse": 0.33100080520178154,
+          "msw": 0.3294612615216522
+        },
+        "provenance": {
+          "analysis": "icc:ICC_A1",
+          "algorithm_version": "0.1.0",
+          "computed_at": "2026-10-21T00:00:00+00:00",
+          "inputs_sha256": "e88e431036ab4690a36cf5157877b188c6844e6f6bcca0e920e34a89c8d9f351",
+          "seed": null,
+          "params": {
+            "ci_level": 0.95
+          },
+          "library_versions": {
+            "numpy": "pinned",
+            "scipy": "pinned"
+          }
+        }
+      },
+      "result_id": "s3-icc-hi-IN",
+      "hypothesis_id": null,
+      "language": "hi-IN",
+      "subject_kind": "trait",
+      "threshold": 0.6,
+      "threshold_rule": "point >= 0.60 and lower bound >= 0.40",
+      "passed": true
+    },
+    {
+      "section": "retest",
+      "subject": "self_control",
+      "metric": "icc_c1",
+      "evidence": {
+        "analysis": "ICC_C1",
+        "estimate": 0.6893701754712563,
+        "ci_low": 0.5707482786654231,
+        "ci_high": 0.7798067264779035,
+        "ci_level": 0.95,
+        "n": 100,
+        "method": "icc_anova_mcgraw_wong",
+        "status": "ok",
+        "assumptions": [],
+        "warnings": [],
+        "details": {
+          "k": 2,
+          "F": 5.438531789515703,
+          "p": 7.894606618835375e-16,
+          "msr": 1.8001584014451835,
+          "msc": 0.17704643718885063,
+          "mse": 0.33100080520178154,
+          "msw": 0.3294612615216522
+        },
+        "provenance": {
+          "analysis": "icc:ICC_C1",
+          "algorithm_version": "0.1.0",
+          "computed_at": "2026-10-21T00:00:00+00:00",
+          "inputs_sha256": "e88e431036ab4690a36cf5157877b188c6844e6f6bcca0e920e34a89c8d9f351",
+          "seed": null,
+          "params": {
+            "ci_level": 0.95
+          },
+          "library_versions": {
+            "numpy": "pinned",
+            "scipy": "pinned"
+          }
+        }
+      },
+      "result_id": "s3-iccc-hi-IN",
+      "language": "hi-IN",
+      "subject_kind": "trait"
+    }
+  ],
+  "trait_gates": [
+    {
+      "trait": "self_control",
+      "language": "hi-IN",
+      "pathway": "B",
+      "status": "unvalidated",
+      "evaluated_status": "unvalidated",
+      "rules": {
+        "B1": "missing",
+        "B2": "pass",
+        "B3": "pass",
+        "B4": "missing",
+        "B5": "missing",
+        "B6": "missing"
+      },
+      "reasons": [
+        "B1 retest evidence missing (Stage 3)"
+      ],
+      "capped": false,
+      "evaluate_only": true
+    }
+  ],
+  "battery_gates": [
+    {
+      "language": "hi-IN",
+      "pathway": "B",
+      "site_mode": "supervised",
+      "status": "closed",
+      "rules": {
+        "A1": "fail",
+        "A2": "missing",
+        "A3": "missing",
+        "A4": "pass",
+        "A5": "missing"
+      },
+      "reasons": [
+        "fail closed: retest evidence missing"
+      ],
+      "qualifying_languages": []
+    }
+  ]
+}

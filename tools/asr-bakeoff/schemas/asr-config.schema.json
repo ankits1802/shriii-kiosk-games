@@ -1,0 +1,119 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://shriii.local/tools/asr-bakeoff/asr-config.schema.json",
+  "title": "AsrConfig",
+  "description": "Language-pack ASR configuration (asr-grammars/<lang>/asr-config.json) consumed by packages/asr-sherpa parseGrammar(). Mirrors its validation rules; cross-field rules (tier ordering, unique token sequences, touch-only prompt families) are also enforced by the adapter.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "language",
+    "grammar_version",
+    "engine",
+    "model_id",
+    "keywords",
+    "tiers",
+    "prompts",
+    "policy"
+  ],
+  "properties": {
+    "schema_version": { "const": "1.0" },
+    "language": { "type": "string", "pattern": "^[a-z]{2,3}-[A-Z]{2}$" },
+    "grammar_version": {
+      "type": "string",
+      "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(-[0-9A-Za-z.-]+)?$"
+    },
+    "engine": { "type": "string", "minLength": 1 },
+    "model_id": { "type": "string", "minLength": 1 },
+    "keywords": {
+      "type": "object",
+      "minProperties": 1,
+      "propertyNames": { "pattern": "^[a-z0-9][a-z0-9_.-]{0,63}$" },
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["phrases"],
+        "properties": {
+          "phrases": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["tokens"],
+              "properties": {
+                "tokens": { "type": "string", "pattern": "^[^\\s@:#]+(?: [^\\s@:#]+)*$" },
+                "boost": { "type": "number", "minimum": 0, "maximum": 10 },
+                "text": { "type": "string" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "tiers": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["keywords_threshold", "confidence"],
+        "properties": {
+          "keywords_threshold": { "type": "number", "minimum": 0, "maximum": 1 },
+          "confidence": { "type": "number", "minimum": 0, "maximum": 1 }
+        }
+      }
+    },
+    "prompts": {
+      "type": "object",
+      "propertyNames": { "pattern": "^[a-z0-9][a-z0-9_.:-]{0,127}$" },
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["vocabulary", "voice_enabled"],
+        "properties": {
+          "vocabulary": { "type": "array", "items": { "type": "string" } },
+          "voice_enabled": { "type": "boolean" }
+        }
+      }
+    },
+    "policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "min_propose_confidence",
+        "min_commit_confidence",
+        "noise_max_dbfs",
+        "max_listen_ms",
+        "vad_preroll_ms",
+        "settle_ms"
+      ],
+      "properties": {
+        "min_propose_confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+        "min_commit_confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+        "noise_max_dbfs": { "type": "number", "minimum": -120, "maximum": 0 },
+        "max_listen_ms": { "type": "number", "minimum": 500, "maximum": 30000 },
+        "vad_preroll_ms": { "type": "number", "minimum": 0, "maximum": 1000 },
+        "settle_ms": { "type": "number", "minimum": 0, "maximum": 2000 }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "bakeoff_run_id",
+        "dataset_id",
+        "dataset_kind",
+        "policy_sha256",
+        "winner_engine_id"
+      ],
+      "properties": {
+        "bakeoff_run_id": { "type": "string" },
+        "dataset_id": { "type": "string" },
+        "dataset_kind": { "enum": ["synthetic_placeholder", "asr_eval"] },
+        "policy_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+        "winner_engine_id": { "anyOf": [{ "type": "string" }, { "type": "null" }] }
+      }
+    }
+  }
+}

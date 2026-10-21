@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en-IN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+    <title>Out of service</title>
+    <style>
+      :root {
+        --bg: #2b1d14;
+        --fg: #f6e7cf;
+        --accent: #e8a33b;
+      }
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        background: var(--bg);
+        color: var(--fg);
+        overflow: hidden;
+        user-select: none;
+        cursor: none;
+      }
+      main {
+        height: 100%;
+        display: grid;
+        place-items: center;
+      }
+      svg {
+        width: min(40vw, 40vh);
+        height: auto;
+        animation: breathe 4s ease-in-out infinite;
+      }
+      @keyframes breathe {
+        50% {
+          opacity: 0.6;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Icon only (no reading required): a resting lamp with a wrench. Operators see the reason on the heartbeat. -->
+    <main aria-label="Out of service">
+      <svg viewBox="0 0 120 120" role="img" aria-hidden="true">
+        <circle cx="60" cy="60" r="54" fill="none" stroke="var(--accent)" stroke-width="6" />
+        <path d="M40 78h40l-6-30H46z" fill="var(--accent)" />
+        <rect x="52" y="78" width="16" height="10" rx="2" fill="var(--fg)" />
+        <path d="M78 36l10-10m-4 14l8 2-6 6-2-8z" stroke="var(--fg)" stroke-width="5" stroke-linecap="round" fill="none" />
+      </svg>
+    </main>
+  </body>
+</html>

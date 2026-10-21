@@ -1,0 +1,49 @@
+# Candidate engines. An engine whose models are missing is reported as "unavailable" with the reason;
+# it never fails the run. Paths are relative to this tool's directory unless absolute.
+schema_version: '1.0'
+engines:
+  - id: dtw_mfcc
+    kind: dtw_mfcc
+    description: Speaker-independent MFCC + DTW template baseline (enrolled on training speakers). Floor reference.
+    params: {templates_per_code: 8}
+
+  - id: sherpa_kws_gigaspeech_3m
+    kind: sherpa_kws
+    description: sherpa-onnx zipformer transducer KWS, 3.3M params (English stand-in until Indic KWS is trained).
+    languages: [en-IN]
+    params:
+      model_dir: ../../packages/asr-sherpa/models/sherpa-onnx-kws-zipformer-gigaspeech-3.3M-2024-01-01
+      bpe_model: bpe.model
+      tiers: [0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.45]
+      num_threads: 1
+
+  - id: whisper_small_int8
+    kind: sherpa_whisper
+    description: Whisper small (int8 ONNX via sherpa-onnx), transcription + closed-vocabulary matching.
+    params:
+      model_dir: models/sherpa-onnx-whisper-small
+      num_threads: 2
+      min_similarity: 0.55
+
+  - id: whisper_tiny_int8
+    kind: sherpa_whisper
+    description: Whisper tiny (int8) for the latency/accuracy trade-off.
+    params:
+      model_dir: models/sherpa-onnx-whisper-tiny
+      num_threads: 2
+      min_similarity: 0.55
+
+  - id: indicconformer_ctc
+    kind: ctc_constrained
+    description: >-
+      IndicConformer (AI4Bharat) CTC head exported to ONNX, decoded with closed-vocabulary constrained
+      CTC scoring plus a free-decoding garbage path for rejection.
+    languages: [hi-IN, mr-IN, ta-IN]
+    params:
+      model: models/indicconformer/{lang}/model.onnx
+      vocab: models/indicconformer/{lang}/tokens.txt
+      input_name: audio_signal
+      length_name: length
+      output_name: logprobs
+      blank_index: last
+      features: {n_mels: 80, win_ms: 25, hop_ms: 10, n_fft: 512, normalize: per_feature}

@@ -1,0 +1,20 @@
+[project]
+name = "shriii-reports"
+version = "0.1.0"
+description = "Stage report and technical-manual templates (Jinja2 -> Markdown, HTML, Quarto .qmd) rendered from ValidationResult JSON (VAL-15)"
+requires-python = ">=3.13"
+dependencies = [
+  "jinja2>=3.1",
+  "pydantic>=2.11",
+  "pyyaml>=6",
+]
+
+[project.scripts]
+shriii-reports = "shriii_reports.cli:main"
+
+[build-system]
+requires = ["uv_build>=0.13,<0.14"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-name = "shriii_reports"

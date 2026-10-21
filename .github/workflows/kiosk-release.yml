@@ -1,0 +1,233 @@
+# Kiosk release (PLT-04, KSK-11): deploy-order gate -> reproducible kiosk build (web bundle + Electron shell)
+# -> CycloneDX SBOM -> cosign signatures -> GitHub release recording the app x content x dictionary tuple.
+#
+# Secrets (placeholders until the signing ceremony; the release fails closed without signing material):
+#   COSIGN_PRIVATE_KEY, COSIGN_PASSWORD   key-pair signing (cosign generate-key-pair)
+# Variables:
+#   COSIGN_KEYLESS=true                   use Sigstore keyless signing instead (GitHub OIDC; public Rekor entry)
+#   PRODUCTION_CONTRACTS_REF              git ref deployed to production (default: tag deployed/production)
+#   KIOSK_API_BASE                        ingestion API origin compiled into the bundle (required for tag releases;
+#                                         the Electron shell's SHRIII_API_ORIGIN must match it)
+#   KIOSK_MODE / KIOSK_SITE_MODE          optional build-time session / site modes (defaults: public, supervised)
+# Secrets (build configuration):
+#   KIOSK_DEV_PIN                         operator PIN compiled into the bundle (4-8 digits; required for tag
+#                                         releases, otherwise the app falls back to its well-known development PIN)
+name: Kiosk release
+
+on:
+  push:
+    tags: ["kiosk-v*"]
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Build and sign-check only; do not publish a release
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: kiosk-release-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  ELECTRON_SKIP_BINARY_DOWNLOAD: "1"
+  TURBO_TELEMETRY_DISABLED: "1"
+
+jobs:
+  deploy-order:
+    name: Deploy-order gate (kiosk contracts not ahead of production)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.14"
+      - name: Compare contracts with the production backend
+        run: |
+          ref="${{ vars.PRODUCTION_CONTRACTS_REF || 'deployed/production' }}"
+          if ! git rev-parse -q --verify "$ref^{commit}" > /dev/null; then
+            echo "::warning title=No production ref::'$ref' does not exist yet; skipping the deploy-order gate (first release)."
+            exit 0
+          fi
+          mkdir -p "$RUNNER_TEMP/prod"
+          git archive "$ref" packages/contracts/schemas | tar -x -C "$RUNNER_TEMP/prod"
+          # A kiosk may not emit anything the production backend cannot read: forward changes fail here.
+          set +e
+          python .github/scripts/schema_compat.py \
+            --base "$RUNNER_TEMP/prod/packages/contracts/schemas" --head packages/contracts/schemas \
+            --migrations packages/contracts/migrations --fail-on forward --out deploy-order.md
+          status=$?
+          cat deploy-order.md >> "$GITHUB_STEP_SUMMARY"
+          exit $status
+
+  build:
+    name: Build kiosk artefacts
+    needs: [deploy-order]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    outputs:
+      version: ${{ steps.meta.outputs.version }}
+    # Job-level so the reproducibility rebuild sees exactly the same build-time configuration.
+    env:
+      VITE_API_BASE: ${{ vars.KIOSK_API_BASE }}
+      VITE_KIOSK_MODE: ${{ vars.KIOSK_MODE || 'public' }}
+      VITE_SITE_MODE: ${{ vars.KIOSK_SITE_MODE || 'supervised' }}
+      VITE_DEV_PIN: ${{ secrets.KIOSK_DEV_PIN }}
+      VITE_DEV_VOICE_PLACEHOLDER: "false"
+      VITE_DEV_OVERLAY: "false"
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Release configuration
+        run: |
+          missing=()
+          [ -n "$VITE_API_BASE" ] || missing+=("vars.KIOSK_API_BASE")
+          [[ "$VITE_DEV_PIN" =~ ^[0-9]{4,8}$ ]] || missing+=("secrets.KIOSK_DEV_PIN (4-8 digits)")
+          if [ ${#missing[@]} -gt 0 ]; then
+            if [[ "$GITHUB_REF" == refs/tags/kiosk-v* ]]; then
+              echo "::error title=Kiosk release configuration::missing ${missing[*]}"; exit 1
+            fi
+            echo "::warning title=Kiosk release configuration::missing ${missing[*]} (tolerated for dry runs only)"
+          fi
+      - name: Release metadata (version tuple)
+        id: meta
+        run: |
+          if [[ "$GITHUB_REF" == refs/tags/kiosk-v* ]]; then version="${GITHUB_REF#refs/tags/kiosk-v}"; else version="0.0.0-${GITHUB_SHA::12}"; fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "SOURCE_DATE_EPOCH=$(git log -1 --format=%ct)" >> "$GITHUB_ENV"
+          node -e '
+            const fs = require("fs");
+            const yaml = (p) => { const m = fs.readFileSync(p, "utf8").match(/^version:\s*([^\s#]+)/m); return m ? m[1].replace(/[\x27"]/g, "") : null; };
+            const tuple = {
+              app_version: process.argv[1],
+              commit: process.env.GITHUB_SHA,
+              kiosk_package: require("./apps/kiosk/package.json").version,
+              contracts_package: require("./packages/contracts/package.json").version,
+              content_session_plan: JSON.parse(fs.readFileSync("content/games/session-plan.json", "utf8")).version,
+              scoring_dict_version: { A: yaml("scoring/dictionary/dictionary.A.yaml"), B: yaml("scoring/dictionary/dictionary.B.yaml"), shared: yaml("scoring/dictionary/shared.yaml") },
+              api_base: process.env.VITE_API_BASE || null,
+              kiosk_mode: process.env.VITE_KIOSK_MODE,
+              site_mode: process.env.VITE_SITE_MODE,
+              built_at: new Date(Number(process.env.SOURCE_DATE_EPOCH) * 1000).toISOString(),
+            };
+            fs.writeFileSync("release-tuple.json", JSON.stringify(tuple, null, 2) + "\n");
+          ' "$version"
+          cat release-tuple.json
+      - name: Build (web bundle + Electron main/preload)
+        run: |
+          pnpm --filter "@shriii/kiosk..." run build
+          pnpm --filter @shriii/kiosk run electron:build
+      - name: Reproducibility check (same commit, same web-asset hashes)
+        run: |
+          (cd apps/kiosk/dist && find . -type f -print0 | sort -z | xargs -0 sha256sum) > first.sha256
+          rm -rf apps/kiosk/dist
+          pnpm --filter @shriii/kiosk exec vite build > /dev/null
+          (cd apps/kiosk/dist && find . -type f -print0 | sort -z | xargs -0 sha256sum) > second.sha256
+          diff -u first.sha256 second.sha256
+      - name: Package
+        run: |
+          v="${{ steps.meta.outputs.version }}"
+          mkdir -p out
+          tarit() { tar --sort=name --mtime="@${SOURCE_DATE_EPOCH}" --owner=0 --group=0 --numeric-owner -czf "$@"; }
+          tarit "out/shriii-kiosk-web-$v.tar.gz" -C apps/kiosk/dist .
+          mkdir -p stage/electron && cp -r apps/kiosk/electron/dist stage/electron/dist && cp -r apps/kiosk/dist stage/renderer
+          cp apps/kiosk/package.json release-tuple.json stage/
+          tarit "out/shriii-kiosk-electron-$v.tar.gz" -C stage .
+          cp release-tuple.json out/
+          (cd out && sha256sum -- * > SHA256SUMS)
+          cat out/SHA256SUMS
+      - name: CycloneDX SBOM
+        uses: anchore/sbom-action@v0
+        with:
+          path: .
+          format: cyclonedx-json
+          output-file: out/shriii-kiosk-${{ steps.meta.outputs.version }}.cdx.json
+          upload-artifact: false
+      - uses: actions/upload-artifact@v4
+        with:
+          name: kiosk-release-unsigned
+          path: out/
+          retention-days: 14
+
+  sign:
+    name: Sign artefacts (cosign)
+    needs: [build]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      id-token: write # keyless signing only
+    steps:
+      - uses: actions/download-artifact@v5
+        with:
+          name: kiosk-release-unsigned
+          path: out
+      - uses: sigstore/cosign-installer@v3
+      - name: Sign
+        env:
+          COSIGN_PRIVATE_KEY: ${{ secrets.COSIGN_PRIVATE_KEY }}
+          COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
+          COSIGN_KEYLESS: ${{ vars.COSIGN_KEYLESS }}
+          DRY_RUN: ${{ inputs.dry_run }}
+        run: |
+          cd out
+          if [ -n "$COSIGN_PRIVATE_KEY" ]; then
+            printf '%s' "$COSIGN_PRIVATE_KEY" > "$RUNNER_TEMP/cosign.key"
+            for f in *.tar.gz *.cdx.json SHA256SUMS release-tuple.json; do
+              cosign sign-blob --yes --key "$RUNNER_TEMP/cosign.key" --bundle "$f.sigstore.json" "$f"
+            done
+            rm -f "$RUNNER_TEMP/cosign.key"
+          elif [ "$COSIGN_KEYLESS" = "true" ]; then
+            for f in *.tar.gz *.cdx.json SHA256SUMS release-tuple.json; do
+              cosign sign-blob --yes --bundle "$f.sigstore.json" "$f"
+            done
+          elif [ "$DRY_RUN" = "true" ]; then
+            echo "::warning title=Unsigned dry run::No COSIGN_PRIVATE_KEY and COSIGN_KEYLESS != true; artefacts left unsigned (dry run)."
+          else
+            echo "::error title=No signing material::Set COSIGN_PRIVATE_KEY/COSIGN_PASSWORD or COSIGN_KEYLESS=true. Releases fail closed."
+            exit 1
+          fi
+          ls -l
+      - uses: actions/upload-artifact@v4
+        with:
+          name: kiosk-release
+          path: out/
+          retention-days: 90
+
+  publish:
+    name: Publish GitHub release
+    needs: [build, sign]
+    if: startsWith(github.ref, 'refs/tags/kiosk-v') && inputs.dry_run != true
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v5
+        with:
+          name: kiosk-release
+          path: out
+      - name: Create release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ needs.build.outputs.version }}
+        run: |
+          {
+            echo "Kiosk release $VERSION."
+            echo
+            echo '```json'
+            cat out/release-tuple.json
+            echo '```'
+            echo
+            echo "Verify: \`cosign verify-blob --key cosign.pub --bundle <file>.sigstore.json <file>\` and \`sha256sum -c SHA256SUMS\`."
+          } > notes.md
+          gh release create "$GITHUB_REF_NAME" out/* --repo "$GITHUB_REPOSITORY" --title "Kiosk $VERSION" --notes-file notes.md --verify-tag

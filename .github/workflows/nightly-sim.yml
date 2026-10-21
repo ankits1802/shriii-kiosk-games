@@ -1,0 +1,113 @@
+# Nightly full simulated-player parameter-recovery run (PLT-04: "small run per PR, full run nightly"; QA-02).
+# Runs both pathways at n = 400 per run (Pathway B once per planned-missingness slot form) and publishes the
+# per-indicator recovery table; the slow simulator/validation test suite (including its n = 400 recovery targets)
+# is the blocking gate. Opens (or updates) a tracking issue on failure.
+name: Nightly simulation
+
+on:
+  schedule:
+    - cron: "17 20 * * *" # 01:47 IST
+  workflow_dispatch:
+    inputs:
+      n:
+        description: Simulated persons per run
+        required: false
+        default: "400"
+      seed:
+        description: Base seed
+        required: false
+        default: "11"
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: nightly-sim
+  cancel-in-progress: false
+
+env:
+  UV_FROZEN: "1"
+
+jobs:
+  recovery:
+    name: Recovery (${{ matrix.pathway }})
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - pathway: A
+            extra: ""
+          - pathway: B
+            extra: "--slot-forms"
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+          python-version: "3.14"
+      - run: uv sync --all-packages
+      # The per-indicator table is a report: the blocking recovery targets are the ones the simulator test suite
+      # asserts (slow-tests job). Indicators below sqrt(parallel reliability) - tolerance are annotated.
+      - name: Parameter recovery
+        env:
+          SIM_N: ${{ inputs.n || '400' }}
+          SIM_SEED: ${{ inputs.seed || '11' }}
+        run: |
+          [[ "$SIM_N" =~ ^[0-9]+$ && "$SIM_SEED" =~ ^[0-9]+$ ]] || { echo "::error::n and seed must be integers"; exit 1; }
+          uv run python .github/scripts/sim_recovery.py \
+            --n "$SIM_N" --seed "$SIM_SEED" \
+            --pathways ${{ matrix.pathway }} ${{ matrix.extra }} --out-dir "sim-recovery-${{ matrix.pathway }}" \
+            --report-only
+          failed=$(python3 -c "import json,glob; print(sum(json.load(open(f))['failed'] for f in glob.glob('sim-recovery-${{ matrix.pathway }}/recovery-*.json')))")
+          if [ "$failed" -gt 0 ]; then
+            echo "::warning title=Recovery below threshold::$failed indicator(s) in pathway ${{ matrix.pathway }} are below their recovery threshold (see summary)."
+          fi
+      - name: Summary
+        if: always()
+        run: cat "sim-recovery-${{ matrix.pathway }}/summary.md" >> "$GITHUB_STEP_SUMMARY" || true
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: sim-recovery-${{ matrix.pathway }}
+          path: sim-recovery-${{ matrix.pathway }}/
+          retention-days: 30
+
+  slow-tests:
+    name: Slow simulator tests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+          python-version: "3.14"
+      - run: uv sync --all-packages
+      - name: Slow statistical and recovery tests
+        env:
+          SHRIII_RUN_SLOW: "1"
+        run: uv run pytest python/shriii_simulator/tests python/shriii_validation/tests -q
+
+  report:
+    name: Track failures
+    needs: [recovery, slow-tests]
+    if: failure() && github.event_name == 'schedule'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/github-script@v8
+        with:
+          script: |
+            const title = 'Nightly simulation failed';
+            const run = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const { owner, repo } = context.repo;
+            const open = await github.rest.issues.listForRepo({ owner, repo, state: 'open', labels: 'nightly-sim' });
+            const existing = open.data.find((i) => i.title === title);
+            const body = `Parameter recovery or slow simulator tests failed: ${run}\n\nRecovery shows the pipeline is internally correct; a failure means a scoring, simulator or content change broke recovery (QA-02).`;
+            if (existing) {
+              await github.rest.issues.createComment({ owner, repo, issue_number: existing.number, body });
+            } else {
+              await github.rest.issues.create({ owner, repo, title, body, labels: ['nightly-sim'] });
+            }

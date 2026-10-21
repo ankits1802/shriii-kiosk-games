@@ -1,0 +1,130 @@
+# ITC translation & adaptation workflow for recording scripts (VOX-07; ITC Guidelines 2nd ed., TD-1..TD-3).
+# Read by tools/i18n (`shriii-i18n validate|import|coverage`). Thresholds live here, never in code.
+#
+# Path (forward-only, one step per sign-off):
+#   draft_machine_needs_native_review -> forward_translated -> back_translated -> expert_reviewed
+#   -> recorded -> audio_qc -> think_aloud_tested -> approved
+# Any step may go to flagged_for_revision; a flagged line restarts at forward_translated.
+# The plan's `draft` state is split: machine drafts carry the explicit draft_machine_needs_native_review
+# status so that no machine text can be mistaken for native-speaker work.
+schema_version: '1.0'
+initial_status: draft_machine_needs_native_review
+roles:
+  - translator          # native speaker of the target language, fluent in English (forward translation)
+  - back_translator     # independent bilingual who has NOT seen the English source
+  - expert_reviewer     # reconciliation panel member (linguist + psychologist + local field lead)
+  - recording_lead      # supervises native voice-artist recording against the script
+  - audio_qc_reviewer   # VOX-02 checks: loudness, clipping, duration vs target, script fidelity
+  - field_researcher    # Stage 1 think-aloud lead (CRT-08) who signs the comprehension check
+  - itc_lead            # owns the ITC dossier; final approval for production packs
+statuses:
+  - id: draft_machine_needs_native_review
+    rank: 0
+    label: Machine draft
+    description: >-
+      Draft produced without a native speaker (machine/LLM-assisted). Usable only as a starting point for the
+      forward translator. Never recorded, never shipped.
+    machine_draft: true
+    requires: []
+  - id: forward_translated
+    rank: 1
+    label: Forward translated
+    description: Native-speaker translator has written or revised the spoken recording script.
+    signoff_role: translator
+    requires: [text]
+  - id: back_translated
+    rank: 2
+    label: Back-translated
+    description: An independent back-translator rendered the script into English without seeing the source.
+    signoff_role: back_translator
+    requires: [text, back_translation]
+  - id: expert_reviewed
+    rank: 3
+    label: Expert reviewed
+    description: >-
+      Reconciliation panel compared source, script and back-translation for meaning, register and construct
+      relevance, and resolved discrepancies (the script may be edited on entry to this state).
+    signoff_role: expert_reviewer
+    requires: [text, back_translation]
+  - id: recorded
+    rank: 4
+    label: Recorded
+    description: A native voice artist recorded the script (take registered in the audio manifest).
+    signoff_role: recording_lead
+    requires: [text, back_translation]
+  - id: audio_qc
+    rank: 5
+    label: Audio QC passed
+    description: Clip passed VOX-02 checks (-16 LUFS, <= -1 dBTP, duration vs target, matches script).
+    signoff_role: audio_qc_reviewer
+    requires: [text, back_translation]
+  - id: think_aloud_tested
+    rank: 6
+    label: Think-aloud tested
+    description: Stage 1 think-aloud found no comprehension, reading-dependence or cultural-mismatch problem.
+    signoff_role: field_researcher
+    requires: [text, back_translation]
+  - id: approved
+    rank: 7
+    label: Approved
+    description: ITC lead approved the line for production packs.
+    signoff_role: itc_lead
+    requires: [text, back_translation]
+  - id: flagged_for_revision
+    rank: null
+    label: Flagged for revision
+    description: A reviewer found a problem; the line goes back to the forward translator. Comment required.
+    signoff_role: '*'
+    requires: [review_comment]
+transitions:
+  draft_machine_needs_native_review: [forward_translated, flagged_for_revision]
+  forward_translated: [back_translated, flagged_for_revision]
+  back_translated: [expert_reviewed, flagged_for_revision]
+  expert_reviewed: [recorded, flagged_for_revision]
+  recorded: [audio_qc, flagged_for_revision]
+  audio_qc: [think_aloud_tested, flagged_for_revision]
+  think_aloud_tested: [approved, flagged_for_revision]
+  approved: [flagged_for_revision]
+  flagged_for_revision: [forward_translated]
+fields:
+  text:
+    # In-place edits (status unchanged) only before the back-translation exists.
+    editable_in: [draft_machine_needs_native_review, forward_translated, flagged_for_revision]
+    # Edits that travel with a sign-off: the translator's own step and the reconciliation panel.
+    editable_on_entering: [forward_translated, expert_reviewed, flagged_for_revision]
+  back_translation:
+    editable_in: [draft_machine_needs_native_review, forward_translated, back_translated, flagged_for_revision]
+    editable_on_entering: [back_translated, expert_reviewed, flagged_for_revision]
+# Pairs (earlier status, later status) whose signers must be different people.
+independent_signers:
+  - [forward_translated, back_translated]
+  - [expert_reviewed, approved]
+pack_eligibility:
+  production: [approved]
+  pilot: [think_aloud_tested, approved]
+languages:
+  - tag: hi-IN
+    name: Hindi
+    script: Deva
+    translation_file: hi-IN.yaml
+  - tag: mr-IN
+    name: Marathi
+    script: Deva
+    translation_file: mr-IN.yaml
+  - tag: ta-IN
+    name: Tamil
+    script: Taml
+    translation_file: ta-IN.yaml
+quality:
+  duration_tolerance: 0.15     # VOX-07 recording sheets: target duration +-15%
+  duration_flag_ratio: 1.5     # VOX-02: clips longer than 1.5x the source-language duration are flagged
+  # Calibrated in aksharas (orthographic syllables) per second for calm, warm, unhurried guide delivery.
+  # Devanagari counts over-count schwa-deleted syllables, hence the higher nominal rate.
+  syllables_per_second:
+    hi-IN: 6.5
+    mr-IN: 6.5
+    ta-IN: 7.0
+    en-IN: 3.0
+  sentence_pause_ms: 350
+  clause_pause_ms: 150
+  max_latin_letters: 0         # recording scripts are written fully in the target script

@@ -1,0 +1,321 @@
+# CI (PLT-04): lint and types -> unit and property tests -> plan-lint (PLT-08) -> trial budget (SCR-03/ONB-08)
+# -> scoring golden tests and content completeness (pytest) -> small simulated-player recovery run -> build
+# -> Playwright smoke. Contract compatibility runs in schema-compat.yml, security scans in codeql.yml / osv-scanner.yml.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  merge_group:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  FORCE_COLOR: "1"
+  TURBO_TELEMETRY_DISABLED: "1"
+  NEXT_TELEMETRY_DISABLED: "1"
+  ELECTRON_SKIP_BINARY_DOWNLOAD: "1"
+  UV_FROZEN: "1"
+  PYTHON_VERSION: "3.14"
+
+jobs:
+  plan:
+    name: Plan lint and trial budget
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Sync Python workspace (PyYAML for the budget sheet)
+        run: uv sync --all-packages
+      - name: plan-lint (PLT-08)
+        run: |
+          uv run python tools/plan-lint/plan_lint.py --order > plan-order.txt
+          tail -n 1 plan-order.txt
+          {
+            echo '## Plan lint'
+            echo
+            echo '```'
+            tail -n 1 plan-order.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+      - name: Trial-time budget (SCR-03 / ONB-08)
+        run: |
+          uv run python tools/trial-budget/trial_budget.py --out trial-budget.md
+          cat trial-budget.md >> "$GITHUB_STEP_SUMMARY"
+          uv run python tools/trial-budget/trial_budget.py --format csv > trial-budget.csv
+      - name: Tool and CI-script tests
+        # prereg / i18n / loadtest run in the Python job (root testpaths); audio-pipeline and asr-bakeoff are
+        # standalone uv projects with their own lockfiles and run in the side-tools job.
+        run: uv run pytest tools/plan-lint tools/trial-budget .github/scripts/tests -q
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: plan-and-budget
+          path: |
+            plan-order.txt
+            trial-budget.md
+            trial-budget.csv
+          if-no-files-found: ignore
+
+  node:
+    name: Node - lint, typecheck, test, build
+    env:
+      TURBO_CACHE_DIR: .turbo/cache
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - name: Turborepo cache
+        uses: actions/cache@v4
+        with:
+          path: .turbo/cache
+          key: turbo-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.sha }}
+          restore-keys: |
+            turbo-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-
+            turbo-${{ runner.os }}-
+      - run: pnpm install --frozen-lockfile
+      - name: Biome lint
+        run: pnpm lint
+      - name: Typecheck
+        run: pnpm typecheck
+      - name: Vitest
+        run: pnpm test
+      - name: Build (contracts codegen drift check included)
+        run: pnpm build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: kiosk-dist
+          path: apps/kiosk/dist
+          retention-days: 7
+
+  python:
+    name: Python - ruff, mypy, pytest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_DB: shriii
+          POSTGRES_USER: dev
+          POSTGRES_PASSWORD: dev
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U dev -d shriii"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+    env:
+      SHRIII_TEST_DATABASE_URL: postgresql+psycopg://dev:dev@localhost:5432/shriii
+      SHRIII_REQUIRE_DB: "1"
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+          python-version: ${{ env.PYTHON_VERSION }}
+      - run: uv sync --all-packages
+      - name: Ruff lint
+        run: uv run ruff check --output-format=github .
+      - name: Ruff format
+        run: uv run ruff format --check .
+      - name: Mypy
+        run: |
+          uv run mypy
+          uv run mypy --strict tools/plan-lint/plan_lint.py tools/trial-budget/trial_budget.py .github/scripts/schema_compat.py .github/scripts/loadtest_summary.py
+      - name: Pytest (scoring golden tests, content completeness, API against PostgreSQL 18)
+        run: uv run pytest -q --junitxml=pytest-report.xml
+      - name: Small simulated-player recovery run (n = 50 per pathway, report only)
+        run: |
+          uv run python .github/scripts/sim_recovery.py --n 50 --pathways A B --out-dir sim-recovery --report-only
+          cat sim-recovery/summary.md >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: python-reports
+          path: |
+            pytest-report.xml
+            sim-recovery/
+          if-no-files-found: ignore
+
+  side-tools:
+    name: Python side tools - ${{ matrix.project }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        # Standalone uv projects (own pyproject + uv.lock, not root workspace members).
+        project: [tools/audio-pipeline, tools/asr-bakeoff, packages/session-crypto/python]
+    defaults:
+      run:
+        working-directory: ${{ matrix.project }}
+    env:
+      # session-crypto/python has no lockfile; the tools pin theirs.
+      UV_FROZEN: ${{ matrix.project != 'packages/session-crypto/python' && '1' || 'false' }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache-dependency-glob: |
+            ${{ matrix.project }}/pyproject.toml
+            ${{ matrix.project }}/uv.lock
+      - run: uv sync
+      - name: Mypy
+        if: matrix.project != 'packages/session-crypto/python'
+        run: uv run mypy
+      - name: Pytest
+        run: uv run pytest -q --junitxml=pytest-report.xml
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pytest-${{ strategy.job-index }}
+          path: ${{ matrix.project }}/pytest-report.xml
+          if-no-files-found: ignore
+
+  e2e:
+    name: Playwright smoke
+    needs: [node]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_DB: shriii
+          POSTGRES_USER: dev
+          POSTGRES_PASSWORD: dev
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U dev -d shriii"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+    env:
+      DATABASE_URL: postgresql+psycopg://dev:dev@localhost:5432/shriii
+      ENV: test
+      AUTH_MODE: dev
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+          python-version: ${{ env.PYTHON_VERSION }}
+      - run: uv sync --all-packages
+      - uses: actions/download-artifact@v5
+        with:
+          name: kiosk-dist
+          path: apps/kiosk/dist
+      - name: Start API (migrate, seed, serve)
+        run: |
+          uv run shriii-api migrate
+          uv run shriii-api seed --demo > /dev/null
+          nohup uv run shriii-api serve --host 127.0.0.1 --port 8000 > api.log 2>&1 &
+      - name: Serve kiosk build
+        run: nohup python3 -m http.server 4173 --bind 127.0.0.1 --directory apps/kiosk/dist > kiosk.log 2>&1 &
+      - name: Install Playwright (Chromium)
+        run: uv run --no-project --with playwright python -m playwright install --with-deps chromium
+      - name: Smoke test
+        run: |
+          uv run --no-project --with playwright python .github/e2e/smoke.py \
+            --api-url http://127.0.0.1:8000 --kiosk-url http://127.0.0.1:4173 --artifacts e2e-artifacts
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: e2e-artifacts
+          path: |
+            e2e-artifacts/
+            api.log
+            kiosk.log
+          if-no-files-found: ignore
+
+  compose:
+    name: Docker images and compose stack
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    if: github.event_name != 'merge_group'
+    steps:
+      - uses: actions/checkout@v5
+      - uses: docker/setup-buildx-action@v3
+      - name: Validate compose file
+        run: docker compose -f infra/compose/compose.full.yml config --quiet
+      - name: Build and start backend + kiosk + adminer
+        run: |
+          services=(postgres migrate api worker kiosk adminer)
+          if [ -d apps/web ]; then services+=(web); fi
+          docker compose -f infra/compose/compose.full.yml up --build -d --wait "${services[@]}"
+      - name: Health endpoints
+        run: |
+          curl -fsS http://localhost:8000/healthz
+          curl -fsS http://localhost:8000/readyz
+          curl -fsS http://localhost:5173/healthz
+          curl -fsS -o /dev/null http://localhost:8080/
+          if [ -d apps/web ]; then curl -fsS -o /dev/null http://localhost:3000/; fi
+      - name: Logs
+        if: failure()
+        run: docker compose -f infra/compose/compose.full.yml logs --no-color
+      - name: Tear down
+        if: always()
+        run: docker compose -f infra/compose/compose.full.yml down -v
+
+  infra:
+    name: OpenTofu validate and region policy
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+      - uses: opentofu/setup-opentofu@v1
+        with:
+          tofu_version: 1.10.6
+          tofu_wrapper: false
+      - name: Format
+        run: tofu fmt -recursive -check -diff infra/tofu
+      - name: Validate roots
+        env:
+          TF_PLUGIN_CACHE_DIR: ${{ runner.temp }}/tofu-plugins
+        run: |
+          mkdir -p "$TF_PLUGIN_CACHE_DIR"
+          for root in infra/tofu/envs/staging infra/tofu/envs/production infra/tofu/bootstrap; do
+            echo "::group::$root"
+            tofu -chdir="$root" init -backend=false -input=false -no-color
+            tofu -chdir="$root" validate -no-color
+            echo "::endgroup::"
+          done
+      - name: Region policy (PLT-05 - India regions only)
+        run: |
+          found=$(grep -rhoE '\b(us|eu|ap|sa|ca|me|af|il|mx)-(north|south|east|west|central|northeast|southeast|gov-east|gov-west)-[0-9]\b' infra/tofu --include='*.tf' --include='*.tfvars*' | sort -u)
+          echo "Regions referenced: ${found:-none}"
+          bad=$(echo "$found" | grep -vE '^(ap-south-1|ap-south-2)?$' || true)
+          if [ -n "$bad" ]; then echo "::error title=Region policy::Non-India regions referenced: $bad"; exit 1; fi
+
+  ci-ok:
+    name: CI OK
+    if: always()
+    needs: [plan, node, python, side-tools, e2e, compose, infra]
+    runs-on: ubuntu-24.04
+    steps:
+      - name: All required jobs passed
+        run: |
+          results='${{ toJSON(needs.*.result) }}'
+          echo "$results"
+          echo "$results" | grep -Eq '"(failure|cancelled)"' && exit 1 || exit 0

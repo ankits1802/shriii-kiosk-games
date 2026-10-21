@@ -1,0 +1,85 @@
+{#- HTML macro set (autoescaped). Same macro names and signatures as _md.j2. -#}
+{% macro doc_start() -%}
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ report.title }}</title>
+<meta name="shriii-report-kind" content="{{ report.kind }}">
+<meta name="shriii-analysis-run-id" content="{{ prov.analysis_run_id }}">
+<meta name="shriii-snapshot-sha256" content="{{ prov.snapshot_sha256 }}">
+<meta name="shriii-bundle-sha256" content="{{ bundle_sha256 }}">
+<style>
+:root { --bg:#ffffff; --fg:#1d232b; --muted:#5b6672; --line:#d9dee4; --head:#f3f5f7; --warn-bg:#fff6e0; --warn-line:#d79a00; --rev-bg:#eef3ff; --rev-line:#3b6fd8; --todo-bg:#eefaf1; --todo-line:#2f9a55; --pass:#1f7a3f; --fail:#b42318; }
+@media (prefers-color-scheme: dark) { :root { --bg:#14181d; --fg:#e6e9ed; --muted:#9aa5b1; --line:#2e3640; --head:#1c2229; --warn-bg:#2d2512; --rev-bg:#17213a; --rev-line:#6f95e6; --todo-bg:#13261a; --todo-line:#4fbf78; --pass:#5fd08a; --fail:#ff7b6e; } }
+body { background:var(--bg); color:var(--fg); font:15px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif; margin:0 auto; max-width:1180px; padding:24px 16px 64px; }
+h1 { font-size:1.6rem; line-height:1.25; } h2 { margin-top:2.2rem; border-bottom:1px solid var(--line); padding-bottom:.3rem; } h3 { margin-top:1.6rem; }
+table { border-collapse:collapse; width:100%; margin:.6rem 0 1.2rem; font-size:.85rem; display:block; overflow-x:auto; font-variant-numeric:tabular-nums; }
+th, td { border:1px solid var(--line); padding:4px 7px; text-align:left; vertical-align:top; }
+th { background:var(--head); }
+.callout { border-left:4px solid var(--warn-line); background:var(--warn-bg); padding:8px 12px; margin:1rem 0; }
+.review { border-left:4px solid var(--rev-line); background:var(--rev-bg); padding:8px 12px; margin:1rem 0; }
+.todo { border-left:4px solid var(--todo-line); background:var(--todo-bg); padding:8px 12px; margin:1rem 0; }
+footer { margin-top:3rem; color:var(--muted); font-size:.82rem; border-top:1px solid var(--line); padding-top:.8rem; overflow-wrap:anywhere; }
+</style>
+</head>
+<body>
+<main>
+{% endmacro %}
+
+{% macro doc_end() -%}
+</main>
+</body>
+</html>
+{% endmacro %}
+
+{% macro h(level, text) -%}
+<h{{ level }}>{{ text }}</h{{ level }}>
+{% endmacro %}
+
+{% macro p(text) -%}
+<p>{{ text }}</p>
+{% endmacro %}
+
+{% macro ul(items) -%}
+<ul>
+{% for i in items %}
+<li>{{ i }}</li>
+{% endfor %}
+</ul>
+{% endmacro %}
+
+{% macro table(headers, rows) -%}
+<table>
+<thead><tr>{% for c in headers %}<th>{{ c | cell }}</th>{% endfor %}</tr></thead>
+<tbody>
+{% for r in rows %}
+<tr>{% for c in r %}<td>{{ c | cell }}</td>{% endfor %}</tr>
+{% endfor %}
+</tbody>
+</table>
+{% endmacro %}
+
+{% macro kv(pairs) -%}
+<table>
+<thead><tr><th>Item</th><th>Value</th></tr></thead>
+<tbody>
+{% for k, v in pairs %}
+<tr><th scope="row">{{ k | cell }}</th><td>{{ v | cell }}</td></tr>
+{% endfor %}
+</tbody>
+</table>
+{% endmacro %}
+
+{% macro callout(kind, title, body) -%}
+<div class="callout"><strong>{{ kind | upper }}: {{ title }}</strong><br>{{ body }}</div>
+{% endmacro %}
+
+{% macro review(who, text) -%}
+<div class="review"><strong>[REVIEW REQUIRED: {{ who }}]</strong> {{ text }}</div>
+{% endmacro %}
+
+{% macro placeholder(text) -%}
+<div class="todo"><strong>[TO BE COMPLETED]</strong> {{ text }}</div>
+{% endmacro %}

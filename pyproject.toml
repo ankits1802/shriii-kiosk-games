@@ -8,7 +8,11 @@ dependencies = [
   "shriii-scoring",
   "shriii-validation",
   "shriii-simulator",
+  "shriii-rbridge",
   "shriii-api",
+  "shriii-prereg",
+  "shriii-reports",
+  "shriii-i18n",
 ]
 
 [dependency-groups]
@@ -33,7 +37,12 @@ members = [
   "python/shriii_scoring",
   "python/shriii_validation",
   "python/shriii_simulator",
+  "python/shriii_rbridge",
   "apps/api",
+  "tools/prereg",
+  "reports",
+  "tools/i18n",
+  "tools/loadtest",
 ]
 
 [tool.uv.sources]
@@ -41,7 +50,12 @@ shriii-contracts = { workspace = true }
 shriii-scoring = { workspace = true }
 shriii-validation = { workspace = true }
 shriii-simulator = { workspace = true }
+shriii-rbridge = { workspace = true }
 shriii-api = { workspace = true }
+shriii-prereg = { workspace = true }
+shriii-reports = { workspace = true }
+shriii-i18n = { workspace = true }
+shriii-loadtest = { workspace = true }
 
 [tool.pytest.ini_options]
 testpaths = [
@@ -49,9 +63,14 @@ testpaths = [
   "python/shriii_scoring/tests",
   "python/shriii_validation/tests",
   "python/shriii_simulator/tests",
+  "python/shriii_rbridge/tests",
   "apps/api/tests",
   "scoring/tests",
   "content/tests",
+  "tools/prereg/tests",
+  "reports/tests",
+  "tools/i18n/tests",
+  "tools/loadtest/tests",
 ]
 addopts = ["-ra", "--strict-markers", "--import-mode=importlib"]
 markers = [

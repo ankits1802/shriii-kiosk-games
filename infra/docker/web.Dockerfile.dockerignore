@@ -1,0 +1,23 @@
+# Build context filter for infra/docker/web.Dockerfile.
+**/node_modules
+**/dist
+**/.turbo
+**/.next
+**/coverage
+**/.vite
+.git
+.claude
+.venv
+**/__pycache__
+**/.pytest_cache
+**/.mypy_cache
+**/.ruff_cache
+docs/reference
+python
+apps/api
+apps/kiosk/electron/dist
+infra/tofu
+*.log
+.env
+.env.*
+!.env.example

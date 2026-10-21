@@ -1,0 +1,2036 @@
+# Recording-script translations for mr-IN (VOX-07). Generated and validated by tools/i18n
+# (`shriii-i18n validate`). Edit through the XLSX round-trip (`shriii-i18n export` / `import`) so that
+# every status change carries a reviewer sign-off; hand edits must keep the history chain valid.
+# Status meanings and allowed transitions: content/i18n/translations/workflow.yaml.
+schema_version: '1.0'
+language: mr-IN
+script: Deva
+source_catalogue: content/i18n/lines.yaml
+source_catalogue_version: 0.1.0
+provenance: 'Machine draft (LLM-assisted, Claude) written on 2026-10-21 from catalogue 0.1.0 as recording-script SOURCE text for native translators. Not yet reviewed by any native speaker: every entry is draft_machine_needs_native_review. Back-translations are the drafter''s own literal English renderings for ITC review and must be replaced by an independent back-translation (back_translated step).'
+register_guide: content/i18n/translations/register-guide.yaml#mr-IN
+entries:
+  - id: attract.greeting
+    source_text: Namaste! Come and play a short game at the market fair.
+    source_hash: d6c55d5e6c795c85
+    status: draft_machine_needs_native_review
+    text: नमस्कार! या, जत्रेतल्या बाजारात एक छोटासा खेळ खेळा.
+    back_translation: Namaskar! Come, play a little game at the market in the village fair (jatra).
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: Greeting adapted to नमस्कार (Marathi everyday greeting); 'market fair' rendered as जत्रा, the familiar Maharashtrian village fair.
+    record: true
+    record_note: ''
+    history: []
+  - id: attract.touch_to_start
+    source_text: Touch the screen to begin.
+    source_hash: b81542af7f2ecd8d
+    status: draft_machine_needs_native_review
+    text: सुरू करायला स्क्रीनला हात लावा.
+    back_translation: To start, put your hand on (touch) the screen.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: हात लावा ('put your hand on') is the natural spoken verb; स्पर्श करा is bookish.
+    record: true
+    record_note: ''
+    history: []
+  - id: onboarding.language_face.hi_in
+    source_text: I speak Hindi. Touch me to play in Hindi.
+    source_hash: 739789587c4c7964
+    status: draft_machine_needs_native_review
+    text: मी हिंदी बोलते. हिंदीत खेळायला मला हात लावा.
+    back_translation: I speak Hindi. To play in Hindi, touch me.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: 'Speaking-face line for Hindi. Only the Hindi recording is used in production (the face speaks its own language); the other language versions are kept for ITC review only and are not recorded. Verb agrees with the voice artist''s gender: बोलते (woman) / बोलतो (man).'
+    record: false
+    record_note: 'Recorded only in hi-IN: the language face speaks its own language. Translation kept for ITC review only.'
+    history: []
+  - id: onboarding.language_confirm.hi_in
+    source_text: You chose Hindi. Touch the tick to continue, or the cross to choose again.
+    source_hash: 36bdb35332f83b38
+    status: draft_machine_needs_native_review
+    text: तुम्ही हिंदी निवडली. पुढे जायला बरोबरच्या खुणेला हात लावा, नाहीतर पुन्हा निवडायला फुलीला हात लावा.
+    back_translation: You chose Hindi. To go ahead, touch the correct-mark; otherwise, to choose again, touch the cross.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: Played in Hindi right after the Hindi face is chosen; only that language version is recorded. 'tick' = बरोबरची खूण, 'cross' = फुली (everyday Marathi word for an X mark).
+    record: false
+    record_note: 'Recorded only in hi-IN: the language face speaks its own language. Translation kept for ITC review only.'
+    history: []
+  - id: onboarding.language_face.mr_in
+    source_text: I speak Marathi. Touch me to play in Marathi.
+    source_hash: 214afc2ca325e53c
+    status: draft_machine_needs_native_review
+    text: मी मराठी बोलते. मराठीत खेळायला मला हात लावा.
+    back_translation: I speak Marathi. To play in Marathi, touch me.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: 'Speaking-face line for Marathi. Only the Marathi recording is used in production (the face speaks its own language); the other language versions are kept for ITC review only and are not recorded. Verb agrees with the voice artist''s gender: बोलते (woman) / बोलतो (man).'
+    record: true
+    record_note: ''
+    history: []
+  - id: onboarding.language_confirm.mr_in
+    source_text: You chose Marathi. Touch the tick to continue, or the cross to choose again.
+    source_hash: fc29978edc21d409
+    status: draft_machine_needs_native_review
+    text: तुम्ही मराठी निवडली. पुढे जायला बरोबरच्या खुणेला हात लावा, नाहीतर पुन्हा निवडायला फुलीला हात लावा.
+    back_translation: You chose Marathi. To go ahead, touch the correct-mark; otherwise, to choose again, touch the cross.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: Played in Marathi right after the Marathi face is chosen; only that language version is recorded. 'tick' = बरोबरची खूण, 'cross' = फुली (everyday Marathi word for an X mark).
+    record: true
+    record_note: ''
+    history: []
+  - id: onboarding.language_face.ta_in
+    source_text: I speak Tamil. Touch me to play in Tamil.
+    source_hash: 8f979fec717500ec
+    status: draft_machine_needs_native_review
+    text: मी तमिळ बोलते. तमिळमध्ये खेळायला मला हात लावा.
+    back_translation: I speak Tamil. To play in Tamil, touch me.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: 'Speaking-face line for Tamil. Only the Tamil recording is used in production (the face speaks its own language); the other language versions are kept for ITC review only and are not recorded. Verb agrees with the voice artist''s gender: बोलते (woman) / बोलतो (man).'
+    record: false
+    record_note: 'Recorded only in ta-IN: the language face speaks its own language. Translation kept for ITC review only.'
+    history: []
+  - id: onboarding.language_confirm.ta_in
+    source_text: You chose Tamil. Touch the tick to continue, or the cross to choose again.
+    source_hash: 4179f333dbf4b98d
+    status: draft_machine_needs_native_review
+    text: तुम्ही तमिळ निवडली. पुढे जायला बरोबरच्या खुणेला हात लावा, नाहीतर पुन्हा निवडायला फुलीला हात लावा.
+    back_translation: You chose Tamil. To go ahead, touch the correct-mark; otherwise, to choose again, touch the cross.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: Played in Tamil right after the Tamil face is chosen; only that language version is recorded. 'tick' = बरोबरची खूण, 'cross' = फुली (everyday Marathi word for an X mark).
+    record: false
+    record_note: 'Recorded only in ta-IN: the language face speaks its own language. Translation kept for ITC review only.'
+    history: []
+  - id: onboarding.language_face.en_in
+    source_text: I speak English. Touch me to play in English.
+    source_hash: e2558909aff77a21
+    status: draft_machine_needs_native_review
+    text: मी इंग्रजी बोलते. इंग्रजीत खेळायला मला हात लावा.
+    back_translation: I speak English. To play in English, touch me.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: 'Speaking-face line for English. Only the English recording is used in production (the face speaks its own language); the other language versions are kept for ITC review only and are not recorded. Verb agrees with the voice artist''s gender: बोलते (woman) / बोलतो (man).'
+    record: false
+    record_note: 'Recorded only in en-IN: the language face speaks its own language. Translation kept for ITC review only.'
+    history: []
+  - id: onboarding.language_confirm.en_in
+    source_text: You chose English. Touch the tick to continue, or the cross to choose again.
+    source_hash: 2c4f2707d92bd150
+    status: draft_machine_needs_native_review
+    text: तुम्ही इंग्रजी निवडली. पुढे जायला बरोबरच्या खुणेला हात लावा, नाहीतर पुन्हा निवडायला फुलीला हात लावा.
+    back_translation: You chose English. To go ahead, touch the correct-mark; otherwise, to choose again, touch the cross.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: Played in English right after the English face is chosen; only that language version is recorded. 'tick' = बरोबरची खूण, 'cross' = फुली (everyday Marathi word for an X mark).
+    record: false
+    record_note: 'Recorded only in en-IN: the language face speaks its own language. Translation kept for ITC review only.'
+    history: []
+  - id: onboarding.globe_hint
+    source_text: Touch the globe to change the language.
+    source_hash: 1c08904f6089ed73
+    status: draft_machine_needs_native_review
+    text: भाषा बदलायची असेल, तर पृथ्वीच्या गोलाला हात लावा.
+    back_translation: If you want to change the language, touch the earth globe.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: '''Globe'' may be unfamiliar to some participants; the think-aloud must check that the icon is recognised from the spoken description.'
+    record: true
+    record_note: ''
+    history: []
+  - id: consent.core.segment_1
+    source_text: We will play a few short games at a village market. There are no right or wrong people, only choices.
+    source_hash: 606344efea9df472
+    status: draft_machine_needs_native_review
+    text: आपण एका गावच्या बाजारात काही छोटे खेळ खेळणार आहोत. यात कोणी बरोबर किंवा चूक नसतं, फक्त आपापल्या निवडी असतात.
+    back_translation: We are going to play some small games at a village market. In this nobody is right or wrong; there are only each person's own choices.
+    register_note: 'Tone ''calm'': Slow, steady and reassuring; consent and privacy lines must never sound rushed or legalistic.'
+    translator_note: 'Consent script: meaning must be exact and calm. The source ''no right or wrong people'' means nobody is judged; rendered as ''no person is right or wrong, only one''s own choices''.'
+    record: true
+    record_note: ''
+    history: []
+  - id: consent.core.segment_2
+    source_text: We keep only your taps and choices, with no name. We never keep your voice or any recording.
+    source_hash: b4cdd252dead7546
+    status: draft_machine_needs_native_review
+    text: आम्ही फक्त तुम्ही काय दाबलं आणि काय निवडलं एवढंच ठेवतो, तुमचं नाव नाही. तुमचा आवाज किंवा कुठलंही रेकॉर्डिंग आम्ही कधीच ठेवत नाही.
+    back_translation: We keep only what you pressed and what you chose, not your name. We never keep your voice or any recording.
+    register_note: 'Tone ''calm'': Slow, steady and reassuring; consent and privacy lines must never sound rushed or legalistic.'
+    translator_note: 'Privacy promise (PRV-03): ''never keep your voice'' must stay unconditional; reviewers must not soften it.'
+    record: true
+    record_note: ''
+    history: []
+  - id: consent.core.segment_3
+    source_text: You can stop at any time by touching the hand. You can also ask us to delete what you played.
+    source_hash: b470a591226d26a0
+    status: draft_machine_needs_native_review
+    text: हाताच्या खुणेला हात लावून तुम्ही केव्हाही थांबू शकता. तुम्ही खेळलेलं पुसून टाकायला आम्हाला सांगूही शकता.
+    back_translation: By touching the hand sign you can stop any time. You can also tell us to wipe out what you played.
+    register_note: 'Tone ''calm'': Slow, steady and reassuring; consent and privacy lines must never sound rushed or legalistic.'
+    translator_note: 'Withdrawal right (ONB-06): both ''stop any time'' and ''ask us to delete'' must survive back-translation.'
+    record: true
+    record_note: ''
+    history: []
+  - id: consent.core.segment_4
+    source_text: At the end you may hear a short picture summary. It is a snapshot of today's play, not a test or a diagnosis.
+    source_hash: eed5880d6204d452
+    status: draft_machine_needs_native_review
+    text: शेवटी तुम्ही कसं खेळलात, ते चित्रांसोबत थोडक्यात ऐकायला मिळू शकेल. ही फक्त आजच्या खेळाची एक झलक आहे; ही परीक्षा नाही, आणि कुठल्या आजाराची तपासणीही नाही.
+    back_translation: At the end you may get to hear briefly, with pictures, how you played. This is only a glimpse of today's game; it is not an exam, and not a check-up for any illness.
+    register_note: 'Tone ''calm'': Slow, steady and reassuring; consent and privacy lines must never sound rushed or legalistic.'
+    translator_note: '''Diagnosis'' has no everyday word; rendered as ''a check for illness'' so that non-literate listeners understand it is not medical. ''Summary'' rendered as ''glimpse'' (hi/mr झलक) / ''brief'' (ta சுருக்கம்).'
+    record: true
+    record_note: ''
+    history: []
+  - id: consent.core.question
+    source_text: If you agree, touch the tick. If not, touch the cross.
+    source_hash: d0387b4c0fbc40f1
+    status: draft_machine_needs_native_review
+    text: तुम्हाला मान्य असेल, तर बरोबरच्या खुणेला हात लावा. नसेल, तर फुलीला हात लावा.
+    back_translation: If it is acceptable to you, touch the correct-mark. If not, touch the cross.
+    register_note: 'Tone ''calm'': Slow, steady and reassuring; consent and privacy lines must never sound rushed or legalistic.'
+    translator_note: Consent is committed by tap only; the line must not imply that speaking 'yes' is enough.
+    record: true
+    record_note: ''
+    history: []
+  - id: consent.archive.question
+    source_text: May we keep your anonymous play for future research? Touch the tick for yes, or leave it for no.
+    source_hash: fc2941413a233b2f
+    status: draft_machine_needs_native_review
+    text: तुमचा हा खेळ, नाव न ठेवता, पुढच्या संशोधनासाठी आम्ही ठेवू का? हो असेल, तर बरोबरच्या खुणेला हात लावा; नाही असेल, तर काही करू नका.
+    back_translation: May we keep this game of yours, without keeping your name, for future research? If yes, touch the correct-mark; if no, do nothing.
+    register_note: 'Tone ''calm'': Slow, steady and reassuring; consent and privacy lines must never sound rushed or legalistic.'
+    translator_note: Default is NO (leave it). 'Anonymous' rendered as 'without (your) name'. संशोधन is common in spoken Marathi media; reviewers may prefer अभ्यास for rural listeners.
+    record: true
+    record_note: ''
+    history: []
+  - id: consent.declined_thanks
+    source_text: Thank you for stopping by. Have a lovely day at the fair.
+    source_hash: 213ddcb1db1d1636
+    status: draft_machine_needs_native_review
+    text: आल्याबद्दल धन्यवाद. जत्रेत तुमचा दिवस छान जावो!
+    back_translation: Thanks for coming. May your day at the fair go nicely!
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: ''
+    record: true
+    record_note: ''
+    history: []
+  - id: bands.age.question
+    source_text: Which picture is closest to your age?
+    source_hash: 4209f335edd5ec01
+    status: draft_machine_needs_native_review
+    text: कोणतं चित्र तुमच्या वयाच्या सगळ्यात जवळ आहे?
+    back_translation: Which picture is closest to your age?
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: ''
+    record: true
+    record_note: ''
+    history: []
+  - id: bands.age.option.18_24
+    source_text: Eighteen to twenty-four years.
+    source_hash: 1da77bcef07ad1f4
+    status: draft_machine_needs_native_review
+    text: अठरा ते चोवीस वर्षं.
+    back_translation: Eighteen to twenty-four years.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: Spoken number words (never digits on screen). Some speakers say ages in English numbers; field-test comprehension with older and non-literate participants.
+    record: true
+    record_note: ''
+    history: []
+  - id: bands.age.option.25_34
+    source_text: Twenty-five to thirty-four years.
+    source_hash: 4d4492efb6af5420
+    status: draft_machine_needs_native_review
+    text: पंचवीस ते चौतीस वर्षं.
+    back_translation: Twenty-five to thirty-four years.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: Spoken number words (never digits on screen). Some speakers say ages in English numbers; field-test comprehension with older and non-literate participants.
+    record: true
+    record_note: ''
+    history: []
+  - id: bands.age.option.35_44
+    source_text: Thirty-five to forty-four years.
+    source_hash: f86fd1f2bab1f15b
+    status: draft_machine_needs_native_review
+    text: पस्तीस ते चव्वेचाळीस वर्षं.
+    back_translation: Thirty-five to forty-four years.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: Spoken number words (never digits on screen). Some speakers say ages in English numbers; field-test comprehension with older and non-literate participants.
+    record: true
+    record_note: ''
+    history: []
+  - id: bands.age.option.45_59
+    source_text: Forty-five to fifty-nine years.
+    source_hash: e3b33f769bbe805d
+    status: draft_machine_needs_native_review
+    text: पंचेचाळीस ते एकोणसाठ वर्षं.
+    back_translation: Forty-five to fifty-nine years.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: Spoken number words (never digits on screen). Some speakers say ages in English numbers; field-test comprehension with older and non-literate participants.
+    record: true
+    record_note: ''
+    history: []
+  - id: bands.age.option.60_plus
+    source_text: Sixty years or more.
+    source_hash: bfc7a6e980fe424b
+    status: draft_machine_needs_native_review
+    text: साठ वर्षं किंवा त्याहून जास्त.
+    back_translation: Sixty years or more than that.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: Spoken number words (never digits on screen). Some speakers say ages in English numbers; field-test comprehension with older and non-literate participants.
+    record: true
+    record_note: ''
+    history: []
+  - id: bands.age.option.under_18
+    source_text: Under eighteen years.
+    source_hash: d1f5873d68cfcb4b
+    status: draft_machine_needs_native_review
+    text: अठरा वर्षांपेक्षा कमी.
+    back_translation: Less than eighteen years.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: Spoken number words (never digits on screen). Some speakers say ages in English numbers; field-test comprehension with older and non-literate participants.
+    record: true
+    record_note: ''
+    history: []
+  - id: bands.under_18.goodbye
+    source_text: Thank you! This game is for grown-ups. Enjoy the fair!
+    source_hash: 7b71bf5835b1f13d
+    status: draft_machine_needs_native_review
+    text: धन्यवाद! हा खेळ मोठ्या माणसांसाठी आहे. जत्रेची मजा घ्या!
+    back_translation: Thank you! This game is for grown-up people. Enjoy the fair!
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: Must sound kind, not like a refusal; nothing is kept.
+    record: true
+    record_note: ''
+    history: []
+  - id: bands.literacy.question
+    source_text: Can you read a letter or a newspaper? Easily, with difficulty, or not at all?
+    source_hash: c71870f7388a1183
+    status: draft_machine_needs_native_review
+    text: तुम्हाला पत्र किंवा पेपर वाचता येतं का? सहज, थोडं कष्टानं, की अजिबात नाही?
+    back_translation: Can you read a letter or the paper? Easily, with some effort, or not at all?
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: 'Sensitive question: neutral, matter-of-fact delivery with no hint that one answer is better. ''Not at all'' must sound as acceptable as ''easily''. पेपर is the everyday word for newspaper (वर्तमानपत्र is bookish).'
+    record: true
+    record_note: ''
+    history: []
+  - id: bands.education.question
+    source_text: Which picture shows how far you went in school?
+    source_hash: 92aebabbd66e3c9b
+    status: draft_machine_needs_native_review
+    text: तुम्ही शाळेत कुठपर्यंत शिकलात, ते कोणतं चित्र दाखवतं?
+    back_translation: Which picture shows how far you studied in school?
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: Must also work for people who never went to school (a 'no schooling' picture exists).
+    record: true
+    record_note: ''
+    history: []
+  - id: bands.gender.question
+    source_text: Which picture fits you? You can also skip this.
+    source_hash: aa4c946a5e2d0af0
+    status: draft_machine_needs_native_review
+    text: कोणतं चित्र तुमच्याशी जुळतं? हवं तर हे सोडूनही देऊ शकता.
+    back_translation: Which picture matches you? If you like, you can also leave this out.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: Optional question; the skip must sound genuinely fine. Do not name genders in the audio; the pictures carry the options.
+    record: true
+    record_note: ''
+    history: []
+  - id: bands.device_use.question
+    source_text: How often do you use a smartphone? Never, sometimes, or every day?
+    source_hash: 4f4df00bff306888
+    status: draft_machine_needs_native_review
+    text: तुम्ही स्मार्टफोन किती वेळा वापरता? कधीच नाही, कधी कधी, की रोज?
+    back_translation: How often do you use a smartphone? Never, sometimes, or every day?
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: Pictures should show a touch-screen phone so that keypad-phone users answer correctly; 'smartphone' kept as the familiar loanword.
+    record: true
+    record_note: ''
+    history: []
+  - id: bands.played_before.question
+    source_text: Have you played this game before?
+    source_hash: c7b894c7c259e161
+    status: draft_machine_needs_native_review
+    text: तुम्ही हा खेळ याआधी कधी खेळलात का?
+    back_translation: Did you ever play this game before?
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: ''
+    record: true
+    record_note: ''
+    history: []
+  - id: bands.prefer_not_to_say
+    source_text: I prefer not to say.
+    source_hash: 04355f1a238e2069
+    status: draft_machine_needs_native_review
+    text: मला सांगायचं नाही.
+    back_translation: I don't want to say.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: Spoken as the player's own answer option; gender-neutral first-person forms chosen deliberately.
+    record: true
+    record_note: ''
+    history: []
+  - id: warmup.intro
+    source_text: Let's warm up! First, a few easy taps.
+    source_hash: a4cf2a984ddb1dec
+    status: draft_machine_needs_native_review
+    text: चला, आधी थोडा सराव करूया! आधी फक्त काही सोप्या गोष्टींना हात लावा.
+    back_translation: Come, let's practise a little first! First, just touch a few easy things.
+    register_note: 'Tone ''encouraging'': Light, upbeat praise; never childish or patronising to adults and elders.'
+    translator_note: '''Warm up'' has no natural equivalent; rendered as ''practise a little''. ''Taps'' rendered as touching easy things.'
+    record: true
+    record_note: ''
+    history: []
+  - id: warmup.tap
+    source_text: Touch the mango when it appears.
+    source_hash: 27cda496a60d85c1
+    status: draft_machine_needs_native_review
+    text: आंबा दिसला की त्याला हात लावा.
+    back_translation: When the mango appears, touch it.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: ''
+    record: true
+    record_note: ''
+    history: []
+  - id: warmup.hold
+    source_text: Now touch and hold the jar until it fills.
+    source_hash: 5e795bb4d9210548
+    status: draft_machine_needs_native_review
+    text: आता बरणीला हात लावून ती भरेपर्यंत दाबून ठेवा.
+    back_translation: Now touch the jar and keep pressing until it fills.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: '''Jar'' must match the final art (glass/clay jar). If the art shows a clay pot, use hi मटका / mr मडकं / ta பானை instead and update the glossary.'
+    record: true
+    record_note: ''
+    history: []
+  - id: warmup.choice
+    source_text: Touch the basket that matches.
+    source_hash: fd6e54a28f5d8cf7
+    status: draft_machine_needs_native_review
+    text: जी टोपली जुळते, तिला हात लावा.
+    back_translation: Touch the basket that matches.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: ''
+    record: true
+    record_note: ''
+    history: []
+  - id: warmup.done
+    source_text: Well done. Now let's go to the market!
+    source_hash: 9b3a8c29421d0fa9
+    status: draft_machine_needs_native_review
+    text: छान! आता चला, बाजारात जाऊया!
+    back_translation: Nice! Now come, let's go to the market!
+    register_note: 'Tone ''encouraging'': Light, upbeat praise; never childish or patronising to adults and elders.'
+    translator_note: 'Praise for adults: warm, not childish (avoid hi शाबाश, which can sound like praising a child).'
+    record: true
+    record_note: ''
+    history: []
+  - id: dont_tap.intro
+    source_text: Fresh fruit only! Serve good fruit quickly, but do not serve spoiled fruit.
+    source_hash: 0b8e2c6ae4847261
+    status: draft_machine_needs_native_review
+    text: फक्त ताजी फळं! चांगली फळं पटपट द्या, पण खराब झालेली फळं देऊ नका.
+    back_translation: Only fresh fruits! Give good fruits quickly, but don't give spoiled fruits.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: '''Serve'' rendered as ''give'' (to the customer); the practice trial shows that giving = touching. Speed and the no-go rule must carry equal weight, as in the source.'
+    record: true
+    record_note: ''
+    history: []
+  - id: dont_tap.practice
+    source_text: Let's try one together.
+    source_hash: adf93715f6d76638
+    status: draft_machine_needs_native_review
+    text: चला, एकदा सोबत करून बघूया.
+    back_translation: Come, let's try doing it once together.
+    register_note: 'Tone ''encouraging'': Light, upbeat praise; never childish or patronising to adults and elders.'
+    translator_note: सोबत used for 'together' because बरोबर also means 'correct'.
+    record: true
+    record_note: ''
+    history: []
+  - id: dont_tap.outro
+    source_text: Thank you! Let's move on.
+    source_hash: fd0fbee3cbd726e8
+    status: draft_machine_needs_native_review
+    text: धन्यवाद! चला, पुढे जाऊया.
+    back_translation: Thank you! Come, let's go ahead.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: Shared bridge line (<= 5 s); keep identical wording across modules so one take can be reused.
+    record: true
+    record_note: ''
+    history: []
+  - id: dont_tap.replay
+    source_text: Here are the instructions again.
+    source_hash: 8add2a435f7d980a
+    status: draft_machine_needs_native_review
+    text: काय करायचं ते पुन्हा एकदा ऐका.
+    back_translation: Listen once more to what you have to do.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: Avoids the bookish word for 'instructions' (hi निर्देश / mr सूचना / ta அறிவுறுத்தல்); 'listen again to what to do' is the spoken equivalent.
+    record: true
+    record_note: ''
+    history: []
+  - id: card_sort.intro
+    source_text: Help sort the cards into the baskets. Listen to the sound to learn if a card is right.
+    source_hash: 60f38981e632f1c4
+    status: draft_machine_needs_native_review
+    text: कार्ड टोपल्यांमध्ये लावायला मदत करा. आवाज ऐकून कळेल की कार्ड बरोबर जागी गेलं की नाही.
+    back_translation: Help put the cards into the baskets. By listening to the sound you'll know whether the card went to the right place or not.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: Must NOT explain the sorting rule or hint that it will change (unannounced switch, MG-03). कार्ड used, not पत्ते (playing cards, gambling connotation).
+    record: true
+    record_note: ''
+    history: []
+  - id: card_sort.practice
+    source_text: Try sorting this card.
+    source_hash: 06b5e82ec772fea9
+    status: draft_machine_needs_native_review
+    text: हे कार्ड एखाद्या टोपलीत ठेवून बघा.
+    back_translation: Try putting this card in some basket.
+    register_note: 'Tone ''encouraging'': Light, upbeat praise; never childish or patronising to adults and elders.'
+    translator_note: ''
+    record: true
+    record_note: ''
+    history: []
+  - id: card_sort.outro
+    source_text: Thank you! Let's move on.
+    source_hash: fd0fbee3cbd726e8
+    status: draft_machine_needs_native_review
+    text: धन्यवाद! चला, पुढे जाऊया.
+    back_translation: Thank you! Come, let's go ahead.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: Shared bridge line (<= 5 s); keep identical wording across modules so one take can be reused.
+    record: true
+    record_note: ''
+    history: []
+  - id: card_sort.replay
+    source_text: Here are the instructions again.
+    source_hash: 8add2a435f7d980a
+    status: draft_machine_needs_native_review
+    text: काय करायचं ते पुन्हा एकदा ऐका.
+    back_translation: Listen once more to what you have to do.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: Avoids the bookish word for 'instructions' (hi निर्देश / mr सूचना / ta அறிவுறுத்தல்); 'listen again to what to do' is the spoken equivalent.
+    record: true
+    record_note: ''
+    history: []
+  - id: balloon.intro
+    source_text: Pump the balloon to fill your jar. Collect before it bursts!
+    source_hash: 1f37ccd7769fcef8
+    status: draft_machine_needs_native_review
+    text: फुग्यात हवा भरा, त्यानं तुमची बरणी भरेल. फुगा फुटायच्या आधी गोळा करून घ्या!
+    back_translation: Fill air into the balloon; that will fill your jar. Collect before the balloon bursts!
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: 'Risk task (MG-01): do not add advice such as ''be careful'' or ''pump more''; keep the source''s neutral balance.'
+    record: true
+    record_note: ''
+    history: []
+  - id: balloon.practice
+    source_text: Try pumping this balloon.
+    source_hash: bce1f7142c312eb8
+    status: draft_machine_needs_native_review
+    text: या फुग्यात हवा भरून बघा.
+    back_translation: Try filling air into this balloon.
+    register_note: 'Tone ''encouraging'': Light, upbeat praise; never childish or patronising to adults and elders.'
+    translator_note: ''
+    record: true
+    record_note: ''
+    history: []
+  - id: balloon.outro
+    source_text: Thank you! Let's move on.
+    source_hash: fd0fbee3cbd726e8
+    status: draft_machine_needs_native_review
+    text: धन्यवाद! चला, पुढे जाऊया.
+    back_translation: Thank you! Come, let's go ahead.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: Shared bridge line (<= 5 s); keep identical wording across modules so one take can be reused.
+    record: true
+    record_note: ''
+    history: []
+  - id: balloon.replay
+    source_text: Here are the instructions again.
+    source_hash: 8add2a435f7d980a
+    status: draft_machine_needs_native_review
+    text: काय करायचं ते पुन्हा एकदा ऐका.
+    back_translation: Listen once more to what you have to do.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: Avoids the bookish word for 'instructions' (hi निर्देश / mr सूचना / ta அறிவுறுத்தல்); 'listen again to what to do' is the spoken equivalent.
+    record: true
+    record_note: ''
+    history: []
+  - id: tower.intro
+    source_text: Move the pots so they look like the picture. Plan your moves.
+    source_hash: 0a0b4684a4d6147f
+    status: draft_machine_needs_native_review
+    text: मडकी अशी हलवा की ती चित्रासारखी दिसतील. आधी विचार करा, मग हलवा.
+    back_translation: Move the pots so that they look like the picture. Think first, then move.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: '''Plan your moves'' rendered as ''think first, then move'', the plain spoken equivalent.'
+    record: true
+    record_note: ''
+    history: []
+  - id: tower.practice
+    source_text: Try this small puzzle.
+    source_hash: e25274a46033ea77
+    status: draft_machine_needs_native_review
+    text: हे छोटंसं कोडं सोडवून बघा.
+    back_translation: Try solving this small puzzle.
+    register_note: 'Tone ''encouraging'': Light, upbeat praise; never childish or patronising to adults and elders.'
+    translator_note: ''
+    record: true
+    record_note: ''
+    history: []
+  - id: tower.outro
+    source_text: Thank you! Let's move on.
+    source_hash: fd0fbee3cbd726e8
+    status: draft_machine_needs_native_review
+    text: धन्यवाद! चला, पुढे जाऊया.
+    back_translation: Thank you! Come, let's go ahead.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: Shared bridge line (<= 5 s); keep identical wording across modules so one take can be reused.
+    record: true
+    record_note: ''
+    history: []
+  - id: tower.replay
+    source_text: Here are the instructions again.
+    source_hash: 8add2a435f7d980a
+    status: draft_machine_needs_native_review
+    text: काय करायचं ते पुन्हा एकदा ऐका.
+    back_translation: Listen once more to what you have to do.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: Avoids the bookish word for 'instructions' (hi निर्देश / mr सूचना / ta அறிவுறுத்தல்); 'listen again to what to do' is the spoken equivalent.
+    record: true
+    record_note: ''
+    history: []
+  - id: share_pot.intro
+    source_text: Share tokens in the pot with your helpers. The pot grows and is shared by everyone.
+    source_hash: 34ef7bfe50d8989f
+    status: draft_machine_needs_native_review
+    text: तुमच्या साथीदारांसोबत भांड्यात नाणी टाका. भांड्यात जमा झालेलं वाढतं आणि सगळ्यांमध्ये वाटलं जातं.
+    back_translation: Put coins into the pot along with your companions. What collects in the pot grows and is shared out among everyone.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: '''Tokens'' rendered as coins (the most natural spoken word); the token art must look like generic coins, not real currency. ''Helpers'' rendered as companions/partners. Do not add ''equally''.'
+    record: true
+    record_note: ''
+    history: []
+  - id: share_pot.practice
+    source_text: Try a practice round.
+    source_hash: 0c617f7e303b10ff
+    status: draft_machine_needs_native_review
+    text: एक सरावाची फेरी खेळून बघा.
+    back_translation: Try playing a practice round.
+    register_note: 'Tone ''encouraging'': Light, upbeat praise; never childish or patronising to adults and elders.'
+    translator_note: ''
+    record: true
+    record_note: ''
+    history: []
+  - id: share_pot.outro
+    source_text: Thank you! Let's move on.
+    source_hash: fd0fbee3cbd726e8
+    status: draft_machine_needs_native_review
+    text: धन्यवाद! चला, पुढे जाऊया.
+    back_translation: Thank you! Come, let's go ahead.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: Shared bridge line (<= 5 s); keep identical wording across modules so one take can be reused.
+    record: true
+    record_note: ''
+    history: []
+  - id: share_pot.replay
+    source_text: Here are the instructions again.
+    source_hash: 8add2a435f7d980a
+    status: draft_machine_needs_native_review
+    text: काय करायचं ते पुन्हा एकदा ऐका.
+    back_translation: Listen once more to what you have to do.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: Avoids the bookish word for 'instructions' (hi निर्देश / mr सूचना / ta அறிவுறுத்தல்); 'listen again to what to do' is the spoken equivalent.
+    record: true
+    record_note: ''
+    history: []
+  - id: wait_or_now.intro
+    source_text: 'Choose: a small gift now, or a bigger gift later.'
+    source_hash: 5336cba46da5a9fc
+    status: draft_machine_needs_native_review
+    text: 'निवडा: आत्ता एक छोटी भेट, की नंतर एक मोठी भेट.'
+    back_translation: 'Choose: a small gift now, or a big gift later.'
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: Comparative 'bigger' rendered as 'big' (natural in speech; the contrast with 'small' carries it).
+    record: true
+    record_note: ''
+    history: []
+  - id: wait_or_now.practice
+    source_text: Try one choice.
+    source_hash: c1a44767986ff832
+    status: draft_machine_needs_native_review
+    text: एकदा निवडून बघा.
+    back_translation: Try choosing once.
+    register_note: 'Tone ''encouraging'': Light, upbeat praise; never childish or patronising to adults and elders.'
+    translator_note: ''
+    record: true
+    record_note: ''
+    history: []
+  - id: wait_or_now.outro
+    source_text: Thank you! Let's move on.
+    source_hash: fd0fbee3cbd726e8
+    status: draft_machine_needs_native_review
+    text: धन्यवाद! चला, पुढे जाऊया.
+    back_translation: Thank you! Come, let's go ahead.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: Shared bridge line (<= 5 s); keep identical wording across modules so one take can be reused.
+    record: true
+    record_note: ''
+    history: []
+  - id: wait_or_now.replay
+    source_text: Here are the instructions again.
+    source_hash: 8add2a435f7d980a
+    status: draft_machine_needs_native_review
+    text: काय करायचं ते पुन्हा एकदा ऐका.
+    back_translation: Listen once more to what you have to do.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: Avoids the bookish word for 'instructions' (hi निर्देश / mr सूचना / ta அறிவுறுத்தல்); 'listen again to what to do' is the spoken equivalent.
+    record: true
+    record_note: ''
+    history: []
+  - id: steady_hands.intro
+    source_text: Touch only when the lamp lights up. Sometimes, keep your hand held down.
+    source_hash: a2343753109e75b4
+    status: draft_machine_needs_native_review
+    text: दिवा लागला की तेव्हाच हात लावा. कधी कधी हात दाबून ठेवायचा आहे.
+    back_translation: Touch only when the lamp lights up. Sometimes you have to keep your hand pressed down.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: ''
+    record: true
+    record_note: ''
+    history: []
+  - id: steady_hands.practice
+    source_text: Let's practise.
+    source_hash: b9b6653808db4c1b
+    status: draft_machine_needs_native_review
+    text: चला, सराव करूया.
+    back_translation: Come, let's practise.
+    register_note: 'Tone ''encouraging'': Light, upbeat praise; never childish or patronising to adults and elders.'
+    translator_note: ''
+    record: true
+    record_note: ''
+    history: []
+  - id: steady_hands.outro
+    source_text: Thank you! Let's move on.
+    source_hash: fd0fbee3cbd726e8
+    status: draft_machine_needs_native_review
+    text: धन्यवाद! चला, पुढे जाऊया.
+    back_translation: Thank you! Come, let's go ahead.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: Shared bridge line (<= 5 s); keep identical wording across modules so one take can be reused.
+    record: true
+    record_note: ''
+    history: []
+  - id: steady_hands.replay
+    source_text: Here are the instructions again.
+    source_hash: 8add2a435f7d980a
+    status: draft_machine_needs_native_review
+    text: काय करायचं ते पुन्हा एकदा ऐका.
+    back_translation: Listen once more to what you have to do.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: Avoids the bookish word for 'instructions' (hi निर्देश / mr सूचना / ta அறிவுறுத்தல்); 'listen again to what to do' is the spoken equivalent.
+    record: true
+    record_note: ''
+    history: []
+  - id: four_stalls.intro
+    source_text: Pick a stall to buy from. Some stalls are luckier than others.
+    source_hash: 9a38ab637ecd8016
+    status: draft_machine_needs_native_review
+    text: खरेदीसाठी एक दुकान निवडा. काही दुकानं इतरांपेक्षा जास्त नशीबवान आहेत.
+    back_translation: Choose a shop to buy from. Some shops are luckier than others.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: '''Luck'' may evoke astrology or auspiciousness; see the dice/luck adaptation sheet. Must not suggest which stall is lucky.'
+    record: true
+    record_note: ''
+    history: []
+  - id: four_stalls.practice
+    source_text: Try one pick.
+    source_hash: bd8b17d03d5f10ac
+    status: draft_machine_needs_native_review
+    text: एकदा निवडून बघा.
+    back_translation: Try choosing once.
+    register_note: 'Tone ''encouraging'': Light, upbeat praise; never childish or patronising to adults and elders.'
+    translator_note: ''
+    record: true
+    record_note: ''
+    history: []
+  - id: four_stalls.outro
+    source_text: Thank you! Let's move on.
+    source_hash: fd0fbee3cbd726e8
+    status: draft_machine_needs_native_review
+    text: धन्यवाद! चला, पुढे जाऊया.
+    back_translation: Thank you! Come, let's go ahead.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: Shared bridge line (<= 5 s); keep identical wording across modules so one take can be reused.
+    record: true
+    record_note: ''
+    history: []
+  - id: four_stalls.replay
+    source_text: Here are the instructions again.
+    source_hash: 8add2a435f7d980a
+    status: draft_machine_needs_native_review
+    text: काय करायचं ते पुन्हा एकदा ऐका.
+    back_translation: Listen once more to what you have to do.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: Avoids the bookish word for 'instructions' (hi निर्देश / mr सूचना / ta அறிவுறுத்தல்); 'listen again to what to do' is the spoken equivalent.
+    record: true
+    record_note: ''
+    history: []
+  - id: private_dice.intro
+    source_text: Roll the dice in your cupped hands. Only you see it. Then touch the picture that matches.
+    source_hash: 4cebca380e8d7e05
+    status: draft_machine_needs_native_review
+    text: फासा तुमच्या ओंजळीत हलवून टाका. तो फक्त तुम्हालाच दिसेल. मग जुळणाऱ्या चित्राला हात लावा.
+    back_translation: Shake the dice in your cupped hands and throw it. Only you will see it. Then touch the matching picture.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: Privacy of the roll must be clear and believable (group-level integrity only, MG-06). Dice can carry gambling connotations; see the dice/luck adaptation sheet. ओंजळ is the exact Marathi word for cupped hands.
+    record: true
+    record_note: ''
+    history: []
+  - id: private_dice.practice
+    source_text: Let's practise once.
+    source_hash: 4fabeaf3758adf0e
+    status: draft_machine_needs_native_review
+    text: चला, एकदा सराव करूया.
+    back_translation: Come, let's practise once.
+    register_note: 'Tone ''encouraging'': Light, upbeat praise; never childish or patronising to adults and elders.'
+    translator_note: ''
+    record: true
+    record_note: ''
+    history: []
+  - id: private_dice.outro
+    source_text: Thank you! Let's move on.
+    source_hash: fd0fbee3cbd726e8
+    status: draft_machine_needs_native_review
+    text: धन्यवाद! चला, पुढे जाऊया.
+    back_translation: Thank you! Come, let's go ahead.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: Shared bridge line (<= 5 s); keep identical wording across modules so one take can be reused.
+    record: true
+    record_note: ''
+    history: []
+  - id: private_dice.replay
+    source_text: Here are the instructions again.
+    source_hash: 8add2a435f7d980a
+    status: draft_machine_needs_native_review
+    text: काय करायचं ते पुन्हा एकदा ऐका.
+    back_translation: Listen once more to what you have to do.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: Avoids the bookish word for 'instructions' (hi निर्देश / mr सूचना / ta அறிவுறுத்தல்); 'listen again to what to do' is the spoken equivalent.
+    record: true
+    record_note: ''
+    history: []
+  - id: stall.intro
+    source_text: Welcome to your stall! Serve your customers, but never serve spoiled food.
+    source_hash: 687edadfc078f29f
+    status: draft_machine_needs_native_review
+    text: तुमच्या दुकानात तुमचं स्वागत आहे! गिऱ्हाइकांना सामान द्या, पण खराब झालेलं खाणं कधीच देऊ नका.
+    back_translation: Welcome to your shop! Give goods to the customers, but never give food that has gone bad.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: ''
+    record: true
+    record_note: ''
+    history: []
+  - id: stall.practice
+    source_text: Let's serve the first customer together.
+    source_hash: 4b657db6b6807905
+    status: draft_machine_needs_native_review
+    text: चला, पहिल्या गिऱ्हाइकाला सोबत मिळून सामान देऊया.
+    back_translation: Come, let's give the first customer the goods together.
+    register_note: 'Tone ''encouraging'': Light, upbeat praise; never childish or patronising to adults and elders.'
+    translator_note: ''
+    record: true
+    record_note: ''
+    history: []
+  - id: stall.outro
+    source_text: Thank you! Let's move on.
+    source_hash: fd0fbee3cbd726e8
+    status: draft_machine_needs_native_review
+    text: धन्यवाद! चला, पुढे जाऊया.
+    back_translation: Thank you! Come, let's go ahead.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: Shared bridge line (<= 5 s); keep identical wording across modules so one take can be reused.
+    record: true
+    record_note: ''
+    history: []
+  - id: stall.replay
+    source_text: Here are the instructions again.
+    source_hash: 8add2a435f7d980a
+    status: draft_machine_needs_native_review
+    text: काय करायचं ते पुन्हा एकदा ऐका.
+    back_translation: Listen once more to what you have to do.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: Avoids the bookish word for 'instructions' (hi निर्देश / mr सूचना / ta அறிவுறுத்தல்); 'listen again to what to do' is the spoken equivalent.
+    record: true
+    record_note: ''
+    history: []
+  - id: weighing_post.intro
+    source_text: You are the weighmaster today. Watch the needle and decide.
+    source_hash: 93a922572077abad
+    status: draft_machine_needs_native_review
+    text: आज वजनकाटा तुमच्या ताब्यात आहे. काटा बघा आणि ठरवा.
+    back_translation: Today the weighing scale is in your charge. Watch the needle and decide.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: '''Weighmaster'' has no common spoken equivalent; rendered as ''the weighing is in your hands / you are the weigher''. See the weighing adaptation sheet on authority and gender of the role.'
+    record: true
+    record_note: ''
+    history: []
+  - id: weighing_post.practice
+    source_text: Let's weigh the first sack together.
+    source_hash: fca4094b9b2f2505
+    status: draft_machine_needs_native_review
+    text: चला, पहिलं पोतं सोबत मिळून तोलूया.
+    back_translation: Come, let's weigh the first sack together.
+    register_note: 'Tone ''encouraging'': Light, upbeat praise; never childish or patronising to adults and elders.'
+    translator_note: ''
+    record: true
+    record_note: ''
+    history: []
+  - id: weighing_post.outro
+    source_text: Thank you! Let's move on.
+    source_hash: fd0fbee3cbd726e8
+    status: draft_machine_needs_native_review
+    text: धन्यवाद! चला, पुढे जाऊया.
+    back_translation: Thank you! Come, let's go ahead.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: Shared bridge line (<= 5 s); keep identical wording across modules so one take can be reused.
+    record: true
+    record_note: ''
+    history: []
+  - id: weighing_post.replay
+    source_text: Here are the instructions again.
+    source_hash: 8add2a435f7d980a
+    status: draft_machine_needs_native_review
+    text: काय करायचं ते पुन्हा एकदा ऐका.
+    back_translation: Listen once more to what you have to do.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: Avoids the bookish word for 'instructions' (hi निर्देश / mr सूचना / ta அறிவுறுத்தல்); 'listen again to what to do' is the spoken equivalent.
+    record: true
+    record_note: ''
+    history: []
+  - id: road_home.intro
+    source_text: Time to go home. Plan your route, run your errands, and share fuel with your friend.
+    source_hash: bf54bca08dcccc50
+    status: draft_machine_needs_native_review
+    text: आता घरी जायची वेळ झाली. रस्ता ठरवा, तुमची कामं उरका, आणि मित्रासोबत इंधन वाटून घ्या.
+    back_translation: Now it's time to go home. Decide the road, finish your jobs, and share fuel with your friend.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: '''Fuel'' kept generic (hi ईंधन, mr इंधन, ta எரிபொருள்) because the vehicle art is not final; once it is, field-test the spoken word (petrol / diesel / तेल / பெட்ரோல்). मित्र is masculine; if the partner character is a woman use मैत्रीण (see gender-roles adaptation sheet).'
+    record: true
+    record_note: ''
+    history: []
+  - id: road_home.practice
+    source_text: Let's take the first step together.
+    source_hash: 0008795e4f3ac4c8
+    status: draft_machine_needs_native_review
+    text: चला, पहिलं पाऊल सोबत टाकूया.
+    back_translation: Come, let's take the first step together.
+    register_note: 'Tone ''encouraging'': Light, upbeat praise; never childish or patronising to adults and elders.'
+    translator_note: ''
+    record: true
+    record_note: ''
+    history: []
+  - id: road_home.outro
+    source_text: Thank you! Let's move on.
+    source_hash: fd0fbee3cbd726e8
+    status: draft_machine_needs_native_review
+    text: धन्यवाद! चला, पुढे जाऊया.
+    back_translation: Thank you! Come, let's go ahead.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: Shared bridge line (<= 5 s); keep identical wording across modules so one take can be reused.
+    record: true
+    record_note: ''
+    history: []
+  - id: road_home.replay
+    source_text: Here are the instructions again.
+    source_hash: 8add2a435f7d980a
+    status: draft_machine_needs_native_review
+    text: काय करायचं ते पुन्हा एकदा ऐका.
+    back_translation: Listen once more to what you have to do.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: Avoids the bookish word for 'instructions' (hi निर्देश / mr सूचना / ta அறிவுறுத்தல்); 'listen again to what to do' is the spoken equivalent.
+    record: true
+    record_note: ''
+    history: []
+  - id: coplay.intro
+    source_text: Now play together with a partner. Take turns and help each other.
+    source_hash: f30bc61e72cb8527
+    status: draft_machine_needs_native_review
+    text: आता तुमच्या साथीदारासोबत मिळून खेळा. आळीपाळीनं खेळा आणि एकमेकांना मदत करा.
+    back_translation: Now play together with your partner. Play by turns and help each other.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: साथीदार chosen over जोडीदार, which often means spouse.
+    record: true
+    record_note: ''
+    history: []
+  - id: coplay.practice
+    source_text: Let's practise taking turns.
+    source_hash: 74a9121e72a66aae
+    status: draft_machine_needs_native_review
+    text: चला, आळीपाळीनं खेळायचा सराव करूया.
+    back_translation: Come, let's practise playing by turns.
+    register_note: 'Tone ''encouraging'': Light, upbeat praise; never childish or patronising to adults and elders.'
+    translator_note: ''
+    record: true
+    record_note: ''
+    history: []
+  - id: coplay.outro
+    source_text: Thank you! Let's move on.
+    source_hash: fd0fbee3cbd726e8
+    status: draft_machine_needs_native_review
+    text: धन्यवाद! चला, पुढे जाऊया.
+    back_translation: Thank you! Come, let's go ahead.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: Shared bridge line (<= 5 s); keep identical wording across modules so one take can be reused.
+    record: true
+    record_note: ''
+    history: []
+  - id: coplay.replay
+    source_text: Here are the instructions again.
+    source_hash: 8add2a435f7d980a
+    status: draft_machine_needs_native_review
+    text: काय करायचं ते पुन्हा एकदा ऐका.
+    back_translation: Listen once more to what you have to do.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: Avoids the bookish word for 'instructions' (hi निर्देश / mr सूचना / ta அறிவுறுத்தல்); 'listen again to what to do' is the spoken equivalent.
+    record: true
+    record_note: ''
+    history: []
+  - id: dont_tap.prompt.serve
+    source_text: Serve!
+    source_hash: a80f0983c63d25c0
+    status: draft_machine_needs_native_review
+    text: द्या!
+    back_translation: Give!
+    register_note: 'Tone ''playful'': Short, bright cue; must stay crisp because response latency is timed from its end.'
+    translator_note: Go cue; response latency is timed from the end of this clip. Keep it one crisp word, identical length feel across languages.
+    record: true
+    record_note: ''
+    history: []
+  - id: dont_tap.pressure_cue
+    source_text: The crowd is here! Serve fast, but only good fruit.
+    source_hash: 29a14239435307f9
+    status: draft_machine_needs_native_review
+    text: गर्दी आली! पटपट द्या, पण फक्त चांगली फळं.
+    back_translation: The crowd has come! Give quickly, but only good fruits.
+    register_note: 'Tone ''urgent'': Brisk and energetic but friendly; excitement of a busy market, not alarm.'
+    translator_note: 'Announced pressure block: energetic, not alarming. The ''only good fruit'' rule must stay as prominent as ''fast''.'
+    record: true
+    record_note: ''
+    history: []
+  - id: tower.skip_hint
+    source_text: If you think it cannot be done, you may touch the arrow to skip.
+    source_hash: 11b5d34038a8df56
+    status: draft_machine_needs_native_review
+    text: हे होणार नाही असं वाटलं, तर पुढे जायला बाणाला हात लावू शकता.
+    back_translation: If you feel this won't happen, you can touch the arrow to go ahead.
+    register_note: 'Tone ''calm'': Slow, steady and reassuring; consent and privacy lines must never sound rushed or legalistic.'
+    translator_note: 'Persistence measure (time on unsolvable items): the hint must stay neutral, neither encouraging nor discouraging skipping, and must not reveal that some puzzles are unsolvable.'
+    record: true
+    record_note: ''
+    history: []
+  - id: stall.customer.calm
+    source_text: Namaste! Two good mangoes, please.
+    source_hash: 1044f32fe52305b4
+    status: draft_machine_needs_native_review
+    text: नमस्कार! दोन चांगले आंबे द्या हो.
+    back_translation: Namaskar! Give two good mangoes, please.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: Customer voice (stimulus, tone level 0-1). The number of mangoes is spoken and shown as two pictured mangoes; no digits. हो at the end is the polite softener of spoken Marathi.
+    record: true
+    record_note: ''
+    history: []
+  - id: stall.customer.hostile
+    source_text: Hurry up! Why is this taking so long?
+    source_hash: 54db199a259d367a
+    status: draft_machine_needs_native_review
+    text: अहो, आटपा लवकर! एवढा वेळ का लावताय?
+    back_translation: Hey, finish up quickly! Why are you taking so long?
+    register_note: 'Tone ''hostile'': Recorded STIMULUS (rude customer). Impatient and sharp in tone only; no insults, abuse, caste, religion or gender references. Rudeness intensity must be matched across languages (see adaptation sheet customer-rudeness).'
+    translator_note: 'Hostile customer STIMULUS (tone level 3-4). Rude through impatience and tone only: no insults or identity references. Rudeness intensity must be matched across languages by the voice director (customer-rudeness adaptation sheet). अहो keeps it adult-to-adult; rudeness carried by आटपा and the accusing का लावताय.'
+    record: true
+    record_note: ''
+    history: []
+  - id: stall.rush_cue
+    source_text: Rush time! Many customers are coming.
+    source_hash: 871a0c7cbb69fea4
+    status: draft_machine_needs_native_review
+    text: गर्दीची वेळ! खूप गिऱ्हाइकं येतायत.
+    back_translation: Rush time! Lots of customers are coming.
+    register_note: 'Tone ''urgent'': Brisk and energetic but friendly; excitement of a busy market, not alarm.'
+    translator_note: ''
+    record: true
+    record_note: ''
+    history: []
+  - id: weighing_post.new_rule
+    source_text: Listen! From now on, sacks that lean to the left must be fined.
+    source_hash: 61ef41b2af43143d
+    status: draft_machine_needs_native_review
+    text: ऐका! आतापासून, डावीकडे झुकणाऱ्या पोत्यांवर दंड लावायचा.
+    back_translation: Listen! From now on, sacks that lean to the left are to be fined.
+    register_note: 'Tone ''firm'': Clear, authoritative market-official announcement; firm but not threatening.'
+    translator_note: Announced rule change (context shift). 'Left' is from the player's point of view; the scene must show it with an arrow because left/right words are a known comprehension risk for some participants.
+    record: true
+    record_note: ''
+    history: []
+  - id: weighing_post.quantity_prefix
+    source_text: 'The needle shows:'
+    source_hash: 52041152c063d6fa
+    status: draft_machine_needs_native_review
+    text: 'काटा दाखवतोय:'
+    back_translation: 'The needle is showing:'
+    register_note: 'Tone ''neutral'': Plain, even delivery; no emotional colouring.'
+    translator_note: 'Concatenated before a spoken quantity clip. Hindi and Marathi are verb-final, so ''needle shows: five kilo'' is a spoken right-dislocation; acceptable in speech but should be checked. Tamil uses a nominalised form that works as a prefix. Alternative: record whole sentences per quantity.'
+    record: true
+    record_note: ''
+    history: []
+  - id: road_home.block_cue
+    source_text: Oh! The road is blocked.
+    source_hash: 47ee638348fd5818
+    status: draft_machine_needs_native_review
+    text: अरे! रस्ता बंद आहे.
+    back_translation: Oh! The road is closed.
+    register_note: 'Tone ''neutral'': Plain, even delivery; no emotional colouring.'
+    translator_note: Must not mention or hint at any rule change (the reversal is unannounced, EPI-03).
+    record: true
+    record_note: ''
+    history: []
+  - id: hub.bridge
+    source_text: Let's visit the next stall.
+    source_hash: 8a53291ab66114b2
+    status: draft_machine_needs_native_review
+    text: चला, पुढच्या दुकानात जाऊया.
+    back_translation: Come, let's go to the next shop.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: ''
+    record: true
+    record_note: ''
+    history: []
+  - id: feedback.well_done
+    source_text: Well done!
+    source_hash: 462164a0645e1ed2
+    status: draft_machine_needs_native_review
+    text: खूप छान!
+    back_translation: Very nice!
+    register_note: 'Tone ''encouraging'': Light, upbeat praise; never childish or patronising to adults and elders.'
+    translator_note: Neutral-positive, never a score. Adult register (avoid hi शाबाश).
+    record: true
+    record_note: ''
+    history: []
+  - id: feedback.try_again
+    source_text: Let's try again.
+    source_hash: b1a2748c74f6eef2
+    status: draft_machine_needs_native_review
+    text: पुन्हा एकदा!
+    back_translation: Once more!
+    register_note: 'Tone ''encouraging'': Light, upbeat praise; never childish or patronising to adults and elders.'
+    translator_note: Target is under one second; 'one more time!' is the natural short spoken form of 'let's try again'.
+    record: true
+    record_note: ''
+    history: []
+  - id: feedback.correct_sound_hint
+    source_text: That sound means right.
+    source_hash: 766d1c4b4612485d
+    status: draft_machine_needs_native_review
+    text: हा आवाज म्हणजे बरोबर.
+    back_translation: This sound means right.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: Played right after the sound, so 'this sound' is more natural than 'that sound'.
+    record: true
+    record_note: ''
+    history: []
+  - id: feedback.wrong_sound_hint
+    source_text: That sound means not this time.
+    source_hash: 5b1b1fd201493781
+    status: draft_machine_needs_native_review
+    text: हा आवाज म्हणजे या वेळी नाही.
+    back_translation: This sound means not this time.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: 'Must stay gentle: do not use the words for ''wrong'' (hi गलत, mr चूक, ta தப்பு).'
+    record: true
+    record_note: ''
+    history: []
+  - id: walkaway.reprompt
+    source_text: Your turn! Touch the screen when you are ready.
+    source_hash: aa1d430d57647af0
+    status: draft_machine_needs_native_review
+    text: तुमची पाळी! तयार झालात की स्क्रीनला हात लावा.
+    back_translation: Your turn! When you are ready, touch the screen.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: ''
+    record: true
+    record_note: ''
+    history: []
+  - id: walkaway.still_there
+    source_text: Are you still there?
+    source_hash: 69b81bb4dec2efcc
+    status: draft_machine_needs_native_review
+    text: तुम्ही अजून इथे आहात का?
+    back_translation: Are you still here?
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: ''
+    record: true
+    record_note: ''
+    history: []
+  - id: walkaway.countdown
+    source_text: The game will end soon. Touch the screen to keep playing.
+    source_hash: 25dfe372524164ab
+    status: draft_machine_needs_native_review
+    text: खेळ लवकरच संपेल. खेळत राहायचं असेल, तर स्क्रीनला हात लावा.
+    back_translation: The game will end soon. If you want to keep playing, touch the screen.
+    register_note: 'Tone ''calm'': Slow, steady and reassuring; consent and privacy lines must never sound rushed or legalistic.'
+    translator_note: ''
+    record: true
+    record_note: ''
+    history: []
+  - id: walkaway.goodbye
+    source_text: Thank you for playing. Goodbye!
+    source_hash: 9046692bea240db4
+    status: draft_machine_needs_native_review
+    text: खेळल्याबद्दल धन्यवाद. पुन्हा भेटू!
+    back_translation: Thanks for playing. We'll meet again!
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: '''Goodbye'' rendered with the idiomatic leave-taking of each language (hi/mr ''we''ll meet again'', ta ''go and come back'').'
+    record: true
+    record_note: ''
+    history: []
+  - id: stop.hand_prompt
+    source_text: Do you want to keep what you played, or delete it?
+    source_hash: 5c08f9f5236fa334
+    status: draft_machine_needs_native_review
+    text: तुम्ही खेळलेलं ठेवायचं आहे, की पुसून टाकायचं?
+    back_translation: Do you want to keep what you played, or wipe it out?
+    register_note: 'Tone ''calm'': Slow, steady and reassuring; consent and privacy lines must never sound rushed or legalistic.'
+    translator_note: ''
+    record: true
+    record_note: ''
+    history: []
+  - id: stop.deleted
+    source_text: Done. What you played has been deleted.
+    source_hash: 7c78e6f38653d179
+    status: draft_machine_needs_native_review
+    text: झालं. तुम्ही खेळलेलं पुसून टाकलं आहे.
+    back_translation: Done. What you played has been wiped out.
+    register_note: 'Tone ''calm'': Slow, steady and reassuring; consent and privacy lines must never sound rushed or legalistic.'
+    translator_note: ''
+    record: true
+    record_note: ''
+    history: []
+  - id: report.thank_you
+    source_text: Thank you for playing at the market fair!
+    source_hash: 5dc011c170337b4c
+    status: draft_machine_needs_native_review
+    text: जत्रेतल्या बाजारात खेळल्याबद्दल धन्यवाद!
+    back_translation: Thank you for playing at the market in the fair!
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: ''
+    record: true
+    record_note: ''
+    history: []
+  - id: report.what_this_is_about
+    source_text: These games look at how people make choices and work through tasks. Researchers are still learning from them.
+    source_hash: 00c745800a36447e
+    status: draft_machine_needs_native_review
+    text: लोक निवडी कशा करतात आणि कामं कशी पूर्ण करतात, हे या खेळांतून पाहिलं जातं. अभ्यास करणारे लोक अजून यातून शिकत आहेत.
+    back_translation: How people make choices and how they complete tasks is looked at through these games. The people who study this are still learning from it.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: ''
+    record: true
+    record_note: ''
+    history: []
+  - id: report.disclaimer.snapshot
+    source_text: This is a snapshot of how you played today. It is not a test, a diagnosis, or a judgement of you.
+    source_hash: 0d4548627a6f84ff
+    status: draft_machine_needs_native_review
+    text: आज तुम्ही कसं खेळलात, त्याची ही फक्त एक झलक आहे. ही परीक्षा नाही, आजाराची तपासणी नाही, आणि तुमच्याबद्दलचा निकालही नाही.
+    back_translation: This is only a glimpse of how you played today. It is not an exam, not a check-up for illness, and not a verdict about you.
+    register_note: 'Tone ''calm'': Slow, steady and reassuring; consent and privacy lines must never sound rushed or legalistic.'
+    translator_note: 'Mandatory disclaimer on every report: all three negations (test, diagnosis, judgement) must survive back-translation.'
+    record: true
+    record_note: ''
+    history: []
+  - id: report.intro
+    source_text: Here are some things you showed today.
+    source_hash: 68aab875bc3dd2c6
+    status: draft_machine_needs_native_review
+    text: आज तुमच्या खेळात या काही गोष्टी दिसल्या.
+    back_translation: Today these few things were seen in your play.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: ''
+    record: true
+    record_note: ''
+    history: []
+  - id: report.example_label
+    source_text: This is an example, not your own result.
+    source_hash: a8ba4807cfe34706
+    status: draft_machine_needs_native_review
+    text: हे फक्त एक उदाहरण आहे, तुमचा स्वतःचा निकाल नाही.
+    back_translation: This is only an example, not your own result.
+    register_note: 'Tone ''neutral'': Plain, even delivery; no emotional colouring.'
+    translator_note: Demo-mode label (think-aloud only). Must be unmistakable.
+    record: true
+    record_note: ''
+    history: []
+  - id: report.self_control.pole_a
+    source_text: You are quick to act when you see a chance.
+    source_hash: b105c71f63468444
+    status: draft_machine_needs_native_review
+    text: संधी दिसली की तुम्ही लगेच पुढे होता.
+    back_translation: When you see a chance, you step forward at once.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: 'Strengths-framed band phrase: must sound positive and non-judgemental; no numbers, no comparison with others.'
+    record: true
+    record_note: ''
+    history: []
+  - id: report.self_control.centre
+    source_text: You balance acting quickly with holding back.
+    source_hash: ca487288f8bc4f2d
+    status: draft_machine_needs_native_review
+    text: तुम्ही कधी पटकन करता, कधी थांबून; दोन्हींचा छान मेळ घालता.
+    back_translation: Sometimes you act quickly, sometimes after stopping; you balance both nicely.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: 'Strengths-framed band phrase: must sound positive and non-judgemental; no numbers, no comparison with others.'
+    record: true
+    record_note: ''
+    history: []
+  - id: report.self_control.pole_b
+    source_text: You take a moment to hold back and check before acting.
+    source_hash: 5d9196e2ab2a732f
+    status: draft_machine_needs_native_review
+    text: काही करण्याआधी तुम्ही जरा थांबून खात्री करून घेता.
+    back_translation: Before doing anything, you stop a moment and make sure.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: 'Strengths-framed band phrase: must sound positive and non-judgemental; no numbers, no comparison with others.'
+    record: true
+    record_note: ''
+    history: []
+  - id: report.emotional_regulation.pole_a
+    source_text: You show your feelings openly.
+    source_hash: bb8cee683a4b6133
+    status: draft_machine_needs_native_review
+    text: तुम्हाला जे वाटतं, ते तुम्ही मोकळेपणानं दाखवता.
+    back_translation: What you feel, you show openly.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: 'Strengths-framed band phrase: must sound positive and non-judgemental; no numbers, no comparison with others.'
+    record: true
+    record_note: ''
+    history: []
+  - id: report.emotional_regulation.centre
+    source_text: You stay fairly calm with difficult people.
+    source_hash: 87f2f80128ce82de
+    status: draft_machine_needs_native_review
+    text: अवघड माणसांशी वागतानाही तुम्ही बऱ्यापैकी शांत राहता.
+    back_translation: Even when dealing with difficult people, you stay fairly calm.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: 'Strengths-framed band phrase: must sound positive and non-judgemental; no numbers, no comparison with others.'
+    record: true
+    record_note: ''
+    history: []
+  - id: report.emotional_regulation.pole_b
+    source_text: You keep calm and kind even when others are rude.
+    source_hash: 5f5d501f0ef9eb81
+    status: draft_machine_needs_native_review
+    text: दुसरे उद्धटपणे वागले, तरी तुम्ही शांत आणि प्रेमळ राहता.
+    back_translation: Even if others behave rudely, you stay calm and kind.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: 'Strengths-framed band phrase: must sound positive and non-judgemental; no numbers, no comparison with others.'
+    record: true
+    record_note: ''
+    history: []
+  - id: report.composure.pole_a
+    source_text: You put full energy into calm moments.
+    source_hash: c99dc302d31dd27f
+    status: draft_machine_needs_native_review
+    text: शांत वेळी तुम्ही पूर्ण जोमानं काम करता.
+    back_translation: In calm times you work with full vigour.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: 'Strengths-framed band phrase: must sound positive and non-judgemental; no numbers, no comparison with others.'
+    record: true
+    record_note: ''
+    history: []
+  - id: report.composure.centre
+    source_text: You keep going steadily when things get busy.
+    source_hash: 8229a06840733c50
+    status: draft_machine_needs_native_review
+    text: गडबड वाढली, तरी तुम्ही स्थिरपणे काम करत राहता.
+    back_translation: Even when the bustle increases, you keep working steadily.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: 'Strengths-framed band phrase: must sound positive and non-judgemental; no numbers, no comparison with others.'
+    record: true
+    record_note: ''
+    history: []
+  - id: report.composure.pole_b
+    source_text: You stay steady when things get busy and noisy.
+    source_hash: fd04a8d21d55bbba
+    status: draft_machine_needs_native_review
+    text: गर्दी आणि गोंगाटातही तुम्ही डगमगत नाही.
+    back_translation: Even in crowds and noise, you do not waver.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: 'Strengths-framed band phrase: must sound positive and non-judgemental; no numbers, no comparison with others.'
+    record: true
+    record_note: ''
+    history: []
+  - id: report.response_consistency.pole_a
+    source_text: You like to try different ways each time.
+    source_hash: f2a34cfd45e0b9c1
+    status: draft_machine_needs_native_review
+    text: तुम्हाला प्रत्येक वेळी वेगळी पद्धत वापरून बघायला आवडतं.
+    back_translation: You like to try a different way each time.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: 'Strengths-framed band phrase: must sound positive and non-judgemental; no numbers, no comparison with others.'
+    record: true
+    record_note: ''
+    history: []
+  - id: report.response_consistency.centre
+    source_text: You mix trying new ways with keeping to what works.
+    source_hash: 12bfd6317e3f5b84
+    status: draft_machine_needs_native_review
+    text: तुम्ही नव्या पद्धतीही वापरून बघता आणि जे चालतं तेही धरून ठेवता.
+    back_translation: You try new ways, and you also hold on to what works.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: 'Strengths-framed band phrase: must sound positive and non-judgemental; no numbers, no comparison with others.'
+    record: true
+    record_note: ''
+    history: []
+  - id: report.response_consistency.pole_b
+    source_text: You respond in a steady, reliable way.
+    source_hash: 32dbed33c44e80c1
+    status: draft_machine_needs_native_review
+    text: तुमची प्रतिक्रिया नेहमी एकसारखी आणि भरवशाची असते.
+    back_translation: Your response is always consistent and dependable.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: 'Strengths-framed band phrase: must sound positive and non-judgemental; no numbers, no comparison with others.'
+    record: true
+    record_note: ''
+    history: []
+  - id: report.task_organisation.pole_a
+    source_text: You like to dive in and sort things out as you go.
+    source_hash: 64e49a54b03cea95
+    status: draft_machine_needs_native_review
+    text: तुम्हाला थेट कामाला लागून, करता करता गोष्टी मार्गी लावायला आवडतं.
+    back_translation: You like to start work directly and sort things out as you go.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: 'Strengths-framed band phrase: must sound positive and non-judgemental; no numbers, no comparison with others.'
+    record: true
+    record_note: ''
+    history: []
+  - id: report.task_organisation.centre
+    source_text: You organise your tasks in a sensible way.
+    source_hash: e747f6a7a17f0332
+    status: draft_machine_needs_native_review
+    text: तुम्ही तुमची कामं समजूतदारपणे लावता.
+    back_translation: You arrange your tasks sensibly.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: 'Strengths-framed band phrase: must sound positive and non-judgemental; no numbers, no comparison with others.'
+    record: true
+    record_note: ''
+    history: []
+  - id: report.task_organisation.pole_b
+    source_text: You plan your errands in a neat, efficient order.
+    source_hash: 0b15625cdbfecdc2
+    status: draft_machine_needs_native_review
+    text: वेळ आणि श्रम वाया जाणार नाहीत, अशा नीटनेटक्या क्रमानं तुम्ही कामं ठरवता.
+    back_translation: You plan your tasks in a neat order so that time and effort are not wasted.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: 'Strengths-framed band phrase: must sound positive and non-judgemental; no numbers, no comparison with others.'
+    record: true
+    record_note: ''
+    history: []
+  - id: report.decisiveness.pole_a
+    source_text: You like to think things through before deciding.
+    source_hash: da3935a8bf342919
+    status: draft_machine_needs_native_review
+    text: निर्णय घेण्याआधी तुम्हाला नीट विचार करायला आवडतं.
+    back_translation: Before deciding, you like to think properly.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: 'Strengths-framed band phrase: must sound positive and non-judgemental; no numbers, no comparison with others.'
+    record: true
+    record_note: ''
+    history: []
+  - id: report.decisiveness.centre
+    source_text: You balance thinking and deciding.
+    source_hash: 3816d04629294c4d
+    status: draft_machine_needs_native_review
+    text: विचार आणि निर्णय, यांचा तुम्ही छान मेळ घालता.
+    back_translation: 'Thinking and deciding: you balance them nicely.'
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: 'Strengths-framed band phrase: must sound positive and non-judgemental; no numbers, no comparison with others.'
+    record: true
+    record_note: ''
+    history: []
+  - id: report.decisiveness.pole_b
+    source_text: You make up your mind quickly and stick with it.
+    source_hash: c17899f1d09f0cc3
+    status: draft_machine_needs_native_review
+    text: तुम्ही पटकन ठरवता आणि त्यावर ठाम राहता.
+    back_translation: You decide quickly and stay firm on it.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: 'Strengths-framed band phrase: must sound positive and non-judgemental; no numbers, no comparison with others.'
+    record: true
+    record_note: ''
+    history: []
+  - id: report.adaptability.pole_a
+    source_text: You stay loyal to a way that has worked.
+    source_hash: 156bcffc45cb2017
+    status: draft_machine_needs_native_review
+    text: जी पद्धत उपयोगी पडली, तिच्याशी तुम्ही एकनिष्ठ राहता.
+    back_translation: You stay loyal to the way that proved useful.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: 'Strengths-framed band phrase: must sound positive and non-judgemental; no numbers, no comparison with others.'
+    record: true
+    record_note: ''
+    history: []
+  - id: report.adaptability.centre
+    source_text: You adjust when things change.
+    source_hash: 83d01a0b9538046c
+    status: draft_machine_needs_native_review
+    text: परिस्थिती बदलली की तुम्हीही जुळवून घेता.
+    back_translation: When the situation changes, you adjust too.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: 'Strengths-framed band phrase: must sound positive and non-judgemental; no numbers, no comparison with others.'
+    record: true
+    record_note: ''
+    history: []
+  - id: report.adaptability.pole_b
+    source_text: You notice changes fast and switch your approach easily.
+    source_hash: 28b7a6d1e4f23d06
+    status: draft_machine_needs_native_review
+    text: तुम्हाला बदल पटकन लक्षात येतो आणि तुम्ही सहज तुमची पद्धत बदलता.
+    back_translation: You notice change quickly and easily change your way.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: 'Strengths-framed band phrase: must sound positive and non-judgemental; no numbers, no comparison with others.'
+    record: true
+    record_note: ''
+    history: []
+  - id: report.persistence_of_style.pole_a
+    source_text: You change your style to suit each game.
+    source_hash: 47d7ea96095bf018
+    status: draft_machine_needs_native_review
+    text: प्रत्येक खेळानुसार तुम्ही तुमची खेळायची तऱ्हा बदलता.
+    back_translation: You change your way of playing to suit each game.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: 'Strengths-framed band phrase: must sound positive and non-judgemental; no numbers, no comparison with others.'
+    record: true
+    record_note: ''
+    history: []
+  - id: report.persistence_of_style.centre
+    source_text: You keep some of your style across games.
+    source_hash: 6fc8a95484919ff6
+    status: draft_machine_needs_native_review
+    text: वेगवेगळ्या खेळांतही तुमची थोडी तऱ्हा तशीच राहते.
+    back_translation: Even in different games, a little of your way stays the same.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: 'Strengths-framed band phrase: must sound positive and non-judgemental; no numbers, no comparison with others.'
+    record: true
+    record_note: ''
+    history: []
+  - id: report.persistence_of_style.pole_b
+    source_text: You keep your own style across all the games.
+    source_hash: 5b0f0f9be43c67e6
+    status: draft_machine_needs_native_review
+    text: सगळ्या खेळांत तुम्ही तुमची स्वतःची तऱ्हा कायम ठेवता.
+    back_translation: In all the games you keep your own way.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: 'Strengths-framed band phrase: must sound positive and non-judgemental; no numbers, no comparison with others.'
+    record: true
+    record_note: ''
+    history: []
+  - id: report.stability.pole_a
+    source_text: You respond strongly to new situations.
+    source_hash: 11eeaec6a1976b99
+    status: draft_machine_needs_native_review
+    text: नव्या परिस्थितीला तुम्ही जोरदार प्रतिसाद देता.
+    back_translation: You respond strongly to a new situation.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: 'Strengths-framed band phrase: must sound positive and non-judgemental; no numbers, no comparison with others.'
+    record: true
+    record_note: ''
+    history: []
+  - id: report.stability.centre
+    source_text: You adjust smoothly when situations change.
+    source_hash: 1bfbc7d004c61555
+    status: draft_machine_needs_native_review
+    text: परिस्थिती बदलली की तुम्ही सहजपणे जुळवून घेता.
+    back_translation: When the situation changes, you adjust easily.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: 'Strengths-framed band phrase: must sound positive and non-judgemental; no numbers, no comparison with others. Close in wording to adaptability.centre; acceptable because the constructs differ, but check listeners can tell them apart.'
+    record: true
+    record_note: ''
+    history: []
+  - id: report.stability.pole_b
+    source_text: You stay much the same when situations change.
+    source_hash: d018217fd7600554
+    status: draft_machine_needs_native_review
+    text: परिस्थिती बदलली, तरी तुम्ही जवळजवळ तसेच राहता.
+    back_translation: Even if the situation changes, you stay almost the same.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: 'Strengths-framed band phrase: must sound positive and non-judgemental; no numbers, no comparison with others.'
+    record: true
+    record_note: ''
+    history: []
+  - id: report.expressive_restraint.pole_a
+    source_text: You act freely and spontaneously.
+    source_hash: abecb84b88ee01a5
+    status: draft_machine_needs_native_review
+    text: तुम्ही मोकळेपणानं, मनात येईल तसं करता.
+    back_translation: You act freely, as it comes to your mind.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: 'Strengths-framed band phrase: must sound positive and non-judgemental; no numbers, no comparison with others.'
+    record: true
+    record_note: ''
+    history: []
+  - id: report.expressive_restraint.centre
+    source_text: You balance acting freely and holding back.
+    source_hash: ed42d76a1177e009
+    status: draft_machine_needs_native_review
+    text: मोकळेपणानं करणं आणि थांबणं, यांचा तुम्ही मेळ घालता.
+    back_translation: 'Acting freely and stopping: you balance them.'
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: 'Strengths-framed band phrase: must sound positive and non-judgemental; no numbers, no comparison with others.'
+    record: true
+    record_note: ''
+    history: []
+  - id: report.expressive_restraint.pole_b
+    source_text: You hold back extra actions and wait for the right moment.
+    source_hash: 7d57f165a0dbeb46
+    status: draft_machine_needs_native_review
+    text: तुम्ही उगाच काही करत नाही; योग्य वेळेची वाट बघता.
+    back_translation: You don't do anything needlessly; you wait for the right time.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: 'Strengths-framed band phrase: must sound positive and non-judgemental; no numbers, no comparison with others.'
+    record: true
+    record_note: ''
+    history: []
+  - id: report.teamwork.pole_a
+    source_text: You look out for your own share while working with others.
+    source_hash: 5e925b4922bfd669
+    status: draft_machine_needs_native_review
+    text: इतरांसोबत काम करतानाही तुम्ही तुमच्या वाट्याकडे लक्ष देता.
+    back_translation: Even while working with others, you pay attention to your share.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: 'Strengths-framed band phrase: must sound positive and non-judgemental; no numbers, no comparison with others.'
+    record: true
+    record_note: ''
+    history: []
+  - id: report.teamwork.centre
+    source_text: You cooperate with your partners.
+    source_hash: a5b27ac20da5b1cf
+    status: draft_machine_needs_native_review
+    text: तुम्ही तुमच्या साथीदारांना साथ देता.
+    back_translation: You support your partners.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: 'Strengths-framed band phrase: must sound positive and non-judgemental; no numbers, no comparison with others.'
+    record: true
+    record_note: ''
+    history: []
+  - id: report.teamwork.pole_b
+    source_text: You share generously and keep helping your partners.
+    source_hash: 9caae636eae2e838
+    status: draft_machine_needs_native_review
+    text: तुम्ही मनमोकळेपणानं वाटून देता आणि साथीदारांना मदत करत राहता.
+    back_translation: You share generously and keep helping your partners.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: 'Strengths-framed band phrase: must sound positive and non-judgemental; no numbers, no comparison with others.'
+    record: true
+    record_note: ''
+    history: []
+  - id: report.judgement.pole_a
+    source_text: You speak up quickly about who did what.
+    source_hash: 74beb5251fb70ebe
+    status: draft_machine_needs_native_review
+    text: कोणी काय केलं, हे तुम्ही पटकन बोलून दाखवता.
+    back_translation: You quickly speak up about who did what.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: 'Strengths-framed band phrase: must sound positive and non-judgemental; no numbers, no comparison with others.'
+    record: true
+    record_note: ''
+    history: []
+  - id: report.judgement.centre
+    source_text: You weigh up credit and blame fairly.
+    source_hash: 9e40c48513b8ad60
+    status: draft_machine_needs_native_review
+    text: श्रेय कोणाला आणि चूक कोणाची, हे तुम्ही न्यायानं तोलता.
+    back_translation: 'Who gets the credit and whose mistake it is: you weigh it with fairness.'
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: 'Strengths-framed band phrase: must sound positive and non-judgemental; no numbers, no comparison with others.'
+    record: true
+    record_note: ''
+    history: []
+  - id: report.judgement.pole_b
+    source_text: You take fair responsibility for both successes and mistakes.
+    source_hash: 540400c874ca7953
+    status: draft_machine_needs_native_review
+    text: यश असो वा चूक, दोन्हींची योग्य ती जबाबदारी तुम्ही घेता.
+    back_translation: Be it success or mistake, you take due responsibility for both.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: 'Strengths-framed band phrase: must sound positive and non-judgemental; no numbers, no comparison with others.'
+    record: true
+    record_note: ''
+    history: []
+  - id: report.problem_solving.pole_a
+    source_text: You solve problems by trying things out.
+    source_hash: 383af531d975eba3
+    status: draft_machine_needs_native_review
+    text: तुम्ही करून बघत बघत अडचणी सोडवता.
+    back_translation: You solve difficulties by trying things out.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: 'Strengths-framed band phrase: must sound positive and non-judgemental; no numbers, no comparison with others.'
+    record: true
+    record_note: ''
+    history: []
+  - id: report.problem_solving.centre
+    source_text: You find good solutions to puzzles.
+    source_hash: ff90bb68fa94a4ef
+    status: draft_machine_needs_native_review
+    text: तुम्ही कोड्यांची चांगली उत्तरं शोधता.
+    back_translation: You find good answers to puzzles.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: 'Strengths-framed band phrase: must sound positive and non-judgemental; no numbers, no comparison with others.'
+    record: true
+    record_note: ''
+    history: []
+  - id: report.problem_solving.pole_b
+    source_text: You plan ahead and find efficient solutions.
+    source_hash: 85c5fa52165ece74
+    status: draft_machine_needs_native_review
+    text: तुम्ही आधीच विचार करून कमी श्रमाचे उपाय शोधता.
+    back_translation: You think ahead and find solutions that take less effort.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: 'Strengths-framed band phrase: must sound positive and non-judgemental; no numbers, no comparison with others.'
+    record: true
+    record_note: ''
+    history: []
+  - id: report.integrity.pole_a
+    source_text: You think carefully about tricky offers.
+    source_hash: 37960e9fb14ae1b0
+    status: draft_machine_needs_native_review
+    text: अवघड ऑफर समोर आली की तुम्ही नीट विचार करता.
+    back_translation: When a tricky offer comes up, you think properly.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: 'Strengths-framed band phrase: must sound positive and non-judgemental; no numbers, no comparison with others. This pole corresponds to more accepting of tricky offers in the bribe dilemmas; reviewers must check it carries no accusation.'
+    record: true
+    record_note: ''
+    history: []
+  - id: report.integrity.centre
+    source_text: You usually choose the fair path.
+    source_hash: aad28ce1e09c9f6c
+    status: draft_machine_needs_native_review
+    text: तुम्ही बहुतेक वेळा न्यायाचा मार्ग निवडता.
+    back_translation: Most of the time you choose the path of fairness.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: 'Strengths-framed band phrase: must sound positive and non-judgemental; no numbers, no comparison with others.'
+    record: true
+    record_note: ''
+    history: []
+  - id: report.integrity.pole_b
+    source_text: You choose the fair path even when no one is watching.
+    source_hash: 4a84e11820a1eeba
+    status: draft_machine_needs_native_review
+    text: कोणी बघत नसलं, तरी तुम्ही न्यायाचा मार्ग निवडता.
+    back_translation: Even when nobody is watching, you choose the path of fairness.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: 'Strengths-framed band phrase: must sound positive and non-judgemental; no numbers, no comparison with others.'
+    record: true
+    record_note: ''
+    history: []
+  - id: report.initiative.pole_a
+    source_text: You focus on what is asked of you.
+    source_hash: ba83ba5d12adf09f
+    status: draft_machine_needs_native_review
+    text: तुम्हाला जे सांगितलं जातं, त्यावरच तुम्ही पूर्ण लक्ष देता.
+    back_translation: You give full attention to just what you are told.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: 'Strengths-framed band phrase: must sound positive and non-judgemental; no numbers, no comparison with others.'
+    record: true
+    record_note: ''
+    history: []
+  - id: report.initiative.centre
+    source_text: You sometimes take extra steps on your own.
+    source_hash: e5b5d48065420748
+    status: draft_machine_needs_native_review
+    text: कधी कधी तुम्ही स्वतःहून थोडं जास्त करता.
+    back_translation: Sometimes you do a little extra on your own.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: 'Strengths-framed band phrase: must sound positive and non-judgemental; no numbers, no comparison with others.'
+    record: true
+    record_note: ''
+    history: []
+  - id: report.initiative.pole_b
+    source_text: You often take helpful extra steps without being asked.
+    source_hash: f9ba59f7dc43bc9a
+    status: draft_machine_needs_native_review
+    text: न सांगतासुद्धा तुम्ही अनेकदा उपयोगी असं जास्तीचं काम करता.
+    back_translation: Even without being told, you often do useful extra work.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: 'Strengths-framed band phrase: must sound positive and non-judgemental; no numbers, no comparison with others.'
+    record: true
+    record_note: ''
+    history: []
+  - id: report.risk_preference.pole_a
+    source_text: You prefer safe and steady choices.
+    source_hash: 24299923ac4b8e67
+    status: draft_machine_needs_native_review
+    text: तुम्हाला सुरक्षित आणि खात्रीचे पर्याय आवडतात.
+    back_translation: You like safe and sure options.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: 'Strengths-framed band phrase: must sound positive and non-judgemental; no numbers, no comparison with others.'
+    record: true
+    record_note: ''
+    history: []
+  - id: report.risk_preference.centre
+    source_text: You balance safe choices with some risks.
+    source_hash: 6a9bc6c300f7e671
+    status: draft_machine_needs_native_review
+    text: तुम्ही सुरक्षित पर्याय निवडता आणि कधी कधी थोडी जोखीमही घेता.
+    back_translation: You choose safe options and sometimes also take a little risk.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: 'Strengths-framed band phrase: must sound positive and non-judgemental; no numbers, no comparison with others.'
+    record: true
+    record_note: ''
+    history: []
+  - id: report.risk_preference.pole_b
+    source_text: You are willing to take chances for bigger rewards.
+    source_hash: d0be60e2663076b0
+    status: draft_machine_needs_native_review
+    text: मोठ्या फायद्यासाठी तुम्ही जोखीम घ्यायला तयार असता.
+    back_translation: You are ready to take a risk for a bigger gain.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: 'Strengths-framed band phrase: must sound positive and non-judgemental; no numbers, no comparison with others.'
+    record: true
+    record_note: ''
+    history: []
+  - id: report.persistence.pole_a
+    source_text: You know when to move on to the next thing.
+    source_hash: 93572c52cc6a473a
+    status: draft_machine_needs_native_review
+    text: पुढच्या गोष्टीकडे कधी वळायचं, हे तुम्हाला कळतं.
+    back_translation: You know when to turn to the next thing.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: 'Strengths-framed band phrase: must sound positive and non-judgemental; no numbers, no comparison with others.'
+    record: true
+    record_note: ''
+    history: []
+  - id: report.persistence.centre
+    source_text: You keep trying for a good while.
+    source_hash: ab0745bdc8a06993
+    status: draft_machine_needs_native_review
+    text: तुम्ही बराच वेळ प्रयत्न करत राहता.
+    back_translation: You keep trying for quite a while.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: 'Strengths-framed band phrase: must sound positive and non-judgemental; no numbers, no comparison with others.'
+    record: true
+    record_note: ''
+    history: []
+  - id: report.persistence.pole_b
+    source_text: You keep trying even when things are hard.
+    source_hash: 8ef44385125b5a20
+    status: draft_machine_needs_native_review
+    text: गोष्टी अवघड असल्या, तरी तुम्ही प्रयत्न सोडत नाही.
+    back_translation: Even if things are difficult, you don't give up trying.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: 'Strengths-framed band phrase: must sound positive and non-judgemental; no numbers, no comparison with others.'
+    record: true
+    record_note: ''
+    history: []
+  - id: report.show_privately
+    source_text: Touch the eye to see your summary privately.
+    source_hash: 0e75efdbc7fc22b6
+    status: draft_machine_needs_native_review
+    text: तुमची झलक फक्त तुम्हालाच दिसावी, म्हणून डोळ्याच्या खुणेला हात लावा.
+    back_translation: So that only you see your glimpse, touch the eye sign.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: ''
+    record: true
+    record_note: ''
+    history: []
+  - id: report.qr_offer
+    source_text: Scan this code to hear your summary again later, or to delete your data.
+    source_hash: 6fc3270f9f70c58e
+    status: draft_machine_needs_native_review
+    text: नंतर तुमची झलक पुन्हा ऐकायला, किंवा तुमची माहिती पुसून टाकायला, हा कोड फोननं स्कॅन करा.
+    back_translation: To hear your glimpse again later, or to wipe out your information, scan this code with a phone.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: '''with a phone'' added for clarity (participants unfamiliar with QR codes); reviewers to confirm the addition. ''Data'' rendered as ''information''.'
+    record: true
+    record_note: ''
+    history: []
+  - id: survey.enjoy
+    source_text: Did you enjoy the games? Touch a face.
+    source_hash: f008797fab71f2aa
+    status: draft_machine_needs_native_review
+    text: तुम्हाला खेळांत मजा आली का? एखाद्या चेहऱ्याला हात लावा.
+    back_translation: Did you have fun in the games? Touch one of the faces.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: ''
+    record: true
+    record_note: ''
+    history: []
+  - id: survey.play_again
+    source_text: Would you play again? Touch the tick or the cross.
+    source_hash: 4a5afd9d8ce91198
+    status: draft_machine_needs_native_review
+    text: तुम्ही पुन्हा खेळाल का? बरोबरच्या खुणेला किंवा फुलीला हात लावा.
+    back_translation: Would you play again? Touch the correct-mark or the cross.
+    register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
+    translator_note: ''
+    record: true
+    record_note: ''
+    history: []
+  - id: optin.contact.question
+    source_text: May we call you in a few weeks to play once more? Touch the tick for yes, or the cross for no.
+    source_hash: 4b07ba8a43a54846
+    status: draft_machine_needs_native_review
+    text: काही आठवड्यांनी पुन्हा एकदा खेळायला आम्ही तुम्हाला फोन करू का? हो असेल, तर बरोबरच्या खुणेला, नाही असेल, तर फुलीला हात लावा.
+    back_translation: Shall we phone you after a few weeks to play once more? If yes, touch the correct-mark; if no, the cross.
+    register_note: 'Tone ''calm'': Slow, steady and reassuring; consent and privacy lines must never sound rushed or legalistic.'
+    translator_note: Contact opt-in (default no). Must not sound like pressure.
+    record: true
+    record_note: ''
+    history: []
+  - id: optin.contact.enter_number
+    source_text: Touch the picture tiles to enter your phone number.
+    source_hash: 4c1f4e267e6f9c03
+    status: draft_machine_needs_native_review
+    text: तुमचा फोन नंबर टाकायला चित्रांच्या चौकोनांना हात लावा.
+    back_translation: To enter your phone number, touch the picture squares.
+    register_note: 'Tone ''calm'': Slow, steady and reassuring; consent and privacy lines must never sound rushed or legalistic.'
+    translator_note: ''
+    record: true
+    record_note: ''
+    history: []
+  - id: optin.digit.zero
+    source_text: Zero.
+    source_hash: c971be1a1e494033
+    status: draft_machine_needs_native_review
+    text: शून्य.
+    back_translation: Zero.
+    register_note: 'Tone ''neutral'': Plain, even delivery; no emotional colouring.'
+    translator_note: 'Phone digit read-back: headset only, never speakers. Many people read phone numbers in English digits; think-aloud to decide between native and English digit names (keep one convention per language).'
+    record: true
+    record_note: ''
+    history: []
+  - id: optin.digit.one
+    source_text: One.
+    source_hash: 70277bfc409b5021
+    status: draft_machine_needs_native_review
+    text: एक.
+    back_translation: One.
+    register_note: 'Tone ''neutral'': Plain, even delivery; no emotional colouring.'
+    translator_note: 'Phone digit read-back: headset only, never speakers. Many people read phone numbers in English digits; think-aloud to decide between native and English digit names (keep one convention per language).'
+    record: true
+    record_note: ''
+    history: []
+  - id: optin.digit.two
+    source_text: Two.
+    source_hash: 1eb32d1ee4458814
+    status: draft_machine_needs_native_review
+    text: दोन.
+    back_translation: Two.
+    register_note: 'Tone ''neutral'': Plain, even delivery; no emotional colouring.'
+    translator_note: 'Phone digit read-back: headset only, never speakers. Many people read phone numbers in English digits; think-aloud to decide between native and English digit names (keep one convention per language).'
+    record: true
+    record_note: ''
+    history: []
+  - id: optin.digit.three
+    source_text: Three.
+    source_hash: 43c4d94ea2cd4fbe
+    status: draft_machine_needs_native_review
+    text: तीन.
+    back_translation: Three.
+    register_note: 'Tone ''neutral'': Plain, even delivery; no emotional colouring.'
+    translator_note: 'Phone digit read-back: headset only, never speakers. Many people read phone numbers in English digits; think-aloud to decide between native and English digit names (keep one convention per language).'
+    record: true
+    record_note: ''
+    history: []
+  - id: optin.digit.four
+    source_text: Four.
+    source_hash: 2f7820a5325de015
+    status: draft_machine_needs_native_review
+    text: चार.
+    back_translation: Four.
+    register_note: 'Tone ''neutral'': Plain, even delivery; no emotional colouring.'
+    translator_note: 'Phone digit read-back: headset only, never speakers. Many people read phone numbers in English digits; think-aloud to decide between native and English digit names (keep one convention per language).'
+    record: true
+    record_note: ''
+    history: []
+  - id: optin.digit.five
+    source_text: Five.
+    source_hash: a62a3699a6ab74ba
+    status: draft_machine_needs_native_review
+    text: पाच.
+    back_translation: Five.
+    register_note: 'Tone ''neutral'': Plain, even delivery; no emotional colouring.'
+    translator_note: 'Phone digit read-back: headset only, never speakers. Many people read phone numbers in English digits; think-aloud to decide between native and English digit names (keep one convention per language).'
+    record: true
+    record_note: ''
+    history: []
+  - id: optin.digit.six
+    source_text: Six.
+    source_hash: cfd6e8dd2766d6cf
+    status: draft_machine_needs_native_review
+    text: सहा.
+    back_translation: Six.
+    register_note: 'Tone ''neutral'': Plain, even delivery; no emotional colouring.'
+    translator_note: 'Phone digit read-back: headset only, never speakers. Many people read phone numbers in English digits; think-aloud to decide between native and English digit names (keep one convention per language).'
+    record: true
+    record_note: ''
+    history: []
+  - id: optin.digit.seven
+    source_text: Seven.
+    source_hash: fb45f28d4556808e
+    status: draft_machine_needs_native_review
+    text: सात.
+    back_translation: Seven.
+    register_note: 'Tone ''neutral'': Plain, even delivery; no emotional colouring.'
+    translator_note: 'Phone digit read-back: headset only, never speakers. Many people read phone numbers in English digits; think-aloud to decide between native and English digit names (keep one convention per language).'
+    record: true
+    record_note: ''
+    history: []
+  - id: optin.digit.eight
+    source_text: Eight.
+    source_hash: ef1fc97b3963aee1
+    status: draft_machine_needs_native_review
+    text: आठ.
+    back_translation: Eight.
+    register_note: 'Tone ''neutral'': Plain, even delivery; no emotional colouring.'
+    translator_note: 'Phone digit read-back: headset only, never speakers. Many people read phone numbers in English digits; think-aloud to decide between native and English digit names (keep one convention per language).'
+    record: true
+    record_note: ''
+    history: []
+  - id: optin.digit.nine
+    source_text: Nine.
+    source_hash: 0e74d7ceebe65032
+    status: draft_machine_needs_native_review
+    text: नऊ.
+    back_translation: Nine.
+    register_note: 'Tone ''neutral'': Plain, even delivery; no emotional colouring.'
+    translator_note: 'Phone digit read-back: headset only, never speakers. Many people read phone numbers in English digits; think-aloud to decide between native and English digit names (keep one convention per language).'
+    record: true
+    record_note: ''
+    history: []
+  - id: optin.thanks
+    source_text: Thank you. We will call you. Your number is kept separately and safely.
+    source_hash: 65288292a2c6c182
+    status: draft_machine_needs_native_review
+    text: धन्यवाद. आम्ही तुम्हाला फोन करू. तुमचा नंबर वेगळा आणि सुरक्षित ठेवला जातो.
+    back_translation: Thank you. We will phone you. Your number is kept separately and safely.
+    register_note: 'Tone ''calm'': Slow, steady and reassuring; consent and privacy lines must never sound rushed or legalistic.'
+    translator_note: ''
+    record: true
+    record_note: ''
+    history: []
+  - id: system.out_of_service
+    source_text: Sorry, this kiosk is resting right now. Please come back later.
+    source_hash: cf5ebb06eb646148
+    status: draft_machine_needs_native_review
+    text: माफ करा, हे यंत्र आत्ता विश्रांती घेतंय. नंतर पुन्हा या.
+    back_translation: Sorry, this machine is taking a rest right now. Come again later.
+    register_note: 'Tone ''calm'': Slow, steady and reassuring; consent and privacy lines must never sound rushed or legalistic.'
+    translator_note: '''Kiosk'' rendered as ''machine'', the word people use for such devices.'
+    record: true
+    record_note: ''
+    history: []
+  - id: system.headset_required
+    source_text: Please put on the headphones for this part.
+    source_hash: 95c4b33deed8d6e1
+    status: draft_machine_needs_native_review
+    text: या भागासाठी कृपया हेडफोन घाला.
+    back_translation: For this part, please put on the headphones.
+    register_note: 'Tone ''calm'': Slow, steady and reassuring; consent and privacy lines must never sound rushed or legalistic.'
+    translator_note: ''
+    record: true
+    record_note: ''
+    history: []

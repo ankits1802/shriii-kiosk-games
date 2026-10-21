@@ -1,0 +1,143 @@
+# Cultural adaptation review sheet: Bribe and overpayment dilemmas at the Weighing Post
+# Stage 1 think-aloud (CRT-08, plan section 7.3) and VOX-08 variant decisions. One sheet per scenario.
+# Universal probes are asked in every region in the participant's language (wording given here; draft
+# translations follow the same ITC review as recording scripts). Region sections list known considerations,
+# candidate surface adaptations and extra probes. Locked elements may never change in a variant
+# (VOX-08 forbids changes to scored parameters). Sign-off records go to governance/ (PLT-09).
+schema_version: '1.0'
+scenario_id: bribe
+title: Bribe and overpayment dilemmas at the Weighing Post
+appears_in:
+  - weighing_post
+lines:
+  - weighing_post.intro
+  - report.integrity.pole_a
+  - report.integrity.centre
+  - report.integrity.pole_b
+purpose: Integrity dilemmas (bribe offer, overpayment return) must be recognised as the same moral situation in every region, without making participants feel accused or watched. Integrity outputs are restricted and never reported per person as dishonesty.
+locked_elements:
+  - '>= 3 dilemmas per type, option set and relative stakes (EPI-02).'
+  - The offer is conditional on approving a wrong weighing (that is what makes it a bribe, not a gift).
+  - Integrity outputs are `restricted`; luck-token outputs are `group_only`.
+adaptable_surface:
+  - 'How the offer is shown: notes slipped under the sack, sweets box with money, a whispered gesture.'
+  - The trader character's appearance (must avoid caste, religion and community markers).
+  - Local euphemism spoken by the trader, if a recorded line is later added.
+construct_risks:
+  - Normalised petty bribery ('chai-pani') can make the offer read as a tip; then choices measure familiarity, not integrity.
+  - 'Evaluation apprehension: participants may choose the ''right'' answer because the kiosk feels official (social desirability).'
+  - Festival gift customs (Diwali, Pongal sweets) blur gift vs bribe if the offer is not clearly conditional.
+  - Participants who are traders, clerks or officials may feel personally accused.
+probe_instructions: Ask the universal probes after the participant finishes the module (retrospective think-aloud), in the participant's language, using the wording given. Keep the concurrent think-aloud prompt neutral ('please keep telling me what you are thinking'). Do not explain the task or the hidden rules. Code each observation with the CRT-08 codebook; note verbatim local words in the region notes.
+universal_probes:
+  - id: bribe.P1
+    en: What was this trader trying to do?
+    hi-IN: यह व्यापारी क्या करने की कोशिश कर रहा था?
+    mr-IN: हा व्यापारी काय करायचा प्रयत्न करत होता?
+    ta-IN: இந்த வியாபாரி என்ன செய்யப் பார்த்தார்?
+    listen_for: Recognises a bribe for approving a bad weighing; 'tip', 'gift', 'payment' readings are cultural_mismatch.
+  - id: bribe.P2
+    en: What would people in your area call this?
+    hi-IN: आपके इलाक़े में लोग इसे क्या कहते हैं?
+    mr-IN: तुमच्या भागात लोक याला काय म्हणतात?
+    ta-IN: உங்க ஊர்ல இதை என்னன்னு சொல்லுவாங்க?
+    listen_for: Record the local word verbatim (e.g. चाय-पानी, चिरीमिरी, மாமூல்).
+  - id: bribe.P3
+    en: When you chose, did you feel the game was watching or judging you?
+    hi-IN: चुनते समय क्या आपको लगा कि खेल आप पर नज़र रख रहा है या आपको परख रहा है?
+    mr-IN: निवडताना खेळ तुमच्यावर लक्ष ठेवतोय किंवा तुम्हाला जोखतोय, असं वाटलं का?
+    ta-IN: தேர்வு செய்யும்போது, விளையாட்டு உங்களைக் கவனிக்குது அல்லது எடை போடுதுன்னு தோணுச்சா?
+    listen_for: Evaluation apprehension; note if the kiosk is seen as official or linked to government.
+  - id: bribe.P4
+    en: What would most people here do in this situation? Why?
+    hi-IN: ऐसी हालत में यहाँ ज़्यादातर लोग क्या करेंगे? क्यों?
+    mr-IN: अशा वेळी इथले बहुतेक लोक काय करतील? का?
+    ta-IN: இந்த மாதிரி நேரத்துல இங்க பெரும்பாலானவங்க என்ன செய்வாங்க? ஏன்?
+    listen_for: Descriptive norm; large regional differences point to non-equivalence of the dilemma.
+  - id: bribe.P5
+    en: Was anything in this part uncomfortable or offensive for you?
+    hi-IN: क्या इस हिस्से में कुछ ऐसा था जो आपको बुरा या अटपटा लगा?
+    mr-IN: या भागात तुम्हाला काही खटकलं किंवा अवघडल्यासारखं वाटलं का?
+    ta-IN: இந்தப் பகுதியில உங்களுக்கு ஏதாவது சங்கடமாவோ, புண்படுத்துற மாதிரியோ இருந்ததா?
+    listen_for: Feeling accused; community or occupation stereotypes in the trader character.
+regions:
+  hi-IN:
+    regions:
+      - hi.west_up_ncr
+      - hi.east_up_bihar
+      - hi.mp
+      - hi.rajasthan
+    considerations:
+      - 'Common euphemisms: चाय-पानी, खर्चा-पानी, सेवा; formal words रिश्वत and घूस are understood by all.'
+      - मंडी (APMC market yard) settings make the weighmaster look like a government official, which raises evaluation apprehension.
+    candidate_adaptations:
+      - Show the offer as notes tucked under the sack, with a nod towards the needle.
+    region_probes:
+      - id: bribe.hi.R1
+        en: Is giving 'chai-pani' to a weighmaster normal here?
+        listen_for: Normalisation level; whether the dilemma feels like a real choice.
+  mr-IN:
+    regions:
+      - mr.west_pune
+      - mr.vidarbha
+      - mr.marathwada
+      - mr.konkan_mumbai
+    considerations:
+      - 'Euphemisms: चिरीमिरी; लाच is the plain word. The idiom ''वजन ठेवणे'' (literally ''to place weight'') means paying a bribe: in a weighing scene this pun can be confusing or comic; check reactions.'
+      - बाजार समिती (market committee) clerks do the weighing in regulated markets.
+    candidate_adaptations:
+      - Avoid any line or caption using वजन ठेवणे.
+    region_probes:
+      - id: bribe.mr.R1
+        en: Did the scene remind you of the saying about 'placing weight'?
+        listen_for: Pun noticed; whether it changes the seriousness of the dilemma.
+  ta-IN:
+    regions:
+      - ta.chennai
+      - ta.kongu
+      - ta.south
+      - ta.delta
+    considerations:
+      - மாமூல் (habitual cut) is the everyday word for petty bribes; லஞ்சம் and கையூட்டு are formal.
+      - Government உழவர் சந்தை (farmers' markets) use official weighing; private market weighing differs.
+    candidate_adaptations:
+      - Offer shown as notes inside a sweets box only if probes show the plain notes version reads as a tip.
+    region_probes:
+      - id: bribe.ta.R1
+        en: Is 'mamool' expected at markets here?
+        listen_for: Normalisation level.
+observer_codes:
+  - confusion
+  - misunderstood_instruction
+  - reading_dependent_screen
+  - digit_dependent_decision
+  - cultural_mismatch
+  - strategy
+signoff:
+  gate: 'Stage 1 exit gate 3 (plan section 7.3): cultural-equivalence sign-off per scenario by region, age band and gender, recorded in governance/ (PLT-09).'
+  cells: Every region listed below x age bands [18-24, 25-34, 35-44, 45-59, 60+] x gender [woman, man]; at least one think-aloud participant per cell before sign-off, and at least 6 participants aged 60+ per pathway (CRT-08 study AC).
+  decision_options:
+    - equivalent
+    - equivalent_with_surface_change
+    - not_equivalent_redesign
+  decision_rules:
+    - 'equivalent: no cultural_mismatch or misunderstood_instruction code linked to this scenario in the cell, and the universal probes show the intended meaning.'
+    - 'equivalent_with_surface_change: problems are fixed by an adaptable-surface change only (art, prop, wording); the change becomes a variant pack (VOX-08) and the scenario is re-tested.'
+    - 'not_equivalent_redesign: a problem touches a locked (scored) element or the construct itself; escalate to the PI and the ITC lead, no pilot use until redesigned.'
+  signatories:
+    - field_researcher (per region)
+    - expert_reviewer (cultural)
+    - itc_lead
+  record_template:
+    scenario_id: <id>
+    region: <region id>
+    age_band: <band>
+    gender: <woman|man>
+    n_participants: 0
+    codes_observed:
+      cultural_mismatch: 0
+      misunderstood_instruction: 0
+    decision: <decision option>
+    surface_changes: []
+    signed_by: []
+    date: YYYY-MM-DD

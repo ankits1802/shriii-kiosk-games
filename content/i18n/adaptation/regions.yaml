@@ -1,0 +1,58 @@
+# Regions within each pilot language used for Stage 1 think-aloud sampling and cultural sign-off cells
+# (plan section 7.3: age x literacy x gender x 3 languages, and regions where variants are planned).
+schema_version: '1.0'
+age_bands:
+  - 18-24
+  - 25-34
+  - 35-44
+  - 45-59
+  - 60+
+genders:
+  - woman
+  - man
+languages:
+  hi-IN:
+    language: Hindi
+    regions:
+      - id: hi.west_up_ncr
+        name: Western Uttar Pradesh and Delhi NCR
+        notes: Mixed urban/peri-urban; Khari Boli base of standard Hindi.
+      - id: hi.east_up_bihar
+        name: Eastern Uttar Pradesh and Bihar
+        notes: Bhojpuri/Awadhi/Magahi home languages; standard Hindi as second register; check comprehension of standard copy.
+      - id: hi.mp
+        name: Madhya Pradesh
+        notes: Bundeli/Malvi home varieties; strong weekly haat culture.
+      - id: hi.rajasthan
+        name: Rajasthan
+        notes: Marwari/Mewari home varieties; mela culture; gender access norms.
+  mr-IN:
+    language: Marathi
+    regions:
+      - id: mr.west_pune
+        name: Western Maharashtra (Pune, Satara, Kolhapur)
+        notes: Source of the standard register.
+      - id: mr.vidarbha
+        name: Vidarbha (Nagpur, Amravati)
+        notes: Varhadi influence; cotton and orange economy.
+      - id: mr.marathwada
+        name: Marathwada (Aurangabad/Chhatrapati Sambhajinagar, Latur)
+        notes: Drought-prone; weekly markets; Urdu-influenced vocabulary in towns.
+      - id: mr.konkan_mumbai
+        name: Konkan and Mumbai
+        notes: Malvani influence on the coast; highly urban Mumbai.
+  ta-IN:
+    language: Tamil
+    regions:
+      - id: ta.chennai
+        name: Chennai and northern Tamil Nadu
+        notes: Urban; Chennai Tamil; supermarkets vs santhai.
+      - id: ta.kongu
+        name: Kongu region (Coimbatore, Erode, Tiruppur)
+        notes: Kongu Tamil; industrial towns and farming.
+      - id: ta.south
+        name: Southern Tamil Nadu (Madurai, Tirunelveli)
+        notes: Strong regional speech; temple-festival culture.
+      - id: ta.delta
+        name: Cauvery delta (Thanjavur, Tiruvarur)
+        notes: Rice economy; uzhavar santhai.
