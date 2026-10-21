@@ -55,7 +55,9 @@ jobs:
           cat trial-budget.md >> "$GITHUB_STEP_SUMMARY"
           uv run python tools/trial-budget/trial_budget.py --format csv > trial-budget.csv
       - name: Tool and CI-script tests
-        run: uv run pytest tools .github/scripts/tests -q
+        # prereg / i18n / loadtest run in the Python job (root testpaths); audio-pipeline and asr-bakeoff are
+        # standalone uv projects with their own lockfiles and run in the side-tools job.
+        run: uv run pytest tools/plan-lint tools/trial-budget .github/scripts/tests -q
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -151,6 +153,43 @@ jobs:
           path: |
             pytest-report.xml
             sim-recovery/
+          if-no-files-found: ignore
+
+  side-tools:
+    name: Python side tools - ${{ matrix.project }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        # Standalone uv projects (own pyproject + uv.lock, not root workspace members).
+        project: [tools/audio-pipeline, tools/asr-bakeoff, packages/session-crypto/python]
+    defaults:
+      run:
+        working-directory: ${{ matrix.project }}
+    env:
+      # session-crypto/python has no lockfile; the tools pin theirs.
+      UV_FROZEN: ${{ matrix.project != 'packages/session-crypto/python' && '1' || 'false' }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache-dependency-glob: |
+            ${{ matrix.project }}/pyproject.toml
+            ${{ matrix.project }}/uv.lock
+      - run: uv sync
+      - name: Mypy
+        if: matrix.project != 'packages/session-crypto/python'
+        run: uv run mypy
+      - name: Pytest
+        run: uv run pytest -q --junitxml=pytest-report.xml
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pytest-${{ strategy.job-index }}
+          path: ${{ matrix.project }}/pytest-report.xml
           if-no-files-found: ignore
 
   e2e:
@@ -272,7 +311,7 @@ jobs:
   ci-ok:
     name: CI OK
     if: always()
-    needs: [plan, node, python, e2e, compose, infra]
+    needs: [plan, node, python, side-tools, e2e, compose, infra]
     runs-on: ubuntu-24.04
     steps:
       - name: All required jobs passed
