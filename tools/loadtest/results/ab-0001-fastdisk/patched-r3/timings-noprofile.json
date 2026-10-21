@@ -1,0 +1,19 @@
+{
+  "batches": 10,
+  "profiled": false,
+  "ms_per_batch": [
+    1703.9,
+    2077.1,
+    1627.4,
+    2821.2,
+    1156.8,
+    1383.9,
+    1556.5,
+    1203.0,
+    1479.2,
+    1479.1
+  ],
+  "mean_ms": 1648.8,
+  "median_ms": 1556.5,
+  "note": "wall time per batch"
+}

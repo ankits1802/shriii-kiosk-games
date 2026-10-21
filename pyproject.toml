@@ -33,6 +33,7 @@ members = [
   "python/shriii_validation",
   "python/shriii_simulator",
   "apps/api",
+  "tools/loadtest",
 ]
 
 [tool.uv.sources]
@@ -41,6 +42,7 @@ shriii-scoring = { workspace = true }
 shriii-validation = { workspace = true }
 shriii-simulator = { workspace = true }
 shriii-api = { workspace = true }
+shriii-loadtest = { workspace = true }
 
 [tool.pytest.ini_options]
 testpaths = [
@@ -51,6 +53,7 @@ testpaths = [
   "apps/api/tests",
   "scoring/tests",
   "content/tests",
+  "tools/loadtest/tests",
 ]
 addopts = ["-ra", "--strict-markers", "--import-mode=importlib"]
 asyncio_mode = "auto"
