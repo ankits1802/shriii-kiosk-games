@@ -1694,35 +1694,35 @@ entries:
     record_note: ''
     history: []
   - id: report.integrity.pole_a
-    source_text: You think carefully about tricky offers.
-    source_hash: 37960e9fb14ae1b0
+    source_text: You speak up for what you need.
+    source_hash: 8721c0c63f54a865
     status: draft_machine_needs_native_review
-    text: उलझन वाले सौदे पर ध्यान से सोचना आपका तरीक़ा है।
-    back_translation: Thinking carefully about a tricky deal is your way.
+    text: अपनी ज़रूरत के लिए खुलकर बोलना आपकी ख़ूबी है।
+    back_translation: Speaking up openly for your need is your strength.
     register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
-    translator_note: 'Strengths-framed band phrase: must sound positive and non-judgemental; no numbers, no comparison with others. This pole corresponds to more accepting of tricky offers in the bribe dilemmas; reviewers must check it carries no accusation. Hindi player-addressed habitual verbs are gendered (करते/करती हैं); this line uses a gender-neutral frame (आपकी ख़ूबी है / आपको आता है / आपको पसंद है / आपका ... रहता है).'
+    translator_note: 'Strengths-framed band phrase: must sound positive and non-judgemental; no numbers, no comparison with others. Hindi player-addressed habitual verbs are gendered (करते/करती हैं); this line uses a gender-neutral frame (आपकी ख़ूबी है / आपको आता है / आपको पसंद है / आपका ... रहता है). Machine re-draft after the English reference text was reworded; needs native review.'
     record: true
     record_note: ''
     history: []
   - id: report.integrity.centre
-    source_text: You usually choose the fair path.
-    source_hash: aad28ce1e09c9f6c
+    source_text: You weigh your needs and other people's needs.
+    source_hash: 74d890a9a48590e0
     status: draft_machine_needs_native_review
-    text: ज़्यादातर आपका चुनाव इंसाफ़ वाला रास्ता होता है।
-    back_translation: Mostly, your choice is the fair path.
+    text: अपनी और दूसरों की ज़रूरत, दोनों को तौलना आपका तरीक़ा है।
+    back_translation: 'Weighing both your need and other people''s need is your way.'
     register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
-    translator_note: 'Strengths-framed band phrase: must sound positive and non-judgemental; no numbers, no comparison with others. Hindi player-addressed habitual verbs are gendered (करते/करती हैं); this line uses a gender-neutral frame (आपकी ख़ूबी है / आपको आता है / आपको पसंद है / आपका ... रहता है).'
+    translator_note: 'Strengths-framed band phrase: must sound positive and non-judgemental; no numbers, no comparison with others. Hindi player-addressed habitual verbs are gendered (करते/करती हैं); this line uses a gender-neutral frame (आपकी ख़ूबी है / आपको आता है / आपको पसंद है / आपका ... रहता है). Machine re-draft after the English reference text was reworded; needs native review.'
     record: true
     record_note: ''
     history: []
   - id: report.integrity.pole_b
-    source_text: You choose the fair path even when no one is watching.
-    source_hash: 4a84e11820a1eeba
+    source_text: You like to share things out so that everyone gets a turn.
+    source_hash: f2dcec4880697367
     status: draft_machine_needs_native_review
-    text: कोई न देख रहा हो, तब भी इंसाफ़ वाला रास्ता चुनना आपकी ख़ूबी है।
-    back_translation: Choosing the fair path even when no one is watching is your strength.
+    text: सबकी बारी आए, इसलिए चीज़ें बाँटना आपको पसंद है।
+    back_translation: Sharing things out so that everyone gets a turn is what you like.
     register_note: 'Tone ''warm'': Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.'
-    translator_note: 'Strengths-framed band phrase: must sound positive and non-judgemental; no numbers, no comparison with others. Hindi player-addressed habitual verbs are gendered (करते/करती हैं); this line uses a gender-neutral frame (आपकी ख़ूबी है / आपको आता है / आपको पसंद है / आपका ... रहता है).'
+    translator_note: 'Strengths-framed band phrase: must sound positive and non-judgemental; no numbers, no comparison with others. Hindi player-addressed habitual verbs are gendered (करते/करती हैं); this line uses a gender-neutral frame (आपकी ख़ूबी है / आपको आता है / आपको पसंद है / आपका ... रहता है). Machine re-draft after the English reference text was reworded; needs native review.'
     record: true
     record_note: ''
     history: []

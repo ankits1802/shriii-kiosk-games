@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+    <title>SHRIII Timing Calibration</title>
+  </head>
+  <body>
+    <main id="app">
+      <header>
+        <h1>SHRIII timing calibration</h1>
+        <p class="hint">
+          Runs on the kiosk under test. Each protocol logs page-clock timestamps; the rig or camera records
+          the physical side. Export the capture and analyse it with
+          <code>shriii-timing analyse</code>.
+        </p>
+      </header>
+
+      <section>
+        <h2>Device</h2>
+        <div class="grid">
+          <label>Hardware SKU <input id="sku" value="kiosk-sku-a" pattern="[a-z0-9][a-z0-9_.:\-]{0,63}" /></label>
+          <label>OS build <input id="os" placeholder="ubuntu-core-24.20261001" /></label>
+          <label>Firmware <input id="fw" placeholder="fw-1.4.2" /></label>
+          <label>Shell <input id="shell" placeholder="electron-44.9.1" /></label>
+          <label>Nominal refresh (Hz) <input id="hz" type="number" value="60" step="0.001" /></label>
+          <label>Audio output device <input id="audiodev" value="default" /></label>
+          <label>Seed <input id="seed" type="number" value="20261022" /></label>
+        </div>
+      </section>
+
+      <section>
+        <h2>Protocols</h2>
+        <div class="protocols">
+          <div class="card">
+            <h3>Photodiode (visual)</h3>
+            <label>Flashes <input id="vis-n" type="number" value="1200" /></label>
+            <label>Flash frames <input id="vis-frames" type="number" value="3" /></label>
+            <label>Patch size (px) <input id="vis-size" type="number" value="120" /></label>
+            <button id="run-visual" type="button">Run visual</button>
+          </div>
+          <div class="card">
+            <h3>Touch (tapper / camera)</h3>
+            <label>Taps <input id="touch-n" type="number" value="300" /></label>
+            <button id="run-touch" type="button">Run touch</button>
+          </div>
+          <div class="card">
+            <h3>Audio</h3>
+            <label>Clicks <input id="aud-n" type="number" value="300" /></label>
+            <label><input id="aud-loop" type="checkbox" /> In-page loopback (cable out -&gt; in)</label>
+            <label>Loopback threshold <input id="aud-thr" type="number" value="0.2" step="0.01" /></label>
+            <button id="run-audio" type="button">Run audio</button>
+          </div>
+          <div class="card">
+            <h3>Frames (rAF)</h3>
+            <label>Seconds <input id="frames-s" type="number" value="60" /></label>
+            <button id="run-frames" type="button">Run frames</button>
+          </div>
+          <div class="card">
+            <h3>Rig clock sync</h3>
+            <label>Pings <input id="sync-n" type="number" value="300" /></label>
+            <button id="run-sync" type="button">Sync over Web Serial</button>
+            <p class="hint" id="sync-hint"></p>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>Capture</h2>
+        <pre id="summary"></pre>
+        <div class="row">
+          <button id="download" type="button">Download capture JSON</button>
+          <button id="reset" type="button" class="secondary">Reset</button>
+        </div>
+        <pre id="log"></pre>
+      </section>
+    </main>
+
+    <div id="stage" hidden>
+      <div id="patch"></div>
+      <div id="stage-status"></div>
+    </div>
+
+    <script type="module" src="./src/main.ts"></script>
+  </body>
+</html>

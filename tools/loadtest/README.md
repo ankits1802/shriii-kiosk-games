@@ -23,7 +23,7 @@ duplicates).
 | `locustfile.py` | Locust users (`KioskUser`, `ResearcherUser`) for live UI / distributed runs |
 | `docker-compose.yml` | Dedicated Postgres 18 on port 55442 (project `shriii-loadtest`), with `pg_stat_statements` |
 | `docker-compose.fastdisk.yml` | Override that turns off fsync to separate app cost from storage cost (never for real data) |
-| `results/<label>/` | Committed run reports (`*.md`, `*.json`) and profiles |
+| `results/<label>/` | Run reports (`*.md`, `*.json`) and profiles; git-ignored, uploaded by CI as the `loadtest-*` artifact (summary in RESULTS.md) |
 | `tests/` | Unit tests plus an end-to-end test against the real API in-process (needs Postgres) |
 
 ## Run it

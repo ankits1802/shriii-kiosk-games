@@ -1,0 +1,71 @@
+# Acceptance thresholds for per-SKU timing certification (ENG-01, ENG-02).
+# Every number the analysis compares against lives here; the code holds none of them.
+# A profile is certified only when every check passes. A failed profile is still written, but its
+# timing_profile_version starts with "uncertified" so the scoring engine flags its sessions
+# (stats/scoring data/scoring_params.yaml: quality.device.uncertified_profile_prefixes).
+version: 1
+source: docs/IMPLEMENTATION_PLAN.md ENG-01 (rig AC), ENG-02 (rig AC), KSK-14
+
+# Minimum matched samples per channel before a channel can pass.
+min_samples:
+  visual: 1000 # ENG-01: "over 1,000 trials"
+  touch: 200
+  audio: 200
+  frames: 3000 # about 50 s of rAF at 60 Hz
+
+visual:
+  # ENG-01 / ENG-02: presented-vs-photodiode jitter SD <= 1 frame after the constant offset.
+  max_sd_frames: 1.0
+  # Flashes the photodiode never saw (or saw twice) as a fraction of the flashes shown.
+  max_missed_rate: 0.01
+  max_spurious_rate: 0.01
+
+touch:
+  # ENG-02: touch latency SD <= 15 ms (solenoid tapper).
+  max_sd_ms: 15.0
+  max_missed_rate: 0.02
+
+audio:
+  # ENG-02: audio output jitter SD <= 10 ms after offset correction.
+  max_sd_ms: 10.0
+  max_missed_rate: 0.02
+
+frames:
+  # Frame intervals longer than this many nominal periods count as dropped frames.
+  drop_threshold_periods: 1.5
+  max_dropped_rate: 0.005
+  max_interval_sd_ms: 2.0
+
+# Constant offsets need an anchored channel (a host<->rig clock sync, or a common-clock camera). An
+# unanchored channel only measures jitter, so it cannot certify an offset.
+require_anchored: true
+
+# Confidence label of an offset, from the half-width of its 95% CI.
+confidence:
+  high_ci_halfwidth_ms: 0.5
+  medium_ci_halfwidth_ms: 2.0
+
+matching:
+  # A sensor event matches a host event when it lies within this fraction of the shortest
+  # inter-stimulus interval of the expected position (capped by max_window_ms).
+  window_fraction_of_isi: 0.4
+  max_window_ms: 60.0
+  # Plausible latency range used to find the coarse offset when the channel is anchored.
+  min_latency_ms: -50.0
+  max_latency_ms: 500.0
+
+sync:
+  # Host<->rig clock sync: keep the ping-pong samples whose round trip is at or below this quantile.
+  keep_rtt_quantile: 0.25
+  # Maximum accepted median one-way uncertainty (RTT/2) of the kept samples.
+  max_uncertainty_ms: 1.0
+
+bootstrap:
+  resamples: 2000
+  seed: 20261022
+
+# Emulator / re-certification regression (ENG-02 AC: "detects an injected 50 ms delay").
+regression:
+  max_offset_shift_ms: 8.0
+  max_sd_ratio: 1.5
+  max_dropped_rate_increase: 0.005

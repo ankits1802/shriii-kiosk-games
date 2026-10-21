@@ -1,0 +1,124 @@
+# Criterion card-sort app (CRT-05, CRT-09): frontend/apps/card-sort-app.
+# web:     lint, typecheck, unit tests (scoring worked examples, store, outbox, contract records),
+#          production web bundle, Playwright smoke against `vite preview` (tablet viewport, IndexedDB).
+# android: Capacitor Android project generated from the web bundle and an unsigned debug APK
+#          (Gradle on ubuntu-latest). No signing material is used.
+name: Card Sort App
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - frontend/apps/card-sort-app/**
+      - contracts/**
+      - .github/workflows/card-sort-app.yml
+  pull_request:
+    paths:
+      - frontend/apps/card-sort-app/**
+      - contracts/**
+      - content/instruments/card-sort-criterion.yaml
+      - backend/api/openapi.json
+      - pnpm-lock.yaml
+      - .github/workflows/card-sort-app.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: card-sort-app-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  FORCE_COLOR: "1"
+  TURBO_TELEMETRY_DISABLED: "1"
+
+jobs:
+  web:
+    name: Web bundle, unit tests and Playwright smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    defaults:
+      run:
+        working-directory: frontend/apps/card-sort-app
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: package.json
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+        working-directory: .
+      - name: Lint
+        run: pnpm exec biome check frontend/apps/card-sort-app .github/workflows/card-sort-app.yml
+        working-directory: .
+      - name: Typecheck
+        run: pnpm typecheck
+      - name: Unit tests
+        run: pnpm test
+      - name: Build web bundle
+        run: pnpm build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: card-sort-web
+          path: frontend/apps/card-sort-app/dist
+          retention-days: 14
+      - name: Install Chromium for Playwright
+        run: pnpm exec playwright install --with-deps chromium
+      - name: Playwright smoke (web build)
+        run: pnpm test:e2e
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: card-sort-playwright-report
+          path: |
+            frontend/apps/card-sort-app/playwright-report
+            frontend/apps/card-sort-app/test-results
+          retention-days: 7
+
+  android:
+    name: Android debug APK (unsigned)
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    defaults:
+      run:
+        working-directory: frontend/apps/card-sort-app
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: package.json
+          cache: pnpm
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "21"
+      - uses: gradle/actions/setup-gradle@v5
+      - run: pnpm install --frozen-lockfile
+        working-directory: .
+      - name: Build web bundle
+        run: pnpm build
+      - name: Generate the Capacitor Android project
+        run: pnpm exec cap add android
+      - name: Camera permission and no-backup manifest
+        run: pnpm android:prepare
+      - name: Sync web assets and plugins
+        run: pnpm exec cap sync android
+      - name: Assemble debug APK
+        working-directory: frontend/apps/card-sort-app/android
+        run: ./gradlew assembleDebug --no-daemon --stacktrace
+      - name: Check the SQLite plugin is packaged
+        working-directory: frontend/apps/card-sort-app/android
+        run: |
+          apk=app/build/outputs/apk/debug/app-debug.apk
+          test -f "$apk"
+          unzip -l "$apk" | grep -q 'assets/public/index.html'
+          grep -q 'capacitor-community-sqlite' capacitor.settings.gradle
+          ls -la "$apk"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: card-sort-app-debug-apk
+          path: frontend/apps/card-sort-app/android/app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 14

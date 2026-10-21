@@ -1,0 +1,104 @@
+#!/bin/sh
+# Host egress allow-list (KSK-09, PRV-09): once the kiosk is enrolled, the device may only open outbound
+# TCP connections to the SHRIII API, the step-ca, the snap store (or the brand's snap store proxy) and any
+# operator-approved extra endpoints. DNS, DHCP and NTP stay open; everything else is dropped and counted.
+# Names are re-resolved every NETGUARD_INTERVAL seconds; on resolution failure the previous rules stay.
+#
+# Snap options:
+#   netguard.enforce      true (default) | false   (bench debugging; logged loudly)
+#   netguard.allow        extra "host:port,host:port"
+#   netguard.store-proxy  "host:port" of the snap store proxy; when unset the public store endpoints are used
+set -eu
+# shellcheck source=../share/lib.sh
+. "$SNAP/share/lib.sh"
+
+TABLE="shriii_netguard"
+NETGUARD_INTERVAL="${NETGUARD_INTERVAL:-300}"
+PUBLIC_STORE="api.snapcraft.io:443,dashboard.snapcraft.io:443,storage.snapcraftcontent.com:443,login.ubuntu.com:443"
+
+host_port() {
+  # https://host[:port][/...] -> host:port
+  echo "$1" | sed -E 's#^https?://##; s#/.*$##' | awk -F: '{ print $1 ":" ($2 == "" ? 443 : $2) }'
+}
+
+endpoints() {
+  host_port "$(json_get .apiOrigin "$CONFIG_FILE")"
+  host_port "$(json_get .ca_url "$DEVICE_RECORD_FILE")"
+  feed=$(jq -r '.update.feedUrl // empty' "$CONFIG_FILE")
+  [ -n "$feed" ] && host_port "$feed"
+  proxy=$(snapctl get netguard.store-proxy 2>/dev/null || true)
+  if [ -n "$proxy" ]; then
+    echo "$proxy"
+  else
+    echo "$PUBLIC_STORE" | tr ',' '\n'
+  fi
+  extra=$(snapctl get netguard.allow 2>/dev/null || true)
+  [ -n "$extra" ] && echo "$extra" | tr ',' '\n'
+  return 0
+}
+
+render_rules() {
+  elements=""
+  for ep in $(endpoints | sort -u); do
+    host=${ep%:*}
+    port=${ep##*:}
+    case "$port" in *[!0-9]* | "") log "skipping bad endpoint $ep"; continue ;; esac
+    for ip in $(getent ahostsv4 "$host" | awk '{ print $1 }' | sort -u); do
+      elements="${elements}${elements:+, }$ip . $port"
+    done
+  done
+  [ -n "$elements" ] || return 1
+  cat <<EOF
+table inet $TABLE
+delete table inet $TABLE
+table inet $TABLE {
+  set allow4 {
+    type ipv4_addr . inet_service
+    elements = { $elements }
+  }
+  chain output {
+    type filter hook output priority filter; policy drop;
+    oif "lo" accept
+    ct state established,related accept
+    udp dport { 53, 67, 123 } accept
+    tcp dport 53 accept
+    ip daddr . tcp dport @allow4 accept
+    icmp type { echo-request, destination-unreachable, time-exceeded } accept
+    meta nfproto ipv6 icmpv6 type { nd-neighbor-solicit, nd-router-solicit, nd-neighbor-advert } accept
+    meta nfproto ipv6 udp dport { 53, 547 } accept
+    counter log prefix "shriii-netguard drop " level info limit rate 6/minute
+    counter drop
+  }
+}
+EOF
+}
+
+open_mode() {
+  if nft list table inet "$TABLE" >/dev/null 2>&1; then
+    nft delete table inet "$TABLE"
+    log "egress allow-list removed ($1)"
+  fi
+}
+
+while :; do
+  enforce=$(snapctl get netguard.enforce 2>/dev/null || true)
+  if ! is_enrolled; then
+    open_mode "device not enrolled"
+  elif [ "$enforce" = "false" ]; then
+    log "WARNING: netguard.enforce=false; egress is NOT restricted"
+    open_mode "enforce=false"
+  else
+    rules="$(mktemp)"
+    if render_rules >"$rules"; then
+      if nft -c -f "$rules" && nft -f "$rules"; then
+        log "egress allow-list applied ($(grep -o ' \. [0-9]*' "$rules" | wc -l) address:port entries)"
+      else
+        log "ERROR: nft rejected the ruleset; keeping previous rules"
+      fi
+    else
+      log "WARNING: no endpoint resolved; keeping previous rules"
+    fi
+    rm -f "$rules"
+  fi
+  sleep "$NETGUARD_INTERVAL"
+done

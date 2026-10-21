@@ -1,0 +1,3 @@
+#!/bin/sh
+# Required for a gadget that ships defaults; nothing to validate.
+exit 0

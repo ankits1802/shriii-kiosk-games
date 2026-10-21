@@ -1,0 +1,32 @@
+#!/bin/sh
+# Keep the short-lived device certificate fresh (PRV-07).
+#
+# step ca renew --daemon renews at ~2/3 of the lifetime (24 h certificates -> every ~16 h, with jitter) over
+# mTLS. Kiosks are offline-first: if the certificate expired while the site was offline, the kiosk-enrolment
+# provisioner allows renewal after expiry (infra/pki/step-ca/ca.json.tmpl, allowRenewalAfterExpiry), still
+# proving possession of the device key; revoked certificates can never renew (passive revocation + CRL).
+set -eu
+# shellcheck source=../share/lib.sh
+. "$SNAP/share/lib.sh"
+
+if ! is_enrolled; then
+  log "not enrolled; waiting"
+  wait_for_file "$CONFIG_FILE"
+fi
+
+CA_URL=$(json_get .ca_url "$DEVICE_RECORD_FILE")
+
+# One immediate attempt if the certificate is already past 2/3 of its life or expired (boot after a long
+# offline period), then the daemon loop.
+if step certificate needs-renewal "$CERT_FILE" --expires-in 33% >/dev/null 2>&1; then
+  log "certificate due; renewing now"
+  if step ca renew "$CERT_FILE" "$KEY_FILE" --ca-url "$CA_URL" --root "$ROOT_FILE" --force >/dev/null; then
+    "$SNAP/bin/cert-reimport"
+  else
+    log "WARNING: immediate renewal failed (offline?); the daemon will retry"
+  fi
+fi
+
+exec step ca renew --daemon "$CERT_FILE" "$KEY_FILE" \
+  --ca-url "$CA_URL" --root "$ROOT_FILE" \
+  --exec "$SNAP/bin/cert-reimport"
