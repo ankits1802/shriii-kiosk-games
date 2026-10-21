@@ -1,0 +1,164 @@
+# Build and push container images (PLT-04: "container images to ECR -> OpenTofu plan and apply to staging").
+#
+# Images: api, worker (infra/docker/api.Dockerfile targets), web, kiosk. Every push to main builds them; pushing to
+# ECR, signing and the staging rollout run only when the AWS role is configured (vars.AWS_ROLE_ARN), so forks
+# and fresh clones stay green. Production is a manual, approved promotion of an already-built tag.
+#
+# Variables: AWS_ROLE_ARN, AWS_REGION (default ap-south-1), ECR_REGISTRY (<account>.dkr.ecr.ap-south-1.amazonaws.com),
+#            TOFU_STATE_BUCKET (state uses S3 native lockfiles)
+# Secrets:   COSIGN_PRIVATE_KEY, COSIGN_PASSWORD (placeholders; vars.COSIGN_KEYLESS=true for keyless)
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+    paths-ignore: ["docs/**", "**/*.md"]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Target environment
+        type: choice
+        options: [staging, production]
+        default: staging
+      image_tag:
+        description: Existing image tag to deploy (production promotions); empty = build this commit
+        required: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-${{ inputs.environment || 'staging' }}
+  cancel-in-progress: false
+
+env:
+  AWS_REGION: ${{ vars.AWS_REGION || 'ap-south-1' }}
+  PUSH: ${{ vars.AWS_ROLE_ARN != '' && (github.event_name == 'push' || inputs.image_tag == '') }}
+
+jobs:
+  images:
+    name: Image ${{ matrix.image }}
+    if: inputs.image_tag == ''
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    permissions:
+      contents: read
+      id-token: write # AWS OIDC + keyless cosign
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - image: api
+            dockerfile: infra/docker/api.Dockerfile
+            target: api
+          - image: worker
+            dockerfile: infra/docker/api.Dockerfile
+            target: worker
+          - image: web
+            dockerfile: infra/docker/web.Dockerfile
+            target: runtime
+            requires: apps/web
+          - image: kiosk
+            dockerfile: infra/docker/kiosk.Dockerfile
+            target: runtime
+    steps:
+      - uses: actions/checkout@v5
+      - name: Skip images whose app does not exist yet
+        id: present
+        run: |
+          if [ -n "${{ matrix.requires }}" ] && [ ! -d "${{ matrix.requires }}" ]; then
+            echo "build=false" >> "$GITHUB_OUTPUT"; echo "::notice::${{ matrix.requires }} missing; skipping ${{ matrix.image }}"
+          else
+            echo "build=true" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: docker/setup-buildx-action@v3
+        if: steps.present.outputs.build == 'true'
+      - uses: aws-actions/configure-aws-credentials@v4
+        if: steps.present.outputs.build == 'true' && env.PUSH == 'true'
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+      - uses: aws-actions/amazon-ecr-login@v2
+        if: steps.present.outputs.build == 'true' && env.PUSH == 'true'
+      - name: Image metadata
+        if: steps.present.outputs.build == 'true'
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ vars.ECR_REGISTRY || 'shriii' }}/shriii-${{ matrix.image }}
+          tags: |
+            type=sha,format=long,prefix=
+            type=ref,event=branch
+          labels: |
+            org.opencontainers.image.title=shriii-${{ matrix.image }}
+      - name: Build${{ env.PUSH == 'true' && ' and push' || '' }}
+        if: steps.present.outputs.build == 'true'
+        id: build
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ${{ matrix.dockerfile }}
+          target: ${{ matrix.target }}
+          push: ${{ env.PUSH == 'true' }}
+          load: ${{ env.PUSH != 'true' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha,scope=${{ matrix.image }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.image }}
+          provenance: mode=max
+          sbom: true
+      - uses: sigstore/cosign-installer@v3
+        if: steps.present.outputs.build == 'true' && env.PUSH == 'true'
+      - name: Sign image
+        if: steps.present.outputs.build == 'true' && env.PUSH == 'true'
+        env:
+          COSIGN_PRIVATE_KEY: ${{ secrets.COSIGN_PRIVATE_KEY }}
+          COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
+          COSIGN_KEYLESS: ${{ vars.COSIGN_KEYLESS }}
+          REF: ${{ vars.ECR_REGISTRY }}/shriii-${{ matrix.image }}@${{ steps.build.outputs.digest }}
+        run: |
+          if [ -n "$COSIGN_PRIVATE_KEY" ]; then
+            printf '%s' "$COSIGN_PRIVATE_KEY" > "$RUNNER_TEMP/cosign.key"
+            cosign sign --yes --key "$RUNNER_TEMP/cosign.key" "$REF"
+            rm -f "$RUNNER_TEMP/cosign.key"
+          elif [ "$COSIGN_KEYLESS" = "true" ]; then
+            cosign sign --yes "$REF"
+          else
+            echo "::error title=No signing material::Images pushed to ECR must be signed (fail closed)."; exit 1
+          fi
+
+  rollout:
+    name: OpenTofu ${{ inputs.environment || 'staging' }}
+    needs: [images]
+    if: always() && (needs.images.result == 'success' || needs.images.result == 'skipped') && vars.AWS_ROLE_ARN != ''
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    environment: ${{ inputs.environment || 'staging' }}
+    permissions:
+      contents: read
+      id-token: write
+    defaults:
+      run:
+        working-directory: infra/tofu/envs/${{ inputs.environment || 'staging' }}
+    env:
+      TF_IN_AUTOMATION: "1"
+      TF_VAR_image_tag: ${{ inputs.image_tag || github.sha }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: opentofu/setup-opentofu@v1
+        with:
+          tofu_version: 1.10.6
+          tofu_wrapper: false
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+      - name: Init
+        run: |
+          tofu init -input=false \
+            -backend-config="bucket=${{ vars.TOFU_STATE_BUCKET }}" \
+            -backend-config="region=${{ env.AWS_REGION }}"
+      - name: Plan
+        run: tofu plan -input=false -out=tfplan -lock-timeout=5m
+      - name: Apply
+        run: tofu apply -input=false -lock-timeout=5m tfplan

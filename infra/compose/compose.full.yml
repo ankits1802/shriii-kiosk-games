@@ -1,0 +1,130 @@
+# SHRIII full local stack (PLT-05 "Docker Compose profile for local work and the 2-VM pilot alternative").
+#
+#   docker compose -f infra/compose/compose.full.yml up --build -d
+#   curl http://localhost:8000/healthz      # API liveness
+#   curl http://localhost:8000/readyz       # API readiness (research DB, identity DB, migrations)
+#   open http://localhost:3000              # web app (/kiosk, /research, /admin)
+#   open http://localhost:5173              # kiosk browser build (static)
+#   open http://localhost:8080              # Adminer (server: postgres)
+#   docker compose -f infra/compose/compose.full.yml down -v
+#
+# Env files under infra/compose/env/ hold development defaults only (ENV=dev: dev JWT login and keys derived
+# from the dev secret). Never reuse them for staging or production; those get secrets from AWS (infra/tofu).
+# Host ports are overridable: POSTGRES_HOST_PORT, API_HOST_PORT, WEB_HOST_PORT, KIOSK_HOST_PORT, ADMINER_HOST_PORT.
+name: shriii-full
+
+x-backend-build: &backend-build
+  context: ../..
+  dockerfile: infra/docker/api.Dockerfile
+
+x-backend-env: &backend-env
+  env_file:
+    - path: env/api.env
+      required: true
+    - path: env/local.env
+      required: false
+
+services:
+  postgres:
+    image: postgres:18
+    restart: unless-stopped
+    env_file: env/postgres.env
+    environment:
+      TZ: UTC
+      PGTZ: UTC
+    ports:
+      - "${POSTGRES_HOST_PORT:-55433}:5432"
+    volumes:
+      # PostgreSQL 18 images keep data under /var/lib/postgresql/<major>/docker; mount the parent.
+      - pgdata:/var/lib/postgresql
+      - ./postgres-init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+  # One-shot: research + identity migrations, then reference data (instruments, dictionary, games).
+  migrate:
+    build:
+      <<: *backend-build
+      target: api
+    image: shriii/api:local
+    <<: *backend-env
+    command: ["sh", "-c", "shriii-api migrate && shriii-api seed --demo"]
+    restart: "no"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  api:
+    image: shriii/api:local
+    build:
+      <<: *backend-build
+      target: api
+    <<: *backend-env
+    restart: unless-stopped
+    ports:
+      - "${API_HOST_PORT:-8000}:8000"
+    volumes:
+      - apidata:/var/lib/shriii
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+  worker:
+    image: shriii/worker:local
+    build:
+      <<: *backend-build
+      target: worker
+    <<: *backend-env
+    restart: unless-stopped
+    volumes:
+      - apidata:/var/lib/shriii
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+  web:
+    image: shriii/web:local
+    build:
+      context: ../..
+      dockerfile: infra/docker/web.Dockerfile
+      args:
+        NEXT_PUBLIC_API_BASE_URL: ${PUBLIC_API_BASE_URL:-http://localhost:8000}
+    env_file: env/web.env
+    restart: unless-stopped
+    ports:
+      - "${WEB_HOST_PORT:-3000}:3000"
+    depends_on:
+      api:
+        condition: service_healthy
+
+  kiosk:
+    image: shriii/kiosk:local
+    build:
+      context: ../..
+      dockerfile: infra/docker/kiosk.Dockerfile
+      args:
+        VITE_API_BASE_URL: ${PUBLIC_API_BASE_URL:-http://localhost:8000}
+    restart: unless-stopped
+    ports:
+      - "${KIOSK_HOST_PORT:-5173}:8080"
+    depends_on:
+      api:
+        condition: service_healthy
+
+  adminer:
+    image: adminer:5
+    restart: unless-stopped
+    environment:
+      ADMINER_DEFAULT_SERVER: postgres
+    ports:
+      - "${ADMINER_HOST_PORT:-8080}:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  pgdata:
+  apidata:
