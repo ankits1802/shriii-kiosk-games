@@ -1,0 +1,174 @@
+# Register, tone and terminology guide for SHRIII recording scripts (VOX-07; ITC TD-1, TD-3, A-1).
+# Audience: forward translators, back-translators, the reconciliation panel and voice directors.
+# The glossary is machine-checked by `shriii-i18n validate --warnings` (code `glossary_term`): when a source
+# line contains the concept, the script should contain one of the accepted target forms (stems, so that
+# inflected forms match). Changing a term here is an adaptation decision: record it in the ITC dossier.
+schema_version: '1.0'
+
+principles:
+  - Spoken, not written. Write what a warm local guide would SAY at a village fair, in everyday words.
+  - Respectful. Adults of every age, including elders; never talk down, never sound like a teacher or an official.
+  - Simple. One idea per sentence, short sentences, common words. No words that only schooled or literate people know.
+  - Reading-free. Never refer to written text, numbers on screen, letters or labels; refer to pictures, colours and icons.
+  - Same meaning, same function. Do not add hints, warnings, or encouragement that the source does not have;
+    never explain a hidden rule (for example the Card Sort switch or the Road Home reversal).
+  - Strengths-framed. Report phrases must sound positive at both poles and in the centre; no negative labels.
+  - Gender-fair. Address the player in forms that work for women and men; where grammar forces a choice, prefer
+    a gender-neutral construction (see the per-language notes) rather than the masculine default.
+  - Speakable within the target duration (+-15%); if natural speech needs much longer, say so in the translator note.
+
+languages:
+  hi-IN:
+    name: Hindi
+    variety: >-
+      Standard spoken Hindi of the Hindi belt (UP, MP, Bihar, Rajasthan, Delhi NCR), Hindustani-leaning: everyday
+      Urdu-origin words (ज़रूर, फ़ैसला, इंसाफ़, शुक्रिया) are preferred over Sanskritised written forms
+      (निर्णय, न्याय, कृपया, अनुरोध).
+    address: 'आप with polite imperative in -इए (छुइए, दीजिए). Never तुम/तू, except the scripted rude customer.'
+    gender: >-
+      Habitual verbs agree with the listener's gender (करते हैं / करती हैं). Player-addressed lines use
+      gender-neutral constructions instead: ergative past (आपने ... चुना), passives (रोका जा सकता है),
+      nominal frames (... आपकी ख़ूबी है, ... आपको आता है, ... आपको पसंद है) and imperatives. The guide's own
+      first-person lines (मैं हिंदी बोलती हूँ) follow the voice artist's gender.
+    avoid: [निर्देश, कृपया, विकल्प, प्रतिभागी, मूल्यांकन, परिणाम, संतुलन (in favour of ताल-मेल), चुनाव (= election)]
+    numbers: Spell numbers as spoken words in the script; field-test whether phone digits are better understood in Hindi or English.
+  mr-IN:
+    name: Marathi
+    variety: >-
+      Standard spoken Marathi (Pune-Mumbai), checked against Vidarbha, Marathwada and Konkan speech at review.
+      Prefer everyday words (हात लावा, पटपट, गिऱ्हाईक, जत्रा) over bookish ones (स्पर्श करा, त्वरित, ग्राहक-वर्ग).
+    address: 'तुम्ही with polite imperative in -आ (हात लावा, द्या). आपण for "we/let''s" (करूया).'
+    gender: >-
+      Second-person plural present and past (करता, खेळलात, आहात) are gender-neutral, which keeps most
+      player-addressed lines neutral. First-person guide lines (मी हिंदी बोलते) follow the voice artist's gender.
+    avoid: [स्पर्श करा, कृपया (except system notices), पर्याय-यादी, सहभागी, मूल्यमापन, जोडीदार (can mean spouse; use साथीदार)]
+    numbers: Spell numbers as spoken words; field-test phone digits in Marathi vs English.
+  ta-IN:
+    name: Tamil
+    variety: >-
+      Standard spoken Tamil (பொதுப் பேச்சுத் தமிழ்) as heard on Tamil TV and radio, written in a
+      semi-colloquial spelling (-ங்க endings, வாங்க, இருக்கு, போலாம்). Avoid the formal written register
+      (செந்தமிழ்: தொடவும், வருக, அளிக்கப்படும்) and avoid strongly regional forms (Chennai, Madurai, Kongu)
+      unless the reviewer panel chooses a regional variant pack (VOX-08).
+    address: நீங்க with -ங்க imperatives (தொடுங்க, கொடுங்க). Greeting வணக்கம், never நமஸ்தே.
+    gender: Tamil second-person honorific forms are gender-neutral; prefer நண்பர், கூட்டாளி for partners.
+    avoid: [தொடவும் (written imperative), வருக, பங்கேற்பாளர், மதிப்பீடு, சீட்டு (gambling connotation; use கார்டு), நல்ல நேரம் (= auspicious time)]
+    numbers: Spoken forms (ரெண்டு, மூணு, நாலு, அஞ்சு, ஒம்பது) in the script; field-test phone digits in Tamil vs English.
+
+tone_notes:
+  warm: Friendly, smiling guide voice; unhurried, like a kind neighbour at the fair.
+  calm: Slow, steady and reassuring; consent and privacy lines must never sound rushed or legalistic.
+  encouraging: Light, upbeat praise; never childish or patronising to adults and elders.
+  neutral: Plain, even delivery; no emotional colouring.
+  urgent: Brisk and energetic but friendly; excitement of a busy market, not alarm.
+  playful: Short, bright cue; must stay crisp because response latency is timed from its end.
+  hostile: >-
+    Recorded STIMULUS (rude customer). Impatient and sharp in tone only; no insults, abuse, caste, religion or
+    gender references. Rudeness intensity must be matched across languages (see adaptation sheet customer-rudeness).
+  firm: Clear, authoritative market-official announcement; firm but not threatening.
+
+glossary:
+  - concept: greeting
+    source_pattern: '\bnamaste\b'
+    hi-IN: [नमस्ते]
+    mr-IN: [नमस्कार]
+    ta-IN: [வணக்கம்]
+  - concept: tick icon (yes / continue)
+    source_pattern: '\btick\b'
+    hi-IN: [सही का निशान]
+    mr-IN: [बरोबरच्या खुणे, बरोबरची खूण]
+    ta-IN: [சரி குறி]
+  - concept: cross icon (no / back)
+    source_pattern: '\bcross\b'
+    hi-IN: [क्रॉस]
+    mr-IN: [फुली]
+    ta-IN: [பெருக்கல் குறி]
+  - concept: touch (the only required input)
+    source_pattern: '\btouch'
+    hi-IN: [छु, छू]
+    mr-IN: [हात लाव]
+    ta-IN: [தொட]
+  - concept: screen
+    source_pattern: '\bscreen\b'
+    hi-IN: [स्क्रीन]
+    mr-IN: [स्क्रीन]
+    ta-IN: [திரை]
+  - concept: market fair
+    source_pattern: 'market fair|the fair[.!]'
+    hi-IN: [मेल]
+    mr-IN: [जत्र]
+    ta-IN: [திருவிழா]
+  - concept: globe icon (language switch)
+    source_pattern: '\bglobe\b'
+    hi-IN: [ग्लोब]
+    mr-IN: [गोल]
+    ta-IN: [உலக உருண்டை]
+  - concept: hand icon (stop)
+    source_pattern: '\bthe hand\b'
+    hi-IN: [हाथ वाले निशान]
+    mr-IN: [हाताच्या खुणे]
+    ta-IN: [கை பட]
+  - concept: eye icon (show privately)
+    source_pattern: '\bthe eye\b'
+    hi-IN: [आँख]
+    mr-IN: [डोळ्या]
+    ta-IN: [கண்]
+  - concept: delete (erasure right)
+    source_pattern: '\bdelet'
+    hi-IN: [मिट]
+    mr-IN: [पुसून]
+    ta-IN: [அழி]
+  - concept: picture summary (report)
+    source_pattern: '\bsummary\b'
+    hi-IN: [झलक]
+    mr-IN: [झलक]
+    ta-IN: [சுருக்க]
+  - concept: research
+    source_pattern: '\bresearch'
+    hi-IN: [रिसर्च]
+    mr-IN: [संशोधन, अभ्यास]
+    ta-IN: [ஆராய்ச்சி]
+  - concept: mango
+    source_pattern: '\bmango'
+    hi-IN: [आम]
+    mr-IN: [आंब]
+    ta-IN: [மாம்பழ]
+  - concept: jar (fills up; no numbers)
+    source_pattern: '\bjar\b'
+    hi-IN: [बरनी]
+    mr-IN: [बरण]
+    ta-IN: [ஜாடி]
+  - concept: basket
+    source_pattern: '\bbaskets?\b'
+    hi-IN: [टोकरी, टोकरिय]
+    mr-IN: [टोपल]
+    ta-IN: [கூடை]
+  - concept: balloon
+    source_pattern: '\bballoon'
+    hi-IN: [गुब्बार]
+    mr-IN: [फुग]
+    ta-IN: [பலூன்]
+  - concept: dice
+    source_pattern: '\bdice\b'
+    hi-IN: [पास]
+    mr-IN: [फास]
+    ta-IN: [பகடை]
+  - concept: weighing needle
+    source_pattern: '\bneedle\b'
+    hi-IN: [सुई]
+    mr-IN: [काटा, काट्या]
+    ta-IN: [முள்]
+  - concept: sack
+    source_pattern: '\bsacks?\b'
+    hi-IN: [बोरी]
+    mr-IN: [पोत]
+    ta-IN: [மூட்டை]
+  - concept: customer
+    source_pattern: '\bcustomers?\b'
+    hi-IN: [ग्राहक]
+    mr-IN: [गिऱ्हाइक]
+  - concept: partner (co-play, teamwork)
+    source_pattern: '\bpartners?\b'
+    hi-IN: [साथी, साथिय]
+    mr-IN: [साथीदार]
+    ta-IN: [கூட்டாளி]

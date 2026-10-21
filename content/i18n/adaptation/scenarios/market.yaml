@@ -1,0 +1,158 @@
+# Cultural adaptation review sheet: Village market fair setting (stalls, goods, props)
+# Stage 1 think-aloud (CRT-08, plan section 7.3) and VOX-08 variant decisions. One sheet per scenario.
+# Universal probes are asked in every region in the participant's language (wording given here; draft
+# translations follow the same ITC review as recording scripts). Region sections list known considerations,
+# candidate surface adaptations and extra probes. Locked elements may never change in a variant
+# (VOX-08 forbids changes to scored parameters). Sign-off records go to governance/ (PLT-09).
+schema_version: '1.0'
+scenario_id: market
+title: Village market fair setting (stalls, goods, props)
+appears_in:
+  - warmup
+  - dont_tap
+  - four_stalls
+  - stall
+  - hub
+lines:
+  - attract.greeting
+  - warmup.tap
+  - warmup.hold
+  - warmup.choice
+  - dont_tap.intro
+  - four_stalls.intro
+  - hub.bridge
+  - report.thank_you
+purpose: The golden-hour village market fair is the shared world of every module. Props must be instantly recognisable in every region so that recognition time does not leak into latency indicators.
+locked_elements:
+  - Trial counts, timings, go/no-go ratios and payoff schedules (game configs in content/games).
+  - Visual discriminability of fresh vs spoiled items (same contrast and size in every variant).
+  - The meaning of every prop in the task (jar = how much you collected; basket = sorting target).
+adaptable_surface:
+  - Fruit and goods types (mango is seasonal; banana, guava, orange, coconut are alternatives).
+  - Stall architecture, awnings, cloth colours and background scenery.
+  - Attire of background crowd characters.
+  - Lamp design (diya, brass kuthu vilakku) and pot material (clay, brass, steel).
+  - Ambient music and crowd sound beds.
+construct_risks:
+  - Unfamiliar props slow responses and bias latency indicators by region (differential item functioning on RT).
+  - Spoiled-fruit cues that rely on colour only disadvantage colour-blind participants and regions where the fruit looks different.
+  - Urban participants may not identify with a village fair; the setting must still feel ordinary, not exotic.
+probe_instructions: Ask the universal probes after the participant finishes the module (retrospective think-aloud), in the participant's language, using the wording given. Keep the concurrent think-aloud prompt neutral ('please keep telling me what you are thinking'). Do not explain the task or the hidden rules. Code each observation with the CRT-08 codebook; note verbatim local words in the region notes.
+universal_probes:
+  - id: market.P1
+    en: What is this place? Have you been to a place like this?
+    hi-IN: यह कौन-सी जगह है? क्या आप कभी ऐसी जगह गए हैं?
+    mr-IN: ही कोणती जागा आहे? तुम्ही कधी अशा ठिकाणी गेला आहात का?
+    ta-IN: இது என்ன இடம்? இது மாதிரி இடத்துக்கு நீங்க போயிருக்கீங்களா?
+    listen_for: Recognises a market or fair; an urban 'mall' or 'exhibition' reading is a cultural_mismatch.
+  - id: market.P2
+    en: Please tell me what each of these things is.
+    hi-IN: ज़रा बताइए, ये सब चीज़ें क्या-क्या हैं?
+    mr-IN: या सगळ्या वस्तू काय आहेत, ते जरा सांगा.
+    ta-IN: இதெல்லாம் என்னென்ன பொருள்னு கொஞ்சம் சொல்லுங்க.
+    listen_for: Point at fruit, jar, pots, baskets, lamp. Record the local name used; any misidentified prop is cultural_mismatch.
+  - id: market.P3
+    en: How did you know which fruit was spoiled?
+    hi-IN: आपको कैसे पता चला कि कौन-सा फल सड़ा हुआ है?
+    mr-IN: कोणतं फळ खराब आहे, ते तुम्हाला कसं कळलं?
+    ta-IN: எந்தப் பழம் கெட்டுப்போனதுன்னு உங்களுக்கு எப்படித் தெரிஞ்சது?
+    listen_for: Cue used (colour, spots, flies, shape). Colour-only answers flag a colour-vision risk.
+  - id: market.P4
+    en: Did anything here feel strange or out of place for your area?
+    hi-IN: क्या यहाँ कुछ ऐसा था जो आपके इलाक़े के हिसाब से अजीब या अलग लगा?
+    mr-IN: इथे काही तुमच्या भागाच्या मानानं विचित्र किंवा वेगळं वाटलं का?
+    ta-IN: இங்க ஏதாவது உங்க ஊருக்குப் பொருந்தாத மாதிரி, விசித்திரமா தோணுச்சா?
+    listen_for: Any prop, food, attire or sound that feels foreign or tied to another region or community.
+  - id: market.P5
+    en: Who usually sells at stalls like these where you live, and who buys?
+    hi-IN: आपके यहाँ ऐसी दुकानों पर आम तौर पर कौन बेचता है, और कौन ख़रीदता है?
+    mr-IN: तुमच्याकडे अशा दुकानांवर सहसा कोण विकतं, आणि कोण विकत घेतं?
+    ta-IN: உங்க ஊர்ல இந்த மாதிரி கடைகள்ல பொதுவா யார் விப்பாங்க, யார் வாங்குவாங்க?
+    listen_for: Gender and community associations of selling; feeds the gender-roles sheet.
+regions:
+  hi-IN:
+    regions:
+      - hi.west_up_ncr
+      - hi.east_up_bihar
+      - hi.mp
+      - hi.rajasthan
+    considerations:
+      - 'Two market types: the weekly हाट (rural) and the seasonal मेला (often religious). The art should read as a हाट-like market fair, not a religious mela.'
+      - Mango (आम) is a summer fruit; outside the season participants still know it, but banana (केला) and guava (अमरूद) are year-round alternatives.
+      - Clay pots (मटका, घड़ा) and diya lamps are familiar across the Hindi belt.
+    candidate_adaptations:
+      - 'Fruit set: mango / banana / guava.'
+      - Earthen pots and cloth-awning stalls.
+    region_probes:
+      - id: market.hi.R1
+        en: Is this more like a haat or a mela to you?
+        listen_for: Which frame participants use; religious-mela associations.
+  mr-IN:
+    regions:
+      - mr.west_pune
+      - mr.vidarbha
+      - mr.marathwada
+      - mr.konkan_mumbai
+    considerations:
+      - जत्रा (village deity fair) and आठवडी बाजार (weekly market) are both familiar; the scene should be readable as either. Copy uses जत्रा.
+      - 'Regional fruit: oranges (संत्री) in Vidarbha, Alphonso mango (हापूस) and coconut in Konkan, grapes and pomegranate in Nashik and Solapur.'
+      - Bullock carts and tempo vans are typical market props in Marathwada and Vidarbha.
+    candidate_adaptations:
+      - 'Fruit set: mango / orange / banana.'
+      - Weekly-market tarpaulin stalls.
+    region_probes:
+      - id: market.mr.R1
+        en: Does this look like a jatra or a weekly bazaar?
+        listen_for: Frame used and whether the deity-fair association changes the tone.
+  ta-IN:
+    regions:
+      - ta.chennai
+      - ta.kongu
+      - ta.south
+      - ta.delta
+    considerations:
+      - வாரச் சந்தை (weekly market) and temple திருவிழா are the familiar frames; copy uses சந்தைத் திருவிழா. Young urban Chennai participants may know supermarkets better than சந்தை.
+      - Jasmine garlands, banana leaves and banana bunches are strong local cues; the brass குத்துவிளக்கு is the common lamp rather than a small diya.
+      - Avoid temple imagery in the background (religious association).
+    candidate_adaptations:
+      - 'Fruit set: mango / banana / guava.'
+      - 'Lamp: brass kuthu vilakku silhouette.'
+    region_probes:
+      - id: market.ta.R1
+        en: Does this look like a santhai or a thiruvizha to you?
+        listen_for: Frame used; any temple association.
+observer_codes:
+  - confusion
+  - misunderstood_instruction
+  - reading_dependent_screen
+  - digit_dependent_decision
+  - cultural_mismatch
+  - strategy
+signoff:
+  gate: 'Stage 1 exit gate 3 (plan section 7.3): cultural-equivalence sign-off per scenario by region, age band and gender, recorded in governance/ (PLT-09).'
+  cells: Every region listed below x age bands [18-24, 25-34, 35-44, 45-59, 60+] x gender [woman, man]; at least one think-aloud participant per cell before sign-off, and at least 6 participants aged 60+ per pathway (CRT-08 study AC).
+  decision_options:
+    - equivalent
+    - equivalent_with_surface_change
+    - not_equivalent_redesign
+  decision_rules:
+    - 'equivalent: no cultural_mismatch or misunderstood_instruction code linked to this scenario in the cell, and the universal probes show the intended meaning.'
+    - 'equivalent_with_surface_change: problems are fixed by an adaptable-surface change only (art, prop, wording); the change becomes a variant pack (VOX-08) and the scenario is re-tested.'
+    - 'not_equivalent_redesign: a problem touches a locked (scored) element or the construct itself; escalate to the PI and the ITC lead, no pilot use until redesigned.'
+  signatories:
+    - field_researcher (per region)
+    - expert_reviewer (cultural)
+    - itc_lead
+  record_template:
+    scenario_id: <id>
+    region: <region id>
+    age_band: <band>
+    gender: <woman|man>
+    n_participants: 0
+    codes_observed:
+      cultural_mismatch: 0
+      misunderstood_instruction: 0
+    decision: <decision option>
+    surface_changes: []
+    signed_by: []
+    date: YYYY-MM-DD
