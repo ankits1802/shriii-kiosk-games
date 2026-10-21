@@ -1,0 +1,250 @@
+{
+  "schema_version": "1.0",
+  "config_id": "road_home.v0",
+  "module_id": "road_home",
+  "kind": "episode",
+  "pathways": ["A"],
+  "version": "0.1.0",
+  "paradigms": ["route_planning", "errands", "rule_reversal", "public_goods", "effort"],
+  "constructs": [
+    "adaptability",
+    "initiative",
+    "persistence",
+    "persistence_of_style",
+    "problem_solving",
+    "response_consistency",
+    "stability",
+    "task_organisation",
+    "teamwork"
+  ],
+  "indicators": [
+    "adaptability.post_reversal_errors",
+    "adaptability.reversal_trials_to_reacquire",
+    "initiative.optional_actions_unprompted",
+    "initiative.route_planning_time",
+    "persistence.effort_completion_rate",
+    "persistence.retries_on_blocked_route",
+    "persistence_of_style.cross_segment_style_r",
+    "persistence_of_style.lag1_autocorr",
+    "problem_solving.excess_route_cost",
+    "problem_solving.replan_latency",
+    "problem_solving.replan_quality",
+    "response_consistency.choice_entropy_repeats",
+    "response_consistency.loc_scale_sigma",
+    "stability.shift_slope",
+    "stability.shift_slope_reversal",
+    "task_organisation.errand_order_efficiency",
+    "task_organisation.idle_time",
+    "task_organisation.resource_allocation_efficiency",
+    "task_organisation.revisits",
+    "teamwork.mean_contribution",
+    "teamwork.response_to_partner_defection",
+    "teamwork.response_to_partner_error"
+  ],
+  "slot": false,
+  "scorable": true,
+  "budget": {
+    "intro_ms": 9000,
+    "outro_ms": 3000,
+    "target_ms_l2": 187800,
+    "soft_cap_ms": 194000,
+    "hard_cap_ms": 196000
+  },
+  "levels": {
+    "L1": {
+      "timing": {
+        "map_nodes": 9,
+        "fuel_units": 12,
+        "step_window_ms": 8000,
+        "hold_required_ms": 2000
+      },
+      "seconds_per_trial": {
+        "median": 4.15,
+        "slow": 4.3
+      },
+      "estimated_duration_ms": {
+        "median": 193500,
+        "slow": 199200,
+        "slow_trimmed": 182000
+      }
+    },
+    "L2": {
+      "timing": {
+        "map_nodes": 11,
+        "fuel_units": 12,
+        "step_window_ms": 7000,
+        "hold_required_ms": 2500
+      },
+      "seconds_per_trial": {
+        "median": 4.0,
+        "slow": 4.3
+      },
+      "estimated_duration_ms": {
+        "median": 187800,
+        "slow": 199200,
+        "slow_trimmed": 182000
+      }
+    },
+    "L3": {
+      "timing": {
+        "map_nodes": 13,
+        "fuel_units": 11,
+        "step_window_ms": 6000,
+        "hold_required_ms": 3000
+      },
+      "seconds_per_trial": {
+        "median": 3.8,
+        "slow": 4.1
+      },
+      "estimated_duration_ms": {
+        "median": 180200,
+        "slow": 191600,
+        "slow_trimmed": 175200
+      }
+    }
+  },
+  "blocks": [
+    {
+      "block_id": "practice",
+      "phase": "practice",
+      "condition_id": "standard",
+      "trials": 1,
+      "min_trials": 1,
+      "budget_trial_ms": 5000,
+      "scorable": false,
+      "conditions": {
+        "timer": false,
+        "noise": false,
+        "shift_active": false
+      },
+      "beats": []
+    },
+    {
+      "block_id": "errand_maps",
+      "phase": "shift_pre",
+      "condition_id": "standard",
+      "trials": 14,
+      "min_trials": 13,
+      "budget_trial_ms": null,
+      "scorable": true,
+      "conditions": {
+        "timer": false,
+        "noise": false,
+        "shift_active": false
+      },
+      "beats": ["route_step", "errand", "optional_action"]
+    },
+    {
+      "block_id": "blocked_road",
+      "phase": "main",
+      "condition_id": "route_blocked",
+      "trials": 6,
+      "min_trials": 5,
+      "budget_trial_ms": null,
+      "scorable": true,
+      "conditions": {
+        "timer": false,
+        "noise": false,
+        "shift_active": false
+      },
+      "beats": ["blocked_route", "replan"]
+    },
+    {
+      "block_id": "reversal",
+      "phase": "shift_post",
+      "condition_id": "rule_reversed",
+      "trials": 12,
+      "min_trials": 10,
+      "budget_trial_ms": null,
+      "scorable": true,
+      "conditions": {
+        "timer": false,
+        "noise": false,
+        "shift_active": true
+      },
+      "beats": ["reversal"]
+    },
+    {
+      "block_id": "fuel_pot",
+      "phase": "main",
+      "condition_id": "shared_fuel",
+      "trials": 6,
+      "min_trials": 6,
+      "budget_trial_ms": null,
+      "scorable": true,
+      "conditions": {
+        "timer": false,
+        "noise": false,
+        "shift_active": false
+      },
+      "beats": ["contribution", "partner_error"]
+    },
+    {
+      "block_id": "uphill",
+      "phase": "main",
+      "condition_id": "effort",
+      "trials": 4,
+      "min_trials": 4,
+      "budget_trial_ms": 3500,
+      "scorable": true,
+      "conditions": {
+        "timer": false,
+        "noise": false,
+        "shift_active": false
+      },
+      "beats": ["hold_to_push"]
+    },
+    {
+      "block_id": "probe",
+      "phase": "main",
+      "condition_id": "probe",
+      "trials": 4,
+      "min_trials": 4,
+      "budget_trial_ms": 1200,
+      "scorable": true,
+      "conditions": {
+        "timer": false,
+        "noise": false,
+        "shift_active": false
+      },
+      "beats": ["probe_segment"]
+    }
+  ],
+  "min_counts": {
+    "maps": 3,
+    "blocked_events": 2,
+    "post_reversal": 10,
+    "fuel_rounds": 6,
+    "optional_opportunities": 4,
+    "effort_holds": 4
+  },
+  "planned_counts": {
+    "maps": 3,
+    "blocked_events": 2,
+    "post_reversal": 12,
+    "fuel_rounds": 6,
+    "optional_opportunities": 5,
+    "effort_holds": 4
+  },
+  "constraints": {
+    "solver_verified_maps": true,
+    "idle_gap_log_ms": 3000,
+    "no_audio_cue_for_reversal": true,
+    "partner_scripted_error": true
+  },
+  "context_shift": {
+    "kind": "rule_reversal",
+    "announced": false,
+    "window": [20, 26]
+  },
+  "forms": ["form_1", "form_2"],
+  "audio_keys": [
+    "road_home.intro",
+    "road_home.practice",
+    "road_home.outro",
+    "road_home.replay",
+    "road_home.block_cue"
+  ],
+  "requires_numeracy": false,
+  "notes": "Episode 3, MindShift (EPI-03). Unannounced reversal; partner shares the fuel pot and makes a scripted error. Uphill effort beat is an iteration-1 design decision."
+}

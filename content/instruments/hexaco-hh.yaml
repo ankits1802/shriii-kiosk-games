@@ -1,0 +1,263 @@
+# HEXACO-HH — criterion instrument registry entry (CRT-02/03/04).
+# Copyrighted item wording is NOT stored here: each item has a placeholder and item_text_source.
+# Real wording is loaded at administration time from the licensed source file.
+schema_version: '1.0'
+instrument_id: hexaco_hh
+name: HEXACO-60 Honesty-Humility scale
+short_name: HEXACO-HH
+version: 1.0.0
+kind: questionnaire
+citation: 'Ashton, M. C., & Lee, K. (2009). The HEXACO-60: A short measure of the major dimensions of personality. Journal of Personality Assessment,
+  91(4), 340-345.'
+constructs_measured:
+- integrity
+- judgement
+licensing:
+  holder: Michael C. Ashton and Kibeom Lee
+  licence: Free for non-commercial research use
+  permission_status: not_requested
+  permission_document: null
+  allowed_use: Non-commercial research; translations via the HEXACO website or author approval.
+  expiry: null
+  commercial_use: false
+  notes: null
+administration:
+  modes:
+  - self
+  - read_aloud
+  audio_assisted: true
+  estimated_minutes: 2
+  blocks:
+  - X
+  public_kiosk_allowed: false
+  instructions_key: criterion.hexaco.instructions
+response_scale:
+  type: likert
+  min: 1
+  max: 5
+  anchors:
+  - value: 1
+    label_key: criterion.agree5.anchor_1
+    pictogram_id: pictogram.likert5.1
+  - value: 2
+    label_key: criterion.agree5.anchor_2
+    pictogram_id: pictogram.likert5.2
+  - value: 3
+    label_key: criterion.agree5.anchor_3
+    pictogram_id: pictogram.likert5.3
+  - value: 4
+    label_key: criterion.agree5.anchor_4
+    pictogram_id: pictogram.likert5.4
+  - value: 5
+    label_key: criterion.agree5.anchor_5
+    pictogram_id: pictogram.likert5.5
+  reverse_formula: min_plus_max_minus_x
+items:
+- item_id: hexaco_hh.h60_06
+  number: 1
+  item_text: '[licensed item text — load from licensed source]'
+  item_text_source:
+    kind: licensed_source
+    reference: HEXACO-60 item 6 (Ashton & Lee, 2009)
+  subscales:
+  - honesty_humility
+  - sincerity
+  reverse_keyed: false
+  attention_check: false
+  block: X
+  measures: null
+- item_id: hexaco_hh.h60_12
+  number: 2
+  item_text: '[licensed item text — load from licensed source]'
+  item_text_source:
+    kind: licensed_source
+    reference: HEXACO-60 item 12 (Ashton & Lee, 2009)
+  subscales:
+  - honesty_humility
+  - fairness
+  reverse_keyed: true
+  attention_check: false
+  block: X
+  measures: null
+- item_id: hexaco_hh.h60_18
+  number: 3
+  item_text: '[licensed item text — load from licensed source]'
+  item_text_source:
+    kind: licensed_source
+    reference: HEXACO-60 item 18 (Ashton & Lee, 2009)
+  subscales:
+  - honesty_humility
+  - greed_avoidance
+  reverse_keyed: false
+  attention_check: false
+  block: X
+  measures: null
+- item_id: hexaco_hh.h60_24
+  number: 4
+  item_text: '[licensed item text — load from licensed source]'
+  item_text_source:
+    kind: licensed_source
+    reference: HEXACO-60 item 24 (Ashton & Lee, 2009)
+  subscales:
+  - honesty_humility
+  - modesty
+  reverse_keyed: true
+  attention_check: false
+  block: X
+  measures: null
+- item_id: hexaco_hh.h60_30
+  number: 5
+  item_text: '[licensed item text — load from licensed source]'
+  item_text_source:
+    kind: licensed_source
+    reference: HEXACO-60 item 30 (Ashton & Lee, 2009)
+  subscales:
+  - honesty_humility
+  - sincerity
+  reverse_keyed: true
+  attention_check: false
+  block: X
+  measures: null
+- item_id: hexaco_hh.h60_36
+  number: 6
+  item_text: '[licensed item text — load from licensed source]'
+  item_text_source:
+    kind: licensed_source
+    reference: HEXACO-60 item 36 (Ashton & Lee, 2009)
+  subscales:
+  - honesty_humility
+  - fairness
+  reverse_keyed: false
+  attention_check: false
+  block: X
+  measures: null
+- item_id: hexaco_hh.h60_42
+  number: 7
+  item_text: '[licensed item text — load from licensed source]'
+  item_text_source:
+    kind: licensed_source
+    reference: HEXACO-60 item 42 (Ashton & Lee, 2009)
+  subscales:
+  - honesty_humility
+  - greed_avoidance
+  reverse_keyed: true
+  attention_check: false
+  block: X
+  measures: null
+- item_id: hexaco_hh.h60_48
+  number: 8
+  item_text: '[licensed item text — load from licensed source]'
+  item_text_source:
+    kind: licensed_source
+    reference: HEXACO-60 item 48 (Ashton & Lee, 2009)
+  subscales:
+  - honesty_humility
+  - modesty
+  reverse_keyed: true
+  attention_check: false
+  block: X
+  measures: null
+- item_id: hexaco_hh.h60_54
+  number: 9
+  item_text: '[licensed item text — load from licensed source]'
+  item_text_source:
+    kind: licensed_source
+    reference: HEXACO-60 item 54 (Ashton & Lee, 2009)
+  subscales:
+  - honesty_humility
+  - sincerity
+  reverse_keyed: false
+  attention_check: false
+  block: X
+  measures: null
+- item_id: hexaco_hh.h60_60
+  number: 10
+  item_text: '[licensed item text — load from licensed source]'
+  item_text_source:
+    kind: licensed_source
+    reference: HEXACO-60 item 60 (Ashton & Lee, 2009)
+  subscales:
+  - honesty_humility
+  - fairness
+  reverse_keyed: true
+  attention_check: false
+  block: X
+  measures: null
+subscales:
+- scale_id: honesty_humility
+  name: Honesty-Humility
+  items:
+  - hexaco_hh.h60_06
+  - hexaco_hh.h60_12
+  - hexaco_hh.h60_18
+  - hexaco_hh.h60_24
+  - hexaco_hh.h60_30
+  - hexaco_hh.h60_36
+  - hexaco_hh.h60_42
+  - hexaco_hh.h60_48
+  - hexaco_hh.h60_54
+  - hexaco_hh.h60_60
+  score_type: mean
+  min_answered_prop: 0.8
+  parent: null
+  higher_means: More honesty-humility
+- scale_id: sincerity
+  name: Sincerity
+  items:
+  - hexaco_hh.h60_06
+  - hexaco_hh.h60_30
+  - hexaco_hh.h60_54
+  score_type: mean
+  min_answered_prop: 1.0
+  parent: honesty_humility
+  higher_means: More sincerity
+- scale_id: fairness
+  name: Fairness
+  items:
+  - hexaco_hh.h60_12
+  - hexaco_hh.h60_36
+  - hexaco_hh.h60_60
+  score_type: mean
+  min_answered_prop: 1.0
+  parent: honesty_humility
+  higher_means: More fairness
+- scale_id: greed_avoidance
+  name: Greed-Avoidance
+  items:
+  - hexaco_hh.h60_18
+  - hexaco_hh.h60_42
+  score_type: mean
+  min_answered_prop: 1.0
+  parent: honesty_humility
+  higher_means: More greed avoidance
+- scale_id: modesty
+  name: Modesty
+  items:
+  - hexaco_hh.h60_24
+  - hexaco_hh.h60_48
+  score_type: mean
+  min_answered_prop: 1.0
+  parent: honesty_humility
+  higher_means: More modesty
+scoring:
+  key_version: 1.0.0
+  prorate_min_prop: 0.8
+  attention_check_fail_flag: null
+  notes: Item ids carry the HEXACO-60 item position (h60_NN).
+language_versions:
+- language: en-IN
+  itc_state: draft
+  approved: false
+  translation_permission: not_requested
+- language: hi-IN
+  itc_state: draft
+  approved: false
+  translation_permission: not_requested
+- language: mr-IN
+  itc_state: draft
+  approved: false
+  translation_permission: not_requested
+- language: ta-IN
+  itc_state: draft
+  approved: false
+  translation_permission: not_requested

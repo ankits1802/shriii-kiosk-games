@@ -1,0 +1,228 @@
+# ERQ — criterion instrument registry entry (CRT-02/03/04).
+# Copyrighted item wording is NOT stored here: each item has a placeholder and item_text_source.
+# Real wording is loaded at administration time from the licensed source file.
+schema_version: '1.0'
+instrument_id: erq
+name: Emotion Regulation Questionnaire
+short_name: ERQ
+version: 1.0.0
+kind: questionnaire
+citation: Gross, J. J., & John, O. P. (2003). Individual differences in two emotion regulation processes. Journal of Personality and Social Psychology,
+  85(2), 348-362.
+constructs_measured:
+- emotional_regulation
+- expressive_restraint
+licensing:
+  holder: James J. Gross
+  licence: Free for research use
+  permission_status: not_requested
+  permission_document: null
+  allowed_use: Research use with citation.
+  expiry: null
+  commercial_use: false
+  notes: null
+administration:
+  modes:
+  - self
+  - read_aloud
+  audio_assisted: true
+  estimated_minutes: 3
+  blocks:
+  - A
+  public_kiosk_allowed: false
+  instructions_key: criterion.erq.instructions
+response_scale:
+  type: likert
+  min: 1
+  max: 7
+  anchors:
+  - value: 1
+    label_key: criterion.agree7.anchor_1
+    pictogram_id: pictogram.likert7.1
+  - value: 2
+    label_key: criterion.agree7.anchor_2
+    pictogram_id: pictogram.likert7.2
+  - value: 3
+    label_key: criterion.agree7.anchor_3
+    pictogram_id: pictogram.likert7.3
+  - value: 4
+    label_key: criterion.agree7.anchor_4
+    pictogram_id: pictogram.likert7.4
+  - value: 5
+    label_key: criterion.agree7.anchor_5
+    pictogram_id: pictogram.likert7.5
+  - value: 6
+    label_key: criterion.agree7.anchor_6
+    pictogram_id: pictogram.likert7.6
+  - value: 7
+    label_key: criterion.agree7.anchor_7
+    pictogram_id: pictogram.likert7.7
+  reverse_formula: min_plus_max_minus_x
+items:
+- item_id: erq.i01
+  number: 1
+  item_text: '[licensed item text — load from licensed source]'
+  item_text_source:
+    kind: licensed_source
+    reference: ERQ item 1 (Gross & John, 2003)
+  subscales:
+  - reappraisal
+  reverse_keyed: false
+  attention_check: false
+  block: A
+  measures: null
+- item_id: erq.i02
+  number: 2
+  item_text: '[licensed item text — load from licensed source]'
+  item_text_source:
+    kind: licensed_source
+    reference: ERQ item 2 (Gross & John, 2003)
+  subscales:
+  - suppression
+  reverse_keyed: false
+  attention_check: false
+  block: A
+  measures: null
+- item_id: erq.i03
+  number: 3
+  item_text: '[licensed item text — load from licensed source]'
+  item_text_source:
+    kind: licensed_source
+    reference: ERQ item 3 (Gross & John, 2003)
+  subscales:
+  - reappraisal
+  reverse_keyed: false
+  attention_check: false
+  block: A
+  measures: null
+- item_id: erq.i04
+  number: 4
+  item_text: '[licensed item text — load from licensed source]'
+  item_text_source:
+    kind: licensed_source
+    reference: ERQ item 4 (Gross & John, 2003)
+  subscales:
+  - suppression
+  reverse_keyed: false
+  attention_check: false
+  block: A
+  measures: null
+- item_id: erq.i05
+  number: 5
+  item_text: '[licensed item text — load from licensed source]'
+  item_text_source:
+    kind: licensed_source
+    reference: ERQ item 5 (Gross & John, 2003)
+  subscales:
+  - reappraisal
+  reverse_keyed: false
+  attention_check: false
+  block: A
+  measures: null
+- item_id: erq.i06
+  number: 6
+  item_text: '[licensed item text — load from licensed source]'
+  item_text_source:
+    kind: licensed_source
+    reference: ERQ item 6 (Gross & John, 2003)
+  subscales:
+  - suppression
+  reverse_keyed: false
+  attention_check: false
+  block: A
+  measures: null
+- item_id: erq.i07
+  number: 7
+  item_text: '[licensed item text — load from licensed source]'
+  item_text_source:
+    kind: licensed_source
+    reference: ERQ item 7 (Gross & John, 2003)
+  subscales:
+  - reappraisal
+  reverse_keyed: false
+  attention_check: false
+  block: A
+  measures: null
+- item_id: erq.i08
+  number: 8
+  item_text: '[licensed item text — load from licensed source]'
+  item_text_source:
+    kind: licensed_source
+    reference: ERQ item 8 (Gross & John, 2003)
+  subscales:
+  - reappraisal
+  reverse_keyed: false
+  attention_check: false
+  block: A
+  measures: null
+- item_id: erq.i09
+  number: 9
+  item_text: '[licensed item text — load from licensed source]'
+  item_text_source:
+    kind: licensed_source
+    reference: ERQ item 9 (Gross & John, 2003)
+  subscales:
+  - suppression
+  reverse_keyed: false
+  attention_check: false
+  block: A
+  measures: null
+- item_id: erq.i10
+  number: 10
+  item_text: '[licensed item text — load from licensed source]'
+  item_text_source:
+    kind: licensed_source
+    reference: ERQ item 10 (Gross & John, 2003)
+  subscales:
+  - reappraisal
+  reverse_keyed: false
+  attention_check: false
+  block: A
+  measures: null
+subscales:
+- scale_id: reappraisal
+  name: Cognitive reappraisal
+  items:
+  - erq.i01
+  - erq.i03
+  - erq.i05
+  - erq.i07
+  - erq.i08
+  - erq.i10
+  score_type: mean
+  min_answered_prop: 0.8
+  parent: null
+  higher_means: More reappraisal
+- scale_id: suppression
+  name: Expressive suppression
+  items:
+  - erq.i02
+  - erq.i04
+  - erq.i06
+  - erq.i09
+  score_type: mean
+  min_answered_prop: 0.8
+  parent: null
+  higher_means: More suppression
+scoring:
+  key_version: 1.0.0
+  prorate_min_prop: 0.8
+  attention_check_fail_flag: null
+  notes: null
+language_versions:
+- language: en-IN
+  itc_state: draft
+  approved: false
+  translation_permission: not_requested
+- language: hi-IN
+  itc_state: draft
+  approved: false
+  translation_permission: not_requested
+- language: mr-IN
+  itc_state: draft
+  approved: false
+  translation_permission: not_requested
+- language: ta-IN
+  itc_state: draft
+  approved: false
+  translation_permission: not_requested

@@ -1,0 +1,282 @@
+# SHRIII synthetic-player generative model (QA-02, plan section 9.2).
+#
+# Latent traits for the 17 constructs are standard normal with the correlation matrix below (unlisted
+# pairs are 0). Nuisance factors: general ability, motor speed, device familiarity, language, literacy,
+# walkaway hazard. Module response models map latents to behaviour; every coefficient lives here so the
+# recovery checks are not a check of hard-coded simulator settings. Noise levels were chosen so indicator
+# reliabilities fall in the published ranges (GNG commission ~.6-.8, BART ~.7-.8, switch cost ~.3-.5,
+# delay discounting ~.7-.8).
+schema: shriii-simulator-params
+version: 0.1.0
+
+latent:
+  correlations:
+    - [self_control, persistence, 0.30]
+    - [self_control, expressive_restraint, 0.25]
+    - [self_control, risk_preference, -0.20]
+    - [self_control, decisiveness, 0.10]
+    - [emotional_regulation, composure, 0.35]
+    - [emotional_regulation, stability, 0.25]
+    - [composure, stability, 0.30]
+    - [response_consistency, persistence_of_style, 0.25]
+    - [task_organisation, problem_solving, 0.30]
+    - [task_organisation, initiative, 0.25]
+    - [adaptability, problem_solving, 0.25]
+    - [teamwork, integrity, 0.20]
+    - [teamwork, judgement, 0.20]
+    - [integrity, judgement, 0.30]
+    - [initiative, persistence, 0.20]
+    - [decisiveness, initiative, 0.15]
+
+nuisance:
+  languages: [hi-IN, mr-IN, ta-IN]
+  language_weights: [0.34, 0.33, 0.33]
+  literacy_bands: [easily, with_difficulty, not_at_all]
+  literacy_weights: [0.55, 0.30, 0.15]
+  age_bands: ["18_24", "25_34", "35_44", "45_59", "60_plus"]
+  age_weights: [0.22, 0.26, 0.22, 0.20, 0.10]
+  edu_bands: [none, primary, secondary, higher_secondary, graduate_plus]
+  edu_weights: [0.12, 0.20, 0.30, 0.20, 0.18]
+  genders: [woman, man]
+  gender_weights: [0.5, 0.5]
+  device_familiarity: [never, sometimes, daily]
+  device_weights: [0.2, 0.4, 0.4]
+  walkaway_probability: 0.0         # per session; recovery runs keep it 0
+  timing_glitch_probability: 0.004  # per trial (frame drop on stimulus onset)
+  # Trial-level DIF: "<module>.<trial_type>" -> {language: logit shift on the error propensity}, e.g.
+  # {"dont_tap.nogo": {"ta-IN": 0.8}} makes no-go items harder for one language at equal latent self-control.
+  trial_dif: {}
+
+gng:                                # Don't-Tap (B) and Stall serving (A)
+  rt_mu_ms: 360
+  rt_sigma_ms: 35
+  rt_tau_ms: 70
+  rt_speed_coef_ms: 30              # per SD of motor speed
+  tau_consistency_coef: 0.55        # tau multiplied by exp(-coef * z_response_consistency)
+  pressure_log_rt: 0.04             # average log-RT change under pressure
+  pressure_log_rt_composure: 0.06   # less slowing with composure
+  pressure_log_rt_stability: 0.0
+  commission_intercept: -1.20
+  commission_self_control: 0.85
+  commission_speed: 0.0
+  commission_pressure: 0.50
+  commission_pressure_composure: 0.30
+  commission_pressure_stability: 0.15
+  premature_log_rate: -2.6
+  premature_restraint: 0.65
+  extra_log_rate: -2.3
+  extra_restraint: 0.65
+  feedback_drop_logit: 0.6          # Stall: accuracy drop after negative feedback
+  feedback_drop_regulation: 0.5
+
+card_sort:
+  base_accuracy_logit: 2.6
+  ability_coef: 0.4
+  perseveration_logit: 0.2
+  perseveration_adaptability: 1.1
+  perseveration_stability: 0.3
+  perseveration_decay_trials: 2.5
+  decay_adaptability: 0.3
+  rt_ms: 1100
+  rt_log_sd: 0.22
+  switch_cost_log: 0.12
+  switch_cost_adaptability: 0.07
+  switch_cost_stability: 0.0
+  switch_cost_decay_trials: 6.0
+  shift_lapse: 0.30            # extra post-shift lapse probability scale (low stability)
+  shift_lapse_stability: 1.2
+  shift_lapse_trials: 6
+
+balloon:
+  target_pumps: 8.0
+  risk_log_coef: 0.30
+  high_risk_factor: 0.6
+  noise_log_sd: 0.30
+  noise_consistency: 0.35
+  post_loss_adjust: 0.35
+  post_loss_persistence: 0.5
+  collect_ms: 700
+  collect_decisiveness: 0.25
+  collect_log_sd: 0.35
+  collect_sd_decisiveness: 0.30
+  max_pumps_low_risk: 32
+  max_pumps_high_risk: 16
+
+tower:
+  planning_ms: 3500
+  planning_problem_solving: 0.20
+  planning_initiative: 0.20
+  planning_log_sd: 0.35
+  excess_rate: 1.2
+  excess_problem_solving: 0.6
+  post_failure_log: 0.3
+  post_failure_problem_solving: 0.4
+  illegal_rate: 0.50
+  illegal_task_organisation: 0.6
+  unsolvable_ms: 16000
+  unsolvable_persistence: 0.35
+  unsolvable_log_sd: 0.25
+  move_interval_ms: 1800
+  skip_icon_ms: 15000
+  unsolvable_cap_ms: 24000
+  solvable_cap_ms: 28000
+
+public_goods:
+  base_logit: 0.4
+  teamwork_coef: 0.9
+  defection_drop: 0.60          # proportional drop of the person's share after a free rider
+  defection_teamwork: 0.9
+  error_drop: 0.15
+  noise_sd: 0.08
+  unprompted_logit: -0.3
+  unprompted_initiative: 0.9
+  revision_rate: 0.5
+  revision_decisiveness: 0.6
+  decision_ms: 3200
+  decision_decisiveness: 0.25
+
+discounting:
+  log_k: -2.0
+  log_k_self_control: 0.9
+  log_k_noise_sd: 0.3
+  beta: 8.0
+  effort_log_k: -1.0
+  effort_log_k_self_control: 0.7
+  hold_completion_logit: 1.5
+  hold_completion_persistence: 1.2
+  effort_amounts: [5, 6, 8, 10]
+
+steady_hands:
+  rt_ms: 450
+  rt_log_sd: 0.15
+  rt_sd_consistency: 0.35
+  distractor_log: 0.06
+  distractor_composure: 0.05
+  unneeded_log_rate: -3.0
+  free_extra_log: 1.0
+  free_extra_restraint: 0.6
+
+four_stalls:
+  inverse_temperature: 3.0
+  temperature_consistency: 0.35
+  risk_bias: 0.6
+  decision_ms: 1800
+  decision_decisiveness: 0.30
+  decision_log_sd: 0.40
+  decision_sd_consistency: 0.35
+  repeat_groups: 4
+  repeat_presentations: 3
+
+private_report:
+  overreport_logit: -2.2
+  overreport_integrity: 0.8
+
+probes:
+  style_weight_logit: 0.5
+  style_weight_persistence: 1.2
+  rt_ms: 1500
+  consistency_kappa: 0.5
+  ar1_logit: -0.5
+  ar1_persistence: 1.0
+  ar1_max: 0.8
+
+tone:
+  location: 1.0
+  regulation: 0.7
+  mirroring: 0.30
+  mirroring_regulation: 0.20
+  drift: -0.30
+  drift_regulation: 0.80
+
+weighing:
+  accuracy_logit: 2.0
+  inspect_extra_rate: 0.6
+  inspect_decisiveness: 0.6
+  revision_rate: 0.4
+  revision_decisiveness: 0.6
+  decision_ms: 2500
+  decision_decisiveness: 0.30
+  decision_log_sd: 0.35
+  bribe_logit: -1.2
+  bribe_integrity: 1.0
+  return_logit: 0.8
+  return_integrity: 1.0
+  blame_shift_logit: -0.5
+  blame_shift_judgement: 0.9
+  credit_logit: 0.2
+  credit_judgement: 0.8
+  gamble_logit: -0.3
+  gamble_risk: 0.8
+  compliance_logit: 1.8
+  compliance_adaptability: 0.8
+  compliance_stability: 0.25
+
+road_home:
+  swap_rate: 1.2
+  swap_task_organisation: 0.7
+  revisit_rate: 0.8
+  revisit_task_organisation: 0.6
+  excess_cost: 0.25
+  excess_cost_problem_solving: 0.6
+  step_gap_ms: 1800
+  step_gap_task_organisation: 0.3
+  step_gap_log_sd: 0.5
+  planning_ms: 3000
+  planning_initiative: 0.25
+  planning_problem_solving: 0.15
+  optional_logit: -0.2
+  optional_initiative: 1.0
+  retries_rate: 0.6
+  retries_persistence: 0.6
+  fork_accuracy_logit: 2.2
+  forget_errand_logit: -1.8
+  forget_errand_task_organisation: 0.9
+
+coplay:
+  wait_logit: 1.0
+  wait_teamwork: 0.8
+  credit_partner_logit: 0.0
+  credit_partner_teamwork: 0.7
+
+criterion:
+  # Criterion true scores: T = sum(w_c * z_c) + sqrt(1 - sum w^2) * unique. Weights encode the planted
+  # convergent pattern (shared.yaml criterion relations); discriminant scales get 0 weight on the construct.
+  item_loading: 0.70
+  loadings:
+    bscs.total: {self_control: 0.55}
+    bfi2_xs.conscientiousness: {self_control: 0.35, task_organisation: 0.25, initiative: 0.2}
+    bfi2_xs.extraversion: {expressive_restraint: -0.40}
+    bfi2_xs.agreeableness: {teamwork: 0.50}
+    bfi2_xs.negative_emotionality: {composure: -0.40, stability: -0.30, emotional_regulation: -0.20}
+    bfi2_xs.open_mindedness: {problem_solving: 0.25}
+    bfi2_s.extraversion: {expressive_restraint: -0.40}
+    bfi2_s.agreeableness: {teamwork: 0.50}
+    bfi2_s.conscientiousness: {self_control: 0.35, task_organisation: 0.25, initiative: 0.2}
+    bfi2_s.negative_emotionality: {composure: -0.40, stability: -0.30, emotional_regulation: -0.20}
+    bfi2_s.open_mindedness: {problem_solving: 0.25}
+    ders16.total: {emotional_regulation: -0.55, composure: -0.20}
+    grit_s.total: {persistence: 0.55, initiative: 0.15}
+    hexaco_hh.honesty_humility: {integrity: 0.50, judgement: 0.30}
+    gdms.rational: {task_organisation: 0.30}
+    gdms.avoidant: {decisiveness: -0.55}
+    gdms.intuitive: {}
+    gdms.dependent: {}
+    gdms.spontaneous: {self_control: -0.20}
+    erq.reappraisal: {emotional_regulation: 0.40}
+    erq.suppression: {expressive_restraint: 0.40}
+    moral_identity.internalization: {judgement: 0.35, integrity: 0.2}
+    moral_identity.symbolization: {}
+    cfi.total: {adaptability: 0.40}
+    observed_cooperation.total: {teamwork: 0.45}
+    partner_rating.total: {teamwork: 0.45}
+  general_risk: {risk_preference: 0.55}
+  tol_min_moves: [2, 2, 3, 3, 4, 4, 5, 5]
+  tol_excess_rate: 0.8
+  tol_problem_solving: 0.6
+  card_sort_perseverative_rate: 8.0
+  card_sort_adaptability: 0.6
+  attention_key: {attention_checks.i01: 5, attention_checks.i02: 1, attention_checks.i03: 3}
+
+retest:
+  default_stability: 0.70
+  practice_log_rt: -0.03            # faster at T2 (planted practice shift)

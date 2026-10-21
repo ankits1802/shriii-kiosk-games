@@ -1,0 +1,5 @@
+* text=auto eol=lf
+*.pdf binary
+*.png binary
+*.opus binary
+packages/contracts/src/generated/** linguist-generated=true -diff

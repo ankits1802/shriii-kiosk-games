@@ -1,0 +1,43 @@
+# Retention schedule (PRV-05). One rule per data class; ttl values are policy, reviewed by the DPO.
+# A nightly RetentionRun applies every enabled rule. Legal holds (governance.legal_holds) block purges
+# for the held study, session or participant. Erasure requests are handled separately (PRV-06a).
+version: 1.0.0
+rules:
+  - id: consent_parking_expired
+    data_class: raw
+    description: Scorable events parked without core consent beyond consent_parking_ttl_hours go to the DLQ as no_consent and are purged (ING-02 step 6).
+    enabled: true
+  - id: play_only_raw_events
+    data_class: raw
+    description: Raw events of sessions that are not linked to a participant and have no archive consent (play-only public sessions).
+    ttl_days: 90
+    enabled: true
+  - id: dead_letters
+    data_class: raw
+    description: Dead-letter entries (encrypted payloads) after triage.
+    ttl_days: 90
+    enabled: true
+  - id: telemetry
+    data_class: telemetry
+    description: Operational system events and device health (governance.system_events).
+    ttl_days: 90
+    enabled: true
+  - id: security_logs
+    data_class: security_logs
+    description: Audit events older than one year (exported daily to versioned storage before purge).
+    ttl_days: 365
+    enabled: true
+  - id: expired_reports
+    data_class: derived
+    description: Participant report artefacts after token expiry plus a grace period.
+    ttl_days: 30
+    enabled: true
+  - id: finished_jobs
+    data_class: operational
+    description: Succeeded or cancelled jobs.
+    ttl_days: 30
+    enabled: true
+  - id: vault_contacts
+    data_class: vault
+    description: Identity-vault contact records past their purge_after date (study end).
+    enabled: true

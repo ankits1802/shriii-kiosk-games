@@ -1,0 +1,32 @@
+{
+  "schema_version": "1.0",
+  "trial_id": "weighing.d03",
+  "module_id": "weighing_post",
+  "episode_id": "weighing_post",
+  "block_id": "weighing.decisions",
+  "trial_index": 8,
+  "trial_type": "weigh_decision",
+  "phase": "main",
+  "condition_id": "standard",
+  "calibration_level": "L2",
+  "response_window_ms": 900,
+  "stimulus_id": "weighing.sack.rice_07",
+  "vocabulary": ["approve", "warn", "fine", "inspect"],
+  "voice_vocabulary": ["approve", "warn", "fine"],
+  "audio_keys": ["dont_tap.prompt.serve"],
+  "private_report": false,
+  "anchor_trial": false,
+  "form_id": "form_1",
+  "probe_group_id": null,
+  "scorable": true,
+  "expected_response": null,
+  "latency_anchor": "audio_end",
+  "timing": {
+    "stimulus_duration_ms": null,
+    "isi_ms": null,
+    "jitter_ms": null
+  },
+  "params": {
+    "needle_offset": 0.18
+  }
+}

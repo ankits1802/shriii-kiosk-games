@@ -1,0 +1,53 @@
+[project]
+name = "shriii-api"
+version = "0.1.0"
+description = "SHRIII FastAPI service (ingestion, research, admin) and job worker"
+requires-python = ">=3.13"
+dependencies = [
+  "shriii-contracts",
+  "shriii-scoring",
+  "shriii-validation",
+  "fastapi>=0.120",
+  "uvicorn[standard]>=0.38",
+  "pydantic>=2.12",
+  "pydantic-settings>=2.11",
+  "sqlalchemy>=2",
+  "alembic>=1.17",
+  "psycopg[binary]>=3.2",
+  "pyjwt[crypto]>=2.10",
+  "httpx>=0.28",
+  "python-multipart>=0.0.20",
+  "openpyxl>=3.1",
+  "pyyaml>=6",
+  "pyarrow>=21",
+  "numpy>=2.3",
+  "scipy>=1.16",
+  "pandas>=2.3",
+  "scikit-learn>=1.7",
+  "cryptography>=46",
+  "pynacl>=1.6",
+  "opentelemetry-api>=1.45",
+  "opentelemetry-sdk>=1.45",
+]
+
+[project.optional-dependencies]
+# Optional OTLP exporter + automatic FastAPI spans (enable with OTEL_EXPORTER_OTLP_ENDPOINT).
+otel = [
+  "opentelemetry-exporter-otlp-proto-http>=1.45",
+  "opentelemetry-instrumentation-fastapi>=0.66b1",
+]
+
+[project.scripts]
+shriii-api = "shriii_api.cli:main"
+
+[build-system]
+requires = ["uv_build>=0.13,<0.14"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-name = "shriii_api"
+
+[tool.uv.sources]
+shriii-contracts = { workspace = true }
+shriii-scoring = { workspace = true }
+shriii-validation = { workspace = true }

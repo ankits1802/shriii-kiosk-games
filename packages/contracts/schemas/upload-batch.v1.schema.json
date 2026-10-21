@@ -1,0 +1,153 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://shriii.local/contracts/upload-batch.v1.schema.json",
+  "title": "UploadBatch",
+  "description": "Idempotent kiosk upload batch (plan section 6.2, KSK-07, ING-02). Session-ordered; <= 500 events or 256 kB.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "$ref": "common.v1.schema.json#/$defs/minor_schema_version"
+    },
+    "batch_id": {
+      "$ref": "common.v1.schema.json#/$defs/uuidv7"
+    },
+    "kiosk_id": {
+      "$ref": "common.v1.schema.json#/$defs/kiosk_id"
+    },
+    "kiosk_t_wall": {
+      "$ref": "common.v1.schema.json#/$defs/date_time"
+    },
+    "sha256": {
+      "allOf": [
+        {
+          "$ref": "common.v1.schema.json#/$defs/sha256"
+        }
+      ],
+      "description": "SHA-256 of the canonical JSON serialisation of session_chunks."
+    },
+    "event_count": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 500
+    },
+    "session_chunks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["encryption"],
+        "discriminator": {
+          "propertyName": "encryption"
+        },
+        "oneOf": [
+          {
+            "$ref": "#/$defs/encrypted_chunk"
+          },
+          {
+            "$ref": "#/$defs/plain_chunk"
+          }
+        ]
+      },
+      "minItems": 1
+    }
+  },
+  "required": [
+    "schema_version",
+    "batch_id",
+    "kiosk_id",
+    "kiosk_t_wall",
+    "sha256",
+    "event_count",
+    "session_chunks"
+  ],
+  "$defs": {
+    "encrypted_chunk": {
+      "type": "object",
+      "title": "EncryptedSessionChunk",
+      "additionalProperties": false,
+      "properties": {
+        "encryption": {
+          "const": "x25519_sealed_aes256gcm"
+        },
+        "session_id": {
+          "$ref": "common.v1.schema.json#/$defs/uuidv7"
+        },
+        "sealed_dek": {
+          "allOf": [
+            {
+              "$ref": "common.v1.schema.json#/$defs/base64"
+            }
+          ],
+          "description": "Per-session DEK sealed to the backend public key (X25519 sealed box)."
+        },
+        "nonce": {
+          "$ref": "common.v1.schema.json#/$defs/base64"
+        },
+        "ciphertext": {
+          "allOf": [
+            {
+              "$ref": "common.v1.schema.json#/$defs/base64"
+            }
+          ],
+          "description": "AES-256-GCM ciphertext of the NDJSON event list."
+        },
+        "first_seq": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "last_seq": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "event_count": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "required": [
+        "encryption",
+        "session_id",
+        "sealed_dek",
+        "nonce",
+        "ciphertext",
+        "first_seq",
+        "last_seq",
+        "event_count"
+      ]
+    },
+    "plain_chunk": {
+      "type": "object",
+      "title": "PlainSessionChunk",
+      "description": "Development/browser-build chunk without envelope encryption. Rejected by production ingestion policy.",
+      "additionalProperties": false,
+      "properties": {
+        "encryption": {
+          "const": "none_dev"
+        },
+        "session_id": {
+          "$ref": "common.v1.schema.json#/$defs/uuidv7"
+        },
+        "first_seq": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "last_seq": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "event_count": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "events": {
+          "type": "array",
+          "items": {
+            "$ref": "event-envelope.v1.schema.json"
+          },
+          "minItems": 1
+        }
+      },
+      "required": ["encryption", "session_id", "first_seq", "last_seq", "event_count", "events"]
+    }
+  }
+}

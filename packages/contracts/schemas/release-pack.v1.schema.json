@@ -1,0 +1,309 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://shriii.local/contracts/release-pack.v1.schema.json",
+  "title": "ReleasePack",
+  "description": "Signed, expiring release pack (REP-03). Kiosks fail closed on an expired pack, invalid signature or dictionary mismatch.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "$ref": "common.v1.schema.json#/$defs/minor_schema_version"
+    },
+    "release_pack_version": {
+      "$ref": "common.v1.schema.json#/$defs/semver"
+    },
+    "issued_at": {
+      "$ref": "common.v1.schema.json#/$defs/date_time"
+    },
+    "expires_at": {
+      "$ref": "common.v1.schema.json#/$defs/date_time"
+    },
+    "dictionary_versions": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "A": {
+          "$ref": "common.v1.schema.json#/$defs/semver"
+        },
+        "B": {
+          "$ref": "common.v1.schema.json#/$defs/semver"
+        }
+      },
+      "required": ["A", "B"]
+    },
+    "dictionary_sha256": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "A": {
+          "$ref": "common.v1.schema.json#/$defs/sha256"
+        },
+        "B": {
+          "$ref": "common.v1.schema.json#/$defs/sha256"
+        }
+      },
+      "required": ["A", "B"]
+    },
+    "battery_gates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "title": "BatteryGateEntry",
+        "additionalProperties": false,
+        "properties": {
+          "language": {
+            "$ref": "common.v1.schema.json#/$defs/language_tag"
+          },
+          "pathway": {
+            "$ref": "common.v1.schema.json#/$defs/pathway"
+          },
+          "evidence_ids": {
+            "type": "array",
+            "items": {
+              "$ref": "common.v1.schema.json#/$defs/identifier"
+            },
+            "uniqueItems": true
+          },
+          "approvers": {
+            "type": "array",
+            "items": {
+              "$ref": "common.v1.schema.json#/$defs/identifier"
+            },
+            "uniqueItems": true
+          },
+          "effective_from": {
+            "$ref": "common.v1.schema.json#/$defs/date_time"
+          },
+          "site_mode": {
+            "$ref": "common.v1.schema.json#/$defs/site_mode"
+          },
+          "status": {
+            "$ref": "common.v1.schema.json#/$defs/battery_gate_status"
+          }
+        },
+        "required": [
+          "language",
+          "pathway",
+          "site_mode",
+          "status",
+          "evidence_ids",
+          "approvers",
+          "effective_from"
+        ]
+      }
+    },
+    "trait_gates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "title": "TraitGateEntry",
+        "additionalProperties": false,
+        "properties": {
+          "trait": {
+            "$ref": "common.v1.schema.json#/$defs/construct_id"
+          },
+          "language": {
+            "$ref": "common.v1.schema.json#/$defs/language_tag"
+          },
+          "pathway": {
+            "$ref": "common.v1.schema.json#/$defs/pathway"
+          },
+          "evidence_ids": {
+            "type": "array",
+            "items": {
+              "$ref": "common.v1.schema.json#/$defs/identifier"
+            },
+            "uniqueItems": true
+          },
+          "approvers": {
+            "type": "array",
+            "items": {
+              "$ref": "common.v1.schema.json#/$defs/identifier"
+            },
+            "uniqueItems": true
+          },
+          "effective_from": {
+            "$ref": "common.v1.schema.json#/$defs/date_time"
+          },
+          "status": {
+            "$ref": "common.v1.schema.json#/$defs/trait_gate_status"
+          }
+        },
+        "required": [
+          "trait",
+          "language",
+          "pathway",
+          "status",
+          "evidence_ids",
+          "approvers",
+          "effective_from"
+        ]
+      }
+    },
+    "composites": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "title": "CompositeParameters",
+        "additionalProperties": false,
+        "properties": {
+          "trait": {
+            "$ref": "common.v1.schema.json#/$defs/construct_id"
+          },
+          "pathway": {
+            "$ref": "common.v1.schema.json#/$defs/pathway"
+          },
+          "language": {
+            "$ref": "common.v1.schema.json#/$defs/language_tag"
+          },
+          "method": {
+            "type": "string",
+            "enum": ["unit_weighted_z", "factor_score"]
+          },
+          "indicators": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "title": "CompositeIndicator",
+              "additionalProperties": false,
+              "properties": {
+                "indicator_id": {
+                  "type": "string",
+                  "pattern": "^[a-z_]+\\.[a-z0-9_]+$"
+                },
+                "weight": {
+                  "type": "number"
+                },
+                "mean": {
+                  "type": "number"
+                },
+                "sd": {
+                  "type": "number",
+                  "minimum": 0
+                },
+                "direction": {
+                  "type": "string",
+                  "enum": ["positive", "negative"]
+                }
+              },
+              "required": ["indicator_id", "weight", "mean", "sd", "direction"]
+            },
+            "minItems": 1
+          }
+        },
+        "required": ["trait", "pathway", "language", "method", "indicators"]
+      }
+    },
+    "norm_tables": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "title": "NormTable",
+        "additionalProperties": false,
+        "properties": {
+          "norm_table_version": {
+            "$ref": "common.v1.schema.json#/$defs/semver"
+          },
+          "trait": {
+            "$ref": "common.v1.schema.json#/$defs/construct_id"
+          },
+          "pathway": {
+            "$ref": "common.v1.schema.json#/$defs/pathway"
+          },
+          "language": {
+            "$ref": "common.v1.schema.json#/$defs/language_tag"
+          },
+          "cut_points": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            },
+            "minItems": 2,
+            "maxItems": 2
+          },
+          "sem": {
+            "type": "number",
+            "minimum": 0
+          },
+          "ci_level": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "provisional": {
+            "type": "boolean"
+          },
+          "effective_n": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "norm_table_version",
+          "trait",
+          "pathway",
+          "language",
+          "cut_points",
+          "sem",
+          "ci_level",
+          "provisional",
+          "effective_n"
+        ]
+      }
+    },
+    "phrase_allowlist": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "title": "PhraseAllowlistEntry",
+        "additionalProperties": false,
+        "properties": {
+          "trait": {
+            "$ref": "common.v1.schema.json#/$defs/construct_id"
+          },
+          "band": {
+            "$ref": "common.v1.schema.json#/$defs/band"
+          },
+          "phrase_key": {
+            "$ref": "common.v1.schema.json#/$defs/phrase_key"
+          }
+        },
+        "required": ["trait", "band", "phrase_key"]
+      }
+    },
+    "disclaimer_key": {
+      "$ref": "common.v1.schema.json#/$defs/phrase_key"
+    },
+    "signature": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "algorithm": {
+          "const": "ed25519"
+        },
+        "key_id": {
+          "$ref": "common.v1.schema.json#/$defs/identifier"
+        },
+        "value": {
+          "$ref": "common.v1.schema.json#/$defs/base64"
+        }
+      },
+      "required": ["algorithm", "key_id", "value"]
+    }
+  },
+  "required": [
+    "schema_version",
+    "release_pack_version",
+    "issued_at",
+    "expires_at",
+    "dictionary_versions",
+    "dictionary_sha256",
+    "battery_gates",
+    "trait_gates",
+    "composites",
+    "norm_tables",
+    "phrase_allowlist",
+    "disclaimer_key",
+    "signature"
+  ]
+}

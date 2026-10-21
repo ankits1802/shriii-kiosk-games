@@ -1,0 +1,18 @@
+[project]
+name = "shriii-contracts"
+version = "0.1.0"
+description = "Pydantic v2 mirrors of the canonical SHRIII JSON Schema contracts"
+requires-python = ">=3.13"
+dependencies = [
+  "pydantic>=2.12",
+  "jsonschema>=4.25",
+  "referencing>=0.36",
+  "pyyaml>=6",
+]
+
+[build-system]
+requires = ["uv_build>=0.13,<0.14"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-name = "shriii_contracts"

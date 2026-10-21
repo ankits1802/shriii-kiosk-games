@@ -1,0 +1,2862 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://shriii.local/contracts/event-envelope.v1.schema.json",
+  "title": "EventEnvelope",
+  "description": "Kiosk raw event envelope v1 (plan section 6.1, ING-01). Discriminated union on event_type. Writers keep additionalProperties:false; readers tolerate unknown fields (minor N+1).",
+  "type": "object",
+  "allOf": [
+    {
+      "$ref": "#/$defs/base"
+    }
+  ],
+  "required": ["event_type"],
+  "discriminator": {
+    "propertyName": "event_type"
+  },
+  "oneOf": [
+    {
+      "title": "SessionStartEvent",
+      "type": "object",
+      "properties": {
+        "event_type": {
+          "const": "session_start"
+        },
+        "payload": {
+          "$ref": "#/$defs/payload_session_start"
+        }
+      },
+      "required": ["event_type", "payload"]
+    },
+    {
+      "title": "SessionContextEvent",
+      "type": "object",
+      "properties": {
+        "event_type": {
+          "const": "session.context"
+        },
+        "payload": {
+          "$ref": "#/$defs/payload_session_context"
+        }
+      },
+      "required": ["event_type", "payload"]
+    },
+    {
+      "title": "SessionStateChangedEvent",
+      "type": "object",
+      "properties": {
+        "event_type": {
+          "const": "session.state_changed"
+        },
+        "payload": {
+          "$ref": "#/$defs/payload_session_state_changed"
+        }
+      },
+      "required": ["event_type", "payload"]
+    },
+    {
+      "title": "LanguageSelectedEvent",
+      "type": "object",
+      "properties": {
+        "event_type": {
+          "const": "language_selected"
+        },
+        "payload": {
+          "$ref": "#/$defs/payload_language_selected"
+        }
+      },
+      "required": ["event_type", "payload"]
+    },
+    {
+      "title": "LanguageSwitchedEvent",
+      "type": "object",
+      "properties": {
+        "event_type": {
+          "const": "language_switched"
+        },
+        "payload": {
+          "$ref": "#/$defs/payload_language_switched"
+        }
+      },
+      "required": ["event_type", "payload"]
+    },
+    {
+      "title": "ConsentGrantedEvent",
+      "type": "object",
+      "properties": {
+        "event_type": {
+          "const": "consent.granted"
+        },
+        "payload": {
+          "$ref": "#/$defs/payload_consent_granted"
+        }
+      },
+      "required": ["event_type", "payload"]
+    },
+    {
+      "title": "ConsentDeclinedEvent",
+      "type": "object",
+      "properties": {
+        "event_type": {
+          "const": "consent.declined"
+        },
+        "payload": {
+          "$ref": "#/$defs/payload_consent_declined"
+        }
+      },
+      "required": ["event_type", "payload"]
+    },
+    {
+      "title": "OptinArchiveEvent",
+      "type": "object",
+      "properties": {
+        "event_type": {
+          "const": "optin.archive"
+        },
+        "payload": {
+          "$ref": "#/$defs/payload_optin_archive"
+        }
+      },
+      "required": ["event_type", "payload"]
+    },
+    {
+      "title": "OptinContactEvent",
+      "type": "object",
+      "properties": {
+        "event_type": {
+          "const": "optin.contact"
+        },
+        "payload": {
+          "$ref": "#/$defs/payload_optin_contact"
+        }
+      },
+      "required": ["event_type", "payload"]
+    },
+    {
+      "title": "BandsAnsweredEvent",
+      "type": "object",
+      "properties": {
+        "event_type": {
+          "const": "bands.answered"
+        },
+        "payload": {
+          "$ref": "#/$defs/payload_bands_answered"
+        }
+      },
+      "required": ["event_type", "payload"]
+    },
+    {
+      "title": "PracticeSummaryEvent",
+      "type": "object",
+      "properties": {
+        "event_type": {
+          "const": "practice.summary"
+        },
+        "payload": {
+          "$ref": "#/$defs/payload_practice_summary"
+        }
+      },
+      "required": ["event_type", "payload"]
+    },
+    {
+      "title": "CalibrationResultEvent",
+      "type": "object",
+      "properties": {
+        "event_type": {
+          "const": "calibration_result"
+        },
+        "payload": {
+          "$ref": "#/$defs/payload_calibration_result"
+        }
+      },
+      "required": ["event_type", "payload"]
+    },
+    {
+      "title": "ModuleStartEvent",
+      "type": "object",
+      "properties": {
+        "event_type": {
+          "const": "module_start"
+        },
+        "payload": {
+          "$ref": "#/$defs/payload_module_start"
+        }
+      },
+      "required": ["event_type", "payload"]
+    },
+    {
+      "title": "ModuleEndEvent",
+      "type": "object",
+      "properties": {
+        "event_type": {
+          "const": "module_end"
+        },
+        "payload": {
+          "$ref": "#/$defs/payload_module_end"
+        }
+      },
+      "required": ["event_type", "payload"]
+    },
+    {
+      "title": "TrialStartEvent",
+      "type": "object",
+      "properties": {
+        "event_type": {
+          "const": "trial_start"
+        },
+        "payload": {
+          "$ref": "#/$defs/payload_trial_start"
+        }
+      },
+      "required": ["event_type", "payload"]
+    },
+    {
+      "title": "StimulusOnsetEvent",
+      "type": "object",
+      "properties": {
+        "event_type": {
+          "const": "stimulus_onset"
+        },
+        "payload": {
+          "$ref": "#/$defs/payload_stimulus_onset"
+        }
+      },
+      "required": ["event_type", "payload"]
+    },
+    {
+      "title": "PromptAudioEndEvent",
+      "type": "object",
+      "properties": {
+        "event_type": {
+          "const": "prompt_audio_end"
+        },
+        "payload": {
+          "$ref": "#/$defs/payload_prompt_audio_end"
+        }
+      },
+      "required": ["event_type", "payload"]
+    },
+    {
+      "title": "PromptWindowOpenEvent",
+      "type": "object",
+      "properties": {
+        "event_type": {
+          "const": "prompt_window_open"
+        },
+        "payload": {
+          "$ref": "#/$defs/payload_prompt_window_open"
+        }
+      },
+      "required": ["event_type", "payload"]
+    },
+    {
+      "title": "PromptWindowCloseEvent",
+      "type": "object",
+      "properties": {
+        "event_type": {
+          "const": "prompt_window_close"
+        },
+        "payload": {
+          "$ref": "#/$defs/payload_prompt_window_close"
+        }
+      },
+      "required": ["event_type", "payload"]
+    },
+    {
+      "title": "ResponseEvent",
+      "type": "object",
+      "properties": {
+        "event_type": {
+          "const": "response"
+        },
+        "payload": {
+          "$ref": "#/$defs/payload_response"
+        }
+      },
+      "required": ["event_type", "payload"]
+    },
+    {
+      "title": "AsrResultEvent",
+      "type": "object",
+      "properties": {
+        "event_type": {
+          "const": "asr_result"
+        },
+        "payload": {
+          "$ref": "#/$defs/payload_asr_result"
+        }
+      },
+      "required": ["event_type", "payload"]
+    },
+    {
+      "title": "InputRawTapEvent",
+      "type": "object",
+      "properties": {
+        "event_type": {
+          "const": "input.raw_tap"
+        },
+        "payload": {
+          "$ref": "#/$defs/payload_input_raw_tap"
+        }
+      },
+      "required": ["event_type", "payload"]
+    },
+    {
+      "title": "InputHoldEvent",
+      "type": "object",
+      "properties": {
+        "event_type": {
+          "const": "input.hold"
+        },
+        "payload": {
+          "$ref": "#/$defs/payload_input_hold"
+        }
+      },
+      "required": ["event_type", "payload"]
+    },
+    {
+      "title": "TrialEndEvent",
+      "type": "object",
+      "properties": {
+        "event_type": {
+          "const": "trial_end"
+        },
+        "payload": {
+          "$ref": "#/$defs/payload_trial_end"
+        }
+      },
+      "required": ["event_type", "payload"]
+    },
+    {
+      "title": "ContextShiftEvent",
+      "type": "object",
+      "properties": {
+        "event_type": {
+          "const": "context_shift"
+        },
+        "payload": {
+          "$ref": "#/$defs/payload_context_shift"
+        }
+      },
+      "required": ["event_type", "payload"]
+    },
+    {
+      "title": "MoveEvent",
+      "type": "object",
+      "properties": {
+        "event_type": {
+          "const": "move"
+        },
+        "payload": {
+          "$ref": "#/$defs/payload_move"
+        }
+      },
+      "required": ["event_type", "payload"]
+    },
+    {
+      "title": "RouteStepEvent",
+      "type": "object",
+      "properties": {
+        "event_type": {
+          "const": "route_step"
+        },
+        "payload": {
+          "$ref": "#/$defs/payload_route_step"
+        }
+      },
+      "required": ["event_type", "payload"]
+    },
+    {
+      "title": "ContributionEvent",
+      "type": "object",
+      "properties": {
+        "event_type": {
+          "const": "contribution"
+        },
+        "payload": {
+          "$ref": "#/$defs/payload_contribution"
+        }
+      },
+      "required": ["event_type", "payload"]
+    },
+    {
+      "title": "PumpEvent",
+      "type": "object",
+      "properties": {
+        "event_type": {
+          "const": "pump"
+        },
+        "payload": {
+          "$ref": "#/$defs/payload_pump"
+        }
+      },
+      "required": ["event_type", "payload"]
+    },
+    {
+      "title": "ReportEvent",
+      "type": "object",
+      "properties": {
+        "event_type": {
+          "const": "report"
+        },
+        "payload": {
+          "$ref": "#/$defs/payload_report"
+        }
+      },
+      "required": ["event_type", "payload"]
+    },
+    {
+      "title": "PartnerActionEvent",
+      "type": "object",
+      "properties": {
+        "event_type": {
+          "const": "partner_action"
+        },
+        "payload": {
+          "$ref": "#/$defs/payload_partner_action"
+        }
+      },
+      "required": ["event_type", "payload"]
+    },
+    {
+      "title": "TurnEventEvent",
+      "type": "object",
+      "properties": {
+        "event_type": {
+          "const": "turn_event"
+        },
+        "payload": {
+          "$ref": "#/$defs/payload_turn_event"
+        }
+      },
+      "required": ["event_type", "payload"]
+    },
+    {
+      "title": "CreditAllocationEvent",
+      "type": "object",
+      "properties": {
+        "event_type": {
+          "const": "credit_allocation"
+        },
+        "payload": {
+          "$ref": "#/$defs/payload_credit_allocation"
+        }
+      },
+      "required": ["event_type", "payload"]
+    },
+    {
+      "title": "IdleEvent",
+      "type": "object",
+      "properties": {
+        "event_type": {
+          "const": "idle"
+        },
+        "payload": {
+          "$ref": "#/$defs/payload_idle"
+        }
+      },
+      "required": ["event_type", "payload"]
+    },
+    {
+      "title": "WalkawayPromptedEvent",
+      "type": "object",
+      "properties": {
+        "event_type": {
+          "const": "walkaway.prompted"
+        },
+        "payload": {
+          "$ref": "#/$defs/payload_walkaway_prompted"
+        }
+      },
+      "required": ["event_type", "payload"]
+    },
+    {
+      "title": "WalkawayResumedEvent",
+      "type": "object",
+      "properties": {
+        "event_type": {
+          "const": "walkaway.resumed"
+        },
+        "payload": {
+          "$ref": "#/$defs/payload_walkaway_resumed"
+        }
+      },
+      "required": ["event_type", "payload"]
+    },
+    {
+      "title": "SessionAbandonedEvent",
+      "type": "object",
+      "properties": {
+        "event_type": {
+          "const": "session.abandoned"
+        },
+        "payload": {
+          "$ref": "#/$defs/payload_session_abandoned"
+        }
+      },
+      "required": ["event_type", "payload"]
+    },
+    {
+      "title": "InstructionReplayEvent",
+      "type": "object",
+      "properties": {
+        "event_type": {
+          "const": "instruction_replay"
+        },
+        "payload": {
+          "$ref": "#/$defs/payload_instruction_replay"
+        }
+      },
+      "required": ["event_type", "payload"]
+    },
+    {
+      "title": "UiReplayEvent",
+      "type": "object",
+      "properties": {
+        "event_type": {
+          "const": "ui.replay"
+        },
+        "payload": {
+          "$ref": "#/$defs/payload_ui_replay"
+        }
+      },
+      "required": ["event_type", "payload"]
+    },
+    {
+      "title": "AudioPlayedEvent",
+      "type": "object",
+      "properties": {
+        "event_type": {
+          "const": "audio.played"
+        },
+        "payload": {
+          "$ref": "#/$defs/payload_audio_played"
+        }
+      },
+      "required": ["event_type", "payload"]
+    },
+    {
+      "title": "EnvNoiseDbfsEvent",
+      "type": "object",
+      "properties": {
+        "event_type": {
+          "const": "env.noise_dbfs"
+        },
+        "payload": {
+          "$ref": "#/$defs/payload_env_noise_dbfs"
+        }
+      },
+      "required": ["event_type", "payload"]
+    },
+    {
+      "title": "EnvHeadsetEvent",
+      "type": "object",
+      "properties": {
+        "event_type": {
+          "const": "env.headset"
+        },
+        "payload": {
+          "$ref": "#/$defs/payload_env_headset"
+        }
+      },
+      "required": ["event_type", "payload"]
+    },
+    {
+      "title": "A11yProfileEvent",
+      "type": "object",
+      "properties": {
+        "event_type": {
+          "const": "a11y.profile"
+        },
+        "payload": {
+          "$ref": "#/$defs/payload_a11y_profile"
+        }
+      },
+      "required": ["event_type", "payload"]
+    },
+    {
+      "title": "OnlookerReportedEvent",
+      "type": "object",
+      "properties": {
+        "event_type": {
+          "const": "onlooker_reported"
+        },
+        "payload": {
+          "$ref": "#/$defs/payload_onlooker_reported"
+        }
+      },
+      "required": ["event_type", "payload"]
+    },
+    {
+      "title": "ResearcherAnnotationEvent",
+      "type": "object",
+      "properties": {
+        "event_type": {
+          "const": "researcher_annotation"
+        },
+        "payload": {
+          "$ref": "#/$defs/payload_researcher_annotation"
+        }
+      },
+      "required": ["event_type", "payload"]
+    },
+    {
+      "title": "InvalidEvent",
+      "type": "object",
+      "properties": {
+        "event_type": {
+          "const": "invalid"
+        },
+        "payload": {
+          "$ref": "#/$defs/payload_invalid"
+        }
+      },
+      "required": ["event_type", "payload"]
+    },
+    {
+      "title": "ReportDeliveredEvent",
+      "type": "object",
+      "properties": {
+        "event_type": {
+          "const": "report.delivered"
+        },
+        "payload": {
+          "$ref": "#/$defs/payload_report_delivered"
+        }
+      },
+      "required": ["event_type", "payload"]
+    },
+    {
+      "title": "ReportWithheldEvent",
+      "type": "object",
+      "properties": {
+        "event_type": {
+          "const": "report.withheld"
+        },
+        "payload": {
+          "$ref": "#/$defs/payload_report_withheld"
+        }
+      },
+      "required": ["event_type", "payload"]
+    },
+    {
+      "title": "SurveyEnjoyEvent",
+      "type": "object",
+      "properties": {
+        "event_type": {
+          "const": "survey.enjoy"
+        },
+        "payload": {
+          "$ref": "#/$defs/payload_survey_enjoy"
+        }
+      },
+      "required": ["event_type", "payload"]
+    },
+    {
+      "title": "SurveyPlayAgainEvent",
+      "type": "object",
+      "properties": {
+        "event_type": {
+          "const": "survey.play_again"
+        },
+        "payload": {
+          "$ref": "#/$defs/payload_survey_play_again"
+        }
+      },
+      "required": ["event_type", "payload"]
+    },
+    {
+      "title": "ErasureRequestedEvent",
+      "type": "object",
+      "properties": {
+        "event_type": {
+          "const": "erasure_requested"
+        },
+        "payload": {
+          "$ref": "#/$defs/payload_erasure_requested"
+        }
+      },
+      "required": ["event_type", "payload"]
+    },
+    {
+      "title": "SessionTombstoneEvent",
+      "type": "object",
+      "properties": {
+        "event_type": {
+          "const": "session_tombstone"
+        },
+        "payload": {
+          "$ref": "#/$defs/payload_session_tombstone"
+        }
+      },
+      "required": ["event_type", "payload"]
+    },
+    {
+      "title": "DeviceHealthEvent",
+      "type": "object",
+      "properties": {
+        "event_type": {
+          "const": "device_health"
+        },
+        "payload": {
+          "$ref": "#/$defs/payload_device_health"
+        }
+      },
+      "required": ["event_type", "payload"]
+    },
+    {
+      "title": "SessionEndEvent",
+      "type": "object",
+      "properties": {
+        "event_type": {
+          "const": "session_end"
+        },
+        "payload": {
+          "$ref": "#/$defs/payload_session_end"
+        }
+      },
+      "required": ["event_type", "payload"]
+    }
+  ],
+  "$defs": {
+    "payload_session_start": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "seed": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{16}$",
+          "description": "64-bit session seed (hex) from crypto.getRandomValues."
+        },
+        "rng_algorithm": {
+          "type": "string",
+          "enum": ["pcg32"]
+        },
+        "refresh_hz": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 500
+        },
+        "arm_source": {
+          "type": "string",
+          "enum": ["server_list", "offline_fallback", "forced", "not_applicable"]
+        },
+        "stratum": {
+          "anyOf": [
+            {
+              "$ref": "common.v1.schema.json#/$defs/identifier"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "slot_form": {
+          "anyOf": [
+            {
+              "$ref": "common.v1.schema.json#/$defs/slot_form"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": ["seed", "rng_algorithm", "refresh_hz", "arm_source", "stratum", "slot_form"],
+      "title": "SessionStartPayload",
+      "description": "First event of every session. Records the session seed and arm assignment."
+    },
+    "payload_session_context": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "context": {
+          "$ref": "session-context.v1.schema.json"
+        }
+      },
+      "required": ["context"],
+      "title": "SessionContextPayload",
+      "description": "Session covariates (SessionContext). May be re-emitted when bands or calibration change."
+    },
+    "payload_session_state_changed": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "from_state": {
+          "anyOf": [
+            {
+              "$ref": "common.v1.schema.json#/$defs/session_state"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "to_state": {
+          "$ref": "common.v1.schema.json#/$defs/session_state"
+        },
+        "trigger": {
+          "$ref": "common.v1.schema.json#/$defs/identifier"
+        }
+      },
+      "required": ["from_state", "to_state", "trigger"],
+      "title": "SessionStateChangedPayload",
+      "description": "Every session statechart transition."
+    },
+    "payload_language_selected": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "language": {
+          "$ref": "common.v1.schema.json#/$defs/language_tag"
+        },
+        "face_order": {
+          "type": "array",
+          "items": {
+            "$ref": "common.v1.schema.json#/$defs/language_tag"
+          },
+          "minItems": 1
+        },
+        "pack_version": {
+          "$ref": "common.v1.schema.json#/$defs/semver"
+        },
+        "manifest_hash": {
+          "$ref": "common.v1.schema.json#/$defs/sha256"
+        },
+        "taps": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "required": ["language", "face_order", "pack_version", "manifest_hash", "taps"],
+      "title": "LanguageSelectedPayload",
+      "description": "Language chosen by tapping a speaking face."
+    },
+    "payload_language_switched": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "from_language": {
+          "$ref": "common.v1.schema.json#/$defs/language_tag"
+        },
+        "to_language": {
+          "$ref": "common.v1.schema.json#/$defs/language_tag"
+        },
+        "after_consent": {
+          "type": "boolean"
+        }
+      },
+      "required": ["from_language", "to_language", "after_consent"],
+      "title": "LanguageSwitchedPayload",
+      "description": "Language switch via the globe icon."
+    },
+    "payload_consent_granted": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "consent_kind": {
+          "$ref": "common.v1.schema.json#/$defs/consent_kind"
+        },
+        "tap_confirmed": {
+          "const": true
+        },
+        "consent_script_id": {
+          "$ref": "common.v1.schema.json#/$defs/identifier"
+        },
+        "consent_version_hash": {
+          "$ref": "common.v1.schema.json#/$defs/sha256"
+        },
+        "replay_counts": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "minItems": 1
+        },
+        "policy_version": {
+          "$ref": "common.v1.schema.json#/$defs/semver"
+        }
+      },
+      "required": [
+        "consent_kind",
+        "tap_confirmed",
+        "consent_script_id",
+        "consent_version_hash",
+        "replay_counts",
+        "policy_version"
+      ],
+      "title": "ConsentGrantedPayload",
+      "description": "Consent committed by tap only (never by voice)."
+    },
+    "payload_consent_declined": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "consent_kind": {
+          "$ref": "common.v1.schema.json#/$defs/consent_kind"
+        },
+        "tap_confirmed": {
+          "type": "boolean"
+        },
+        "consent_script_id": {
+          "$ref": "common.v1.schema.json#/$defs/identifier"
+        },
+        "replay_counts": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0
+          }
+        }
+      },
+      "required": ["consent_kind", "tap_confirmed", "consent_script_id", "replay_counts"],
+      "title": "ConsentDeclinedPayload",
+      "description": "Consent declined. Only an anonymous counter is retained for declined core consent."
+    },
+    "payload_optin_archive": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "granted": {
+          "type": "boolean"
+        }
+      },
+      "required": ["granted"],
+      "title": "OptinArchivePayload",
+      "description": "Separate archive opt-in (default no)."
+    },
+    "payload_optin_contact": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "granted": {
+          "type": "boolean"
+        }
+      },
+      "required": ["granted"],
+      "title": "OptinContactPayload",
+      "description": "Contact opt-in. Boolean only; contact details never enter event tables."
+    },
+    "payload_bands_answered": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "age": {
+          "$ref": "common.v1.schema.json#/$defs/age_band"
+        },
+        "literacy": {
+          "$ref": "common.v1.schema.json#/$defs/literacy_band"
+        },
+        "edu": {
+          "$ref": "common.v1.schema.json#/$defs/edu_band"
+        },
+        "gender": {
+          "$ref": "common.v1.schema.json#/$defs/gender"
+        },
+        "device_use": {
+          "$ref": "common.v1.schema.json#/$defs/device_familiarity"
+        },
+        "played_before": {
+          "$ref": "common.v1.schema.json#/$defs/played_before"
+        },
+        "answer_latency_ms": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "age": {
+              "type": ["number", "null"],
+              "minimum": 0
+            },
+            "literacy": {
+              "type": ["number", "null"],
+              "minimum": 0
+            },
+            "edu": {
+              "type": ["number", "null"],
+              "minimum": 0
+            },
+            "gender": {
+              "type": ["number", "null"],
+              "minimum": 0
+            },
+            "device_use": {
+              "type": ["number", "null"],
+              "minimum": 0
+            },
+            "played_before": {
+              "type": ["number", "null"],
+              "minimum": 0
+            }
+          },
+          "required": ["age", "literacy", "edu", "gender", "device_use", "played_before"]
+        },
+        "change_count": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "age",
+        "literacy",
+        "edu",
+        "gender",
+        "device_use",
+        "played_before",
+        "answer_latency_ms",
+        "change_count"
+      ],
+      "title": "BandsAnsweredPayload",
+      "description": "Picture-band answers. Under-18 selections are never logged."
+    },
+    "payload_practice_summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "skills": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "skill": {
+                "type": "string",
+                "enum": ["tap", "hold", "choice", "drag"]
+              },
+              "attempts": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 4
+              },
+              "passes": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "completed": {
+                "type": "boolean"
+              }
+            },
+            "required": ["skill", "attempts", "passes", "completed"]
+          },
+          "minItems": 1
+        },
+        "practice_struggle": {
+          "type": "boolean"
+        },
+        "mean_tap_rt_ms": {
+          "type": ["number", "null"],
+          "minimum": 0
+        },
+        "hold_accuracy": {
+          "type": ["number", "null"],
+          "minimum": 0,
+          "maximum": 1
+        }
+      },
+      "required": ["skills", "practice_struggle", "mean_tap_rt_ms", "hold_accuracy"],
+      "title": "PracticeSummaryPayload",
+      "description": "Practice + warm-up outcome and motor covariates (not scorable)."
+    },
+    "payload_calibration_result": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "policy": {
+          "$ref": "common.v1.schema.json#/$defs/calibration_policy"
+        },
+        "level": {
+          "$ref": "common.v1.schema.json#/$defs/calibration_level"
+        },
+        "reason": {
+          "type": "string",
+          "enum": [
+            "default",
+            "practice_struggle",
+            "a11y_choice",
+            "classifier",
+            "forced",
+            "retest_lock"
+          ]
+        },
+        "warmup_rt_ms": {
+          "type": ["number", "null"],
+          "minimum": 0
+        },
+        "warmup_accuracy": {
+          "type": ["number", "null"],
+          "minimum": 0,
+          "maximum": 1
+        }
+      },
+      "required": ["policy", "level", "reason", "warmup_rt_ms", "warmup_accuracy"],
+      "title": "CalibrationResultPayload",
+      "description": "Calibration level locked for the session."
+    },
+    "payload_module_start": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "module_id": {
+          "$ref": "common.v1.schema.json#/$defs/identifier"
+        },
+        "kind": {
+          "type": "string",
+          "enum": ["micro", "episode"]
+        },
+        "paradigms": {
+          "type": "array",
+          "items": {
+            "$ref": "common.v1.schema.json#/$defs/identifier"
+          },
+          "minItems": 1
+        },
+        "duration_budget_ms": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "soft_cap_ms": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "hard_cap_ms": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "config_hash": {
+          "$ref": "common.v1.schema.json#/$defs/sha256"
+        }
+      },
+      "required": [
+        "module_id",
+        "kind",
+        "paradigms",
+        "duration_budget_ms",
+        "soft_cap_ms",
+        "hard_cap_ms",
+        "config_hash"
+      ],
+      "title": "ModuleStartPayload",
+      "description": "A game module or episode starts."
+    },
+    "payload_module_end": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "module_id": {
+          "$ref": "common.v1.schema.json#/$defs/identifier"
+        },
+        "ended_reason": {
+          "type": "string",
+          "enum": [
+            "completed",
+            "time_cap",
+            "walkaway",
+            "explicit_exit",
+            "withdrawn",
+            "error",
+            "skipped"
+          ]
+        },
+        "duration_ms": {
+          "type": "number",
+          "minimum": 0
+        },
+        "trials_completed": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": ["module_id", "ended_reason", "duration_ms", "trials_completed"],
+      "title": "ModuleEndPayload",
+      "description": "A game module or episode ends."
+    },
+    "payload_trial_start": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "trial_type": {
+          "$ref": "common.v1.schema.json#/$defs/identifier"
+        },
+        "stimulus_id": {
+          "anyOf": [
+            {
+              "$ref": "common.v1.schema.json#/$defs/identifier"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "response_window_ms": {
+          "type": ["integer", "null"],
+          "minimum": 1
+        },
+        "private_report": {
+          "type": "boolean"
+        },
+        "expected_response": {
+          "anyOf": [
+            {
+              "$ref": "common.v1.schema.json#/$defs/closed_code"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "trial_type",
+        "stimulus_id",
+        "response_window_ms",
+        "private_report",
+        "expected_response"
+      ],
+      "title": "TrialStartPayload",
+      "description": "A trial begins (stimulus not yet presented)."
+    },
+    "payload_stimulus_onset": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "stimulus_id": {
+          "$ref": "common.v1.schema.json#/$defs/identifier"
+        },
+        "stimulus_version": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "requested_onset_ms": {
+          "type": "number",
+          "minimum": 0
+        },
+        "presented_onset_ms": {
+          "type": "number",
+          "minimum": 0,
+          "description": "rAF after commit plus per-SKU display offset."
+        },
+        "audio_onset_ms": {
+          "type": ["number", "null"],
+          "minimum": 0,
+          "description": "Web Audio clock plus per-SKU audio offset."
+        },
+        "onset_source": {
+          "type": "string",
+          "enum": ["raf_commit", "audio_clock", "both"]
+        },
+        "duration_ms": {
+          "type": ["number", "null"],
+          "minimum": 0
+        }
+      },
+      "required": [
+        "stimulus_id",
+        "stimulus_version",
+        "requested_onset_ms",
+        "presented_onset_ms",
+        "audio_onset_ms",
+        "onset_source",
+        "duration_ms"
+      ],
+      "title": "StimulusOnsetPayload",
+      "description": "Stimulus presentation timing (ENG-01). Times are on the session monotonic clock."
+    },
+    "payload_prompt_audio_end": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "line_id": {
+          "$ref": "common.v1.schema.json#/$defs/identifier"
+        },
+        "audio_end_ms": {
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "required": ["line_id", "audio_end_ms"],
+      "title": "PromptAudioEndPayload",
+      "description": "End of a spoken prompt (latency anchor audio_end)."
+    },
+    "payload_prompt_window_open": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "prompt_id": {
+          "$ref": "common.v1.schema.json#/$defs/identifier"
+        },
+        "vocabulary": {
+          "type": "array",
+          "items": {
+            "$ref": "common.v1.schema.json#/$defs/closed_code"
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "asr_enabled": {
+          "type": "boolean"
+        },
+        "window_ms": {
+          "type": ["integer", "null"],
+          "minimum": 1
+        }
+      },
+      "required": ["prompt_id", "vocabulary", "asr_enabled", "window_ms"],
+      "title": "PromptWindowOpenPayload",
+      "description": "A response window opens (the microphone may open only inside a consented window)."
+    },
+    "payload_prompt_window_close": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "prompt_id": {
+          "$ref": "common.v1.schema.json#/$defs/identifier"
+        },
+        "reason": {
+          "type": "string",
+          "enum": ["response", "timeout", "cancelled"]
+        }
+      },
+      "required": ["prompt_id", "reason"],
+      "title": "PromptWindowClosePayload",
+      "description": "A response window closes."
+    },
+    "payload_response": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "stimulus_id": {
+          "anyOf": [
+            {
+              "$ref": "common.v1.schema.json#/$defs/identifier"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "response_value": {
+          "anyOf": [
+            {
+              "$ref": "common.v1.schema.json#/$defs/closed_code"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "correctness": {
+          "type": ["boolean", "null"]
+        },
+        "input_mode": {
+          "$ref": "common.v1.schema.json#/$defs/input_mode"
+        },
+        "latency_ms": {
+          "type": ["number", "null"],
+          "description": "Signed latency from latency_anchor. Negative with barge_in=true when before the anchor; null only for timeouts."
+        },
+        "latency_anchor": {
+          "$ref": "common.v1.schema.json#/$defs/latency_anchor"
+        },
+        "barge_in": {
+          "type": "boolean"
+        },
+        "hold_ms": {
+          "type": ["number", "null"],
+          "minimum": 0
+        },
+        "tap_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "revisions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "value": {
+                "$ref": "common.v1.schema.json#/$defs/closed_code"
+              },
+              "t_ms": {
+                "type": "number",
+                "minimum": 0
+              }
+            },
+            "required": ["value", "t_ms"]
+          },
+          "description": "Every change before confirmation, in order."
+        },
+        "touch_xy_norm": {
+          "anyOf": [
+            {
+              "$ref": "common.v1.schema.json#/$defs/normalized_point"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "asr_label": {
+          "anyOf": [
+            {
+              "$ref": "common.v1.schema.json#/$defs/closed_code"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "asr_confidence": {
+          "type": ["number", "null"],
+          "minimum": 0,
+          "maximum": 1
+        }
+      },
+      "required": [
+        "stimulus_id",
+        "response_value",
+        "correctness",
+        "input_mode",
+        "latency_ms",
+        "latency_anchor",
+        "barge_in",
+        "hold_ms",
+        "tap_count",
+        "revisions",
+        "touch_xy_norm"
+      ],
+      "title": "ResponsePayload",
+      "description": "Committed response (closed code). Latency is signed; null only on timeout."
+    },
+    "payload_asr_result": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "prompt_id": {
+          "$ref": "common.v1.schema.json#/$defs/identifier"
+        },
+        "asr_label": {
+          "anyOf": [
+            {
+              "$ref": "common.v1.schema.json#/$defs/closed_code"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "asr_confidence": {
+          "type": ["number", "null"],
+          "minimum": 0,
+          "maximum": 1
+        },
+        "accepted": {
+          "type": "boolean"
+        }
+      },
+      "required": ["prompt_id", "asr_label", "asr_confidence", "accepted"],
+      "title": "AsrResultPayload",
+      "description": "Closed-vocabulary ASR proposal. No alternatives in production."
+    },
+    "payload_input_raw_tap": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "target_id": {
+          "anyOf": [
+            {
+              "$ref": "common.v1.schema.json#/$defs/identifier"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "touch_xy_norm": {
+          "$ref": "common.v1.schema.json#/$defs/normalized_point"
+        },
+        "pointer_t_ms": {
+          "type": "number",
+          "minimum": 0,
+          "description": "PointerEvent.timeStamp mapped to the session clock minus the per-SKU touch offset."
+        },
+        "anchor_offset_ms": {
+          "type": ["number", "null"],
+          "description": "Signed offset from the current latency anchor."
+        },
+        "pointer_type": {
+          "type": "string",
+          "enum": ["touch", "pen", "mouse"]
+        },
+        "active_points": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "classification": {
+          "type": "string",
+          "enum": [
+            "on_target",
+            "off_target",
+            "extra",
+            "premature",
+            "during_isi",
+            "multi_touch_interference",
+            "filtered_palm"
+          ]
+        }
+      },
+      "required": [
+        "target_id",
+        "touch_xy_norm",
+        "pointer_t_ms",
+        "anchor_offset_ms",
+        "pointer_type",
+        "active_points",
+        "classification"
+      ],
+      "title": "InputRawTapPayload",
+      "description": "Every raw tap, never debounced (extra and premature taps included)."
+    },
+    "payload_input_hold": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "target_id": {
+          "$ref": "common.v1.schema.json#/$defs/identifier"
+        },
+        "hold_ms": {
+          "type": "number",
+          "minimum": 0
+        },
+        "required_hold_ms": {
+          "type": "number",
+          "minimum": 0
+        },
+        "completed": {
+          "type": "boolean"
+        }
+      },
+      "required": ["target_id", "hold_ms", "required_hold_ms", "completed"],
+      "title": "InputHoldPayload",
+      "description": "A hold gesture."
+    },
+    "payload_trial_end": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "outcome": {
+          "type": "string",
+          "enum": [
+            "correct",
+            "incorrect",
+            "omission",
+            "commission",
+            "timeout",
+            "aborted",
+            "not_applicable"
+          ]
+        },
+        "correctness": {
+          "type": ["boolean", "null"]
+        },
+        "response_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "duration_ms": {
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "required": ["outcome", "correctness", "response_count", "duration_ms"],
+      "title": "TrialEndPayload",
+      "description": "A trial ends."
+    },
+    "payload_context_shift": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": [
+            "rule_switch",
+            "rule_reversal",
+            "pressure_on",
+            "pressure_off",
+            "rude_customer_run",
+            "new_market_rule",
+            "route_blocked",
+            "partner_error",
+            "held_block",
+            "free_block"
+          ]
+        },
+        "announced": {
+          "type": "boolean"
+        },
+        "shift_index": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Trial index at which the shift takes effect."
+        }
+      },
+      "required": ["kind", "announced", "shift_index"],
+      "title": "ContextShiftPayload",
+      "description": "A controlled condition change. The only valid source of switch points for scoring."
+    },
+    "payload_move": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "problem_id": {
+          "$ref": "common.v1.schema.json#/$defs/identifier"
+        },
+        "item_id": {
+          "$ref": "common.v1.schema.json#/$defs/identifier"
+        },
+        "from_slot": {
+          "$ref": "common.v1.schema.json#/$defs/identifier"
+        },
+        "to_slot": {
+          "$ref": "common.v1.schema.json#/$defs/identifier"
+        },
+        "legal": {
+          "type": "boolean"
+        },
+        "move_index": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": ["problem_id", "item_id", "from_slot", "to_slot", "legal", "move_index"],
+      "title": "MovePayload",
+      "description": "Tower move."
+    },
+    "payload_route_step": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "map_id": {
+          "$ref": "common.v1.schema.json#/$defs/identifier"
+        },
+        "from_node": {
+          "$ref": "common.v1.schema.json#/$defs/identifier"
+        },
+        "to_node": {
+          "$ref": "common.v1.schema.json#/$defs/identifier"
+        },
+        "step_index": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "cost_units": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "fuel_after_units": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "blocked": {
+          "type": "boolean"
+        },
+        "errand_completed": {
+          "anyOf": [
+            {
+              "$ref": "common.v1.schema.json#/$defs/identifier"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "map_id",
+        "from_node",
+        "to_node",
+        "step_index",
+        "cost_units",
+        "fuel_after_units",
+        "blocked",
+        "errand_completed"
+      ],
+      "title": "RouteStepPayload",
+      "description": "Road Home route step."
+    },
+    "payload_contribution": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "round": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "endowment_tokens": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "contributed_tokens": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "partner_contributed_tokens": {
+          "type": ["integer", "null"],
+          "minimum": 0
+        },
+        "pot_return_tokens": {
+          "type": ["integer", "null"],
+          "minimum": 0
+        },
+        "unprompted": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "round",
+        "endowment_tokens",
+        "contributed_tokens",
+        "partner_contributed_tokens",
+        "pot_return_tokens",
+        "unprompted"
+      ],
+      "title": "ContributionPayload",
+      "description": "Share-the-Pot / fuel-pot contribution (pictured tokens)."
+    },
+    "payload_pump": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "balloon_index": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "pump_index": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "risk_colour": {
+          "type": "string",
+          "enum": ["low_risk", "high_risk"]
+        },
+        "exploded": {
+          "type": "boolean"
+        },
+        "collected": {
+          "type": "boolean"
+        }
+      },
+      "required": ["balloon_index", "pump_index", "risk_colour", "exploded", "collected"],
+      "title": "PumpPayload",
+      "description": "Balloon pump or collect."
+    },
+    "payload_report": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "report_context": {
+          "type": "string",
+          "enum": ["private_dice", "luck_token"]
+        },
+        "report_index": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "reported_value": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 6
+        },
+        "headset": {
+          "type": "boolean"
+        },
+        "onlooker_reported": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "report_context",
+        "report_index",
+        "reported_value",
+        "headset",
+        "onlooker_reported"
+      ],
+      "title": "ReportPayload",
+      "description": "Private report. Only the reported value is logged; the true outcome is never logged (dice mode a)."
+    },
+    "payload_partner_action": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "partner_type": {
+          "$ref": "common.v1.schema.json#/$defs/partner_type"
+        },
+        "policy_id": {
+          "$ref": "common.v1.schema.json#/$defs/identifier"
+        },
+        "round": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "action": {
+          "$ref": "common.v1.schema.json#/$defs/closed_code"
+        },
+        "tokens": {
+          "type": ["integer", "null"],
+          "minimum": 0
+        },
+        "is_error": {
+          "type": "boolean"
+        }
+      },
+      "required": ["partner_type", "policy_id", "round", "action", "tokens", "is_error"],
+      "title": "PartnerActionPayload",
+      "description": "Scripted or live partner action."
+    },
+    "payload_turn_event": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "player_slot": {
+          "$ref": "common.v1.schema.json#/$defs/player_slot"
+        },
+        "kind": {
+          "type": "string",
+          "enum": ["turn_start", "turn_end", "wait", "interruption"]
+        },
+        "turn_index": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": ["player_slot", "kind", "turn_index"],
+      "title": "TurnEventPayload",
+      "description": "Co-play turn-taking event."
+    },
+    "payload_credit_allocation": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "allocation_context": {
+          "type": "string",
+          "enum": ["fraud_found", "assistant_mistake", "coplay_outcome"]
+        },
+        "outcome": {
+          "type": "string",
+          "enum": ["success", "failure"]
+        },
+        "target": {
+          "type": "string",
+          "enum": ["self", "assistant", "partner", "shared", "chance"]
+        },
+        "self_share": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        }
+      },
+      "required": ["allocation_context", "outcome", "target", "self_share"],
+      "title": "CreditAllocationPayload",
+      "description": "Credit/blame allocation."
+    },
+    "payload_idle": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "duration_ms": {
+          "type": "number",
+          "minimum": 0
+        },
+        "state": {
+          "$ref": "common.v1.schema.json#/$defs/session_state"
+        },
+        "after_response_window": {
+          "type": "boolean"
+        }
+      },
+      "required": ["duration_ms", "state", "after_response_window"],
+      "title": "IdlePayload",
+      "description": "Inactivity after a response window."
+    },
+    "payload_walkaway_prompted": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "stage": {
+          "type": "string",
+          "enum": ["reprompt", "still_there", "countdown"]
+        },
+        "elapsed_idle_ms": {
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "required": ["stage", "elapsed_idle_ms"],
+      "title": "WalkawayPromptedPayload",
+      "description": "Walkaway escalation step."
+    },
+    "payload_walkaway_resumed": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "stage": {
+          "type": "string",
+          "enum": ["reprompt", "still_there", "countdown"]
+        },
+        "elapsed_idle_ms": {
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "required": ["stage", "elapsed_idle_ms"],
+      "title": "WalkawayResumedPayload",
+      "description": "Player resumed after a walkaway prompt."
+    },
+    "payload_session_abandoned": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "last_state": {
+          "$ref": "common.v1.schema.json#/$defs/session_state"
+        },
+        "module_id": {
+          "anyOf": [
+            {
+              "$ref": "common.v1.schema.json#/$defs/identifier"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "trial_id": {
+          "anyOf": [
+            {
+              "$ref": "common.v1.schema.json#/$defs/identifier"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "elapsed_ms": {
+          "type": "number",
+          "minimum": 0
+        },
+        "reason": {
+          "type": "string",
+          "enum": ["timeout", "explicit_exit", "consent_declined", "crash_recovery", "under_age"]
+        }
+      },
+      "required": ["last_state", "module_id", "trial_id", "elapsed_ms", "reason"],
+      "title": "SessionAbandonedPayload",
+      "description": "Session abandoned; consented events are kept, there is no resume."
+    },
+    "payload_instruction_replay": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "line_id": {
+          "$ref": "common.v1.schema.json#/$defs/identifier"
+        },
+        "replay_index": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "required": ["line_id", "replay_index"],
+      "title": "InstructionReplayPayload",
+      "description": "Player replayed an instruction."
+    },
+    "payload_ui_replay": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "target_id": {
+          "$ref": "common.v1.schema.json#/$defs/identifier"
+        }
+      },
+      "required": ["target_id"],
+      "title": "UiReplayPayload",
+      "description": "Player tapped a replay control."
+    },
+    "payload_audio_played": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "key": {
+          "$ref": "common.v1.schema.json#/$defs/identifier"
+        },
+        "language": {
+          "anyOf": [
+            {
+              "$ref": "common.v1.schema.json#/$defs/language_tag"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "manifest_version": {
+          "$ref": "common.v1.schema.json#/$defs/semver"
+        },
+        "sha256": {
+          "$ref": "common.v1.schema.json#/$defs/sha256"
+        },
+        "duration_ms": {
+          "type": "number",
+          "minimum": 0
+        },
+        "status": {
+          "type": "string",
+          "enum": ["completed", "interrupted"]
+        },
+        "output": {
+          "type": "string",
+          "enum": ["speaker", "headset"]
+        }
+      },
+      "required": [
+        "key",
+        "language",
+        "manifest_version",
+        "sha256",
+        "duration_ms",
+        "status",
+        "output"
+      ],
+      "title": "AudioPlayedPayload",
+      "description": "Pre-recorded clip playback record."
+    },
+    "payload_env_noise_dbfs": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "dbfs": {
+          "type": "number",
+          "maximum": 0
+        },
+        "window_ms": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "required": ["dbfs", "window_ms"],
+      "title": "EnvNoiseDbfsPayload",
+      "description": "Noise floor inside a consented prompt window."
+    },
+    "payload_env_headset": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "connected": {
+          "type": "boolean"
+        }
+      },
+      "required": ["connected"],
+      "title": "EnvHeadsetPayload",
+      "description": "Headset connection change."
+    },
+    "payload_a11y_profile": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "profile": {
+          "$ref": "session-context.v1.schema.json#/$defs/a11y_profile"
+        }
+      },
+      "required": ["profile"],
+      "title": "A11yProfilePayload",
+      "description": "Accessibility profile (logged as a covariate)."
+    },
+    "payload_onlooker_reported": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "context_id": {
+          "anyOf": [
+            {
+              "$ref": "common.v1.schema.json#/$defs/identifier"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": ["context_id"],
+      "title": "OnlookerReportedPayload",
+      "description": "Player tapped 'someone watching?'."
+    },
+    "payload_researcher_annotation": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "code": {
+          "type": "string",
+          "enum": [
+            "confusion",
+            "misunderstood_instruction",
+            "reading_dependent_screen",
+            "digit_dependent_decision",
+            "cultural_mismatch",
+            "strategy",
+            "other_coded"
+          ]
+        },
+        "target_ref": {
+          "anyOf": [
+            {
+              "$ref": "common.v1.schema.json#/$defs/identifier"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "observer_id": {
+          "$ref": "common.v1.schema.json#/$defs/identifier"
+        }
+      },
+      "required": ["code", "target_ref", "observer_id"],
+      "title": "ResearcherAnnotationPayload",
+      "description": "Think-aloud observer code (closed codebook; no free text)."
+    },
+    "payload_invalid": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "reason": {
+          "type": "string",
+          "enum": [
+            "schema_violation",
+            "privacy_guard",
+            "serialization_error",
+            "unknown_event_type",
+            "logger_error"
+          ]
+        },
+        "original_event_type": {
+          "type": ["string", "null"],
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "schema_path": {
+          "type": ["string", "null"],
+          "maxLength": 512
+        }
+      },
+      "required": ["reason", "original_event_type", "schema_path"],
+      "title": "InvalidPayload",
+      "description": "Placeholder written with the same seq when an event fails validation; keeps seq gapless."
+    },
+    "payload_report_delivered": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "report_mode": {
+          "$ref": "common.v1.schema.json#/$defs/report_mode"
+        },
+        "release_pack_version": {
+          "anyOf": [
+            {
+              "$ref": "common.v1.schema.json#/$defs/semver"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "delivery_modes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["spoken", "printed", "qr", "screen"]
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "traits_shown_count": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 5
+        }
+      },
+      "required": ["report_mode", "release_pack_version", "delivery_modes", "traits_shown_count"],
+      "title": "ReportDeliveredPayload",
+      "description": "Report delivered."
+    },
+    "payload_report_withheld": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "report_mode": {
+          "$ref": "common.v1.schema.json#/$defs/report_mode"
+        },
+        "release_pack_version": {
+          "anyOf": [
+            {
+              "$ref": "common.v1.schema.json#/$defs/semver"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "reason": {
+          "type": "string",
+          "enum": [
+            "battery_gate_closed",
+            "release_pack_invalid",
+            "release_pack_expired",
+            "session_not_valid_for_report",
+            "no_trait_released",
+            "policy_thank_you_only",
+            "demo_mode"
+          ]
+        }
+      },
+      "required": ["report_mode", "release_pack_version", "reason"],
+      "title": "ReportWithheldPayload",
+      "description": "Report withheld (thank-you only)."
+    },
+    "payload_survey_enjoy": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "face": {
+          "type": "string",
+          "enum": ["happy", "neutral", "sad", "skipped"]
+        }
+      },
+      "required": ["face"],
+      "title": "SurveyEnjoyPayload",
+      "description": "Enjoyment faces."
+    },
+    "payload_survey_play_again": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "answer": {
+          "type": "string",
+          "enum": ["yes", "no", "skipped"]
+        }
+      },
+      "required": ["answer"],
+      "title": "SurveyPlayAgainPayload",
+      "description": "Would play again."
+    },
+    "payload_erasure_requested": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "scope": {
+          "type": "string",
+          "enum": ["session", "participant"]
+        },
+        "channel": {
+          "type": "string",
+          "enum": ["kiosk_hand_icon", "qr_page", "administrator"]
+        }
+      },
+      "required": ["scope", "channel"],
+      "title": "ErasureRequestedPayload",
+      "description": "Erasure request."
+    },
+    "payload_session_tombstone": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "reason": {
+          "type": "string",
+          "enum": ["withdrawal", "erasure_request", "under_age", "retention_purge"]
+        },
+        "covers_seq_upto": {
+          "type": ["integer", "null"],
+          "minimum": 0
+        }
+      },
+      "required": ["reason", "covers_seq_upto"],
+      "title": "SessionTombstonePayload",
+      "description": "Tombstone covering uploaded and not-yet-uploaded events of this session."
+    },
+    "payload_device_health": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "frame_time_p99_ms": {
+          "type": "number",
+          "minimum": 0
+        },
+        "audio_underruns": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "dropped_frames": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "outbox_depth": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "last_upload_age_s": {
+          "type": ["number", "null"],
+          "minimum": 0
+        },
+        "disk_free_mb": {
+          "type": ["number", "null"],
+          "minimum": 0
+        },
+        "clock_offset_estimate_ms": {
+          "type": ["number", "null"]
+        }
+      },
+      "required": [
+        "frame_time_p99_ms",
+        "audio_underruns",
+        "dropped_frames",
+        "outbox_depth",
+        "last_upload_age_s",
+        "disk_free_mb",
+        "clock_offset_estimate_ms"
+      ],
+      "title": "DeviceHealthPayload",
+      "description": "Device health sample (no participant identifiers)."
+    },
+    "payload_session_end": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "reason": {
+          "type": "string",
+          "enum": [
+            "completed",
+            "abandoned",
+            "withdrawn",
+            "time_cap",
+            "under_age",
+            "consent_declined",
+            "crash_recovery"
+          ]
+        },
+        "duration_ms": {
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "required": ["reason", "duration_ms"],
+      "title": "SessionEndPayload",
+      "description": "Last event of a session."
+    },
+    "event_type": {
+      "type": "string",
+      "enum": [
+        "session_start",
+        "session.context",
+        "session.state_changed",
+        "language_selected",
+        "language_switched",
+        "consent.granted",
+        "consent.declined",
+        "optin.archive",
+        "optin.contact",
+        "bands.answered",
+        "practice.summary",
+        "calibration_result",
+        "module_start",
+        "module_end",
+        "trial_start",
+        "stimulus_onset",
+        "prompt_audio_end",
+        "prompt_window_open",
+        "prompt_window_close",
+        "response",
+        "asr_result",
+        "input.raw_tap",
+        "input.hold",
+        "trial_end",
+        "context_shift",
+        "move",
+        "route_step",
+        "contribution",
+        "pump",
+        "report",
+        "partner_action",
+        "turn_event",
+        "credit_allocation",
+        "idle",
+        "walkaway.prompted",
+        "walkaway.resumed",
+        "session.abandoned",
+        "instruction_replay",
+        "ui.replay",
+        "audio.played",
+        "env.noise_dbfs",
+        "env.headset",
+        "a11y.profile",
+        "onlooker_reported",
+        "researcher_annotation",
+        "invalid",
+        "report.delivered",
+        "report.withheld",
+        "survey.enjoy",
+        "survey.play_again",
+        "erasure_requested",
+        "session_tombstone",
+        "device_health",
+        "session_end"
+      ],
+      "description": "Event type discriminator (plan section 6.1)."
+    },
+    "context": {
+      "type": "object",
+      "title": "EventSessionContext",
+      "description": "Session context carried on every event. participant_pid is null until consent and linkage.",
+      "additionalProperties": false,
+      "properties": {
+        "participant_pid": {
+          "anyOf": [
+            {
+              "$ref": "common.v1.schema.json#/$defs/pid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "kiosk_id": {
+          "$ref": "common.v1.schema.json#/$defs/kiosk_id"
+        },
+        "site_id": {
+          "$ref": "common.v1.schema.json#/$defs/identifier"
+        },
+        "site_mode": {
+          "$ref": "common.v1.schema.json#/$defs/site_mode"
+        },
+        "mode": {
+          "$ref": "common.v1.schema.json#/$defs/session_mode"
+        },
+        "battery_arm": {
+          "anyOf": [
+            {
+              "$ref": "common.v1.schema.json#/$defs/battery_arm"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "slot_form": {
+          "anyOf": [
+            {
+              "$ref": "common.v1.schema.json#/$defs/slot_form"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "language": {
+          "anyOf": [
+            {
+              "$ref": "common.v1.schema.json#/$defs/language_tag"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "player_slot": {
+          "$ref": "common.v1.schema.json#/$defs/player_slot"
+        },
+        "synthetic": {
+          "type": "boolean",
+          "description": "True for simulator-generated data (QA-02); kept out of real tables."
+        }
+      },
+      "required": [
+        "participant_pid",
+        "kiosk_id",
+        "site_id",
+        "site_mode",
+        "mode",
+        "battery_arm",
+        "slot_form",
+        "language",
+        "player_slot",
+        "synthetic"
+      ]
+    },
+    "versions": {
+      "type": "object",
+      "title": "EventVersions",
+      "description": "Version tuple (PLT-03).",
+      "additionalProperties": false,
+      "properties": {
+        "app_version": {
+          "$ref": "common.v1.schema.json#/$defs/semver"
+        },
+        "bundle_hash": {
+          "$ref": "common.v1.schema.json#/$defs/sha256"
+        },
+        "audio_manifest_hash": {
+          "anyOf": [
+            {
+              "$ref": "common.v1.schema.json#/$defs/sha256"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "variant_pack_id": {
+          "anyOf": [
+            {
+              "$ref": "common.v1.schema.json#/$defs/identifier"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "scoring_dict_version": {
+          "$ref": "common.v1.schema.json#/$defs/semver"
+        },
+        "indicator_set_version": {
+          "$ref": "common.v1.schema.json#/$defs/semver"
+        },
+        "protocol_version": {
+          "type": ["string", "null"],
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "policy_version": {
+          "$ref": "common.v1.schema.json#/$defs/semver"
+        },
+        "release_pack_version": {
+          "anyOf": [
+            {
+              "$ref": "common.v1.schema.json#/$defs/semver"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "device_profile_id": {
+          "$ref": "common.v1.schema.json#/$defs/identifier"
+        },
+        "hardware_sku": {
+          "$ref": "common.v1.schema.json#/$defs/identifier"
+        },
+        "timing_profile_version": {
+          "$ref": "common.v1.schema.json#/$defs/identifier"
+        }
+      },
+      "required": [
+        "app_version",
+        "bundle_hash",
+        "audio_manifest_hash",
+        "variant_pack_id",
+        "scoring_dict_version",
+        "indicator_set_version",
+        "protocol_version",
+        "policy_version",
+        "release_pack_version",
+        "device_profile_id",
+        "hardware_sku",
+        "timing_profile_version"
+      ]
+    },
+    "task": {
+      "type": "object",
+      "title": "EventTaskPosition",
+      "description": "Task position; null for session-level events.",
+      "additionalProperties": false,
+      "properties": {
+        "episode_id": {
+          "anyOf": [
+            {
+              "$ref": "common.v1.schema.json#/$defs/identifier"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "module_id": {
+          "anyOf": [
+            {
+              "$ref": "common.v1.schema.json#/$defs/identifier"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "block_id": {
+          "anyOf": [
+            {
+              "$ref": "common.v1.schema.json#/$defs/identifier"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "trial_id": {
+          "anyOf": [
+            {
+              "$ref": "common.v1.schema.json#/$defs/identifier"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "trial_index": {
+          "type": ["integer", "null"],
+          "minimum": 0
+        },
+        "probe_group_id": {
+          "anyOf": [
+            {
+              "$ref": "common.v1.schema.json#/$defs/identifier"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "form_id": {
+          "anyOf": [
+            {
+              "$ref": "common.v1.schema.json#/$defs/identifier"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "anchor_trial": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "episode_id",
+        "module_id",
+        "block_id",
+        "trial_id",
+        "trial_index",
+        "form_id",
+        "anchor_trial"
+      ]
+    },
+    "condition": {
+      "type": "object",
+      "title": "EventCondition",
+      "description": "Experimental condition; null for session-level events.",
+      "additionalProperties": false,
+      "properties": {
+        "phase": {
+          "$ref": "common.v1.schema.json#/$defs/phase"
+        },
+        "condition_id": {
+          "anyOf": [
+            {
+              "$ref": "common.v1.schema.json#/$defs/identifier"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "shift_active": {
+          "type": "boolean"
+        },
+        "timer": {
+          "type": "boolean"
+        },
+        "noise": {
+          "type": "boolean"
+        },
+        "calibration_level": {
+          "anyOf": [
+            {
+              "$ref": "common.v1.schema.json#/$defs/calibration_level"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "variant_seed": {
+          "type": ["string", "null"],
+          "pattern": "^[0-9a-f]{1,16}$"
+        },
+        "partner_type": {
+          "anyOf": [
+            {
+              "$ref": "common.v1.schema.json#/$defs/partner_type"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "customer_tone_level": {
+          "type": ["integer", "null"],
+          "minimum": 0,
+          "maximum": 4
+        }
+      },
+      "required": [
+        "phase",
+        "condition_id",
+        "shift_active",
+        "timer",
+        "noise",
+        "calibration_level",
+        "variant_seed"
+      ]
+    },
+    "timing": {
+      "type": "object",
+      "title": "EventTiming",
+      "additionalProperties": false,
+      "properties": {
+        "t_mono_ms": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Monotonic ms since the session anchor (performance.now based). Never decreases within a session."
+        },
+        "kiosk_t_wall": {
+          "allOf": [
+            {
+              "$ref": "common.v1.schema.json#/$defs/date_time"
+            }
+          ],
+          "description": "Kiosk wall clock. Informational only; used for clock-offset estimation, never for ordering."
+        },
+        "timing_flag": {
+          "$ref": "common.v1.schema.json#/$defs/timing_flag"
+        },
+        "scorable": {
+          "type": "boolean",
+          "description": "False for practice, warm-up and onboarding events."
+        },
+        "interrupted": {
+          "type": "boolean",
+          "description": "True when a pause interrupted the trial; excluded from latency indicators."
+        }
+      },
+      "required": ["t_mono_ms", "kiosk_t_wall", "timing_flag", "scorable", "interrupted"]
+    },
+    "server": {
+      "type": "object",
+      "title": "EventServerFields",
+      "description": "Populated by the backend at ingestion. Kiosks always send nulls.",
+      "additionalProperties": false,
+      "properties": {
+        "server_received_at": {
+          "anyOf": [
+            {
+              "$ref": "common.v1.schema.json#/$defs/date_time"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "clock_offset_estimate_ms": {
+          "type": ["number", "null"]
+        },
+        "batch_id": {
+          "anyOf": [
+            {
+              "$ref": "common.v1.schema.json#/$defs/uuidv7"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": ["server_received_at", "clock_offset_estimate_ms", "batch_id"]
+    },
+    "base": {
+      "type": "object",
+      "title": "EventEnvelopeBase",
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "$ref": "common.v1.schema.json#/$defs/minor_schema_version"
+        },
+        "event_id": {
+          "$ref": "common.v1.schema.json#/$defs/uuidv7"
+        },
+        "event_type": {
+          "$ref": "#/$defs/event_type"
+        },
+        "seq": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Gapless per-session sequence number allocated in the same transaction as the event row."
+        },
+        "session_id": {
+          "$ref": "common.v1.schema.json#/$defs/uuidv7"
+        },
+        "context": {
+          "$ref": "#/$defs/context"
+        },
+        "versions": {
+          "$ref": "#/$defs/versions"
+        },
+        "task": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/task"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "condition": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/condition"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "timing": {
+          "$ref": "#/$defs/timing"
+        },
+        "server": {
+          "$ref": "#/$defs/server"
+        },
+        "payload": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "schema_version",
+        "event_id",
+        "event_type",
+        "seq",
+        "session_id",
+        "context",
+        "versions",
+        "task",
+        "condition",
+        "timing",
+        "server",
+        "payload"
+      ]
+    }
+  }
+}

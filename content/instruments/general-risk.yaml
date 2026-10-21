@@ -1,0 +1,88 @@
+# General risk — criterion instrument registry entry (CRT-02/03/04).
+# Copyrighted item wording is NOT stored here: each item has a placeholder and item_text_source.
+# Real wording is loaded at administration time from the licensed source file.
+schema_version: '1.0'
+instrument_id: general_risk
+name: General risk-taking willingness (single item)
+short_name: General risk
+version: 1.0.0
+kind: single_item
+citation: 'Dohmen, T., Falk, A., Huffman, D., Sunde, U., Schupp, J., & Wagner, G. G. (2011). Individual risk attitudes: Measurement, determinants,
+  and behavioral consequences. Journal of the European Economic Association, 9(3), 522-550.'
+constructs_measured:
+- risk_preference
+licensing:
+  holder: Original authors (SOEP item)
+  licence: Published single item; free for research
+  permission_status: not_requested
+  permission_document: null
+  allowed_use: Research use.
+  expiry: null
+  commercial_use: false
+  notes: null
+administration:
+  modes:
+  - self
+  - read_aloud
+  audio_assisted: true
+  estimated_minutes: 0.5
+  blocks:
+  - X
+  public_kiosk_allowed: false
+  instructions_key: criterion.general_risk.instructions
+response_scale:
+  type: numeric
+  min: 0
+  max: 10
+  anchors:
+  - value: 0
+    label_key: criterion.risk.anchor_0
+    pictogram_id: pictogram.risk.0
+  - value: 10
+    label_key: criterion.risk.anchor_10
+    pictogram_id: pictogram.risk.10
+  reverse_formula: null
+items:
+- item_id: general_risk.i01
+  number: 1
+  item_text: '[licensed item text — load from licensed source]'
+  item_text_source:
+    kind: licensed_source
+    reference: General risk question (Dohmen et al., 2011)
+  subscales:
+  - risk_willingness
+  reverse_keyed: false
+  attention_check: false
+  block: X
+  measures: null
+subscales:
+- scale_id: risk_willingness
+  name: Willingness to take risks
+  items:
+  - general_risk.i01
+  score_type: mean
+  min_answered_prop: 1.0
+  parent: null
+  higher_means: More willing to take risks
+scoring:
+  key_version: 1.0.0
+  prorate_min_prop: 0.8
+  attention_check_fail_flag: null
+  notes: null
+language_versions:
+- language: en-IN
+  itc_state: draft
+  approved: false
+  translation_permission: not_requested
+- language: hi-IN
+  itc_state: draft
+  approved: false
+  translation_permission: not_requested
+- language: mr-IN
+  itc_state: draft
+  approved: false
+  translation_permission: not_requested
+- language: ta-IN
+  itc_state: draft
+  approved: false
+  translation_permission: not_requested

@@ -1,0 +1,147 @@
+# Observed cooperation — criterion instrument registry entry (CRT-02/03/04).
+# Copyrighted item wording is NOT stored here: each item has a placeholder and item_text_source.
+# Real wording is loaded at administration time from the licensed source file.
+schema_version: '1.0'
+instrument_id: observed_cooperation
+name: Observed cooperation task (administrator rated)
+short_name: Observed cooperation
+version: 1.0.0
+kind: rating
+citation: In-house behaviourally anchored 5-item rating of a 3-minute joint sorting task (interim teamwork criterion, CRT-09).
+constructs_measured:
+- teamwork
+licensing:
+  holder: SHRIII project
+  licence: In-house
+  permission_status: not_required
+  permission_document: null
+  allowed_use: Project use.
+  expiry: null
+  commercial_use: false
+  notes: null
+administration:
+  modes:
+  - read_aloud
+  audio_assisted: false
+  estimated_minutes: 4
+  blocks:
+  - teamwork
+  public_kiosk_allowed: false
+  instructions_key: criterion.observed_cooperation.instructions
+response_scale:
+  type: likert
+  min: 1
+  max: 5
+  anchors:
+  - value: 1
+    label_key: criterion.bars5.anchor_1
+    pictogram_id: null
+  - value: 2
+    label_key: criterion.bars5.anchor_2
+    pictogram_id: null
+  - value: 3
+    label_key: criterion.bars5.anchor_3
+    pictogram_id: null
+  - value: 4
+    label_key: criterion.bars5.anchor_4
+    pictogram_id: null
+  - value: 5
+    label_key: criterion.bars5.anchor_5
+    pictogram_id: null
+  reverse_formula: null
+items:
+- item_id: observed_cooperation.shares_materials
+  number: 1
+  item_text: '[licensed item text — load from licensed source]'
+  item_text_source:
+    kind: in_house_draft
+    reference: 'In-house behavioural anchor: shares materials'
+  subscales:
+  - total
+  reverse_keyed: false
+  attention_check: false
+  block: teamwork
+  measures: null
+- item_id: observed_cooperation.coordinates_actions
+  number: 2
+  item_text: '[licensed item text — load from licensed source]'
+  item_text_source:
+    kind: in_house_draft
+    reference: 'In-house behavioural anchor: coordinates actions'
+  subscales:
+  - total
+  reverse_keyed: false
+  attention_check: false
+  block: teamwork
+  measures: null
+- item_id: observed_cooperation.responds_to_partner_ideas
+  number: 3
+  item_text: '[licensed item text — load from licensed source]'
+  item_text_source:
+    kind: in_house_draft
+    reference: 'In-house behavioural anchor: responds to partner ideas'
+  subscales:
+  - total
+  reverse_keyed: false
+  attention_check: false
+  block: teamwork
+  measures: null
+- item_id: observed_cooperation.handles_disagreement
+  number: 4
+  item_text: '[licensed item text — load from licensed source]'
+  item_text_source:
+    kind: in_house_draft
+    reference: 'In-house behavioural anchor: handles disagreement'
+  subscales:
+  - total
+  reverse_keyed: false
+  attention_check: false
+  block: teamwork
+  measures: null
+- item_id: observed_cooperation.keeps_joint_goal
+  number: 5
+  item_text: '[licensed item text — load from licensed source]'
+  item_text_source:
+    kind: in_house_draft
+    reference: 'In-house behavioural anchor: keeps joint goal'
+  subscales:
+  - total
+  reverse_keyed: false
+  attention_check: false
+  block: teamwork
+  measures: null
+subscales:
+- scale_id: total
+  name: Observed cooperation
+  items:
+  - observed_cooperation.shares_materials
+  - observed_cooperation.coordinates_actions
+  - observed_cooperation.responds_to_partner_ideas
+  - observed_cooperation.handles_disagreement
+  - observed_cooperation.keeps_joint_goal
+  score_type: mean
+  min_answered_prop: 0.8
+  parent: null
+  higher_means: More cooperative behaviour observed
+scoring:
+  key_version: 1.0.0
+  prorate_min_prop: 0.8
+  attention_check_fail_flag: null
+  notes: 15% of sessions are double coded; inter-rater ICC(A,1) is reported and teamwork stays provisional while its lower bound is below .60.
+language_versions:
+- language: en-IN
+  itc_state: draft
+  approved: false
+  translation_permission: not_requested
+- language: hi-IN
+  itc_state: draft
+  approved: false
+  translation_permission: not_requested
+- language: mr-IN
+  itc_state: draft
+  approved: false
+  translation_permission: not_requested
+- language: ta-IN
+  itc_state: draft
+  approved: false
+  translation_permission: not_requested

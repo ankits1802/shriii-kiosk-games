@@ -1,0 +1,20 @@
+{
+  "schema_version": "1.0",
+  "batch_id": "01a15df9-afd8-7df3-ba43-c0cccc899543",
+  "kiosk_id": "kiosk-001",
+  "kiosk_t_wall": "2026-10-21T10:35:00+05:30",
+  "sha256": "0000000000000000000000000000000000000000000000000000000000000001",
+  "event_count": 501,
+  "session_chunks": [
+    {
+      "encryption": "x25519_sealed_aes256gcm",
+      "session_id": "01a15df9-9480-78bd-98a1-a021f6e0e2f9",
+      "sealed_dek": "AA==",
+      "nonce": "AA==",
+      "ciphertext": "AA==",
+      "first_seq": 0,
+      "last_seq": 500,
+      "event_count": 501
+    }
+  ]
+}

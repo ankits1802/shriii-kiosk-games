@@ -1,0 +1,24 @@
+[project]
+name = "shriii-scoring"
+version = "0.1.0"
+description = "Layer 2 behavioural indicator engine and layer 3 criterion scoring"
+requires-python = ">=3.13"
+dependencies = [
+  "shriii-contracts",
+  "polars>=1.30",
+  "numpy>=2.3",
+  "pandas>=2.3",
+  "pyarrow>=21",
+  "scipy>=1.16",
+  "pyyaml>=6",
+]
+
+[build-system]
+requires = ["uv_build>=0.13,<0.14"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-name = "shriii_scoring"
+
+[tool.uv.sources]
+shriii-contracts = { workspace = true }

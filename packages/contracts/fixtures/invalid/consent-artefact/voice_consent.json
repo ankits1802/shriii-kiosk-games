@@ -1,0 +1,19 @@
+{
+  "schema_version": "1.0",
+  "consent_id": "48afb11e-b862-4645-a877-9ce2f475cffb",
+  "participant_pid": null,
+  "session_id": "01a15df9-9480-78bd-98a1-a021f6e0e2f9",
+  "kind": "core",
+  "granted": true,
+  "consent_script_id": "consent.core.v1",
+  "script_audio_sha256": "00000000000000000000000000000000000000000000000000000000000000c0",
+  "language": "hi-IN",
+  "policy_version": "1.0.0",
+  "protocol_id": "s2-pilot-v1",
+  "input_mode": "voice",
+  "presented_at": "2026-10-21T10:20:30+05:30",
+  "decided_at": "2026-10-21T10:21:40+05:30",
+  "kiosk_id": "kiosk-001",
+  "replay_counts": [0, 1, 0, 0],
+  "supersedes_id": null
+}

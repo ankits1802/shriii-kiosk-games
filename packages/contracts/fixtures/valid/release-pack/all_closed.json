@@ -1,0 +1,150 @@
+{
+  "schema_version": "1.0",
+  "release_pack_version": "0.1.0",
+  "issued_at": "2026-10-21T00:00:00Z",
+  "expires_at": "2026-11-04T00:00:00Z",
+  "dictionary_versions": {
+    "A": "0.1.0",
+    "B": "0.1.0"
+  },
+  "dictionary_sha256": {
+    "A": "000000000000000000000000000000000000000000000000000000000000000a",
+    "B": "000000000000000000000000000000000000000000000000000000000000000b"
+  },
+  "battery_gates": [
+    {
+      "language": "hi-IN",
+      "pathway": "A",
+      "site_mode": "supervised",
+      "status": "closed",
+      "evidence_ids": [],
+      "approvers": [],
+      "effective_from": "2026-10-21T00:00:00Z"
+    },
+    {
+      "language": "hi-IN",
+      "pathway": "A",
+      "site_mode": "open_public",
+      "status": "closed",
+      "evidence_ids": [],
+      "approvers": [],
+      "effective_from": "2026-10-21T00:00:00Z"
+    },
+    {
+      "language": "hi-IN",
+      "pathway": "B",
+      "site_mode": "supervised",
+      "status": "closed",
+      "evidence_ids": [],
+      "approvers": [],
+      "effective_from": "2026-10-21T00:00:00Z"
+    },
+    {
+      "language": "hi-IN",
+      "pathway": "B",
+      "site_mode": "open_public",
+      "status": "closed",
+      "evidence_ids": [],
+      "approvers": [],
+      "effective_from": "2026-10-21T00:00:00Z"
+    },
+    {
+      "language": "mr-IN",
+      "pathway": "A",
+      "site_mode": "supervised",
+      "status": "closed",
+      "evidence_ids": [],
+      "approvers": [],
+      "effective_from": "2026-10-21T00:00:00Z"
+    },
+    {
+      "language": "mr-IN",
+      "pathway": "A",
+      "site_mode": "open_public",
+      "status": "closed",
+      "evidence_ids": [],
+      "approvers": [],
+      "effective_from": "2026-10-21T00:00:00Z"
+    },
+    {
+      "language": "mr-IN",
+      "pathway": "B",
+      "site_mode": "supervised",
+      "status": "closed",
+      "evidence_ids": [],
+      "approvers": [],
+      "effective_from": "2026-10-21T00:00:00Z"
+    },
+    {
+      "language": "mr-IN",
+      "pathway": "B",
+      "site_mode": "open_public",
+      "status": "closed",
+      "evidence_ids": [],
+      "approvers": [],
+      "effective_from": "2026-10-21T00:00:00Z"
+    },
+    {
+      "language": "ta-IN",
+      "pathway": "A",
+      "site_mode": "supervised",
+      "status": "closed",
+      "evidence_ids": [],
+      "approvers": [],
+      "effective_from": "2026-10-21T00:00:00Z"
+    },
+    {
+      "language": "ta-IN",
+      "pathway": "A",
+      "site_mode": "open_public",
+      "status": "closed",
+      "evidence_ids": [],
+      "approvers": [],
+      "effective_from": "2026-10-21T00:00:00Z"
+    },
+    {
+      "language": "ta-IN",
+      "pathway": "B",
+      "site_mode": "supervised",
+      "status": "closed",
+      "evidence_ids": [],
+      "approvers": [],
+      "effective_from": "2026-10-21T00:00:00Z"
+    },
+    {
+      "language": "ta-IN",
+      "pathway": "B",
+      "site_mode": "open_public",
+      "status": "closed",
+      "evidence_ids": [],
+      "approvers": [],
+      "effective_from": "2026-10-21T00:00:00Z"
+    }
+  ],
+  "trait_gates": [
+    {
+      "trait": "self_control",
+      "language": "hi-IN",
+      "pathway": "B",
+      "status": "unvalidated",
+      "evidence_ids": [],
+      "approvers": [],
+      "effective_from": "2026-10-21T00:00:00Z"
+    }
+  ],
+  "composites": [],
+  "norm_tables": [],
+  "phrase_allowlist": [
+    {
+      "trait": "persistence",
+      "band": "pole_b",
+      "phrase_key": "report.persistence.pole_b"
+    }
+  ],
+  "disclaimer_key": "report.disclaimer.snapshot",
+  "signature": {
+    "algorithm": "ed25519",
+    "key_id": "release-dev-1",
+    "value": "ZGV2LXNpZ25hdHVyZQ=="
+  }
+}

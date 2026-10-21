@@ -1,0 +1,122 @@
+# Attention checks — criterion instrument registry entry (CRT-02/03/04).
+# Copyrighted item wording is NOT stored here: each item has a placeholder and item_text_source.
+# Real wording is loaded at administration time from the licensed source file.
+schema_version: '1.0'
+instrument_id: attention_checks
+name: Embedded attention-check items
+short_name: Attention checks
+version: 1.0.0
+kind: questionnaire
+citation: In-house instructed-response items embedded in core block X (CRT-02).
+constructs_measured:
+- data_quality
+licensing:
+  holder: SHRIII project
+  licence: In-house
+  permission_status: not_required
+  permission_document: null
+  allowed_use: Project use.
+  expiry: null
+  commercial_use: false
+  notes: null
+administration:
+  modes:
+  - self
+  - read_aloud
+  audio_assisted: true
+  estimated_minutes: 0.5
+  blocks:
+  - X
+  public_kiosk_allowed: false
+  instructions_key: criterion.attention.instructions
+response_scale:
+  type: likert
+  min: 1
+  max: 5
+  anchors:
+  - value: 1
+    label_key: criterion.agree5.anchor_1
+    pictogram_id: pictogram.likert5.1
+  - value: 2
+    label_key: criterion.agree5.anchor_2
+    pictogram_id: pictogram.likert5.2
+  - value: 3
+    label_key: criterion.agree5.anchor_3
+    pictogram_id: pictogram.likert5.3
+  - value: 4
+    label_key: criterion.agree5.anchor_4
+    pictogram_id: pictogram.likert5.4
+  - value: 5
+    label_key: criterion.agree5.anchor_5
+    pictogram_id: pictogram.likert5.5
+  reverse_formula: min_plus_max_minus_x
+items:
+- item_id: attention_checks.i01
+  number: 1
+  item_text: '[licensed item text — load from licensed source]'
+  item_text_source:
+    kind: in_house_draft
+    reference: In-house instructed-response item 1; the expected response is stored in the licensed/administration file.
+  subscales:
+  - failed_count
+  reverse_keyed: false
+  attention_check: true
+  block: X
+  measures: null
+- item_id: attention_checks.i02
+  number: 2
+  item_text: '[licensed item text — load from licensed source]'
+  item_text_source:
+    kind: in_house_draft
+    reference: In-house instructed-response item 2; the expected response is stored in the licensed/administration file.
+  subscales:
+  - failed_count
+  reverse_keyed: false
+  attention_check: true
+  block: X
+  measures: null
+- item_id: attention_checks.i03
+  number: 3
+  item_text: '[licensed item text — load from licensed source]'
+  item_text_source:
+    kind: in_house_draft
+    reference: In-house instructed-response item 3; the expected response is stored in the licensed/administration file.
+  subscales:
+  - failed_count
+  reverse_keyed: false
+  attention_check: true
+  block: X
+  measures: null
+subscales:
+- scale_id: failed_count
+  name: Failed attention checks
+  items:
+  - attention_checks.i01
+  - attention_checks.i02
+  - attention_checks.i03
+  score_type: count
+  min_answered_prop: 1.0
+  parent: null
+  higher_means: More failed checks (careless responding)
+scoring:
+  key_version: 1.0.0
+  prorate_min_prop: 0.8
+  attention_check_fail_flag: criterion_careless
+  notes: Any failed check sets the criterion_careless flag on the occasion's scale scores.
+language_versions:
+- language: en-IN
+  itc_state: draft
+  approved: false
+  translation_permission: not_requested
+- language: hi-IN
+  itc_state: draft
+  approved: false
+  translation_permission: not_requested
+- language: mr-IN
+  itc_state: draft
+  approved: false
+  translation_permission: not_requested
+- language: ta-IN
+  itc_state: draft
+  approved: false
+  translation_permission: not_requested

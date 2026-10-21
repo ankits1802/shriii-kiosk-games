@@ -1,0 +1,156 @@
+{
+  "schema_version": "1.0",
+  "config_id": "tower.v0",
+  "module_id": "tower",
+  "kind": "micro",
+  "pathways": ["B"],
+  "version": "0.1.0",
+  "paradigms": ["tower_of_london"],
+  "constructs": [
+    "initiative",
+    "persistence",
+    "persistence_of_style",
+    "problem_solving",
+    "response_consistency",
+    "stability",
+    "task_organisation"
+  ],
+  "indicators": [
+    "initiative.planning_time_before_first_move",
+    "persistence.give_up",
+    "persistence.time_on_unsolvable",
+    "persistence_of_style.cross_segment_style_r",
+    "persistence_of_style.lag1_autocorr",
+    "problem_solving.excess_moves",
+    "problem_solving.planning_time",
+    "problem_solving.recovery_after_failure",
+    "response_consistency.loc_scale_sigma",
+    "stability.shift_slope",
+    "task_organisation.illegal_move_attempts"
+  ],
+  "slot": false,
+  "scorable": true,
+  "budget": {
+    "intro_ms": 6000,
+    "outro_ms": 1500,
+    "target_ms_l2": 95500,
+    "soft_cap_ms": 99000,
+    "hard_cap_ms": 100000
+  },
+  "levels": {
+    "L1": {
+      "timing": {
+        "skip_icon_after_ms": 15000,
+        "unsolvable_cap_ms": 26000,
+        "solvable_cap_ms": 30000
+      },
+      "seconds_per_trial": {
+        "median": 13.2,
+        "slow": 13.4
+      },
+      "estimated_duration_ms": {
+        "median": 98500,
+        "slow": 99700,
+        "slow_trimmed": 99700
+      }
+    },
+    "L2": {
+      "timing": {
+        "skip_icon_after_ms": 15000,
+        "unsolvable_cap_ms": 24000,
+        "solvable_cap_ms": 28000
+      },
+      "seconds_per_trial": {
+        "median": 12.7,
+        "slow": 13.3
+      },
+      "estimated_duration_ms": {
+        "median": 95500,
+        "slow": 99100,
+        "slow_trimmed": 99100
+      }
+    },
+    "L3": {
+      "timing": {
+        "skip_icon_after_ms": 15000,
+        "unsolvable_cap_ms": 22000,
+        "solvable_cap_ms": 25000
+      },
+      "seconds_per_trial": {
+        "median": 12.0,
+        "slow": 13.0
+      },
+      "estimated_duration_ms": {
+        "median": 91300,
+        "slow": 97300,
+        "slow_trimmed": 97300
+      }
+    }
+  },
+  "blocks": [
+    {
+      "block_id": "practice",
+      "phase": "practice",
+      "condition_id": "standard",
+      "trials": 1,
+      "min_trials": 1,
+      "budget_trial_ms": 7000,
+      "scorable": false,
+      "conditions": {
+        "timer": false,
+        "noise": false,
+        "shift_active": false
+      },
+      "beats": []
+    },
+    {
+      "block_id": "problems",
+      "phase": "main",
+      "condition_id": "standard",
+      "trials": 6,
+      "min_trials": 6,
+      "budget_trial_ms": null,
+      "scorable": true,
+      "conditions": {
+        "timer": false,
+        "noise": false,
+        "shift_active": false
+      },
+      "beats": ["solvable", "unsolvable"]
+    },
+    {
+      "block_id": "probe",
+      "phase": "main",
+      "condition_id": "probe",
+      "trials": 4,
+      "min_trials": 4,
+      "budget_trial_ms": 1200,
+      "scorable": true,
+      "conditions": {
+        "timer": false,
+        "noise": false,
+        "shift_active": false
+      },
+      "beats": ["probe_segment"]
+    }
+  ],
+  "min_counts": {
+    "solvable": 4,
+    "unsolvable": 2
+  },
+  "planned_counts": {
+    "solvable": 4,
+    "unsolvable": 2
+  },
+  "constraints": {
+    "min_moves_range": [2, 5],
+    "order_fixed_per_form": true,
+    "solver_verified": true,
+    "baskets": 3
+  },
+  "context_shift": null,
+  "forms": ["form_1", "form_2"],
+  "audio_keys": ["tower.intro", "tower.practice", "tower.outro", "tower.replay", "tower.skip_hint"],
+  "requires_numeracy": false,
+  "notes": "4 solvable problems (2-5 minimum moves) and 2 unsolvable items; skip icon after 15 s (MG-04). T2 uses a different unsolvable identity (ENG-14)."
+}

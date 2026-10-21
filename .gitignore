@@ -14,3 +14,8 @@ coverage/
 .mypy_cache/
 test-results/
 playwright-report/
+*.tsbuildinfo
+.vite/
+.env.*.local
+!.env.example
+uv.lock.bak

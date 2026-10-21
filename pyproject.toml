@@ -1,0 +1,82 @@
+[project]
+name = "shriii-workspace"
+version = "0.1.0"
+description = "SHRIII Kiosk Behavioural Games - Python workspace root (not a distributable package)"
+requires-python = ">=3.13"
+dependencies = [
+  "shriii-contracts",
+  "shriii-scoring",
+  "shriii-validation",
+  "shriii-simulator",
+  "shriii-api",
+]
+
+[dependency-groups]
+dev = [
+  "pytest>=8",
+  "pytest-asyncio>=1",
+  "hypothesis>=6",
+  "ruff>=0.14",
+  "mypy>=1.18",
+  "types-PyYAML",
+  "types-jsonschema",
+]
+
+[tool.uv]
+package = false
+default-groups = ["dev"]
+
+[tool.uv.workspace]
+members = [
+  "python/shriii_contracts",
+  "python/shriii_scoring",
+  "python/shriii_validation",
+  "python/shriii_simulator",
+  "apps/api",
+]
+
+[tool.uv.sources]
+shriii-contracts = { workspace = true }
+shriii-scoring = { workspace = true }
+shriii-validation = { workspace = true }
+shriii-simulator = { workspace = true }
+shriii-api = { workspace = true }
+
+[tool.pytest.ini_options]
+testpaths = [
+  "python/shriii_contracts/tests",
+  "python/shriii_scoring/tests",
+  "python/shriii_validation/tests",
+  "python/shriii_simulator/tests",
+  "apps/api/tests",
+  "scoring/tests",
+  "content/tests",
+]
+addopts = ["-ra", "--strict-markers", "--import-mode=importlib"]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+filterwarnings = ["error::pytest.PytestUnraisableExceptionWarning"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py313"
+extend-exclude = ["docs/reference", "node_modules", "python/shriii_contracts/src/shriii_contracts/_generated.py"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "N", "SIM", "RUF", "PT", "C4", "PL"]
+ignore = ["PLR0913", "PLR2004", "PLR0911", "PLR0912", "PLR0915", "PT018"]
+
+[tool.ruff.lint.per-file-ignores]
+"**/tests/**" = ["PLR2004", "S101"]
+
+[tool.mypy]
+python_version = "3.13"
+strict = true
+warn_unreachable = true
+plugins = ["pydantic.mypy"]
+files = ["python/shriii_contracts/src", "scoring/tests", "content/tests", "python/shriii_contracts/tests"]
+mypy_path = ["python/shriii_contracts/src"]
+
+[[tool.mypy.overrides]]
+module = ["pingouin.*", "semopy.*", "factor_analyzer.*", "xgboost.*", "statsmodels.*", "scipy.*", "sklearn.*"]
+ignore_missing_imports = true

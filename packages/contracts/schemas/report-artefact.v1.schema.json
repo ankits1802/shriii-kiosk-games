@@ -1,0 +1,123 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://shriii.local/contracts/report-artefact.v1.schema.json",
+  "title": "ReportArtefact",
+  "description": "Participant-facing report (layer 5). Banded, strengths-framed, release-gated. Contains no numbers.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "$ref": "common.v1.schema.json#/$defs/minor_schema_version"
+    },
+    "report_id": {
+      "$ref": "common.v1.schema.json#/$defs/uuid"
+    },
+    "token": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{32}$",
+      "description": "Opaque 128-bit retrieval token."
+    },
+    "session_id": {
+      "$ref": "common.v1.schema.json#/$defs/uuidv7"
+    },
+    "language": {
+      "$ref": "common.v1.schema.json#/$defs/language_tag"
+    },
+    "report_mode": {
+      "$ref": "common.v1.schema.json#/$defs/report_mode"
+    },
+    "demo_profile_id": {
+      "anyOf": [
+        {
+          "$ref": "common.v1.schema.json#/$defs/identifier"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "traits_shown": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "title": "TraitShown",
+        "additionalProperties": false,
+        "properties": {
+          "trait": {
+            "$ref": "common.v1.schema.json#/$defs/construct_id"
+          },
+          "band": {
+            "$ref": "common.v1.schema.json#/$defs/band"
+          },
+          "phrase_key": {
+            "$ref": "common.v1.schema.json#/$defs/phrase_key"
+          }
+        },
+        "required": ["trait", "band", "phrase_key"]
+      },
+      "maxItems": 5
+    },
+    "disclaimer_key": {
+      "$ref": "common.v1.schema.json#/$defs/phrase_key"
+    },
+    "norm_table_version": {
+      "anyOf": [
+        {
+          "$ref": "common.v1.schema.json#/$defs/semver"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "norm_provisional": {
+      "type": "boolean"
+    },
+    "release_pack_version": {
+      "anyOf": [
+        {
+          "$ref": "common.v1.schema.json#/$defs/semver"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "bundle_hash": {
+      "$ref": "common.v1.schema.json#/$defs/sha256"
+    },
+    "delivery_modes": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["spoken", "printed", "qr", "screen"]
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "created_at": {
+      "$ref": "common.v1.schema.json#/$defs/date_time"
+    },
+    "expires_at": {
+      "$ref": "common.v1.schema.json#/$defs/date_time"
+    }
+  },
+  "required": [
+    "schema_version",
+    "report_id",
+    "token",
+    "session_id",
+    "language",
+    "report_mode",
+    "demo_profile_id",
+    "traits_shown",
+    "disclaimer_key",
+    "norm_table_version",
+    "norm_provisional",
+    "release_pack_version",
+    "bundle_hash",
+    "delivery_modes",
+    "created_at",
+    "expires_at"
+  ]
+}

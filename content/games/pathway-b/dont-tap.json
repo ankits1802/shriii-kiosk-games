@@ -1,0 +1,192 @@
+{
+  "schema_version": "1.0",
+  "config_id": "dont_tap.v0",
+  "module_id": "dont_tap",
+  "kind": "micro",
+  "pathways": ["B"],
+  "version": "0.1.0",
+  "paradigms": ["go_nogo"],
+  "constructs": [
+    "composure",
+    "expressive_restraint",
+    "persistence_of_style",
+    "response_consistency",
+    "self_control",
+    "stability"
+  ],
+  "indicators": [
+    "composure.error_type_shift",
+    "composure.pressure_slope_accuracy",
+    "composure.pressure_slope_rt",
+    "expressive_restraint.extra_taps",
+    "expressive_restraint.iti_rvi",
+    "expressive_restraint.premature_taps",
+    "persistence_of_style.cross_segment_style_r",
+    "persistence_of_style.lag1_autocorr",
+    "response_consistency.loc_scale_sigma",
+    "response_consistency.rt_rvi",
+    "self_control.ezd_drift_nogo",
+    "self_control.nogo_commission_rate",
+    "stability.shift_slope",
+    "stability.shift_slope_pressure"
+  ],
+  "slot": false,
+  "scorable": true,
+  "budget": {
+    "intro_ms": 4500,
+    "outro_ms": 1500,
+    "target_ms_l2": 91360,
+    "soft_cap_ms": 99000,
+    "hard_cap_ms": 100000
+  },
+  "levels": {
+    "L1": {
+      "timing": {
+        "stimulus_ms": 600,
+        "response_window_ms": 600,
+        "isi_ms": 560,
+        "isi_jitter_ms": 120,
+        "pressure_isi_ms": 480
+      },
+      "seconds_per_trial": {
+        "median": 1.16,
+        "slow": 1.16
+      },
+      "estimated_duration_ms": {
+        "median": 98960,
+        "slow": 98960,
+        "slow_trimmed": 94320
+      }
+    },
+    "L2": {
+      "timing": {
+        "stimulus_ms": 500,
+        "response_window_ms": 540,
+        "isi_ms": 520,
+        "isi_jitter_ms": 100,
+        "pressure_isi_ms": 440
+      },
+      "seconds_per_trial": {
+        "median": 1.06,
+        "slow": 1.06
+      },
+      "estimated_duration_ms": {
+        "median": 91360,
+        "slow": 91360,
+        "slow_trimmed": 87120
+      }
+    },
+    "L3": {
+      "timing": {
+        "stimulus_ms": 420,
+        "response_window_ms": 460,
+        "isi_ms": 460,
+        "isi_jitter_ms": 80,
+        "pressure_isi_ms": 380
+      },
+      "seconds_per_trial": {
+        "median": 0.92,
+        "slow": 0.92
+      },
+      "estimated_duration_ms": {
+        "median": 80720,
+        "slow": 80720,
+        "slow_trimmed": 77040
+      }
+    }
+  },
+  "blocks": [
+    {
+      "block_id": "practice",
+      "phase": "practice",
+      "condition_id": "standard",
+      "trials": 4,
+      "min_trials": 4,
+      "budget_trial_ms": null,
+      "scorable": false,
+      "conditions": {
+        "timer": false,
+        "noise": false,
+        "shift_active": false
+      },
+      "beats": []
+    },
+    {
+      "block_id": "main",
+      "phase": "main",
+      "condition_id": "standard",
+      "trials": 36,
+      "min_trials": 34,
+      "budget_trial_ms": null,
+      "scorable": true,
+      "conditions": {
+        "timer": false,
+        "noise": false,
+        "shift_active": false
+      },
+      "beats": ["go", "nogo"]
+    },
+    {
+      "block_id": "pressure",
+      "phase": "pressure",
+      "condition_id": "pressure",
+      "trials": 36,
+      "min_trials": 34,
+      "budget_trial_ms": null,
+      "scorable": true,
+      "conditions": {
+        "timer": true,
+        "noise": true,
+        "shift_active": false
+      },
+      "beats": ["go", "nogo", "timer", "crowd_noise"]
+    },
+    {
+      "block_id": "probe",
+      "phase": "main",
+      "condition_id": "probe",
+      "trials": 4,
+      "min_trials": 4,
+      "budget_trial_ms": 1200,
+      "scorable": true,
+      "conditions": {
+        "timer": false,
+        "noise": false,
+        "shift_active": false
+      },
+      "beats": ["probe_segment"]
+    }
+  ],
+  "min_counts": {
+    "nogo": 20,
+    "nogo_per_block": 10,
+    "go": 40
+  },
+  "planned_counts": {
+    "nogo": 22,
+    "nogo_per_block": 11,
+    "go": 50
+  },
+  "constraints": {
+    "max_consecutive_nogo": 2,
+    "nogo_share": 0.3,
+    "anchor_trials": 6,
+    "premature_threshold_ms": 150,
+    "fixed_paced": true
+  },
+  "context_shift": {
+    "kind": "pressure_on",
+    "announced": true,
+    "window": [40, 40]
+  },
+  "forms": ["form_1", "form_2"],
+  "audio_keys": [
+    "dont_tap.intro",
+    "dont_tap.practice",
+    "dont_tap.outro",
+    "dont_tap.replay",
+    "dont_tap.pressure_cue"
+  ],
+  "requires_numeracy": false,
+  "notes": "Fixed-paced: median and slow bots take the same time. Pressure block is the second half (MG-02); SSRT removed."
+}

@@ -1,0 +1,404 @@
+# CFI — criterion instrument registry entry (CRT-02/03/04).
+# Copyrighted item wording is NOT stored here: each item has a placeholder and item_text_source.
+# Real wording is loaded at administration time from the licensed source file.
+schema_version: '1.0'
+instrument_id: cfi
+name: Cognitive Flexibility Inventory
+short_name: CFI
+version: 1.0.0
+kind: questionnaire
+citation: 'Dennis, J. P., & Vander Wal, J. S. (2010). The Cognitive Flexibility Inventory: Instrument development and estimates of reliability
+  and validity. Cognitive Therapy and Research, 34(3), 241-253.'
+constructs_measured:
+- adaptability
+licensing:
+  holder: John P. Dennis and Jillon S. Vander Wal
+  licence: Copyrighted; permission required
+  permission_status: not_requested
+  permission_document: null
+  allowed_use: Research use subject to author permission.
+  expiry: null
+  commercial_use: false
+  notes: Request permission and translation rights in M0 (CRT-03).
+administration:
+  modes:
+  - self
+  - read_aloud
+  audio_assisted: true
+  estimated_minutes: 4
+  blocks:
+  - B
+  public_kiosk_allowed: false
+  instructions_key: criterion.cfi.instructions
+response_scale:
+  type: likert
+  min: 1
+  max: 7
+  anchors:
+  - value: 1
+    label_key: criterion.agree7.anchor_1
+    pictogram_id: pictogram.likert7.1
+  - value: 2
+    label_key: criterion.agree7.anchor_2
+    pictogram_id: pictogram.likert7.2
+  - value: 3
+    label_key: criterion.agree7.anchor_3
+    pictogram_id: pictogram.likert7.3
+  - value: 4
+    label_key: criterion.agree7.anchor_4
+    pictogram_id: pictogram.likert7.4
+  - value: 5
+    label_key: criterion.agree7.anchor_5
+    pictogram_id: pictogram.likert7.5
+  - value: 6
+    label_key: criterion.agree7.anchor_6
+    pictogram_id: pictogram.likert7.6
+  - value: 7
+    label_key: criterion.agree7.anchor_7
+    pictogram_id: pictogram.likert7.7
+  reverse_formula: min_plus_max_minus_x
+items:
+- item_id: cfi.i01
+  number: 1
+  item_text: '[licensed item text — load from licensed source]'
+  item_text_source:
+    kind: licensed_source
+    reference: CFI item 1 (Dennis & Vander Wal, 2010)
+  subscales:
+  - total
+  - alternatives
+  reverse_keyed: false
+  attention_check: false
+  block: B
+  measures: null
+- item_id: cfi.i02
+  number: 2
+  item_text: '[licensed item text — load from licensed source]'
+  item_text_source:
+    kind: licensed_source
+    reference: CFI item 2 (Dennis & Vander Wal, 2010)
+  subscales:
+  - total
+  - control
+  reverse_keyed: true
+  attention_check: false
+  block: B
+  measures: null
+- item_id: cfi.i03
+  number: 3
+  item_text: '[licensed item text — load from licensed source]'
+  item_text_source:
+    kind: licensed_source
+    reference: CFI item 3 (Dennis & Vander Wal, 2010)
+  subscales:
+  - total
+  - alternatives
+  reverse_keyed: false
+  attention_check: false
+  block: B
+  measures: null
+- item_id: cfi.i04
+  number: 4
+  item_text: '[licensed item text — load from licensed source]'
+  item_text_source:
+    kind: licensed_source
+    reference: CFI item 4 (Dennis & Vander Wal, 2010)
+  subscales:
+  - total
+  - control
+  reverse_keyed: true
+  attention_check: false
+  block: B
+  measures: null
+- item_id: cfi.i05
+  number: 5
+  item_text: '[licensed item text — load from licensed source]'
+  item_text_source:
+    kind: licensed_source
+    reference: CFI item 5 (Dennis & Vander Wal, 2010)
+  subscales:
+  - total
+  - alternatives
+  reverse_keyed: false
+  attention_check: false
+  block: B
+  measures: null
+- item_id: cfi.i06
+  number: 6
+  item_text: '[licensed item text — load from licensed source]'
+  item_text_source:
+    kind: licensed_source
+    reference: CFI item 6 (Dennis & Vander Wal, 2010)
+  subscales:
+  - total
+  - alternatives
+  reverse_keyed: false
+  attention_check: false
+  block: B
+  measures: null
+- item_id: cfi.i07
+  number: 7
+  item_text: '[licensed item text — load from licensed source]'
+  item_text_source:
+    kind: licensed_source
+    reference: CFI item 7 (Dennis & Vander Wal, 2010)
+  subscales:
+  - total
+  - control
+  reverse_keyed: true
+  attention_check: false
+  block: B
+  measures: null
+- item_id: cfi.i08
+  number: 8
+  item_text: '[licensed item text — load from licensed source]'
+  item_text_source:
+    kind: licensed_source
+    reference: CFI item 8 (Dennis & Vander Wal, 2010)
+  subscales:
+  - total
+  - alternatives
+  reverse_keyed: false
+  attention_check: false
+  block: B
+  measures: null
+- item_id: cfi.i09
+  number: 9
+  item_text: '[licensed item text — load from licensed source]'
+  item_text_source:
+    kind: licensed_source
+    reference: CFI item 9 (Dennis & Vander Wal, 2010)
+  subscales:
+  - total
+  - control
+  reverse_keyed: true
+  attention_check: false
+  block: B
+  measures: null
+- item_id: cfi.i10
+  number: 10
+  item_text: '[licensed item text — load from licensed source]'
+  item_text_source:
+    kind: licensed_source
+    reference: CFI item 10 (Dennis & Vander Wal, 2010)
+  subscales:
+  - total
+  - alternatives
+  reverse_keyed: false
+  attention_check: false
+  block: B
+  measures: null
+- item_id: cfi.i11
+  number: 11
+  item_text: '[licensed item text — load from licensed source]'
+  item_text_source:
+    kind: licensed_source
+    reference: CFI item 11 (Dennis & Vander Wal, 2010)
+  subscales:
+  - total
+  - control
+  reverse_keyed: true
+  attention_check: false
+  block: B
+  measures: null
+- item_id: cfi.i12
+  number: 12
+  item_text: '[licensed item text — load from licensed source]'
+  item_text_source:
+    kind: licensed_source
+    reference: CFI item 12 (Dennis & Vander Wal, 2010)
+  subscales:
+  - total
+  - alternatives
+  reverse_keyed: false
+  attention_check: false
+  block: B
+  measures: null
+- item_id: cfi.i13
+  number: 13
+  item_text: '[licensed item text — load from licensed source]'
+  item_text_source:
+    kind: licensed_source
+    reference: CFI item 13 (Dennis & Vander Wal, 2010)
+  subscales:
+  - total
+  - alternatives
+  reverse_keyed: false
+  attention_check: false
+  block: B
+  measures: null
+- item_id: cfi.i14
+  number: 14
+  item_text: '[licensed item text — load from licensed source]'
+  item_text_source:
+    kind: licensed_source
+    reference: CFI item 14 (Dennis & Vander Wal, 2010)
+  subscales:
+  - total
+  - alternatives
+  reverse_keyed: false
+  attention_check: false
+  block: B
+  measures: null
+- item_id: cfi.i15
+  number: 15
+  item_text: '[licensed item text — load from licensed source]'
+  item_text_source:
+    kind: licensed_source
+    reference: CFI item 15 (Dennis & Vander Wal, 2010)
+  subscales:
+  - total
+  - control
+  reverse_keyed: true
+  attention_check: false
+  block: B
+  measures: null
+- item_id: cfi.i16
+  number: 16
+  item_text: '[licensed item text — load from licensed source]'
+  item_text_source:
+    kind: licensed_source
+    reference: CFI item 16 (Dennis & Vander Wal, 2010)
+  subscales:
+  - total
+  - alternatives
+  reverse_keyed: false
+  attention_check: false
+  block: B
+  measures: null
+- item_id: cfi.i17
+  number: 17
+  item_text: '[licensed item text — load from licensed source]'
+  item_text_source:
+    kind: licensed_source
+    reference: CFI item 17 (Dennis & Vander Wal, 2010)
+  subscales:
+  - total
+  - alternatives
+  reverse_keyed: false
+  attention_check: false
+  block: B
+  measures: null
+- item_id: cfi.i18
+  number: 18
+  item_text: '[licensed item text — load from licensed source]'
+  item_text_source:
+    kind: licensed_source
+    reference: CFI item 18 (Dennis & Vander Wal, 2010)
+  subscales:
+  - total
+  - alternatives
+  reverse_keyed: false
+  attention_check: false
+  block: B
+  measures: null
+- item_id: cfi.i19
+  number: 19
+  item_text: '[licensed item text — load from licensed source]'
+  item_text_source:
+    kind: licensed_source
+    reference: CFI item 19 (Dennis & Vander Wal, 2010)
+  subscales:
+  - total
+  - alternatives
+  reverse_keyed: false
+  attention_check: false
+  block: B
+  measures: null
+- item_id: cfi.i20
+  number: 20
+  item_text: '[licensed item text — load from licensed source]'
+  item_text_source:
+    kind: licensed_source
+    reference: CFI item 20 (Dennis & Vander Wal, 2010)
+  subscales:
+  - total
+  - alternatives
+  reverse_keyed: false
+  attention_check: false
+  block: B
+  measures: null
+subscales:
+- scale_id: total
+  name: Cognitive flexibility (total)
+  items:
+  - cfi.i01
+  - cfi.i02
+  - cfi.i03
+  - cfi.i04
+  - cfi.i05
+  - cfi.i06
+  - cfi.i07
+  - cfi.i08
+  - cfi.i09
+  - cfi.i10
+  - cfi.i11
+  - cfi.i12
+  - cfi.i13
+  - cfi.i14
+  - cfi.i15
+  - cfi.i16
+  - cfi.i17
+  - cfi.i18
+  - cfi.i19
+  - cfi.i20
+  score_type: sum
+  min_answered_prop: 0.8
+  parent: null
+  higher_means: More cognitive flexibility
+- scale_id: alternatives
+  name: Alternatives
+  items:
+  - cfi.i01
+  - cfi.i03
+  - cfi.i05
+  - cfi.i06
+  - cfi.i08
+  - cfi.i10
+  - cfi.i12
+  - cfi.i13
+  - cfi.i14
+  - cfi.i16
+  - cfi.i17
+  - cfi.i18
+  - cfi.i19
+  - cfi.i20
+  score_type: sum
+  min_answered_prop: 0.8
+  parent: total
+  higher_means: More generation of alternatives
+- scale_id: control
+  name: Control
+  items:
+  - cfi.i02
+  - cfi.i04
+  - cfi.i07
+  - cfi.i09
+  - cfi.i11
+  - cfi.i15
+  score_type: sum
+  min_answered_prop: 0.8
+  parent: total
+  higher_means: More perceived control (after reverse keying)
+scoring:
+  key_version: 1.0.0
+  prorate_min_prop: 0.8
+  attention_check_fail_flag: null
+  notes: null
+language_versions:
+- language: en-IN
+  itc_state: draft
+  approved: false
+  translation_permission: not_requested
+- language: hi-IN
+  itc_state: draft
+  approved: false
+  translation_permission: not_requested
+- language: mr-IN
+  itc_state: draft
+  approved: false
+  translation_permission: not_requested
+- language: ta-IN
+  itc_state: draft
+  approved: false
+  translation_permission: not_requested

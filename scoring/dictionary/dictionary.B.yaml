@@ -1,0 +1,2599 @@
+# SHRIII scoring dictionary — Pathway B indicators (SCR-01). Layer 2: behavioural indicators.
+# Status: v0 draft. min_valid_trials with basis val02_pending are placeholders until the VAL-02 power
+# and trial-budget report; plan_ac values come from plan acceptance criteria.
+# Pseudo-modules: cross_module / cross_episode indicators pool probe segments or trials across modules.
+# Indicator ids shared between pathways denote the same paradigm logic (EPI-05: shared IDs).
+schema_version: '1.0'
+document: pathway
+dictionary_id: shriii-scoring
+pathway: B
+shared_version: 0.1.0
+version: 0.1.0
+status: draft
+frozen_at: null
+sha256: null
+governance_record: null
+modules:
+- id: dont_tap
+  kind: micro
+  config: content/games/pathway-b/dont-tap.json
+  slot: false
+  order: 1
+- id: card_sort
+  kind: micro
+  config: content/games/pathway-b/card-sort.json
+  slot: false
+  order: 2
+- id: balloon
+  kind: micro
+  config: content/games/pathway-b/balloon.json
+  slot: false
+  order: 3
+- id: tower
+  kind: micro
+  config: content/games/pathway-b/tower.json
+  slot: false
+  order: 4
+- id: share_pot
+  kind: micro
+  config: content/games/pathway-b/share-pot.json
+  slot: false
+  order: 5
+- id: wait_or_now
+  kind: micro
+  config: content/games/pathway-b/wait-or-now.json
+  slot: true
+  order: 6
+- id: steady_hands
+  kind: micro
+  config: content/games/pathway-b/steady-hands.json
+  slot: true
+  order: 6
+- id: four_stalls
+  kind: micro
+  config: content/games/pathway-b/four-stalls.json
+  slot: true
+  order: 6
+- id: private_dice
+  kind: micro
+  config: content/games/pathway-b/private-dice.json
+  slot: true
+  order: 6
+indicators:
+- id: self_control.nogo_commission_rate
+  construct: self_control
+  role: primary
+  tier: 1
+  status: provisional
+  kind: raw
+  source:
+    module_id: dont_tap
+    episode_id: null
+    task: dont_tap.gng
+    phases:
+    - main
+    - pressure
+    slot: false
+  event_inputs:
+  - trial_start
+  - stimulus_onset
+  - response
+  - trial_end
+  required_fields:
+  - payload.response_value
+  - payload.correctness
+  - payload.input_mode
+  - condition.phase
+  - timing.scorable
+  formula:
+    ref: gng.commission_rate
+    description: Proportion of no-go trials with a serve response (commission errors).
+  unit: proportion
+  direction: higher_less
+  transformation: logit_corrected
+  aggregation: proportion
+  reliability_method: split_half_permutation
+  level_rule: fixed_level_only
+  min_valid_trials:
+    count: 20
+    unit: nogo_trials
+    basis: plan_ac
+  exclusions:
+  - not_scorable
+  - invalid_placeholder
+  - interrupted_trial
+  - session_quality_exclude
+  - synthetic_session
+  - level_not_fixed_l2
+  missing_data: insufficient_trials_na
+  group_only: false
+  gate_eligible: true
+  timing_sensitive: false
+  sensitivity: standard
+  expected_r_lower_bound: 0.1
+  convergent_criteria:
+  - bscs.total
+  - bfi2_xs.conscientiousness
+  notes: null
+- id: self_control.ezd_drift_nogo
+  construct: self_control
+  role: secondary
+  tier: 1
+  status: provisional
+  kind: model_parameter
+  source:
+    module_id: dont_tap
+    episode_id: null
+    task: dont_tap.gng
+    phases:
+    - main
+    - pressure
+    slot: false
+  event_inputs:
+  - trial_start
+  - stimulus_onset
+  - response
+  - trial_end
+  required_fields:
+  - payload.response_value
+  - payload.correctness
+  - payload.input_mode
+  - condition.phase
+  - timing.scorable
+  - payload.latency_ms
+  - payload.latency_anchor
+  - timing.timing_flag
+  - timing.interrupted
+  formula:
+    ref: ezdiffusion.drift_nogo
+    description: EZ-diffusion drift rate on go/no-go accuracy and correct-RT moments (Wagenmakers et al., 2007); caution (boundary)
+      is a separate style indicator.
+  unit: drift_rate
+  direction: higher_more
+  transformation: none
+  aggregation: model_parameter
+  reliability_method: model_based
+  level_rule: fixed_level_only
+  min_valid_trials:
+    count: 60
+    unit: trials
+    basis: literature_prior
+  exclusions:
+  - not_scorable
+  - invalid_placeholder
+  - interrupted_trial
+  - timing_flagged
+  - voice_latency
+  - timeout_latency
+  - anticipatory_response
+  - session_quality_exclude
+  - synthetic_session
+  - level_not_fixed_l2
+  missing_data: model_partial_pooling
+  group_only: false
+  gate_eligible: true
+  timing_sensitive: true
+  sensitivity: standard
+  expected_r_lower_bound: 0.1
+  convergent_criteria:
+  - bscs.total
+  notes: null
+- id: self_control.delay_discount_logk
+  construct: self_control
+  role: secondary
+  tier: 1
+  status: provisional
+  kind: model_parameter
+  source:
+    module_id: wait_or_now
+    episode_id: null
+    task: wait_or_now.delay
+    phases:
+    - main
+    slot: true
+  event_inputs:
+  - trial_start
+  - stimulus_onset
+  - response
+  - trial_end
+  required_fields:
+  - payload.response_value
+  - payload.correctness
+  - payload.input_mode
+  - condition.phase
+  - timing.scorable
+  formula:
+    ref: discounting.hierarchical_logk
+    description: Hierarchical Bayesian log k of hyperbolic delay discounting from the seeded titration (population priors).
+  unit: log_k
+  direction: higher_less
+  transformation: none
+  aggregation: model_parameter
+  reliability_method: model_based
+  level_rule: fixed_level_only
+  min_valid_trials:
+    count: 8
+    unit: choices
+    basis: literature_prior
+  exclusions:
+  - not_scorable
+  - invalid_placeholder
+  - interrupted_trial
+  - session_quality_exclude
+  - synthetic_session
+  - level_not_fixed_l2
+  missing_data: planned_missing_slot
+  group_only: false
+  gate_eligible: true
+  timing_sensitive: false
+  sensitivity: standard
+  expected_r_lower_bound: 0.1
+  convergent_criteria:
+  - bscs.total
+  notes: null
+- id: self_control.effort_discount
+  construct: self_control
+  role: secondary
+  tier: 1
+  status: provisional
+  kind: model_parameter
+  source:
+    module_id: wait_or_now
+    episode_id: null
+    task: wait_or_now.effort
+    phases:
+    - main
+    slot: true
+  event_inputs:
+  - trial_start
+  - stimulus_onset
+  - response
+  - trial_end
+  required_fields:
+  - payload.response_value
+  - payload.correctness
+  - payload.input_mode
+  - condition.phase
+  - timing.scorable
+  formula:
+    ref: discounting.effort_k
+    description: Effort-discounting parameter from hold-to-earn choices.
+  unit: index
+  direction: higher_less
+  transformation: none
+  aggregation: model_parameter
+  reliability_method: model_based
+  level_rule: fixed_level_only
+  min_valid_trials:
+    count: 4
+    unit: choices
+    basis: literature_prior
+  exclusions:
+  - not_scorable
+  - invalid_placeholder
+  - interrupted_trial
+  - session_quality_exclude
+  - synthetic_session
+  - level_not_fixed_l2
+  missing_data: planned_missing_slot
+  group_only: false
+  gate_eligible: true
+  timing_sensitive: false
+  sensitivity: standard
+  expected_r_lower_bound: 0.1
+  convergent_criteria:
+  - bscs.total
+  notes: null
+- id: self_control.choice_consistency
+  construct: self_control
+  role: secondary
+  tier: 1
+  status: provisional
+  kind: raw
+  source:
+    module_id: wait_or_now
+    episode_id: null
+    task: wait_or_now.delay
+    phases:
+    - main
+    slot: true
+  event_inputs:
+  - trial_start
+  - stimulus_onset
+  - response
+  - trial_end
+  required_fields:
+  - payload.response_value
+  - payload.correctness
+  - payload.input_mode
+  - condition.phase
+  - timing.scorable
+  formula:
+    ref: discounting.choice_consistency
+    description: Proportion of choices consistent with the person's fitted discounting function.
+  unit: proportion
+  direction: higher_more
+  transformation: logit_corrected
+  aggregation: proportion
+  reliability_method: split_half_permutation
+  level_rule: fixed_level_only
+  min_valid_trials:
+    count: 12
+    unit: choices
+    basis: plan_ac
+  exclusions:
+  - not_scorable
+  - invalid_placeholder
+  - interrupted_trial
+  - session_quality_exclude
+  - synthetic_session
+  - level_not_fixed_l2
+  missing_data: planned_missing_slot
+  group_only: false
+  gate_eligible: true
+  timing_sensitive: false
+  sensitivity: standard
+  expected_r_lower_bound: 0.1
+  convergent_criteria:
+  - bscs.total
+  notes: null
+- id: emotional_regulation.tone_after_unfair_loss_b
+  construct: emotional_regulation
+  role: exploratory
+  tier: 1
+  status: provisional
+  kind: single_event_unscorable
+  source:
+    module_id: share_pot
+    episode_id: null
+    task: share_pot.unfair_loss_probe
+    phases:
+    - main
+    slot: false
+  event_inputs:
+  - trial_start
+  - response
+  - partner_action
+  required_fields:
+  - payload.response_value
+  - payload.partner_type
+  formula:
+    ref: tone.after_unfair_loss
+    description: Ordinal tone chosen (firm/neutral/warm) after the scripted unfair-loss round.
+  unit: ordinal
+  direction: higher_more
+  transformation: none
+  aggregation: mean
+  reliability_method: not_computed
+  level_rule: fixed_level_only
+  min_valid_trials:
+    count: 1
+    unit: events
+    basis: plan_ac
+  exclusions:
+  - not_scorable
+  - invalid_placeholder
+  - interrupted_trial
+  - session_quality_exclude
+  - synthetic_session
+  - level_not_fixed_l2
+  missing_data: insufficient_trials_na
+  group_only: false
+  gate_eligible: false
+  timing_sensitive: false
+  sensitivity: standard
+  expected_r_lower_bound: null
+  convergent_criteria: []
+  notes: Exploratory only; never used for gates (plan section 4.2).
+- id: composure.pressure_slope_accuracy
+  construct: composure
+  role: primary
+  tier: 2
+  status: provisional
+  kind: difference_slope
+  source:
+    module_id: dont_tap
+    episode_id: null
+    task: dont_tap.pressure_block
+    phases:
+    - main
+    - pressure
+    slot: false
+  event_inputs:
+  - trial_start
+  - stimulus_onset
+  - response
+  - trial_end
+  - context_shift
+  required_fields:
+  - payload.response_value
+  - payload.correctness
+  - payload.input_mode
+  - condition.phase
+  - timing.scorable
+  - condition.timer
+  - condition.noise
+  formula:
+    ref: hier.pressure_slope_accuracy
+    description: Person random slope of accuracy on pressure (off vs on) from a hierarchical logistic model detrended on trial
+      index.
+  unit: slope
+  direction: higher_more
+  transformation: none
+  aggregation: slope
+  reliability_method: model_based_slope
+  level_rule: fixed_level_only
+  min_valid_trials:
+    count: 30
+    unit: trials
+    basis: literature_prior
+  exclusions:
+  - not_scorable
+  - invalid_placeholder
+  - interrupted_trial
+  - session_quality_exclude
+  - synthetic_session
+  - level_not_fixed_l2
+  - missing_context_shift
+  missing_data: model_partial_pooling
+  group_only: false
+  gate_eligible: true
+  timing_sensitive: false
+  sensitivity: standard
+  expected_r_lower_bound: 0.1
+  convergent_criteria:
+  - bfi2_xs.negative_emotionality
+  - ders16.total
+  notes: Slope is coded so that a smaller accuracy decrement under pressure is higher.
+- id: composure.pressure_slope_rt
+  construct: composure
+  role: secondary
+  tier: 2
+  status: provisional
+  kind: difference_slope
+  source:
+    module_id: dont_tap
+    episode_id: null
+    task: dont_tap.pressure_block
+    phases:
+    - main
+    - pressure
+    slot: false
+  event_inputs:
+  - trial_start
+  - stimulus_onset
+  - response
+  - trial_end
+  - context_shift
+  required_fields:
+  - payload.latency_ms
+  - payload.latency_anchor
+  - payload.input_mode
+  - timing.timing_flag
+  - timing.interrupted
+  - condition.timer
+  - condition.noise
+  formula:
+    ref: hier.pressure_slope_rt
+    description: Person random slope of log go-RT on pressure (off vs on), detrended on trial index.
+  unit: slope
+  direction: higher_less
+  transformation: none
+  aggregation: slope
+  reliability_method: model_based_slope
+  level_rule: fixed_level_only
+  min_valid_trials:
+    count: 30
+    unit: trials
+    basis: literature_prior
+  exclusions:
+  - not_scorable
+  - invalid_placeholder
+  - interrupted_trial
+  - timing_flagged
+  - voice_latency
+  - timeout_latency
+  - anticipatory_response
+  - session_quality_exclude
+  - synthetic_session
+  - level_not_fixed_l2
+  - missing_context_shift
+  missing_data: model_partial_pooling
+  group_only: false
+  gate_eligible: true
+  timing_sensitive: true
+  sensitivity: standard
+  expected_r_lower_bound: 0.1
+  convergent_criteria:
+  - bfi2_xs.negative_emotionality
+  notes: null
+- id: composure.error_type_shift
+  construct: composure
+  role: secondary
+  tier: 2
+  status: provisional
+  kind: raw
+  source:
+    module_id: dont_tap
+    episode_id: null
+    task: dont_tap.pressure_block
+    phases:
+    - main
+    - pressure
+    slot: false
+  event_inputs:
+  - trial_start
+  - stimulus_onset
+  - response
+  - trial_end
+  - context_shift
+  required_fields:
+  - payload.response_value
+  - payload.correctness
+  - payload.input_mode
+  - condition.phase
+  - timing.scorable
+  formula:
+    ref: gng.error_type_shift
+    description: Change in the commission share of all errors from the unpressured to the pressured block.
+  unit: proportion
+  direction: higher_less
+  transformation: none
+  aggregation: proportion
+  reliability_method: split_half_permutation
+  level_rule: fixed_level_only
+  min_valid_trials:
+    count: 40
+    unit: trials
+    basis: val02_pending
+  exclusions:
+  - not_scorable
+  - invalid_placeholder
+  - interrupted_trial
+  - session_quality_exclude
+  - synthetic_session
+  - level_not_fixed_l2
+  - missing_context_shift
+  missing_data: insufficient_trials_na
+  group_only: false
+  gate_eligible: true
+  timing_sensitive: false
+  sensitivity: standard
+  expected_r_lower_bound: 0.1
+  convergent_criteria:
+  - bfi2_xs.negative_emotionality
+  notes: null
+- id: composure.distractor_slope
+  construct: composure
+  role: secondary
+  tier: 2
+  status: provisional
+  kind: difference_slope
+  source:
+    module_id: steady_hands
+    episode_id: null
+    task: steady_hands.distractors
+    phases:
+    - main
+    slot: true
+  event_inputs:
+  - trial_start
+  - stimulus_onset
+  - response
+  - trial_end
+  required_fields:
+  - payload.latency_ms
+  - payload.latency_anchor
+  - payload.input_mode
+  - timing.timing_flag
+  - timing.interrupted
+  - payload.response_value
+  - payload.correctness
+  - condition.phase
+  - timing.scorable
+  formula:
+    ref: hier.distractor_slope
+    description: Person slope of accuracy/RT on distractor presence.
+  unit: slope
+  direction: higher_less
+  transformation: none
+  aggregation: slope
+  reliability_method: model_based_slope
+  level_rule: fixed_level_only
+  min_valid_trials:
+    count: 24
+    unit: trials
+    basis: val02_pending
+  exclusions:
+  - not_scorable
+  - invalid_placeholder
+  - interrupted_trial
+  - timing_flagged
+  - voice_latency
+  - timeout_latency
+  - anticipatory_response
+  - session_quality_exclude
+  - synthetic_session
+  - level_not_fixed_l2
+  missing_data: planned_missing_slot
+  group_only: false
+  gate_eligible: true
+  timing_sensitive: true
+  sensitivity: standard
+  expected_r_lower_bound: 0.1
+  convergent_criteria:
+  - bfi2_xs.negative_emotionality
+  notes: null
+- id: response_consistency.rt_rvi
+  construct: response_consistency
+  role: primary
+  tier: 2
+  status: provisional
+  kind: raw
+  source:
+    module_id: dont_tap
+    episode_id: null
+    task: dont_tap.gng
+    phases:
+    - main
+    slot: false
+  event_inputs:
+  - trial_start
+  - stimulus_onset
+  - response
+  - trial_end
+  required_fields:
+  - payload.latency_ms
+  - payload.latency_anchor
+  - payload.input_mode
+  - timing.timing_flag
+  - timing.interrupted
+  formula:
+    ref: style.rvi_rt
+    description: Relative variability index of correct go-RTs (Mestdagh et al., 2018), detrended on trial index.
+  unit: index
+  direction: higher_less
+  transformation: none
+  aggregation: rvi
+  reliability_method: split_half_permutation
+  level_rule: fixed_level_only
+  min_valid_trials:
+    count: 30
+    unit: trials
+    basis: literature_prior
+  exclusions:
+  - not_scorable
+  - invalid_placeholder
+  - interrupted_trial
+  - timing_flagged
+  - voice_latency
+  - timeout_latency
+  - anticipatory_response
+  - session_quality_exclude
+  - synthetic_session
+  - level_not_fixed_l2
+  missing_data: insufficient_trials_na
+  group_only: false
+  gate_eligible: true
+  timing_sensitive: true
+  sensitivity: standard
+  expected_r_lower_bound: 0.1
+  convergent_criteria:
+  - bfi2_xs.conscientiousness
+  notes: null
+- id: response_consistency.loc_scale_sigma
+  construct: response_consistency
+  role: secondary
+  tier: 2
+  status: provisional
+  kind: model_parameter
+  source:
+    module_id: cross_module
+    episode_id: null
+    task: cross_module.rt_trials
+    phases:
+    - main
+    - pressure
+    slot: false
+  event_inputs:
+  - trial_start
+  - stimulus_onset
+  - response
+  - trial_end
+  required_fields:
+  - payload.latency_ms
+  - payload.latency_anchor
+  - payload.input_mode
+  - timing.timing_flag
+  - timing.interrupted
+  formula:
+    ref: style.location_scale_sigma
+    description: Person residual SD from a location-scale mixed model of log RT across modules.
+  unit: index
+  direction: higher_less
+  transformation: none
+  aggregation: residual_sd
+  reliability_method: model_based
+  level_rule: fixed_level_only
+  min_valid_trials:
+    count: 60
+    unit: trials
+    basis: literature_prior
+  exclusions:
+  - not_scorable
+  - invalid_placeholder
+  - interrupted_trial
+  - timing_flagged
+  - voice_latency
+  - timeout_latency
+  - anticipatory_response
+  - session_quality_exclude
+  - synthetic_session
+  - level_not_fixed_l2
+  missing_data: model_partial_pooling
+  group_only: false
+  gate_eligible: true
+  timing_sensitive: true
+  sensitivity: standard
+  expected_r_lower_bound: 0.1
+  convergent_criteria:
+  - bfi2_xs.conscientiousness
+  notes: null
+- id: response_consistency.pump_rvi
+  construct: response_consistency
+  role: secondary
+  tier: 2
+  status: provisional
+  kind: raw
+  source:
+    module_id: balloon
+    episode_id: null
+    task: balloon.pumping
+    phases:
+    - main
+    slot: false
+  event_inputs:
+  - trial_start
+  - pump
+  - trial_end
+  required_fields:
+  - payload.pump_index
+  - payload.exploded
+  - payload.collected
+  formula:
+    ref: style.rvi_pumps
+    description: Relative variability index of pumps on non-exploded balloons.
+  unit: index
+  direction: higher_less
+  transformation: none
+  aggregation: rvi
+  reliability_method: split_half_permutation
+  level_rule: fixed_level_only
+  min_valid_trials:
+    count: 10
+    unit: balloons
+    basis: val02_pending
+  exclusions:
+  - not_scorable
+  - invalid_placeholder
+  - interrupted_trial
+  - session_quality_exclude
+  - synthetic_session
+  - level_not_fixed_l2
+  missing_data: insufficient_trials_na
+  group_only: false
+  gate_eligible: true
+  timing_sensitive: false
+  sensitivity: standard
+  expected_r_lower_bound: 0.1
+  convergent_criteria:
+  - bfi2_xs.conscientiousness
+  notes: null
+- id: response_consistency.choice_entropy_repeats
+  construct: response_consistency
+  role: secondary
+  tier: 2
+  status: provisional
+  kind: raw
+  source:
+    module_id: four_stalls
+    episode_id: null
+    task: four_stalls.repeats
+    phases:
+    - main
+    slot: true
+  event_inputs:
+  - trial_start
+  - stimulus_onset
+  - response
+  - trial_end
+  required_fields:
+  - payload.response_value
+  - payload.correctness
+  - payload.input_mode
+  - condition.phase
+  - timing.scorable
+  - task.probe_group_id
+  formula:
+    ref: style.choice_entropy_repeats
+    description: Mean Shannon entropy of choices across repeated identical situations (repeat_group_id).
+  unit: entropy_bits
+  direction: higher_less
+  transformation: none
+  aggregation: entropy
+  reliability_method: split_half_permutation
+  level_rule: fixed_level_only
+  min_valid_trials:
+    count: 10
+    unit: trials
+    basis: plan_ac
+  exclusions:
+  - not_scorable
+  - invalid_placeholder
+  - interrupted_trial
+  - session_quality_exclude
+  - synthetic_session
+  - level_not_fixed_l2
+  missing_data: planned_missing_slot
+  group_only: false
+  gate_eligible: true
+  timing_sensitive: false
+  sensitivity: standard
+  expected_r_lower_bound: 0.1
+  convergent_criteria:
+  - bfi2_xs.conscientiousness
+  notes: null
+- id: task_organisation.illegal_move_attempts
+  construct: task_organisation
+  role: exploratory
+  tier: 2
+  status: provisional
+  kind: raw
+  source:
+    module_id: tower
+    episode_id: null
+    task: tower.solvable
+    phases:
+    - main
+    slot: false
+  event_inputs:
+  - trial_start
+  - move
+  - trial_end
+  required_fields:
+  - payload.legal
+  - payload.problem_id
+  formula:
+    ref: tower.illegal_move_rate
+    description: Illegal move attempts per problem.
+  unit: count
+  direction: higher_less
+  transformation: log1p
+  aggregation: mean
+  reliability_method: split_half_permutation
+  level_rule: fixed_level_only
+  min_valid_trials:
+    count: 4
+    unit: problems
+    basis: plan_ac
+  exclusions:
+  - not_scorable
+  - invalid_placeholder
+  - interrupted_trial
+  - session_quality_exclude
+  - synthetic_session
+  - level_not_fixed_l2
+  missing_data: insufficient_trials_na
+  group_only: false
+  gate_eligible: false
+  timing_sensitive: false
+  sensitivity: standard
+  expected_r_lower_bound: null
+  convergent_criteria: []
+  notes: null
+- id: decisiveness.time_to_collect
+  construct: decisiveness
+  role: primary
+  tier: 1
+  status: provisional
+  kind: raw
+  source:
+    module_id: balloon
+    episode_id: null
+    task: balloon.collect
+    phases:
+    - main
+    slot: false
+  event_inputs:
+  - pump
+  - response
+  - trial_end
+  required_fields:
+  - payload.latency_ms
+  - payload.latency_anchor
+  - payload.input_mode
+  - timing.timing_flag
+  - timing.interrupted
+  - payload.collected
+  formula:
+    ref: balloon.time_to_collect
+    description: Median time from the last pump to the collect tap on collected balloons.
+  unit: ms
+  direction: higher_less
+  transformation: log
+  aggregation: median
+  reliability_method: split_half_permutation
+  level_rule: fixed_level_only
+  min_valid_trials:
+    count: 10
+    unit: balloons
+    basis: val02_pending
+  exclusions:
+  - not_scorable
+  - invalid_placeholder
+  - interrupted_trial
+  - timing_flagged
+  - voice_latency
+  - timeout_latency
+  - self_paced_outlier
+  - session_quality_exclude
+  - synthetic_session
+  - level_not_fixed_l2
+  missing_data: insufficient_trials_na
+  group_only: false
+  gate_eligible: true
+  timing_sensitive: true
+  sensitivity: standard
+  expected_r_lower_bound: 0.1
+  convergent_criteria:
+  - gdms.avoidant
+  notes: null
+- id: decisiveness.reversals_before_confirm
+  construct: decisiveness
+  role: secondary
+  tier: 1
+  status: provisional
+  kind: raw
+  source:
+    module_id: share_pot
+    episode_id: null
+    task: share_pot.contribution
+    phases:
+    - main
+    slot: false
+  event_inputs:
+  - response
+  - contribution
+  required_fields:
+  - payload.revisions
+  - payload.contributed_tokens
+  formula:
+    ref: choice.revisions_per_decision
+    description: Mean number of revisions before confirming a contribution.
+  unit: count
+  direction: higher_less
+  transformation: log1p
+  aggregation: mean
+  reliability_method: split_half_permutation
+  level_rule: fixed_level_only
+  min_valid_trials:
+    count: 8
+    unit: rounds
+    basis: plan_ac
+  exclusions:
+  - not_scorable
+  - invalid_placeholder
+  - interrupted_trial
+  - session_quality_exclude
+  - synthetic_session
+  - level_not_fixed_l2
+  missing_data: insufficient_trials_na
+  group_only: false
+  gate_eligible: true
+  timing_sensitive: false
+  sensitivity: standard
+  expected_r_lower_bound: 0.1
+  convergent_criteria:
+  - gdms.avoidant
+  notes: null
+- id: decisiveness.time_to_commit
+  construct: decisiveness
+  role: secondary
+  tier: 1
+  status: provisional
+  kind: raw
+  source:
+    module_id: four_stalls
+    episode_id: null
+    task: four_stalls.choices
+    phases:
+    - main
+    slot: true
+  event_inputs:
+  - trial_start
+  - stimulus_onset
+  - response
+  - trial_end
+  required_fields:
+  - payload.latency_ms
+  - payload.latency_anchor
+  - payload.input_mode
+  - timing.timing_flag
+  - timing.interrupted
+  formula:
+    ref: choice.time_to_commit
+    description: Median latency from audio end to confirmed stall choice.
+  unit: ms
+  direction: higher_less
+  transformation: log
+  aggregation: median
+  reliability_method: split_half_permutation
+  level_rule: fixed_level_only
+  min_valid_trials:
+    count: 20
+    unit: trials
+    basis: val02_pending
+  exclusions:
+  - not_scorable
+  - invalid_placeholder
+  - interrupted_trial
+  - timing_flagged
+  - voice_latency
+  - timeout_latency
+  - self_paced_outlier
+  - session_quality_exclude
+  - synthetic_session
+  - level_not_fixed_l2
+  missing_data: planned_missing_slot
+  group_only: false
+  gate_eligible: true
+  timing_sensitive: true
+  sensitivity: standard
+  expected_r_lower_bound: 0.1
+  convergent_criteria:
+  - gdms.avoidant
+  notes: null
+- id: decisiveness.commit_rvi
+  construct: decisiveness
+  role: exploratory
+  tier: 1
+  status: provisional
+  kind: raw
+  source:
+    module_id: balloon
+    episode_id: null
+    task: balloon.collect
+    phases:
+    - main
+    slot: false
+  event_inputs:
+  - pump
+  - response
+  required_fields:
+  - payload.latency_ms
+  - payload.latency_anchor
+  - payload.input_mode
+  - timing.timing_flag
+  - timing.interrupted
+  formula:
+    ref: style.rvi_decision_time
+    description: Within-person variability (RVI) of time-to-collect (exploratory style indicator).
+  unit: index
+  direction: higher_less
+  transformation: none
+  aggregation: rvi
+  reliability_method: split_half_permutation
+  level_rule: fixed_level_only
+  min_valid_trials:
+    count: 10
+    unit: balloons
+    basis: val02_pending
+  exclusions:
+  - not_scorable
+  - invalid_placeholder
+  - interrupted_trial
+  - timing_flagged
+  - voice_latency
+  - timeout_latency
+  - self_paced_outlier
+  - session_quality_exclude
+  - synthetic_session
+  - level_not_fixed_l2
+  missing_data: insufficient_trials_na
+  group_only: false
+  gate_eligible: false
+  timing_sensitive: true
+  sensitivity: standard
+  expected_r_lower_bound: null
+  convergent_criteria: []
+  notes: null
+- id: adaptability.perseverative_errors
+  construct: adaptability
+  role: primary
+  tier: 1
+  status: provisional
+  kind: raw
+  source:
+    module_id: card_sort
+    episode_id: null
+    task: card_sort.switch
+    phases:
+    - shift_post
+    slot: false
+  event_inputs:
+  - trial_start
+  - stimulus_onset
+  - response
+  - trial_end
+  - context_shift
+  required_fields:
+  - payload.response_value
+  - payload.correctness
+  - payload.input_mode
+  - condition.phase
+  - timing.scorable
+  formula:
+    ref: card_sort.perseverative_error_rate
+    description: Proportion of post-switch trials sorted by the previous rule (reference perseveration classification).
+  unit: proportion
+  direction: higher_less
+  transformation: logit_corrected
+  aggregation: proportion
+  reliability_method: split_half_permutation
+  level_rule: fixed_level_only
+  min_valid_trials:
+    count: 20
+    unit: post_switch_trials
+    basis: plan_ac
+  exclusions:
+  - not_scorable
+  - invalid_placeholder
+  - interrupted_trial
+  - session_quality_exclude
+  - synthetic_session
+  - level_not_fixed_l2
+  - missing_context_shift
+  missing_data: insufficient_trials_na
+  group_only: false
+  gate_eligible: true
+  timing_sensitive: false
+  sensitivity: standard
+  expected_r_lower_bound: 0.1
+  convergent_criteria:
+  - card_sort_criterion.perseverative_errors
+  - cfi.total
+  notes: null
+- id: adaptability.trials_to_reacquire
+  construct: adaptability
+  role: secondary
+  tier: 1
+  status: provisional
+  kind: raw
+  source:
+    module_id: card_sort
+    episode_id: null
+    task: card_sort.switch
+    phases:
+    - shift_post
+    slot: false
+  event_inputs:
+  - trial_start
+  - stimulus_onset
+  - response
+  - trial_end
+  - context_shift
+  required_fields:
+  - payload.response_value
+  - payload.correctness
+  - payload.input_mode
+  - condition.phase
+  - timing.scorable
+  formula:
+    ref: card_sort.trials_to_reacquire
+    description: Mean trials after each switch until 3 consecutive correct sorts.
+  unit: count
+  direction: higher_less
+  transformation: log
+  aggregation: mean
+  reliability_method: split_half_permutation
+  level_rule: fixed_level_only
+  min_valid_trials:
+    count: 20
+    unit: post_switch_trials
+    basis: plan_ac
+  exclusions:
+  - not_scorable
+  - invalid_placeholder
+  - interrupted_trial
+  - session_quality_exclude
+  - synthetic_session
+  - level_not_fixed_l2
+  - missing_context_shift
+  missing_data: insufficient_trials_na
+  group_only: false
+  gate_eligible: true
+  timing_sensitive: false
+  sensitivity: standard
+  expected_r_lower_bound: 0.1
+  convergent_criteria:
+  - card_sort_criterion.perseverative_errors
+  notes: null
+- id: adaptability.switch_cost_slope
+  construct: adaptability
+  role: secondary
+  tier: 1
+  status: provisional
+  kind: difference_slope
+  source:
+    module_id: card_sort
+    episode_id: null
+    task: card_sort.switch
+    phases:
+    - shift_pre
+    - shift_post
+    slot: false
+  event_inputs:
+  - trial_start
+  - stimulus_onset
+  - response
+  - trial_end
+  - context_shift
+  required_fields:
+  - payload.latency_ms
+  - payload.latency_anchor
+  - payload.input_mode
+  - timing.timing_flag
+  - timing.interrupted
+  formula:
+    ref: hier.switch_cost_slope
+    description: 'Person random slope: RT ~ post_switch + trial_in_run + (1 + post_switch | person).'
+  unit: slope
+  direction: higher_less
+  transformation: none
+  aggregation: slope
+  reliability_method: model_based_slope
+  level_rule: fixed_level_only
+  min_valid_trials:
+    count: 20
+    unit: post_switch_trials
+    basis: plan_ac
+  exclusions:
+  - not_scorable
+  - invalid_placeholder
+  - interrupted_trial
+  - timing_flagged
+  - voice_latency
+  - timeout_latency
+  - anticipatory_response
+  - session_quality_exclude
+  - synthetic_session
+  - level_not_fixed_l2
+  - missing_context_shift
+  missing_data: model_partial_pooling
+  group_only: false
+  gate_eligible: true
+  timing_sensitive: true
+  sensitivity: standard
+  expected_r_lower_bound: 0.1
+  convergent_criteria:
+  - cfi.total
+  notes: null
+- id: persistence_of_style.cross_segment_style_r
+  construct: persistence_of_style
+  role: primary
+  tier: 2
+  status: provisional
+  kind: raw
+  source:
+    module_id: cross_module
+    episode_id: null
+    task: cross_module.probe_segments
+    phases:
+    - main
+    slot: false
+  event_inputs:
+  - trial_start
+  - stimulus_onset
+  - response
+  - trial_end
+  required_fields:
+  - payload.latency_ms
+  - payload.latency_anchor
+  - payload.input_mode
+  - timing.timing_flag
+  - timing.interrupted
+  - task.probe_group_id
+  - payload.revisions
+  formula:
+    ref: style.cross_segment_r
+    description: Mean Fisher-z correlation of per-segment style vectors (speed, caution, revision rate, risk) across comparable
+      segments.
+  unit: correlation
+  direction: higher_more
+  transformation: fisher_z
+  aggregation: correlation
+  reliability_method: split_half_permutation
+  level_rule: fixed_level_only
+  min_valid_trials:
+    count: 4
+    unit: segments
+    basis: plan_ac
+  exclusions:
+  - not_scorable
+  - invalid_placeholder
+  - interrupted_trial
+  - session_quality_exclude
+  - synthetic_session
+  - level_not_fixed_l2
+  missing_data: insufficient_trials_na
+  group_only: false
+  gate_eligible: true
+  timing_sensitive: false
+  sensitivity: standard
+  expected_r_lower_bound: 0.1
+  convergent_criteria:
+  - bfi2_xs.conscientiousness
+  notes: null
+- id: persistence_of_style.lag1_autocorr
+  construct: persistence_of_style
+  role: secondary
+  tier: 2
+  status: provisional
+  kind: raw
+  source:
+    module_id: cross_module
+    episode_id: null
+    task: cross_module.probe_segments
+    phases:
+    - main
+    slot: false
+  event_inputs:
+  - trial_start
+  - stimulus_onset
+  - response
+  - trial_end
+  required_fields:
+  - payload.latency_ms
+  - payload.latency_anchor
+  - payload.input_mode
+  - timing.timing_flag
+  - timing.interrupted
+  formula:
+    ref: style.lag1_autocorrelation
+    description: Lag-1 autocorrelation of detrended response times within segments.
+  unit: correlation
+  direction: higher_more
+  transformation: fisher_z
+  aggregation: correlation
+  reliability_method: split_half_permutation
+  level_rule: fixed_level_only
+  min_valid_trials:
+    count: 4
+    unit: segments
+    basis: plan_ac
+  exclusions:
+  - not_scorable
+  - invalid_placeholder
+  - interrupted_trial
+  - timing_flagged
+  - voice_latency
+  - timeout_latency
+  - anticipatory_response
+  - session_quality_exclude
+  - synthetic_session
+  - level_not_fixed_l2
+  missing_data: insufficient_trials_na
+  group_only: false
+  gate_eligible: true
+  timing_sensitive: true
+  sensitivity: standard
+  expected_r_lower_bound: 0.1
+  convergent_criteria:
+  - bfi2_xs.conscientiousness
+  notes: null
+- id: persistence_of_style.post_loss_adjustment
+  construct: persistence_of_style
+  role: secondary
+  tier: 2
+  status: provisional
+  kind: raw
+  source:
+    module_id: balloon
+    episode_id: null
+    task: balloon.post_explosion
+    phases:
+    - main
+    slot: false
+  event_inputs:
+  - pump
+  - trial_end
+  required_fields:
+  - payload.pump_index
+  - payload.exploded
+  formula:
+    ref: balloon.post_loss_adjustment
+    description: Absolute change in pumps on the balloon after an explosion relative to the person's mean.
+  unit: pumps
+  direction: higher_less
+  transformation: none
+  aggregation: mean
+  reliability_method: split_half_permutation
+  level_rule: fixed_level_only
+  min_valid_trials:
+    count: 3
+    unit: events
+    basis: val02_pending
+  exclusions:
+  - not_scorable
+  - invalid_placeholder
+  - interrupted_trial
+  - session_quality_exclude
+  - synthetic_session
+  - level_not_fixed_l2
+  missing_data: insufficient_trials_na
+  group_only: false
+  gate_eligible: true
+  timing_sensitive: false
+  sensitivity: standard
+  expected_r_lower_bound: 0.1
+  convergent_criteria:
+  - bfi2_xs.conscientiousness
+  notes: null
+- id: stability.shift_slope
+  construct: stability
+  role: primary
+  tier: 2
+  status: provisional
+  kind: difference_slope
+  source:
+    module_id: cross_module
+    episode_id: null
+    task: cross_module.context_shifts
+    phases:
+    - shift_pre
+    - shift_post
+    - main
+    - pressure
+    slot: false
+  event_inputs:
+  - trial_start
+  - stimulus_onset
+  - response
+  - trial_end
+  - context_shift
+  required_fields:
+  - payload.response_value
+  - payload.correctness
+  - payload.input_mode
+  - condition.phase
+  - timing.scorable
+  formula:
+    ref: hier.shift_slope_pooled
+    description: Person random slope of standardised performance on shift (pre vs post) across all controlled shifts in the
+      pathway, detrended on trial index.
+  unit: slope
+  direction: higher_less
+  transformation: none
+  aggregation: slope
+  reliability_method: model_based_slope
+  level_rule: fixed_level_only
+  min_valid_trials:
+    count: 2
+    unit: events
+    basis: plan_ac
+  exclusions:
+  - not_scorable
+  - invalid_placeholder
+  - interrupted_trial
+  - session_quality_exclude
+  - synthetic_session
+  - level_not_fixed_l2
+  - missing_context_shift
+  missing_data: model_partial_pooling
+  group_only: false
+  gate_eligible: true
+  timing_sensitive: false
+  sensitivity: standard
+  expected_r_lower_bound: 0.1
+  convergent_criteria:
+  - bfi2_xs.negative_emotionality
+  notes: null
+- id: stability.shift_slope_rule_switch
+  construct: stability
+  role: secondary
+  tier: 2
+  status: provisional
+  kind: difference_slope
+  source:
+    module_id: card_sort
+    episode_id: null
+    task: card_sort.switch
+    phases:
+    - shift_pre
+    - shift_post
+    slot: false
+  event_inputs:
+  - trial_start
+  - stimulus_onset
+  - response
+  - trial_end
+  - context_shift
+  required_fields:
+  - payload.response_value
+  - payload.correctness
+  - payload.input_mode
+  - condition.phase
+  - timing.scorable
+  formula:
+    ref: hier.shift_slope_single
+    description: Shift slope for the card-sort rule switches.
+  unit: slope
+  direction: higher_less
+  transformation: none
+  aggregation: slope
+  reliability_method: model_based_slope
+  level_rule: fixed_level_only
+  min_valid_trials:
+    count: 20
+    unit: post_switch_trials
+    basis: plan_ac
+  exclusions:
+  - not_scorable
+  - invalid_placeholder
+  - interrupted_trial
+  - session_quality_exclude
+  - synthetic_session
+  - level_not_fixed_l2
+  - missing_context_shift
+  missing_data: model_partial_pooling
+  group_only: false
+  gate_eligible: true
+  timing_sensitive: false
+  sensitivity: standard
+  expected_r_lower_bound: 0.1
+  convergent_criteria:
+  - bfi2_xs.negative_emotionality
+  notes: null
+- id: stability.shift_slope_pressure
+  construct: stability
+  role: secondary
+  tier: 2
+  status: provisional
+  kind: difference_slope
+  source:
+    module_id: dont_tap
+    episode_id: null
+    task: dont_tap.pressure_block
+    phases:
+    - main
+    - pressure
+    slot: false
+  event_inputs:
+  - trial_start
+  - stimulus_onset
+  - response
+  - trial_end
+  - context_shift
+  required_fields:
+  - payload.response_value
+  - payload.correctness
+  - payload.input_mode
+  - condition.phase
+  - timing.scorable
+  formula:
+    ref: hier.shift_slope_single
+    description: Shift slope for the Don't-Tap pressure block (standardised within person).
+  unit: slope
+  direction: higher_less
+  transformation: none
+  aggregation: slope
+  reliability_method: model_based_slope
+  level_rule: fixed_level_only
+  min_valid_trials:
+    count: 30
+    unit: trials
+    basis: literature_prior
+  exclusions:
+  - not_scorable
+  - invalid_placeholder
+  - interrupted_trial
+  - session_quality_exclude
+  - synthetic_session
+  - level_not_fixed_l2
+  - missing_context_shift
+  missing_data: model_partial_pooling
+  group_only: false
+  gate_eligible: true
+  timing_sensitive: false
+  sensitivity: standard
+  expected_r_lower_bound: 0.1
+  convergent_criteria:
+  - bfi2_xs.negative_emotionality
+  notes: null
+- id: expressive_restraint.premature_taps
+  construct: expressive_restraint
+  role: primary
+  tier: 2
+  status: provisional
+  kind: raw
+  source:
+    module_id: dont_tap
+    episode_id: null
+    task: dont_tap.gng
+    phases:
+    - main
+    - pressure
+    slot: false
+  event_inputs:
+  - trial_start
+  - stimulus_onset
+  - input.raw_tap
+  required_fields:
+  - payload.classification
+  - payload.anchor_offset_ms
+  formula:
+    ref: taps.premature_rate
+    description: Taps < 150 ms after onset or during the ISI, per trial.
+  unit: count
+  direction: higher_less
+  transformation: log1p
+  aggregation: mean
+  reliability_method: split_half_permutation
+  level_rule: fixed_level_only
+  min_valid_trials:
+    count: 40
+    unit: trials
+    basis: val02_pending
+  exclusions:
+  - not_scorable
+  - invalid_placeholder
+  - interrupted_trial
+  - multi_touch_interference
+  - timing_flagged
+  - session_quality_exclude
+  - synthetic_session
+  - level_not_fixed_l2
+  missing_data: insufficient_trials_na
+  group_only: false
+  gate_eligible: true
+  timing_sensitive: true
+  sensitivity: standard
+  expected_r_lower_bound: 0.1
+  convergent_criteria:
+  - erq.suppression
+  - bfi2_xs.extraversion
+  notes: null
+- id: expressive_restraint.extra_taps
+  construct: expressive_restraint
+  role: secondary
+  tier: 2
+  status: provisional
+  kind: raw
+  source:
+    module_id: dont_tap
+    episode_id: null
+    task: dont_tap.gng
+    phases:
+    - main
+    - pressure
+    slot: false
+  event_inputs:
+  - trial_start
+  - input.raw_tap
+  - response
+  required_fields:
+  - payload.classification
+  - payload.tap_count
+  formula:
+    ref: taps.extra_rate
+    description: Taps beyond the first committed response, per trial.
+  unit: count
+  direction: higher_less
+  transformation: log1p
+  aggregation: mean
+  reliability_method: split_half_permutation
+  level_rule: fixed_level_only
+  min_valid_trials:
+    count: 40
+    unit: trials
+    basis: val02_pending
+  exclusions:
+  - not_scorable
+  - invalid_placeholder
+  - interrupted_trial
+  - multi_touch_interference
+  - timing_flagged
+  - session_quality_exclude
+  - synthetic_session
+  - level_not_fixed_l2
+  missing_data: insufficient_trials_na
+  group_only: false
+  gate_eligible: true
+  timing_sensitive: false
+  sensitivity: standard
+  expected_r_lower_bound: 0.1
+  convergent_criteria:
+  - erq.suppression
+  - bfi2_xs.extraversion
+  notes: null
+- id: expressive_restraint.held_vs_free_slope
+  construct: expressive_restraint
+  role: secondary
+  tier: 2
+  status: provisional
+  kind: difference_slope
+  source:
+    module_id: steady_hands
+    episode_id: null
+    task: steady_hands.blocks
+    phases:
+    - main
+    slot: true
+  event_inputs:
+  - trial_start
+  - input.raw_tap
+  - input.hold
+  - context_shift
+  required_fields:
+  - payload.classification
+  - payload.hold_ms
+  formula:
+    ref: hier.held_vs_free_slope
+    description: Person slope of extra taps in held vs free blocks.
+  unit: slope
+  direction: higher_less
+  transformation: none
+  aggregation: slope
+  reliability_method: model_based_slope
+  level_rule: fixed_level_only
+  min_valid_trials:
+    count: 24
+    unit: trials
+    basis: val02_pending
+  exclusions:
+  - not_scorable
+  - invalid_placeholder
+  - interrupted_trial
+  - multi_touch_interference
+  - timing_flagged
+  - session_quality_exclude
+  - synthetic_session
+  - level_not_fixed_l2
+  - missing_context_shift
+  missing_data: planned_missing_slot
+  group_only: false
+  gate_eligible: true
+  timing_sensitive: false
+  sensitivity: standard
+  expected_r_lower_bound: 0.1
+  convergent_criteria:
+  - erq.suppression
+  notes: null
+- id: expressive_restraint.iti_rvi
+  construct: expressive_restraint
+  role: exploratory
+  tier: 2
+  status: provisional
+  kind: raw
+  source:
+    module_id: dont_tap
+    episode_id: null
+    task: dont_tap.gng
+    phases:
+    - main
+    slot: false
+  event_inputs:
+  - input.raw_tap
+  required_fields:
+  - payload.pointer_t_ms
+  formula:
+    ref: style.rvi_inter_tap_interval
+    description: RVI of inter-tap intervals (exploratory style indicator).
+  unit: index
+  direction: higher_less
+  transformation: none
+  aggregation: rvi
+  reliability_method: split_half_permutation
+  level_rule: fixed_level_only
+  min_valid_trials:
+    count: 40
+    unit: trials
+    basis: val02_pending
+  exclusions:
+  - not_scorable
+  - invalid_placeholder
+  - interrupted_trial
+  - multi_touch_interference
+  - timing_flagged
+  - session_quality_exclude
+  - synthetic_session
+  - level_not_fixed_l2
+  missing_data: insufficient_trials_na
+  group_only: false
+  gate_eligible: false
+  timing_sensitive: true
+  sensitivity: standard
+  expected_r_lower_bound: null
+  convergent_criteria: []
+  notes: null
+- id: teamwork.mean_contribution
+  construct: teamwork
+  role: primary
+  tier: 1
+  status: provisional
+  kind: raw
+  source:
+    module_id: share_pot
+    episode_id: null
+    task: share_pot.rounds
+    phases:
+    - main
+    slot: false
+  event_inputs:
+  - contribution
+  - partner_action
+  required_fields:
+  - payload.contributed_tokens
+  - payload.endowment_tokens
+  formula:
+    ref: public_goods.mean_contribution
+    description: Mean contributed share of the endowment across rounds.
+  unit: proportion
+  direction: higher_more
+  transformation: none
+  aggregation: mean
+  reliability_method: split_half_permutation
+  level_rule: fixed_level_only
+  min_valid_trials:
+    count: 8
+    unit: rounds
+    basis: plan_ac
+  exclusions:
+  - not_scorable
+  - invalid_placeholder
+  - interrupted_trial
+  - session_quality_exclude
+  - synthetic_session
+  - level_not_fixed_l2
+  missing_data: insufficient_trials_na
+  group_only: false
+  gate_eligible: true
+  timing_sensitive: false
+  sensitivity: high
+  expected_r_lower_bound: 0.1
+  convergent_criteria:
+  - bfi2_xs.agreeableness
+  - observed_cooperation.total
+  notes: null
+- id: teamwork.response_to_partner_defection
+  construct: teamwork
+  role: secondary
+  tier: 1
+  status: provisional
+  kind: raw
+  source:
+    module_id: share_pot
+    episode_id: null
+    task: share_pot.free_rider_rounds
+    phases:
+    - main
+    slot: false
+  event_inputs:
+  - contribution
+  - partner_action
+  required_fields:
+  - payload.contributed_tokens
+  - payload.partner_type
+  formula:
+    ref: public_goods.post_defection_maintenance
+    description: Contribution after free-rider rounds relative to the person's cooperative-partner baseline.
+  unit: proportion
+  direction: higher_more
+  transformation: none
+  aggregation: mean
+  reliability_method: split_half_permutation
+  level_rule: fixed_level_only
+  min_valid_trials:
+    count: 3
+    unit: rounds
+    basis: val02_pending
+  exclusions:
+  - not_scorable
+  - invalid_placeholder
+  - interrupted_trial
+  - session_quality_exclude
+  - synthetic_session
+  - level_not_fixed_l2
+  missing_data: insufficient_trials_na
+  group_only: false
+  gate_eligible: true
+  timing_sensitive: false
+  sensitivity: high
+  expected_r_lower_bound: 0.1
+  convergent_criteria:
+  - bfi2_xs.agreeableness
+  notes: null
+- id: teamwork.response_to_partner_error
+  construct: teamwork
+  role: secondary
+  tier: 1
+  status: provisional
+  kind: single_event_unscorable
+  source:
+    module_id: share_pot
+    episode_id: null
+    task: share_pot.error_round
+    phases:
+    - main
+    slot: false
+  event_inputs:
+  - contribution
+  - partner_action
+  required_fields:
+  - payload.contributed_tokens
+  - payload.is_error
+  formula:
+    ref: public_goods.post_error_contribution
+    description: Contribution change after the scripted partner error round.
+  unit: proportion
+  direction: higher_more
+  transformation: none
+  aggregation: mean
+  reliability_method: not_computed
+  level_rule: fixed_level_only
+  min_valid_trials:
+    count: 1
+    unit: events
+    basis: plan_ac
+  exclusions:
+  - not_scorable
+  - invalid_placeholder
+  - interrupted_trial
+  - session_quality_exclude
+  - synthetic_session
+  - level_not_fixed_l2
+  missing_data: insufficient_trials_na
+  group_only: false
+  gate_eligible: false
+  timing_sensitive: false
+  sensitivity: high
+  expected_r_lower_bound: null
+  convergent_criteria: []
+  notes: 'One error round per session: not individually scorable.'
+- id: problem_solving.excess_moves
+  construct: problem_solving
+  role: primary
+  tier: 1
+  status: provisional
+  kind: raw
+  source:
+    module_id: tower
+    episode_id: null
+    task: tower.solvable
+    phases:
+    - main
+    slot: false
+  event_inputs:
+  - trial_start
+  - move
+  - trial_end
+  required_fields:
+  - payload.legal
+  - payload.move_index
+  - payload.problem_id
+  formula:
+    ref: tower.excess_moves
+    description: Moves beyond the solver optimum, summed over solved problems (optimal bot scores 0).
+  unit: moves
+  direction: higher_less
+  transformation: log1p
+  aggregation: sum
+  reliability_method: split_half_permutation
+  level_rule: fixed_level_only
+  min_valid_trials:
+    count: 4
+    unit: problems
+    basis: plan_ac
+  exclusions:
+  - not_scorable
+  - invalid_placeholder
+  - interrupted_trial
+  - session_quality_exclude
+  - synthetic_session
+  - level_not_fixed_l2
+  missing_data: insufficient_trials_na
+  group_only: false
+  gate_eligible: true
+  timing_sensitive: false
+  sensitivity: standard
+  expected_r_lower_bound: 0.1
+  convergent_criteria:
+  - tol_board.excess_moves
+  notes: null
+- id: problem_solving.planning_time
+  construct: problem_solving
+  role: secondary
+  tier: 1
+  status: provisional
+  kind: raw
+  source:
+    module_id: tower
+    episode_id: null
+    task: tower.solvable
+    phases:
+    - main
+    slot: false
+  event_inputs:
+  - stimulus_onset
+  - move
+  required_fields:
+  - payload.move_index
+  - timing.t_mono_ms
+  formula:
+    ref: tower.planning_time
+    description: Median time from problem onset to the first move on solvable problems.
+  unit: ms
+  direction: higher_more
+  transformation: log
+  aggregation: median
+  reliability_method: split_half_permutation
+  level_rule: fixed_level_only
+  min_valid_trials:
+    count: 4
+    unit: problems
+    basis: plan_ac
+  exclusions:
+  - not_scorable
+  - invalid_placeholder
+  - interrupted_trial
+  - timing_flagged
+  - voice_latency
+  - timeout_latency
+  - self_paced_outlier
+  - session_quality_exclude
+  - synthetic_session
+  - level_not_fixed_l2
+  missing_data: insufficient_trials_na
+  group_only: false
+  gate_eligible: true
+  timing_sensitive: true
+  sensitivity: standard
+  expected_r_lower_bound: 0.1
+  convergent_criteria:
+  - tol_board.initial_thinking_time
+  notes: Shares data with initiative.planning_time_before_first_move (method overlap reported).
+- id: problem_solving.recovery_after_failure
+  construct: problem_solving
+  role: secondary
+  tier: 1
+  status: provisional
+  kind: raw
+  source:
+    module_id: tower
+    episode_id: null
+    task: tower.post_failure
+    phases:
+    - main
+    slot: false
+  event_inputs:
+  - trial_start
+  - move
+  - trial_end
+  required_fields:
+  - payload.legal
+  - payload.problem_id
+  formula:
+    ref: tower.recovery_after_failure
+    description: Excess-move efficiency on the solvable problem following an unsolvable or failed item, relative to baseline.
+  unit: index
+  direction: higher_more
+  transformation: none
+  aggregation: mean
+  reliability_method: split_half_permutation
+  level_rule: fixed_level_only
+  min_valid_trials:
+    count: 2
+    unit: events
+    basis: plan_ac
+  exclusions:
+  - not_scorable
+  - invalid_placeholder
+  - interrupted_trial
+  - session_quality_exclude
+  - synthetic_session
+  - level_not_fixed_l2
+  missing_data: insufficient_trials_na
+  group_only: false
+  gate_eligible: true
+  timing_sensitive: false
+  sensitivity: standard
+  expected_r_lower_bound: 0.1
+  convergent_criteria:
+  - tol_board.excess_moves
+  notes: null
+- id: integrity.dice_overreport_rate
+  construct: integrity
+  role: secondary
+  tier: 2
+  status: provisional
+  kind: group_only
+  source:
+    module_id: private_dice
+    episode_id: null
+    task: private_dice.reports
+    phases:
+    - main
+    slot: true
+  event_inputs:
+  - report
+  required_fields:
+  - payload.reported_value
+  formula:
+    ref: group.dice_overreport_rate
+    description: 'Group estimator of over-reporting: observed share of high reports minus the fair-die expectation (true outcomes
+      are never logged).'
+  unit: proportion
+  direction: higher_less
+  transformation: none
+  aggregation: group_estimator
+  reliability_method: not_computed
+  level_rule: fixed_level_only
+  min_valid_trials:
+    count: 10
+    unit: reports
+    basis: plan_ac
+  exclusions:
+  - not_scorable
+  - invalid_placeholder
+  - session_quality_exclude
+  - synthetic_session
+  missing_data: group_level_only
+  group_only: true
+  gate_eligible: false
+  timing_sensitive: false
+  sensitivity: high
+  expected_r_lower_bound: null
+  convergent_criteria: []
+  notes: GROUP LEVEL ONLY. Never joined to individual tables; individual scorers reject it.
+- id: integrity.report_distribution_skew
+  construct: integrity
+  role: secondary
+  tier: 2
+  status: provisional
+  kind: group_only
+  source:
+    module_id: private_dice
+    episode_id: null
+    task: private_dice.reports
+    phases:
+    - main
+    slot: true
+  event_inputs:
+  - report
+  required_fields:
+  - payload.reported_value
+  formula:
+    ref: group.dice_distribution_skew
+    description: Group-level divergence of the reported distribution from uniform; also by HEXACO-HH tertile.
+  unit: index
+  direction: higher_less
+  transformation: none
+  aggregation: group_estimator
+  reliability_method: not_computed
+  level_rule: fixed_level_only
+  min_valid_trials:
+    count: 10
+    unit: reports
+    basis: plan_ac
+  exclusions:
+  - not_scorable
+  - invalid_placeholder
+  - session_quality_exclude
+  - synthetic_session
+  missing_data: group_level_only
+  group_only: true
+  gate_eligible: false
+  timing_sensitive: false
+  sensitivity: high
+  expected_r_lower_bound: null
+  convergent_criteria: []
+  notes: GROUP LEVEL ONLY.
+- id: initiative.unprompted_share
+  construct: initiative
+  role: primary
+  tier: 2
+  status: provisional
+  kind: raw
+  source:
+    module_id: share_pot
+    episode_id: null
+    task: share_pot.rounds
+    phases:
+    - main
+    slot: false
+  event_inputs:
+  - contribution
+  required_fields:
+  - payload.unprompted
+  - payload.contributed_tokens
+  formula:
+    ref: public_goods.unprompted_share_rate
+    description: Proportion of rounds with a contribution made before any prompt.
+  unit: proportion
+  direction: higher_more
+  transformation: logit_corrected
+  aggregation: proportion
+  reliability_method: split_half_permutation
+  level_rule: fixed_level_only
+  min_valid_trials:
+    count: 8
+    unit: rounds
+    basis: plan_ac
+  exclusions:
+  - not_scorable
+  - invalid_placeholder
+  - interrupted_trial
+  - session_quality_exclude
+  - synthetic_session
+  - level_not_fixed_l2
+  - prompted_optional_action
+  missing_data: insufficient_trials_na
+  group_only: false
+  gate_eligible: true
+  timing_sensitive: false
+  sensitivity: standard
+  expected_r_lower_bound: 0.1
+  convergent_criteria:
+  - bfi2_xs.conscientiousness
+  - grit_s.total
+  notes: null
+- id: initiative.planning_time_before_first_move
+  construct: initiative
+  role: secondary
+  tier: 2
+  status: provisional
+  kind: raw
+  source:
+    module_id: tower
+    episode_id: null
+    task: tower.solvable
+    phases:
+    - main
+    slot: false
+  event_inputs:
+  - stimulus_onset
+  - move
+  required_fields:
+  - payload.move_index
+  - timing.t_mono_ms
+  formula:
+    ref: tower.planning_time
+    description: Planning before acting on Tower problems (same measure as problem_solving.planning_time).
+  unit: ms
+  direction: higher_more
+  transformation: log
+  aggregation: median
+  reliability_method: split_half_permutation
+  level_rule: fixed_level_only
+  min_valid_trials:
+    count: 4
+    unit: problems
+    basis: plan_ac
+  exclusions:
+  - not_scorable
+  - invalid_placeholder
+  - interrupted_trial
+  - timing_flagged
+  - voice_latency
+  - timeout_latency
+  - self_paced_outlier
+  - session_quality_exclude
+  - synthetic_session
+  - level_not_fixed_l2
+  missing_data: insufficient_trials_na
+  group_only: false
+  gate_eligible: true
+  timing_sensitive: true
+  sensitivity: standard
+  expected_r_lower_bound: 0.1
+  convergent_criteria:
+  - bfi2_xs.conscientiousness
+  notes: null
+- id: risk_preference.adjusted_pumps
+  construct: risk_preference
+  role: primary
+  tier: 1
+  status: provisional
+  kind: raw
+  source:
+    module_id: balloon
+    episode_id: null
+    task: balloon.pumping
+    phases:
+    - main
+    slot: false
+  event_inputs:
+  - trial_start
+  - pump
+  - trial_end
+  required_fields:
+  - payload.pump_index
+  - payload.exploded
+  - payload.collected
+  - payload.risk_colour
+  formula:
+    ref: balloon.adjusted_pumps
+    description: Mean pumps on balloons that did not explode (Lejuez et al., 2002).
+  unit: pumps
+  direction: higher_more
+  transformation: none
+  aggregation: mean
+  reliability_method: split_half_permutation
+  level_rule: fixed_level_only
+  min_valid_trials:
+    count: 10
+    unit: balloons
+    basis: literature_prior
+  exclusions:
+  - not_scorable
+  - invalid_placeholder
+  - interrupted_trial
+  - session_quality_exclude
+  - synthetic_session
+  - level_not_fixed_l2
+  missing_data: insufficient_trials_na
+  group_only: false
+  gate_eligible: true
+  timing_sensitive: false
+  sensitivity: high
+  expected_r_lower_bound: 0.1
+  convergent_criteria:
+  - general_risk.risk_willingness
+  notes: null
+- id: risk_preference.explosion_rate
+  construct: risk_preference
+  role: secondary
+  tier: 1
+  status: provisional
+  kind: raw
+  source:
+    module_id: balloon
+    episode_id: null
+    task: balloon.pumping
+    phases:
+    - main
+    slot: false
+  event_inputs:
+  - pump
+  - trial_end
+  required_fields:
+  - payload.exploded
+  formula:
+    ref: balloon.explosion_rate
+    description: Proportion of balloons that exploded.
+  unit: proportion
+  direction: higher_more
+  transformation: logit_corrected
+  aggregation: proportion
+  reliability_method: split_half_permutation
+  level_rule: fixed_level_only
+  min_valid_trials:
+    count: 15
+    unit: balloons
+    basis: plan_ac
+  exclusions:
+  - not_scorable
+  - invalid_placeholder
+  - interrupted_trial
+  - session_quality_exclude
+  - synthetic_session
+  - level_not_fixed_l2
+  missing_data: insufficient_trials_na
+  group_only: false
+  gate_eligible: true
+  timing_sensitive: false
+  sensitivity: high
+  expected_r_lower_bound: 0.1
+  convergent_criteria:
+  - general_risk.risk_willingness
+  notes: null
+- id: risk_preference.high_variance_stall_share
+  construct: risk_preference
+  role: secondary
+  tier: 1
+  status: provisional
+  kind: raw
+  source:
+    module_id: four_stalls
+    episode_id: null
+    task: four_stalls.choices
+    phases:
+    - main
+    slot: true
+  event_inputs:
+  - trial_start
+  - stimulus_onset
+  - response
+  - trial_end
+  required_fields:
+  - payload.response_value
+  - payload.correctness
+  - payload.input_mode
+  - condition.phase
+  - timing.scorable
+  formula:
+    ref: igt.high_variance_share
+    description: Share of choices from the two high-variance stalls in the second half.
+  unit: proportion
+  direction: higher_more
+  transformation: logit_corrected
+  aggregation: proportion
+  reliability_method: split_half_permutation
+  level_rule: fixed_level_only
+  min_valid_trials:
+    count: 20
+    unit: trials
+    basis: val02_pending
+  exclusions:
+  - not_scorable
+  - invalid_placeholder
+  - interrupted_trial
+  - session_quality_exclude
+  - synthetic_session
+  - level_not_fixed_l2
+  missing_data: planned_missing_slot
+  group_only: false
+  gate_eligible: true
+  timing_sensitive: false
+  sensitivity: high
+  expected_r_lower_bound: 0.1
+  convergent_criteria:
+  - general_risk.risk_willingness
+  notes: null
+- id: persistence.time_on_unsolvable
+  construct: persistence
+  role: primary
+  tier: 1
+  status: provisional
+  kind: raw
+  source:
+    module_id: tower
+    episode_id: null
+    task: tower.unsolvable
+    phases:
+    - main
+    slot: false
+  event_inputs:
+  - stimulus_onset
+  - move
+  - trial_end
+  - module_end
+  required_fields:
+  - payload.outcome
+  - timing.t_mono_ms
+  - payload.problem_id
+  formula:
+    ref: tower.time_on_unsolvable
+    description: Mean time spent on unsolvable items before skipping or reaching the cap (only items flagged unsolvable).
+  unit: seconds
+  direction: higher_more
+  transformation: log
+  aggregation: mean
+  reliability_method: split_half_permutation
+  level_rule: fixed_level_only
+  min_valid_trials:
+    count: 2
+    unit: unsolvable_items
+    basis: plan_ac
+  exclusions:
+  - not_scorable
+  - invalid_placeholder
+  - interrupted_trial
+  - session_quality_exclude
+  - synthetic_session
+  - level_not_fixed_l2
+  missing_data: insufficient_trials_na
+  group_only: false
+  gate_eligible: true
+  timing_sensitive: false
+  sensitivity: standard
+  expected_r_lower_bound: 0.1
+  convergent_criteria:
+  - grit_s.total
+  notes: null
+- id: persistence.give_up
+  construct: persistence
+  role: secondary
+  tier: 1
+  status: provisional
+  kind: raw
+  source:
+    module_id: tower
+    episode_id: null
+    task: tower.unsolvable
+    phases:
+    - main
+    slot: false
+  event_inputs:
+  - trial_end
+  - response
+  required_fields:
+  - payload.outcome
+  - payload.response_value
+  formula:
+    ref: tower.give_up_rate
+    description: Proportion of unsolvable items skipped as soon as the skip icon appeared (counted only on unsolvable items).
+  unit: proportion
+  direction: higher_less
+  transformation: none
+  aggregation: proportion
+  reliability_method: split_half_permutation
+  level_rule: fixed_level_only
+  min_valid_trials:
+    count: 2
+    unit: unsolvable_items
+    basis: plan_ac
+  exclusions:
+  - not_scorable
+  - invalid_placeholder
+  - interrupted_trial
+  - session_quality_exclude
+  - synthetic_session
+  - level_not_fixed_l2
+  missing_data: insufficient_trials_na
+  group_only: false
+  gate_eligible: true
+  timing_sensitive: false
+  sensitivity: standard
+  expected_r_lower_bound: 0.1
+  convergent_criteria:
+  - grit_s.total
+  notes: null
+- id: persistence.effort_completion_rate
+  construct: persistence
+  role: secondary
+  tier: 1
+  status: provisional
+  kind: raw
+  source:
+    module_id: wait_or_now
+    episode_id: null
+    task: wait_or_now.effort
+    phases:
+    - main
+    slot: true
+  event_inputs:
+  - input.hold
+  - trial_end
+  required_fields:
+  - payload.completed
+  - payload.hold_ms
+  formula:
+    ref: effort.completion_rate
+    description: Proportion of chosen effortful holds completed.
+  unit: proportion
+  direction: higher_more
+  transformation: logit_corrected
+  aggregation: proportion
+  reliability_method: split_half_permutation
+  level_rule: fixed_level_only
+  min_valid_trials:
+    count: 4
+    unit: choices
+    basis: val02_pending
+  exclusions:
+  - not_scorable
+  - invalid_placeholder
+  - interrupted_trial
+  - session_quality_exclude
+  - synthetic_session
+  - level_not_fixed_l2
+  missing_data: planned_missing_slot
+  group_only: false
+  gate_eligible: true
+  timing_sensitive: false
+  sensitivity: standard
+  expected_r_lower_bound: 0.1
+  convergent_criteria:
+  - grit_s.total
+  notes: null

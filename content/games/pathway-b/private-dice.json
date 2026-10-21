@@ -1,0 +1,143 @@
+{
+  "schema_version": "1.0",
+  "config_id": "private_dice.v0",
+  "module_id": "private_dice",
+  "kind": "micro",
+  "pathways": ["B"],
+  "version": "0.1.0",
+  "paradigms": ["private_report"],
+  "constructs": ["integrity", "persistence_of_style", "response_consistency", "stability"],
+  "indicators": [
+    "integrity.dice_overreport_rate",
+    "integrity.report_distribution_skew",
+    "persistence_of_style.cross_segment_style_r",
+    "persistence_of_style.lag1_autocorr",
+    "response_consistency.loc_scale_sigma",
+    "stability.shift_slope"
+  ],
+  "slot": true,
+  "scorable": true,
+  "budget": {
+    "intro_ms": 7000,
+    "outro_ms": 1500,
+    "target_ms_l2": 75300,
+    "soft_cap_ms": 85000,
+    "hard_cap_ms": 86000
+  },
+  "levels": {
+    "L1": {
+      "timing": {
+        "reveal_ms": 2600,
+        "report_window_ms": 6000
+      },
+      "seconds_per_trial": {
+        "median": 5.9,
+        "slow": 6.2
+      },
+      "estimated_duration_ms": {
+        "median": 77300,
+        "slow": 80300,
+        "slow_trimmed": 80300
+      }
+    },
+    "L2": {
+      "timing": {
+        "reveal_ms": 2400,
+        "report_window_ms": 5500
+      },
+      "seconds_per_trial": {
+        "median": 5.7,
+        "slow": 6.1
+      },
+      "estimated_duration_ms": {
+        "median": 75300,
+        "slow": 79300,
+        "slow_trimmed": 79300
+      }
+    },
+    "L3": {
+      "timing": {
+        "reveal_ms": 2200,
+        "report_window_ms": 5000
+      },
+      "seconds_per_trial": {
+        "median": 5.5,
+        "slow": 5.9
+      },
+      "estimated_duration_ms": {
+        "median": 73300,
+        "slow": 77300,
+        "slow_trimmed": 77300
+      }
+    }
+  },
+  "blocks": [
+    {
+      "block_id": "practice",
+      "phase": "practice",
+      "condition_id": "standard",
+      "trials": 1,
+      "min_trials": 1,
+      "budget_trial_ms": 5000,
+      "scorable": false,
+      "conditions": {
+        "timer": false,
+        "noise": false,
+        "shift_active": false
+      },
+      "beats": []
+    },
+    {
+      "block_id": "reports",
+      "phase": "main",
+      "condition_id": "private_report",
+      "trials": 10,
+      "min_trials": 10,
+      "budget_trial_ms": null,
+      "scorable": true,
+      "conditions": {
+        "timer": false,
+        "noise": false,
+        "shift_active": false
+      },
+      "beats": ["cupped_hand_reveal", "picture_report"]
+    },
+    {
+      "block_id": "probe",
+      "phase": "main",
+      "condition_id": "probe",
+      "trials": 4,
+      "min_trials": 4,
+      "budget_trial_ms": 1200,
+      "scorable": true,
+      "conditions": {
+        "timer": false,
+        "noise": false,
+        "shift_active": false
+      },
+      "beats": ["probe_segment"]
+    }
+  ],
+  "min_counts": {
+    "reports": 10
+  },
+  "planned_counts": {
+    "reports": 10
+  },
+  "constraints": {
+    "integrity_dice_mode": "a",
+    "true_outcome_logged": false,
+    "voice_forbidden": true,
+    "headset_required_open_public": true
+  },
+  "context_shift": null,
+  "forms": ["form_1"],
+  "audio_keys": [
+    "private_dice.intro",
+    "private_dice.practice",
+    "private_dice.outro",
+    "private_dice.replay"
+  ],
+  "requires_numeracy": false,
+  "notes": "Slot module. Mode (a): the true outcome is never logged; outputs feed group-level estimates only (MG-06). Never voiced through speakers."
+}
