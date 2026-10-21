@@ -1,0 +1,5 @@
+renv/library
+renv/staging
+.Rproj.user
+.Rhistory
+*.Rcheck

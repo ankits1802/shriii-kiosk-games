@@ -19,6 +19,7 @@ members = [
     "shriii-contracts",
     "shriii-i18n",
     "shriii-prereg",
+    "shriii-rbridge",
     "shriii-reports",
     "shriii-scoring",
     "shriii-simulator",
@@ -2584,6 +2585,27 @@ requires-dist = [
 ]
 
 [[package]]
+name = "shriii-rbridge"
+version = "0.1.0"
+source = { editable = "python/shriii_rbridge" }
+dependencies = [
+    { name = "numpy" },
+    { name = "pandas" },
+    { name = "pyarrow" },
+    { name = "pyyaml" },
+    { name = "shriii-validation" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "numpy", specifier = ">=2.3" },
+    { name = "pandas", specifier = ">=2.3" },
+    { name = "pyarrow", specifier = ">=21" },
+    { name = "pyyaml", specifier = ">=6" },
+    { name = "shriii-validation", editable = "python/shriii_validation" },
+]
+
+[[package]]
 name = "shriii-reports"
 version = "0.1.0"
 source = { editable = "reports" }
@@ -2700,6 +2722,7 @@ dependencies = [
     { name = "shriii-contracts" },
     { name = "shriii-i18n" },
     { name = "shriii-prereg" },
+    { name = "shriii-rbridge" },
     { name = "shriii-reports" },
     { name = "shriii-scoring" },
     { name = "shriii-simulator" },
@@ -2723,6 +2746,7 @@ requires-dist = [
     { name = "shriii-contracts", editable = "python/shriii_contracts" },
     { name = "shriii-i18n", editable = "tools/i18n" },
     { name = "shriii-prereg", editable = "tools/prereg" },
+    { name = "shriii-rbridge", editable = "python/shriii_rbridge" },
     { name = "shriii-reports", editable = "reports" },
     { name = "shriii-scoring", editable = "python/shriii_scoring" },
     { name = "shriii-simulator", editable = "python/shriii_simulator" },
