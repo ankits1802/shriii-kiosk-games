@@ -349,21 +349,36 @@ def mcdonald_omega(items: ArrayLike, *, ci_level: float = 0.95, n_boot: int = 10
             provenance=prov,
         )
     est, converged = _omega_value(x)
+    if not np.isfinite(est):
+        return EvidenceResult.unavailable(
+            "mcdonald_omega",
+            "omega_total_one_factor_ml",
+            "an item has no variance: the one-factor model is not estimable",
+            n=n,
+            status="insufficient",
+            provenance=prov,
+        )
     rng = np.random.default_rng(seed)
     boots = []
     for _ in range(n_boot):
         b, _ = _omega_value(x[rng.integers(0, n, n)])
         if np.isfinite(b):
             boots.append(b)
-    lo, hi = np.percentile(boots, [100 * (1 - ci_level) / 2, 100 * (1 + ci_level) / 2])
     checks, warnings = _assumptions(x)
+    lo: float | None = None
+    hi: float | None = None
+    if len(boots) >= 2:
+        p_lo, p_hi = np.percentile(boots, [100 * (1 - ci_level) / 2, 100 * (1 + ci_level) / 2])
+        lo, hi = float(p_lo), float(p_hi)
+    else:
+        warnings.append("bootstrap CI not estimable: too few resamples had variance in every item")
     if not converged:
         warnings.append("one-factor ML did not converge")
     return EvidenceResult(
         "mcdonald_omega",
         est,
-        float(lo),
-        float(hi),
+        lo,
+        hi,
         ci_level,
         n,
         "omega_total_one_factor_ml_bootstrap",

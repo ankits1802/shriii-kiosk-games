@@ -202,3 +202,11 @@ def test_omega_bootstrap_survives_resamples_with_a_constant_item() -> None:
     items = np.column_stack([items, rare])
     res = mcdonald_omega(items, n_boot=200, seed=1)
     assert res.n == n
+
+
+def test_omega_is_unavailable_when_an_item_is_constant() -> None:
+    rng = np.random.default_rng(4)
+    f = rng.normal(size=20)
+    items = np.column_stack([f + rng.normal(scale=0.5, size=20) for _ in range(3)] + [np.ones(20)])
+    res = mcdonald_omega(items, n_boot=50, seed=1)
+    assert res.status == "insufficient"
