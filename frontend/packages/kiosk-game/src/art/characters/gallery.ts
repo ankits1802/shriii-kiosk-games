@@ -642,9 +642,14 @@ const DEFS: RouteDef[] = [
       const mk = (spec: RigCharacterSpec): ProceduralCharacter =>
         new ProceduralCharacter({ ...spec, scale: (spec.scale ?? 1) * sc }, deps);
       const chars: ProceduralCharacter[] = [];
+      // Depth-sorted figure layer: whoever stands lower on the ground is drawn in front.
+      const layer = new Container();
+      layer.sortableChildren = true;
+      app.stage.addChild(layer);
       const add = (c: ProceduralCharacter, x: number, y: number): ProceduralCharacter => {
         c.view.position.set(w * x, h * y);
-        app.stage.addChild(c.view);
+        c.view.zIndex = c.view.y;
+        layer.addChild(c.view);
         chars.push(c);
         return c;
       };
@@ -658,7 +663,8 @@ const DEFS: RouteDef[] = [
       scale.view.scale.set(sc);
       scale.view.position.set(w * 0.16, h * 0.8);
       scale.attach(app.ticker);
-      app.stage.addChildAt(scale.view, app.stage.children.length - 2);
+      scale.view.zIndex = scale.view.y - 1;
+      layer.addChild(scale.view);
       const carrier = add(
         mk({ id: 's-carrier', role: 'customer', variant: 9, view: 'side' }),
         0.3,
@@ -684,7 +690,7 @@ const DEFS: RouteDef[] = [
       const hcart = new HandCart();
       hcart.view.scale.set(sc);
       hcart.tray.addChild(createGoodsPile('tomato', 6, 0.9));
-      app.stage.addChild(hcart.view);
+      layer.addChild(hcart.view);
       void pusher.play('push_cart');
       pusher.setLocomotion('walk');
       const guide = add(mk({ id: 's-guide', role: 'guide' }), 0.62, 0.9);
@@ -792,6 +798,8 @@ const DEFS: RouteDef[] = [
         if (px > 1.05) px = -0.1;
         pusher.view.x = w * px;
         hcart.view.position.set(pusher.view.x + 250 * sc, h * 0.86);
+        hcart.view.zIndex = hcart.view.y + 1;
+        for (const c of chars) c.view.zIndex = c.view.y;
         hcart.setSpeed(60);
         hcart.update(dt);
         const sorted = [...samples].sort((a, b) => a - b);

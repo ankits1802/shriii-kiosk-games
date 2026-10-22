@@ -490,7 +490,39 @@ export function drawTentDrape(width: number, height: number, u: number): Contain
           alpha: 0.12,
         });
     }
-    g.ellipse(x0 + dir * width * 0.05, height * 0.55, width * 0.035, 9 * u).fill(alt);
+    // Tie-back: a cord from a hook on the tent frame, wrapped round the cinched curtain, knotted at
+    // the curtain's edge with a hanging tassel (reads as fabric holding fabric, not a floating bar).
+    const ty = height * 0.55;
+    const edge = x0 + dir * (width * 0.05 + 6 * u);
+    const hookX = x0 + dir * 3 * u;
+    g.circle(hookX, ty - 14 * u, 5 * u).stroke({ width: 3 * u, color: darken(alt, 0.35) });
+    for (const [w, c] of [
+      [11 * u, darken(alt, 0.45)],
+      [7 * u, alt],
+    ] as const) {
+      g.moveTo(hookX, ty - 10 * u)
+        .quadraticCurveTo((hookX + edge) / 2, ty + 10 * u, edge, ty)
+        .stroke({ width: w, color: c, cap: 'round' });
+    }
+    g.moveTo(hookX + dir * 6 * u, ty - 3 * u)
+      .quadraticCurveTo((hookX + edge) / 2, ty + 14 * u, edge - dir * 4 * u, ty + 6 * u)
+      .stroke({ width: 2 * u, color: lighten(alt, 0.35), alpha: 0.8, cap: 'round' });
+    g.circle(edge, ty, 8 * u).fill(darken(alt, 0.15));
+    g.circle(edge - dir * 2 * u, ty - 2 * u, 3 * u).fill(lighten(alt, 0.3));
+    g.moveTo(edge, ty + 6 * u)
+      .lineTo(edge + dir * 2 * u, ty + 34 * u)
+      .stroke({ width: 3 * u, color: darken(alt, 0.3) });
+    g.poly([
+      edge + dir * 2 * u - 6 * u,
+      ty + 34 * u,
+      edge + dir * 2 * u + 6 * u,
+      ty + 34 * u,
+      edge + dir * 2 * u + 9 * u,
+      ty + 58 * u,
+      edge + dir * 2 * u - 9 * u,
+      ty + 58 * u,
+    ]).fill(MELA.vermilion);
+    g.circle(edge + dir * 2 * u, ty + 34 * u, 4 * u).fill(alt);
   }
   view.addChild(g);
   return view;

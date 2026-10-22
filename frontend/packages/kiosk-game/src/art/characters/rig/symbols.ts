@@ -95,11 +95,14 @@ export class SymbolLayer {
       case 'steam': {
         for (let i = 0; i < (this.intensity >= 3 ? 4 : 2); i++) {
           const g = new Graphics();
-          g.circle(0, 0, 9)
-            .circle(8, -4, 7)
-            .circle(-7, -3, 6)
-            .fill({ color: 0xffffff, alpha: 0.95 })
-            .stroke({ width: 2, color: 0x6a5a5a });
+          // A dark silhouette under a warm-grey cloud: one outer outline (no inner arcs), and a fill
+          // that stays visible under the light tint against bright skies (was white, which vanished
+          // and left hollow grey rings).
+          g.circle(0, 0, 10.5)
+            .circle(8, -4, 8.5)
+            .circle(-7, -3, 7.5)
+            .fill({ color: 0x4a3c3c, alpha: 0.9 });
+          g.circle(0, 0, 9).circle(8, -4, 7).circle(-7, -3, 6).fill({ color: 0xd8cfc6, alpha: 1 });
           add(g, (i % 2 === 0 ? 1 : -1) * (40 + (i >> 1) * 8), cy - 46, `steam${i}`);
         }
         const v = new Graphics();
