@@ -39,8 +39,8 @@ describe('attract loop (KSK-03)', () => {
 describe('language selection (ONB-01)', () => {
   it('logs language_selected with the seeded face order, pack version, manifest hash and taps', async () => {
     const rig = makeRig((ids) =>
-      ids.includes('lang.ta-IN')
-        ? 'lang.ta-IN'
+      ids.includes('lang.ta_in')
+        ? 'lang.ta_in'
         : ids.includes('lang.confirm')
           ? 'lang.confirm'
           : null,
@@ -69,7 +69,7 @@ describe('language selection (ONB-01)', () => {
         return 'lang.cancel';
       }
       if (ids.includes('lang.confirm')) return 'lang.confirm';
-      return ids.includes('lang.hi-IN') ? 'lang.hi-IN' : null;
+      return ids.includes('lang.hi_in') ? 'lang.hi_in' : null;
     });
     const kit = new ScreenKit(rig.services, rig.config);
     const res = await runLanguageSelect(kit);

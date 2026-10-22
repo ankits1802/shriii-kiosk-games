@@ -65,14 +65,21 @@ def main(argv: list[str] | None = None) -> int:
         "demo-pipeline",
         help="End-to-end synthetic demo: simulate -> ingest via HTTP -> score -> snapshot -> analyses -> gates",
     )
-    p.add_argument("--participants-per-language", type=int, default=400)
+    p.add_argument(
+        "--preset",
+        choices=("full", "fast"),
+        default="full",
+        help="full: 400 per language + 100 retests, 500 bootstraps; fast: 120 + 40, 200 bootstraps",
+    )
+    p.add_argument("--fast", action="store_const", const="fast", dest="preset", help="same as --preset fast")
+    p.add_argument("--participants-per-language", type=int, default=None, help="overrides the preset")
     p.add_argument("--languages", default="hi-IN,ta-IN", help="comma-separated")
-    p.add_argument("--retests", type=int, default=100)
+    p.add_argument("--retests", "--retest", type=int, default=None, help="overrides the preset")
     p.add_argument("--seed", type=int, default=None, help="default: derived from the clock (a new study per run)")
     p.add_argument("--study-id", default=None)
     p.add_argument("--workers", type=int, default=4, help="worker processes for the scoring and analysis jobs")
     p.add_argument("--models", default=",".join(("ridge", "elastic_net", "random_forest", "xgboost")))
-    p.add_argument("--n-boot", type=int, default=500)
+    p.add_argument("--n-boot", type=int, default=None, help="overrides the preset")
     p.add_argument("--no-migrate", action="store_true")
     p.add_argument("--skip-ingestion", action="store_true", help="resume --study-id after its scoring step")
     p.add_argument("--json", action="store_true", help="print the full JSON summary instead of the digest")
@@ -126,19 +133,37 @@ def main(argv: list[str] | None = None) -> int:
             )
         )
     elif args.cmd == "demo-pipeline":
-        from shriii_api.services.demo_pipeline import DemoConfig, render_summary, run_demo_pipeline  # noqa: PLC0415
+        from shriii_api.services.demo_pipeline import (  # noqa: PLC0415
+            DemoConfig,
+            failed_hard_checks,
+            render_summary,
+            run_demo_pipeline,
+        )
 
-        config = DemoConfig(
-            participants_per_language=args.participants_per_language,
-            languages=tuple(x.strip() for x in args.languages.split(",") if x.strip()),
-            retests=args.retests,
+        sizes = {
+            k: v
+            for k, v in (
+                ("participants_per_language", args.participants_per_language),
+                ("retests", args.retests),
+                ("n_boot", args.n_boot),
+            )
+            if v is not None
+        }
+        languages = tuple(x.strip() for x in args.languages.split(",") if x.strip())
+        if len(languages) < 2:
+            parser.error("--languages needs at least two languages (DIF, invariance and fairness compare them)")
+        config = DemoConfig.preset(
+            args.preset,
+            languages=languages,
             seed=args.seed,
             study_id=args.study_id,
             workers=max(1, args.workers),
             models=tuple(x.strip() for x in args.models.split(",") if x.strip()),
-            n_boot=args.n_boot,
             skip_ingestion=args.skip_ingestion,
+            **sizes,
         )
+        if config.retests > config.participants_per_language * len(languages):
+            parser.error("--retests cannot exceed the number of simulated participants")
         if config.skip_ingestion and not config.study_id:
             parser.error("--skip-ingestion needs --study-id")
         summary = run_demo_pipeline(settings, config, migrate_first=not args.no_migrate)
@@ -146,7 +171,10 @@ def main(argv: list[str] | None = None) -> int:
             _print(summary)
         else:
             sys.stdout.write(render_summary(summary) + "\n")
-        return 1 if summary.get("failed_jobs") else 0
+        failed = failed_hard_checks(summary)
+        if failed:
+            sys.stderr.write(f"demo pipeline: failed checks {failed}\n")
+        return 1 if failed else 0
     elif args.cmd == "worker":
         from shriii_api.worker.runner import drain, run_forever  # noqa: PLC0415
 

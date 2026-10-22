@@ -118,7 +118,7 @@ export async function runLanguageSelect(
     const y = area.y + px / 2 + kit.mm(6) + row * (px + gap);
     const face = medallion(kit, lang, i, px);
     const tile = kit.tile(
-      `lang.${lang}`,
+      `lang.${langKey(lang)}`,
       face.view,
       sizeMm,
       x,
@@ -142,12 +142,14 @@ export async function runLanguageSelect(
       i++;
       if (!t) break;
       await services.voice.setLanguage(t.lang);
-      if (!cycling) break;
+      // Stop when a face was tapped or the screen was torn down (walkaway, exit).
+      if (!cycling || t.tile.view.destroyed) break;
       t.tile.pulse();
       t.face.waves.alpha = 1;
       const pb = services.voice.play(`onboarding.language_face.${langKey(t.lang)}`);
       void t.face.character.speak(pb);
       await pb.ended;
+      if (t.face.waves.destroyed) break;
       t.face.waves.alpha = 0;
       if (!cycling) break;
       await kit.pause(700);
@@ -206,8 +208,9 @@ export async function runLanguageSelect(
       const pb = services.voice.play(`onboarding.language_confirm.${langKey(faceTap)}`);
       void sel.face.character.speak(pb);
       void pb.ended.then(() => {
-        sel.face.waves.alpha = 0;
-        tick.pulse();
+        // A barge-in tap (confirm or cancel before the line ends) already removed these.
+        if (!sel.face.waves.destroyed) sel.face.waves.alpha = 0;
+        if (!tick.view.destroyed) tick.pulse();
       });
     }
     const res = await kit.waitTap([tick, cross]);

@@ -202,12 +202,18 @@ export function drawHeadFront(g: Graphics, a: Appearance, d: RigDims, theta: num
         .bezierCurveTo(-52, cy - 62, 52, cy - 62, 44, cy - 14)
         .quadraticCurveTo(X(0), cy - 30 + 8 * s, -44, cy - 14)
         .fill(fill);
-      for (let k = 0; k < 4; k++)
-        g.moveTo(X(-42 + k * 4), cy - 18 - k * 9)
-          .quadraticCurveTo(X(0), cy - 40 - k * 9, X(42 - k * 4), cy - 18 - k * 9)
+      // Wrapped folds: towards profile the wrapped points crowd the front edge, where the dome is low,
+      // so the folds flatten (fy) and their bow is pulled in, or they bulge out as a ghost crest.
+      const cxIn = X(0) * (1 - 0.45 * s);
+      const fy = 1 - 0.5 * s;
+      for (let k = 0; k < 4; k++) {
+        const y = cy - 18 - k * 9 * fy;
+        g.moveTo(X(-42 + k * 4), y)
+          .quadraticCurveTo(cxIn, y - (22 - 12 * s), X(42 - k * 4), y)
           .stroke({ width: 2.2, color: darken(hw, 0.25), alpha: 0.7 });
-      g.moveTo(X(-30), cy - 30)
-        .quadraticCurveTo(X(0), cy - 66, X(30), cy - 44)
+      }
+      g.moveTo(X(-30), cy - 30 * fy - 6 * s)
+        .quadraticCurveTo(cxIn, cy - 66 * fy - 6 * s, X(30), cy - 44 * fy - 6 * s)
         .stroke({ width: 5, color: lighten(hw, 0.25), alpha: 0.6 });
       if (s < 0.85 && wrapX(40, 42, 42, theta).facing > -0.3)
         g.ellipse(X(46), cy - 10, 7, 16).fill(darken(hw, 0.1));

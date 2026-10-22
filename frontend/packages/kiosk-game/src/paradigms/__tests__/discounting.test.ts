@@ -18,7 +18,11 @@ const won = content.get('wait_or_now');
 describe('delay ladder', () => {
   it('resolves config with provenance (defaults are flagged)', () => {
     const cfg = delayLadderConfig(won);
-    expect(cfg.llAmount.source).toBe('paradigm_default');
+    // Wait-or-Now states its larger-later amount explicitly (constraints.delay_ll_amount).
+    expect(cfg.llAmount).toMatchObject({
+      value: won.constraints.delay_ll_amount,
+      source: 'constraints',
+    });
     expect(cfg.delays.value).toEqual([1, 2, 4, 8]);
     const ladder = new DelayDiscountingLadder(cfg, rngFor(1));
     expect(ladder.trials).toBe(8);

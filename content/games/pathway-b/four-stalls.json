@@ -25,56 +25,65 @@
   "slot": true,
   "scorable": true,
   "budget": {
-    "intro_ms": 6000,
-    "outro_ms": 1500,
-    "target_ms_l2": 77900,
-    "soft_cap_ms": 85000,
-    "hard_cap_ms": 86000
+    "intro_ms": 7000,
+    "outro_ms": 2500,
+    "target_ms_l2": 87100,
+    "soft_cap_ms": 93000,
+    "hard_cap_ms": 94000
   },
   "levels": {
     "L1": {
       "timing": {
         "choice_window_ms": 5000,
-        "payoff_ms": 900
+        "payoff_ms": 900,
+        "errand_ms": 900,
+        "iti_ms": 350,
+        "probe_window_ms": 6000
       },
       "seconds_per_trial": {
-        "median": 2.15,
-        "slow": 2.3
+        "median": 2.95,
+        "slow": 3.15
       },
       "estimated_duration_ms": {
-        "median": 81100,
-        "slow": 85900,
-        "slow_trimmed": 76700
+        "median": 90700,
+        "slow": 95500,
+        "slow_trimmed": 89200
       }
     },
     "L2": {
       "timing": {
         "choice_window_ms": 4500,
-        "payoff_ms": 800
+        "payoff_ms": 800,
+        "errand_ms": 900,
+        "iti_ms": 350,
+        "probe_window_ms": 5500
       },
       "seconds_per_trial": {
-        "median": 2.05,
-        "slow": 2.25
+        "median": 2.8,
+        "slow": 3.0
       },
       "estimated_duration_ms": {
-        "median": 77900,
-        "slow": 84300,
-        "slow_trimmed": 75300
+        "median": 87100,
+        "slow": 91900,
+        "slow_trimmed": 85900
       }
     },
     "L3": {
       "timing": {
         "choice_window_ms": 4000,
-        "payoff_ms": 700
+        "payoff_ms": 700,
+        "errand_ms": 900,
+        "iti_ms": 350,
+        "probe_window_ms": 5000
       },
       "seconds_per_trial": {
-        "median": 1.95,
-        "slow": 2.15
+        "median": 2.7,
+        "slow": 2.9
       },
       "estimated_duration_ms": {
-        "median": 74700,
-        "slow": 81100,
-        "slow_trimmed": 72500
+        "median": 84700,
+        "slow": 89500,
+        "slow_trimmed": 83700
       }
     }
   },
@@ -98,8 +107,8 @@
       "block_id": "choices",
       "phase": "main",
       "condition_id": "standard",
-      "trials": 30,
-      "min_trials": 26,
+      "trials": 22,
+      "min_trials": 20,
       "budget_trial_ms": null,
       "scorable": true,
       "conditions": {
@@ -115,7 +124,7 @@
       "condition_id": "probe",
       "trials": 4,
       "min_trials": 4,
-      "budget_trial_ms": 1200,
+      "budget_trial_ms": 2600,
       "scorable": true,
       "conditions": {
         "timer": false,
@@ -130,13 +139,24 @@
     "repeat_probes": 10
   },
   "planned_counts": {
-    "choices": 30,
+    "choices": 22,
     "repeat_probes": 12
   },
   "constraints": {
     "stalls": 4,
     "high_variance_stalls": 2,
-    "pictorial_payoffs": true
+    "pictorial_payoffs": true,
+    "high_variance_assignment": "seeded",
+    "low_variance_gain": [1, 2],
+    "low_variance_loss": [1, 1],
+    "low_variance_loss_rate": 0.2,
+    "high_variance_gain": [3, 4],
+    "high_variance_loss": [6, 8],
+    "high_variance_loss_rate": 0.4,
+    "repeat_groups": 4,
+    "repeat_presentations": 3,
+    "probe_safe_counts": [2, 3, 4, 3],
+    "probe_risky_sides": ["right", "left", "right", "left"]
   },
   "context_shift": null,
   "forms": ["form_1", "form_2"],
@@ -147,5 +167,5 @@
     "four_stalls.replay"
   ],
   "requires_numeracy": false,
-  "notes": "Slot module. Four vendor stalls with seeded pictorial payoffs and repeated identical situations (MG-09)."
+  "notes": "Slot module. Four vendor stalls with seeded pictorial payoffs and repeated identical situations (MG-09). seconds_per_trial include the errand arrivals (12 of 22 choices are repeated errands)."
 }

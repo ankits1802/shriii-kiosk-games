@@ -125,7 +125,14 @@ export function scatterRegressionOption(
     : `n = ${input.points.length}`;
   return {
     ...baseOption(tokens, `Scatter plot of ${input.yLabel} against ${input.xLabel}. ${subtitle}.`),
-    grid: { left: 16, right: 24, top: hasGroups ? 36 : 16, bottom: 40, containLabel: true },
+    grid: {
+      left: 16,
+      right: 24,
+      top: hasGroups ? 36 : 16,
+      bottom: 8,
+      outerBoundsMode: 'same',
+      outerBoundsContain: 'all',
+    },
     legend: hasGroups
       ? {
           top: 0,

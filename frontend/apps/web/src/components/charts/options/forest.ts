@@ -80,7 +80,14 @@ export function forestPlotOption(input: ForestPlotInput, tokens: ChartTokens): E
       tokens,
       `Forest plot of ${input.xLabel} for ${input.rows.length} rows with confidence intervals.`,
     ),
-    grid: { left: 8, right: 24, top: 12, bottom: 40, containLabel: true },
+    grid: {
+      left: 8,
+      right: 24,
+      top: 12,
+      bottom: 8,
+      outerBoundsMode: 'same',
+      outerBoundsContain: 'all',
+    },
     xAxis: valueAxis(tokens, input.xLabel, {
       nameGap: 28,
       ...(input.domain ? { min: input.domain[0], max: input.domain[1], scale: false } : {}),

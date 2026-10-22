@@ -342,6 +342,10 @@ indicators:
     indifference point, so consistency with the fitted function mostly reflects choice noise near
     indifference rather than self-control. Not gate-eligible in v1; game owners: 4 extra delay trials
     (docs/science/VAL-02-trial-requirements.md) or retire at the next amendment.
+    Amendment 2026-10-wave2 (A4): stays not_scorable_v1. The +4 delay trials (or the 8-trial titrated effort
+    staircase that would go with them) need about +24 s of slot cap (94 to 118 s) and the session ceiling is
+    fully allocated (890 s) after the measured Card Sort, Don't-Tap and Tower fixes, so the schedule stays at 8
+    delay + 4 effort choices.
 - id: emotional_regulation.tone_after_unfair_loss_b
   construct: emotional_regulation
   role: exploratory
@@ -1790,6 +1794,7 @@ indicators:
     task: dont_tap.gng
     phases:
     - main
+    - pressure
     slot: false
   event_inputs:
   - input.raw_tap
@@ -1805,7 +1810,7 @@ indicators:
   reliability_method: split_half_permutation
   level_rule: fixed_level_only
   min_valid_trials:
-    count: 30
+    count: 40
     unit: trials
     basis: val02_pending
   exclusions:
@@ -1825,8 +1830,10 @@ indicators:
   expected_r_lower_bound: null
   convergent_criteria: []
   notes: >-
-    VAL-02 / indicator review (2026-10): the minimum (40) exceeded the 36 trials of the only selected block
-    (Don't-Tap main), so the indicator could never be scored; lowered to 30 (exploratory, val02_pending).
+    Amendment 2026-10-wave2 (A2): selects the same Don't-Tap go/no-go trials as the sibling expressive-restraint
+    indicators (phases main + pressure; 68 planned, 66 protected) and restores the original minimum of 40 instead
+    of the 30 set by the VAL-02 review; inter-tap intervals are formed and detrended within each block. Exploratory,
+    val02_pending.
 - id: teamwork.mean_contribution
   construct: teamwork
   role: primary
@@ -2613,3 +2620,7 @@ indicators:
     never reliably reaches the 4-choice minimum; the count that is observed is confounded with effort
     discounting. Not gate-eligible in v1. Pathway A (Road Home uphill, 4 forced holds) carries the paradigm.
     Fix for v2: forced-hold trials in Wait-or-Now (proposal in docs/science/indicator-review.md).
+    Amendment 2026-10-wave2 (A4): stays not_scorable_v1; the 8-trial effort staircase (indicator review section
+    4) does not fit the session ceiling (slow estimate 126.9 s for 8 delay + 8 effort, above the 120 s module
+    limit; 8 effort + 6 delay needs a 118 s slot cap, +24 s the plan cannot fund). The non-start path (churn
+    chosen, never pressed) is now logged as an incomplete hold, so v2 data stay unbiased.

@@ -12,6 +12,7 @@ Key documents:
 - [`docs/BUILD_DECISIONS.md`](docs/BUILD_DECISIONS.md) — binding decisions for this build iteration.
 - [`docs/IMPLEMENTATION_PLAN.md`](docs/IMPLEMENTATION_PLAN.md) — scientific source of truth (feature IDs such as `ENG-07`, `SCR-01`).
 - [`docs/reference/agent-implementation-spec.md`](docs/reference/agent-implementation-spec.md) — product shape (routes, DB domains, dashboards).
+- [`docs/STATUS.md`](docs/STATUS.md) — what is built, what is validated vs research-only, known gaps.
 
 ## Five data layers (never mixed)
 
@@ -57,7 +58,8 @@ root file has to be there.
 - Python 3.13+ (`requires-python`; CI and the images use 3.14) and [uv](https://docs.astral.sh/uv/)
   (`pip install uv`; if `uv` is not on `PATH`, use `python -m uv`). To match CI locally, run
   `uv python pin 3.14` (writes a gitignored `.python-version`) or set `UV_PYTHON=3.14`.
-- Docker Desktop for PostgreSQL 18.
+- PostgreSQL 18 for the API and database-backed tests (Docker Desktop via `pnpm db:up`, or any local
+  server). The kiosk game, unit tests and bot playthroughs need no database; CI runs the database suites.
 
 ## Getting started
 
@@ -68,13 +70,20 @@ cp infra/compose/.env.example .env                  # API/tooling settings (root
 cp infra/compose/.env.example infra/compose/.env    # Docker Compose settings
 pnpm db:up                   # PostgreSQL 18 (db shriii, user/password dev) via infra/compose/docker-compose.yml
 docker compose -f infra/compose/docker-compose.yml --profile tools up -d   # + Adminer on http://localhost:8080
+uv run shriii-api migrate && uv run shriii-api seed --demo   # schema + demo kiosk, instruments, dictionary
 ```
+
+To just play the game, `pnpm install` then `pnpm --filter @shriii/kiosk dev` is enough (no database).
 
 ## Everyday commands
 
 | Task | Command |
 |---|---|
-| Kiosk dev server | `pnpm --filter @shriii/kiosk dev` (http://localhost:5173) |
+| Kiosk dev server | `pnpm --filter @shriii/kiosk dev` (http://localhost:5173; full session, `?module=<id>` for one module) |
+| Research/admin web app | `pnpm --filter web dev` (http://localhost:3000) |
+| API / worker | `uv run shriii-api serve` (:8000) / `uv run shriii-api worker` |
+| Demo pipeline | `uv run shriii-api demo-pipeline --fast` (synthetic sessions -> scoring -> validation) |
+| Full-session bot | build with `VITE_E2E_BRIDGE=true`, `vite preview`, then `node frontend/apps/kiosk/e2e/full-session.mjs --url <preview url> --pathway A` |
 | All dev servers | `pnpm dev` |
 | Build | `pnpm build` (also fails if generated contract code drifted) |
 | Type-check | `pnpm typecheck` or `pnpm -r typecheck` |

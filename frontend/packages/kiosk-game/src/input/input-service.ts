@@ -207,6 +207,21 @@ export class DomInputService implements InputService {
     this.enabled = enabled;
   }
 
+  /**
+   * Enabled targets with their stage bounds (devtools and scripted browser bots; never used by
+   * modules). Empty while input is disabled.
+   */
+  liveTargets(): { readonly id: string; readonly bounds: Rect; readonly kind: string }[] {
+    if (!this.enabled) return [];
+    return [...this.targets.values()]
+      .filter((t) => t.enabled)
+      .map((t) => ({
+        id: t.spec.id,
+        bounds: { ...t.bounds },
+        kind: t.spec.kind,
+      }));
+  }
+
   registerTarget(spec: TargetSpec): TargetHandle {
     this.validateTarget(spec.id, spec.bounds);
     const target: Target = {
@@ -302,7 +317,8 @@ export class DomInputService implements InputService {
   private hitTest(x: number, y: number): Target | null {
     let best: Target | null = null;
     for (const t of this.targets.values()) {
-      if (!t.enabled || t.spec.enabled === false) continue;
+      // `enabled` starts from `spec.enabled` and follows `setEnabled()`; the spec is only the default.
+      if (!t.enabled) continue;
       if (!rectHit(t.bounds, x, y)) continue;
       if (!best || t.order > best.order) best = t;
     }

@@ -42,8 +42,8 @@
     "intro_ms": 9000,
     "outro_ms": 3000,
     "target_ms_l2": 192400,
-    "soft_cap_ms": 194000,
-    "hard_cap_ms": 196000
+    "soft_cap_ms": 200000,
+    "hard_cap_ms": 204000
   },
   "levels": {
     "L1": {
@@ -222,7 +222,14 @@
     "quantities_shown_as": "needle_and_pans",
     "spoken_quantities": true,
     "bribe_size_as_pictured_quantity": true,
-    "luck_tokens_group_only": true
+    "luck_tokens_group_only": true,
+    "true_outcome_logged": false,
+    "luck_token_faces": 6,
+    "gamble_catch_probability": 0.5,
+    "gamble_safe_coins": 2,
+    "gamble_win_coins": 4,
+    "probe_safe_items": [2, 2, 1, 2],
+    "probe_risky_items": [4, 5, 4, 6]
   },
   "context_shift": {
     "kind": "new_market_rule",
@@ -239,5 +246,5 @@
     "weighing_post.quantity_prefix"
   ],
   "requires_numeracy": false,
-  "notes": "Episode 2, Weighmaster (EPI-02). Decisions approve/warn/fine with inspect more; >= 3 dilemmas per type; requires_numeracy false on every decision."
+  "notes": "Episode 2, Weighmaster (EPI-02). Decisions approve/warn/fine with inspect more; >= 3 dilemmas per type; requires_numeracy false on every decision. Amendment 2026-10-wave2 (A6): caps 200/204 s (slow-player headroom; the soft-to-hard gap covers the 3 s outro)."
 }

@@ -18,7 +18,10 @@ stats/scoring
 stats/validation
 stats/simulator
 stats/rbridge
-backend/api
+backend/api/**
+# The admin pages read the retention schedule at build time (load-settings.server.ts).
+!backend/api/src/shriii_api/config/
+!backend/api/src/shriii_api/config/*.yaml
 frontend/apps/kiosk/electron/dist
 infra/tofu
 *.log

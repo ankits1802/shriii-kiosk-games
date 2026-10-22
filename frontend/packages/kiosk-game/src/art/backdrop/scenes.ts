@@ -341,6 +341,18 @@ export class SceneKit {
     });
   }
 
+  /**
+   * Base line for a far structure of `size` standing on the far ridge: the lowest ridge point under
+   * its whole footprint, so the plinth sits on the hill face and never overhangs a dip (where it
+   * would read as floating in the sky, most visibly in portrait).
+   */
+  ridgeFoot(x: number, size: number): number {
+    let y = -Infinity;
+    for (let i = -3; i <= 3; i++)
+      y = Math.max(y, this.ctx.ridgeY('far', x + (i / 3) * size * 0.62));
+    return y + this.ctx.height * 0.012;
+  }
+
   temple(layer: DepthLayer, x: number, y: number, size: number): void {
     const tpl = drawTemple(size);
     tpl.view.removeChild(tpl.flag);
@@ -623,7 +635,7 @@ function fair(
   const { width: W, height: H, u, layers: L, portrait } = ctx;
   // Far: temple on the ridge, tree line, giant wheel.
   const tx = k.x(portrait ? 0.74 : 0.8);
-  k.temple(L.far, tx, ctx.ridgeY('far', tx) + H * 0.02, H * (portrait ? 0.14 : 0.2));
+  k.temple(L.far, tx, k.ridgeFoot(tx, H * (portrait ? 0.14 : 0.2)), H * (portrait ? 0.14 : 0.2));
   k.treeLine(L.far, portrait ? 14 : 26, 'mid', H * 0.045, opts.seed + 3);
   if (opts.wheel)
     k.ferrisWheel(
@@ -757,7 +769,7 @@ export const SCENE_RECIPES: Readonly<Record<SceneId, SceneRecipe>> = {
     pathX: 0.5,
     build: (ctx, k) => {
       const { width: W, height: H, u, layers: L } = ctx;
-      k.temple(L.far, k.x(0.72), ctx.ridgeY('far', k.x(0.72)) + H * 0.02, H * 0.16);
+      k.temple(L.far, k.x(0.72), k.ridgeFoot(k.x(0.72), H * 0.16), H * 0.16);
       k.treeLine(L.far, 9, 'far', H * 0.07, 403);
       k.ferrisWheel(L.farMid, k.x(0.2), k.groundY(0.03), H * 0.12);
       // Out-of-focus fair behind (depth of field: back row baked blurred).
@@ -873,7 +885,7 @@ export const SCENE_RECIPES: Readonly<Record<SceneId, SceneRecipe>> = {
     pathX: 0.62,
     build: (ctx, k) => {
       const { width: W, height: H, u, layers: L, portrait } = ctx;
-      k.temple(L.far, k.x(0.3), ctx.ridgeY('far', k.x(0.3)) + H * 0.02, H * 0.15);
+      k.temple(L.far, k.x(0.3), k.ridgeFoot(k.x(0.3), H * 0.15), H * 0.15);
       k.treeLine(L.far, 12, 'far', H * 0.07, 503);
       // Golden fields on the slopes.
       const fields = new Graphics();
@@ -959,7 +971,7 @@ export const SCENE_RECIPES: Readonly<Record<SceneId, SceneRecipe>> = {
       const { width: W, height: H, u, layers: L, portrait } = ctx;
       // Size reference: portrait screens are tall, so props scale with the width there.
       const S = portrait ? W * 1.05 : H;
-      k.temple(L.far, k.x(0.82), ctx.ridgeY('far', k.x(0.82)) + H * 0.02, H * 0.14);
+      k.temple(L.far, k.x(0.82), k.ridgeFoot(k.x(0.82), H * 0.14), H * 0.14);
       // Village on the far slope with windows that light up.
       const vr = new ArtRandom(603);
       for (let i = 0; i < (portrait ? 6 : 10); i++) {
@@ -1084,7 +1096,7 @@ export const SCENE_RECIPES: Readonly<Record<SceneId, SceneRecipe>> = {
     pathX: 0.55,
     build: (ctx, k) => {
       const { width: W, height: H, u, layers: L, portrait } = ctx;
-      k.temple(L.far, k.x(0.84), ctx.ridgeY('far', k.x(0.84)) + H * 0.02, H * 0.15);
+      k.temple(L.far, k.x(0.84), k.ridgeFoot(k.x(0.84), H * 0.15), H * 0.15);
       k.treeLine(L.far, 11, 'far', H * 0.07, 803);
       k.ferrisWheel(
         L.farMid,
@@ -1184,7 +1196,7 @@ export const SCENE_RECIPES: Readonly<Record<SceneId, SceneRecipe>> = {
     pathX: 0.5,
     build: (ctx, k) => {
       const { width: W, height: H, u, layers: L, portrait } = ctx;
-      k.temple(L.far, k.x(0.15), ctx.ridgeY('far', k.x(0.15)) + H * 0.02, H * 0.14);
+      k.temple(L.far, k.x(0.15), k.ridgeFoot(k.x(0.15), H * 0.14), H * 0.14);
       k.treeLine(L.far, 12, 'far', H * 0.07, 1003);
       k.stallRow(L.farMid, 0.06, portrait ? 7 : 12, 1005);
       k.crowd(L.farMid, 0.07, 0.2, portrait ? 8 : 14, 1061);
@@ -1218,7 +1230,7 @@ export const SCENE_RECIPES: Readonly<Record<SceneId, SceneRecipe>> = {
     build: (ctx, k) => {
       const { width: W, height: H, u, layers: L, portrait } = ctx;
       const tx = k.x(0.5);
-      k.temple(L.far, tx, ctx.ridgeY('far', tx) + H * 0.02, H * 0.2);
+      k.temple(L.far, tx, k.ridgeFoot(tx, H * 0.2), H * 0.2);
       k.treeLine(L.far, 12, 'far', H * 0.07, 1103);
       k.ferrisWheel(L.farMid, k.x(0.86), k.groundY(0.05), H * 0.13);
       k.stallRow(L.mid, 0.1, portrait ? 7 : 12, 1105, 0.25);

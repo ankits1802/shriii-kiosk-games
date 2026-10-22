@@ -1,7 +1,8 @@
 # Nightly full simulated-player parameter-recovery run (PLT-04: "small run per PR, full run nightly"; QA-02).
 # Runs both pathways at n = 400 per run (Pathway B once per planned-missingness slot form) and publishes the
 # per-indicator recovery table; the slow simulator/validation test suite (including its n = 400 recovery targets)
-# is the blocking gate. Opens (or updates) a tracking issue on failure.
+# is the blocking gate. The demo-pipeline job runs `shriii-api demo-pipeline` at full size against PostgreSQL 18
+# (the per-PR CI runs the same code at a tiny size in the API test suite). Opens (or updates) a tracking issue on failure.
 name: Nightly simulation
 
 on:
@@ -17,6 +18,12 @@ on:
         description: Base seed
         required: false
         default: "11"
+      demo_preset:
+        description: "Demo pipeline size (full: 400 per language + 100 retests; fast: 120 + 40)"
+        required: false
+        default: full
+        type: choice
+        options: [full, fast]
 
 permissions:
   contents: read
@@ -44,7 +51,7 @@ jobs:
             extra: "--slot-forms"
     steps:
       - uses: actions/checkout@v5
-      - uses: astral-sh/setup-uv@v6
+      - uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e  # v6
         with:
           enable-cache: true
           python-version: "3.14"
@@ -81,7 +88,7 @@ jobs:
     timeout-minutes: 90
     steps:
       - uses: actions/checkout@v5
-      - uses: astral-sh/setup-uv@v6
+      - uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e  # v6
         with:
           enable-cache: true
           python-version: "3.14"
@@ -91,9 +98,70 @@ jobs:
           SHRIII_RUN_SLOW: "1"
         run: uv run pytest stats/simulator/tests stats/validation/tests -q
 
+  demo-pipeline:
+    # End-to-end demo against PostgreSQL 18: seed -> simulate 2 languages (planted DIF, retests, criterion
+    # battery) -> POST /api/v1/events/batch -> scoring -> matching -> frozen snapshot -> every validation
+    # analysis, a model with holdout, norms -> gate evaluation (evaluate-only; gates stay closed).
+    name: Demo pipeline (${{ inputs.demo_preset || 'full' }})
+    runs-on: ubuntu-24.04
+    timeout-minutes: 150
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_DB: shriii
+          POSTGRES_USER: dev
+          POSTGRES_PASSWORD: dev
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U dev -d shriii"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+    env:
+      ENV: test
+      AUTH_MODE: dev
+      DEV_JWT_SECRET: nightly-demo-pipeline-secret-0123456789abcdef
+      DATABASE_URL: postgresql+psycopg://dev:dev@localhost:5432/shriii
+      DATA_DIR: ${{ github.workspace }}/demo-data
+      LOG_JSON: "false"
+      LOG_LEVEL: WARNING
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e  # v6
+        with:
+          enable-cache: true
+          python-version: "3.14"
+      - run: uv sync --all-packages
+      - name: Demo pipeline
+        env:
+          DEMO_PRESET: ${{ inputs.demo_preset || 'full' }}
+          SIM_SEED: ${{ inputs.seed || '11' }}
+        run: |
+          [[ "$SIM_SEED" =~ ^[0-9]+$ ]] || { echo "::error::seed must be an integer"; exit 1; }
+          [[ "$DEMO_PRESET" =~ ^(full|fast)$ ]] || { echo "::error::unknown preset"; exit 1; }
+          set -o pipefail
+          uv run shriii-api demo-pipeline --preset "$DEMO_PRESET" --seed "$SIM_SEED" --workers 4 | tee demo-summary.txt
+          if grep -q "planted_dif_recovered=FAIL" demo-summary.txt; then
+            echo "::warning title=Planted DIF not recovered::the DIF planted in one indicator was not flagged (class B/C); see the summary."
+          fi
+      - name: Summary
+        if: always()
+        run: |
+          { echo '### Demo pipeline'; echo '```'; cat demo-summary.txt || true; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: demo-pipeline
+          path: |
+            demo-summary.txt
+            demo-data/demo/
+          retention-days: 30
+
   report:
     name: Track failures
-    needs: [recovery, slow-tests]
+    needs: [recovery, slow-tests, demo-pipeline]
     if: failure() && github.event_name == 'schedule'
     runs-on: ubuntu-24.04
     steps:
@@ -105,7 +173,7 @@ jobs:
             const { owner, repo } = context.repo;
             const open = await github.rest.issues.listForRepo({ owner, repo, state: 'open', labels: 'nightly-sim' });
             const existing = open.data.find((i) => i.title === title);
-            const body = `Parameter recovery or slow simulator tests failed: ${run}\n\nRecovery shows the pipeline is internally correct; a failure means a scoring, simulator or content change broke recovery (QA-02).`;
+            const body = `Parameter recovery, slow simulator tests or the end-to-end demo pipeline failed: ${run}\n\nRecovery shows the pipeline is internally correct; a failure means a scoring, simulator or content change broke recovery (QA-02).`;
             if (existing) {
               await github.rest.issues.createComment({ owner, repo, issue_number: existing.number, body });
             } else {

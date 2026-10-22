@@ -16,6 +16,7 @@
       "!backend/api/openapi.json",
       "!docs/security/scans",
       "!stats/reports/tests/fixtures/*.json",
+      "!frontend/apps/web/src/features/research/e2e/fixtures/*.json",
       "!tools/loadtest/results",
       "!.claude"
     ]

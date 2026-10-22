@@ -33,11 +33,11 @@
   "slot": false,
   "scorable": true,
   "budget": {
-    "intro_ms": 4500,
+    "intro_ms": 8500,
     "outro_ms": 1500,
-    "target_ms_l2": 91360,
-    "soft_cap_ms": 99000,
-    "hard_cap_ms": 100000
+    "target_ms_l2": 99040,
+    "soft_cap_ms": 107000,
+    "hard_cap_ms": 108000
   },
   "levels": {
     "L1": {
@@ -49,13 +49,13 @@
         "pressure_isi_ms": 480
       },
       "seconds_per_trial": {
-        "median": 1.16,
-        "slow": 1.16
+        "median": 1.27,
+        "slow": 1.27
       },
       "estimated_duration_ms": {
-        "median": 98960,
-        "slow": 98960,
-        "slow_trimmed": 94320
+        "median": 106240,
+        "slow": 106240,
+        "slow_trimmed": 103700
       }
     },
     "L2": {
@@ -67,13 +67,13 @@
         "pressure_isi_ms": 440
       },
       "seconds_per_trial": {
-        "median": 1.06,
-        "slow": 1.06
+        "median": 1.17,
+        "slow": 1.17
       },
       "estimated_duration_ms": {
-        "median": 91360,
-        "slow": 91360,
-        "slow_trimmed": 87120
+        "median": 99040,
+        "slow": 99040,
+        "slow_trimmed": 96700
       }
     },
     "L3": {
@@ -85,13 +85,13 @@
         "pressure_isi_ms": 380
       },
       "seconds_per_trial": {
-        "median": 0.92,
-        "slow": 0.92
+        "median": 1.01,
+        "slow": 1.01
       },
       "estimated_duration_ms": {
-        "median": 80720,
-        "slow": 80720,
-        "slow_trimmed": 77040
+        "median": 87520,
+        "slow": 87520,
+        "slow_trimmed": 85500
       }
     }
   },
@@ -115,7 +115,7 @@
       "block_id": "main",
       "phase": "main",
       "condition_id": "standard",
-      "trials": 36,
+      "trials": 34,
       "min_trials": 34,
       "budget_trial_ms": null,
       "scorable": true,
@@ -130,8 +130,8 @@
       "block_id": "pressure",
       "phase": "pressure",
       "condition_id": "pressure",
-      "trials": 36,
-      "min_trials": 34,
+      "trials": 34,
+      "min_trials": 32,
       "budget_trial_ms": null,
       "scorable": true,
       "conditions": {
@@ -165,7 +165,7 @@
   "planned_counts": {
     "nogo": 22,
     "nogo_per_block": 11,
-    "go": 50
+    "go": 46
   },
   "constraints": {
     "max_consecutive_nogo": 2,
@@ -177,7 +177,7 @@
   "context_shift": {
     "kind": "pressure_on",
     "announced": true,
-    "window": [40, 40]
+    "window": [38, 38]
   },
   "forms": ["form_1", "form_2"],
   "audio_keys": [
@@ -188,5 +188,5 @@
     "dont_tap.pressure_cue"
   ],
   "requires_numeracy": false,
-  "notes": "Fixed-paced: median and slow bots take the same time. Pressure block is the second half (MG-02); SSRT removed."
+  "notes": "Fixed-paced: median and slow bots take the same time. Pressure block is the second half (MG-02); SSRT removed. Main and pressure blocks are 34 trials (76 trials, 22 no-go) so the module fits its 100 s hard cap with the recorded narration; intro_ms (8.5 s) covers the intro and practice narration that is not concurrent with trials; the main block is never trimmed (fixed shift index 38) and the pressure block keeps >= 10 no-go under wrap-up. Amendment 2026-10-wave2 (A5): fixed-pace seconds per trial from measured play (L2 1.163 s; L1/L3 scaled); caps 107/108 s so the pressure block is no longer trimmed."
 }

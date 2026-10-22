@@ -5,11 +5,11 @@
   "session_cap_s": 900,
   "session_target_max_s": 890,
   "segments_max_s": {
-    "onboarding": 90,
+    "onboarding": 80,
     "practice_warmup": 60,
     "bridges": 30,
-    "report_survey": 90,
-    "contact_optin": 30
+    "report_survey": 75,
+    "contact_optin": 20
   },
   "scored_play_median_s": {
     "min": 540,

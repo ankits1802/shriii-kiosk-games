@@ -19,6 +19,12 @@ interface ImportMetaEnv {
   readonly VITE_SITE_MODE?: string;
   /** Battery arm: B_fixed | A_narrative | randomised (default B_fixed). */
   readonly VITE_ARM?: string;
+  /** Test bridge in a non-dev build (CI bot playthroughs only): see KioskConfig.bridge. */
+  readonly VITE_E2E_BRIDGE?: string;
+  /** Kiosk id (bridge builds only). */
+  readonly VITE_KIOSK_ID?: string;
+  /** Kiosk device token for event upload (bridge builds only). */
+  readonly VITE_DEVICE_TOKEN?: string;
 }
 
 interface ImportMeta {

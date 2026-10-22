@@ -38,6 +38,7 @@ import { DomInputService } from '../input/input-service.ts';
 import { CSS_PX_PER_MM } from '../input/metrics.ts';
 import type { EventValidator } from '../logging/event-logger.ts';
 import { createHostLayout } from './runtime.ts';
+import { destroyStage, installTweenSafeDestroy } from './stage-teardown.ts';
 
 /** Options for {@link launchModuleHarness}. */
 export interface ModuleHarnessLaunchOptions {
@@ -73,6 +74,7 @@ export async function launchModuleHarness(
   params: ModuleHarnessParams,
   options: ModuleHarnessLaunchOptions = {},
 ): Promise<ModuleHarnessHandle> {
+  installTweenSafeDestroy();
   const content = loadGameContent();
   const layout = createHostLayout(host, options.pxPerMm ?? CSS_PX_PER_MM);
   host.dataset.harnessState = 'loading';
@@ -129,10 +131,7 @@ export async function launchModuleHarness(
         moduleLayer.addChild(c);
         return c;
       },
-      releaseStage: (c) => {
-        moduleLayer.removeChild(c);
-        c.destroy({ children: true });
-      },
+      releaseStage: (c) => destroyStage(c),
     },
   });
   input.setLogger(run.logger);

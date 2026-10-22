@@ -1,0 +1,243 @@
+# Session end-to-end (wave 2): full kiosk sessions played by a bot in headless Chromium (no GPU), the
+# kiosk -> API -> scoring path against PostgreSQL, and the research dashboards rendered against a live
+# API filled by the demo pipeline. Timing flags are expected on GPU-less runners: they are reported,
+# never asserted. Docker is not used; PostgreSQL runs as a service container of the runner.
+name: Session E2E
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  merge_group:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: session-e2e-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  FORCE_COLOR: "1"
+  NEXT_TELEMETRY_DISABLED: "1"
+  ELECTRON_SKIP_BINARY_DOWNLOAD: "1"
+  UV_FROZEN: "1"
+  PYTHON_VERSION: "3.14"
+
+jobs:
+  session-bots:
+    name: Full-session bot - Pathway ${{ matrix.pathway }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        pathway: [A, B]
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1  # v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: package.json
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Build kiosk (test bridge, strict event validation)
+        env:
+          VITE_E2E_BRIDGE: "true"
+        run: pnpm --filter @shriii/kiosk exec vite build --outDir dist-e2e
+      - name: Install Playwright (Chromium)
+        run: pnpm --filter @shriii/kiosk exec playwright install --with-deps chromium
+      - name: Serve kiosk build
+        run: |
+          nohup pnpm --filter @shriii/kiosk exec vite preview --outDir dist-e2e --host 127.0.0.1 --port 4180 --strictPort > preview.log 2>&1 &
+          for _ in $(seq 60); do curl -fsS -o /dev/null http://127.0.0.1:4180/ && exit 0; sleep 1; done
+          cat preview.log; exit 1
+      - name: Play one full session (completion within 900 s, every event valid)
+        run: |
+          node frontend/apps/kiosk/e2e/full-session.mjs --url http://127.0.0.1:4180 \
+            --pathway ${{ matrix.pathway }} --out e2e-artifacts/pathway-${{ matrix.pathway }} --cap-s 900
+      - name: Summary
+        if: always()
+        run: |
+          f=e2e-artifacts/pathway-${{ matrix.pathway }}/summary.json
+          { echo "### Pathway ${{ matrix.pathway }}"; echo '```json'; cat "$f" 2>/dev/null || echo "no summary"; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: session-bot-${{ matrix.pathway }}
+          path: |
+            e2e-artifacts/
+            preview.log
+          if-no-files-found: ignore
+          retention-days: 7
+
+  kiosk-api:
+    name: Kiosk -> API -> scoring (PostgreSQL)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_DB: shriii
+          POSTGRES_USER: dev
+          POSTGRES_PASSWORD: dev
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U dev -d shriii"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+    env:
+      ENV: test
+      AUTH_MODE: dev
+      DEV_JWT_SECRET: ci-session-e2e-secret-0123456789abcdef
+      DATABASE_URL: postgresql+psycopg://dev:dev@localhost:5432/shriii
+      DATA_DIR: ${{ github.workspace }}/api-data
+      API_CORS_ORIGINS: http://127.0.0.1:4180,http://localhost:4180
+      LOG_JSON: "false"
+      LOG_LEVEL: WARNING
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e  # v6
+        with:
+          enable-cache: true
+          python-version: ${{ env.PYTHON_VERSION }}
+      - run: uv sync --all-packages
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1  # v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: package.json
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Start API (migrate, seed a kiosk, serve)
+        run: |
+          uv run shriii-api migrate
+          uv run shriii-api seed --demo > seed.json
+          token=$(python3 -c "import json,sys; t=open('seed.json').read(); print(json.loads(t[t.index('{'):])['dev_kiosk']['device_token'])")
+          echo "::add-mask::$token"
+          echo "KIOSK_TOKEN=$token" >> "$GITHUB_ENV"
+          # The venv entry point, not `uv run`: a long-lived `uv run` holds the uv cache lock.
+          nohup .venv/bin/shriii-api serve --host 127.0.0.1 --port 8000 > api.log 2>&1 &
+          for _ in $(seq 60); do curl -fsS http://127.0.0.1:8000/readyz && exit 0; sleep 1; done
+          cat api.log; exit 1
+      - name: Build kiosk against the API (test bridge)
+        env:
+          VITE_E2E_BRIDGE: "true"
+          VITE_API_BASE: http://127.0.0.1:8000
+          VITE_KIOSK_ID: kiosk-001
+        run: VITE_DEVICE_TOKEN="$KIOSK_TOKEN" pnpm --filter @shriii/kiosk exec vite build --outDir dist-e2e
+      - name: Install Playwright (Chromium)
+        run: pnpm --filter @shriii/kiosk exec playwright install --with-deps chromium
+      - name: Serve kiosk build
+        run: |
+          nohup pnpm --filter @shriii/kiosk exec vite preview --outDir dist-e2e --host 127.0.0.1 --port 4180 --strictPort > preview.log 2>&1 &
+          for _ in $(seq 60); do curl -fsS -o /dev/null http://127.0.0.1:4180/ && exit 0; sleep 1; done
+          cat preview.log; exit 1
+      - name: Play a session that uploads to the API
+        run: |
+          node frontend/apps/kiosk/e2e/full-session.mjs --url http://127.0.0.1:4180 --pathway B \
+            --seed 23 --out e2e-artifacts/kiosk-api --cap-s 900 --api --partial-play
+      - name: Run the job worker (validation, eligibility, feature extraction)
+        run: uv run shriii-api worker --once
+      - name: Check events (accepted, gapless) and indicators via the API
+        run: |
+          token=$(uv run shriii-api dev-token --sub ci-e2e --roles admin,researcher | python3 -c "import json,sys; t=sys.stdin.read(); print(json.loads(t[t.index('{'):])['access_token'])")
+          uv run python cicd/e2e/kiosk_api_check.py --api-url http://127.0.0.1:8000 \
+            --bot-dir e2e-artifacts/kiosk-api --token "$token"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: kiosk-api
+          path: |
+            e2e-artifacts/
+            api.log
+            preview.log
+          if-no-files-found: ignore
+          retention-days: 7
+
+  demo-web:
+    name: Demo pipeline (fast) -> research pages on the live API
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_DB: shriii
+          POSTGRES_USER: dev
+          POSTGRES_PASSWORD: dev
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U dev -d shriii"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+    env:
+      ENV: test
+      AUTH_MODE: dev
+      DEV_JWT_SECRET: ci-demo-web-secret-0123456789abcdef
+      DATABASE_URL: postgresql+psycopg://dev:dev@localhost:5432/shriii
+      DATA_DIR: ${{ github.workspace }}/demo-data
+      LOG_JSON: "false"
+      LOG_LEVEL: WARNING
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e  # v6
+        with:
+          enable-cache: true
+          python-version: ${{ env.PYTHON_VERSION }}
+      - run: uv sync --all-packages
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1  # v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: package.json
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Demo pipeline (fast)
+        run: |
+          set -o pipefail
+          uv run shriii-api demo-pipeline --fast --seed 11 --workers 2 | tee demo-summary.txt
+      - name: Start API
+        run: |
+          nohup .venv/bin/shriii-api serve --host 127.0.0.1 --port 8000 > api.log 2>&1 &
+          for _ in $(seq 60); do curl -fsS http://127.0.0.1:8000/readyz && exit 0; sleep 1; done
+          cat api.log; exit 1
+      - name: Build the web app
+        run: pnpm --filter web exec next build
+      - name: Install Playwright (Chromium)
+        run: pnpm --filter web exec playwright install --with-deps chromium
+      - name: Research pages against the live API
+        env:
+          CI: "1"
+          API_PROXY_TARGET: http://127.0.0.1:8000
+        run: pnpm --filter web exec playwright test -c src/features/research/e2e/playwright.live.config.ts
+      - name: Summary
+        if: always()
+        run: |
+          { echo '### Demo pipeline (fast)'; echo '```'; tail -40 demo-summary.txt || true; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: demo-web
+          path: |
+            demo-summary.txt
+            api.log
+            frontend/apps/web/test-results/
+          if-no-files-found: ignore
+          retention-days: 7
+
+  session-e2e-ok:
+    name: Session E2E OK
+    if: always()
+    needs: [session-bots, kiosk-api, demo-web]
+    runs-on: ubuntu-24.04
+    steps:
+      - name: All session E2E jobs passed
+        run: |
+          results='${{ toJSON(needs.*.result) }}'
+          echo "$results"
+          echo "$results" | grep -Eq '"(failure|cancelled)"' && exit 1 || exit 0

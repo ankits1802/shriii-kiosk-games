@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
-import { ResearchOverview } from './overview';
+import { ResearchOverviewPage } from '@/features/research/overview/overview-page';
 
 export const metadata: Metadata = { title: 'Research' };
 
 export default function ResearchPage() {
-  return <ResearchOverview />;
+  return <ResearchOverviewPage />;
 }

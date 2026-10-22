@@ -30,56 +30,74 @@
   "slot": false,
   "scorable": true,
   "budget": {
-    "intro_ms": 6500,
-    "outro_ms": 1500,
-    "target_ms_l2": 95300,
-    "soft_cap_ms": 99000,
-    "hard_cap_ms": 100000
+    "intro_ms": 8000,
+    "outro_ms": 2500,
+    "target_ms_l2": 91500,
+    "soft_cap_ms": 94000,
+    "hard_cap_ms": 96000
   },
   "levels": {
     "L1": {
       "timing": {
         "decision_window_ms": 9000,
-        "reveal_ms": 1600
+        "reveal_ms": 1600,
+        "deal_ms": 700,
+        "prompt_delay_ms": 2500,
+        "round_gap_ms": 400,
+        "grab_ms": 1600,
+        "tone_window_ms": 6500,
+        "probe_window_ms": 6000
       },
       "seconds_per_trial": {
-        "median": 8.7,
-        "slow": 9.0
+        "median": 7.4,
+        "slow": 7.7
       },
       "estimated_duration_ms": {
-        "median": 97100,
-        "slow": 99800,
-        "slow_trimmed": 99800
+        "median": 93100,
+        "slow": 95500,
+        "slow_trimmed": 95500
       }
     },
     "L2": {
       "timing": {
         "decision_window_ms": 8000,
-        "reveal_ms": 1400
+        "reveal_ms": 1400,
+        "deal_ms": 700,
+        "prompt_delay_ms": 2500,
+        "round_gap_ms": 400,
+        "grab_ms": 1600,
+        "tone_window_ms": 6000,
+        "probe_window_ms": 5500
       },
       "seconds_per_trial": {
-        "median": 8.5,
-        "slow": 9.0
+        "median": 7.2,
+        "slow": 7.7
       },
       "estimated_duration_ms": {
-        "median": 95300,
-        "slow": 99800,
-        "slow_trimmed": 99800
+        "median": 91500,
+        "slow": 95500,
+        "slow_trimmed": 95500
       }
     },
     "L3": {
       "timing": {
         "decision_window_ms": 7000,
-        "reveal_ms": 1200
+        "reveal_ms": 1200,
+        "deal_ms": 700,
+        "prompt_delay_ms": 2500,
+        "round_gap_ms": 400,
+        "grab_ms": 1600,
+        "tone_window_ms": 5500,
+        "probe_window_ms": 5000
       },
       "seconds_per_trial": {
-        "median": 8.1,
-        "slow": 8.8
+        "median": 7.0,
+        "slow": 7.5
       },
       "estimated_duration_ms": {
-        "median": 91700,
-        "slow": 98000,
-        "slow_trimmed": 98000
+        "median": 89900,
+        "slow": 93900,
+        "slow_trimmed": 93900
       }
     }
   },
@@ -90,7 +108,7 @@
       "condition_id": "standard",
       "trials": 1,
       "min_trials": 1,
-      "budget_trial_ms": 6000,
+      "budget_trial_ms": 7000,
       "scorable": false,
       "conditions": {
         "timer": false,
@@ -120,7 +138,7 @@
       "condition_id": "unfair_loss_probe",
       "trials": 1,
       "min_trials": 1,
-      "budget_trial_ms": null,
+      "budget_trial_ms": 6000,
       "scorable": true,
       "conditions": {
         "timer": false,
@@ -135,7 +153,7 @@
       "condition_id": "probe",
       "trials": 4,
       "min_trials": 4,
-      "budget_trial_ms": 1200,
+      "budget_trial_ms": 2600,
       "scorable": true,
       "conditions": {
         "timer": false,
@@ -159,7 +177,15 @@
     "endowment_tokens": 10,
     "partner_policies": ["cooperative", "free_rider", "error_prone"],
     "error_round_window": [4, 6],
-    "seeded_partners": true
+    "seeded_partners": true,
+    "pot_multiplier": 2,
+    "free_rider_max_tokens": 1,
+    "error_tokens": 0,
+    "tone_options": ["warm", "neutral", "firm"],
+    "unfair_pot_tokens": 6,
+    "last_round_cooperative": true,
+    "probe_safe_counts": [2, 3, 4, 3],
+    "probe_risky_sides": ["right", "left", "right", "left"]
   },
   "context_shift": {
     "kind": "partner_error",
@@ -169,5 +195,5 @@
   "forms": ["form_1", "form_2"],
   "audio_keys": ["share_pot.intro", "share_pot.practice", "share_pot.outro", "share_pot.replay"],
   "requires_numeracy": false,
-  "notes": "8 rounds with pictured tokens and seeded scripted partners (MG-05). Exploratory tone choice after an unfair loss."
+  "notes": "8 rounds with pictured tokens and seeded scripted partners (MG-05). Exploratory tone choice after an unfair loss. Budgets measured with the set-2 bot (round = deal + decision + reveal + gap; probe trials are select-then-confirm)."
 }

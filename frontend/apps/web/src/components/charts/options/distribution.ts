@@ -108,7 +108,14 @@ export function distributionOption(input: DistributionInput, tokens: ChartTokens
   const hasLegend = (input.groups?.length ?? 0) > 1;
   return {
     ...baseOption(tokens, `Histogram of ${input.xLabel}, n = ${values.length}.`),
-    grid: { left: 16, right: 16, top: hasLegend ? 36 : 16, bottom: 40, containLabel: true },
+    grid: {
+      left: 16,
+      right: 16,
+      top: hasLegend ? 36 : 16,
+      bottom: 8,
+      outerBoundsMode: 'same',
+      outerBoundsContain: 'all',
+    },
     legend: hasLegend
       ? {
           top: 0,

@@ -1,30 +1,16 @@
 import type { Metadata } from 'next';
-import { RoutePlaceholder } from '@/components/shell/route-placeholder';
+import { Suspense } from 'react';
+import { LoadingState } from '@/components/data/states';
+import { loadScienceConfig } from '@/features/research/load-science.server';
+import { ValidationWorkbenchPage } from '@/features/research/validation/workbench-page';
 
 export const metadata: Metadata = { title: 'Validation' };
 
-export default function ResearchValidationPage() {
+export default function Page() {
+  const science = loadScienceConfig();
   return (
-    <RoutePlaceholder
-      href="/research/validation"
-      planned={[
-        'Trait Validation Workbench: construct selector, criterion r, retest r, reliability vs target, cross-construct bars',
-        'Matched participant × occasion snapshots (build, freeze, download Parquet)',
-        'Reliability: split-half, ICC, alpha/omega, retest with Bland–Altman',
-        'Convergent/discriminant validity: correlation heatmaps, MTMM, forest plots with CIs',
-        'Factor structure (EFA/CFA loadings), fairness and invariance by language/age/literacy',
-        'Gate matrix from gates.yaml with evidence and sign-off status',
-      ]}
-      endpoints={[
-        'POST /api/v1/validation/datasets',
-        'GET /api/v1/validation/datasets',
-        'POST /api/v1/validation/runs',
-        'GET /api/v1/validation/runs/{run_id}',
-        'GET /api/v1/validation/matched-records',
-        'GET /api/v1/admin/gates',
-      ]}
-      features={['VAL-04', 'VAL-05', 'VAL-06', 'VAL-07', 'VAL-12', 'VAL-14']}
-      layer="Layer 4 · validated estimates"
-    />
+    <Suspense fallback={<LoadingState rows={6} />}>
+      <ValidationWorkbenchPage science={science} />
+    </Suspense>
   );
 }

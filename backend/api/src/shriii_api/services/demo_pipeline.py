@@ -96,6 +96,22 @@ class DemoConfig:
     skip_ingestion: bool = False
     """Resume ``study_id``: skip simulation, upload, linkage and per-session scoring."""
 
+    @classmethod
+    def preset(cls, name: str, **overrides: Any) -> DemoConfig:
+        """A named size: ``full`` (the default sizes) or ``fast`` (a CI-sized run); ``overrides`` win."""
+        try:
+            base = PRESETS[name]
+        except KeyError:
+            raise ValueError(f"unknown demo preset {name!r} (choose from {sorted(PRESETS)})") from None
+        return cls(**{**base, **overrides})
+
+
+PRESETS: dict[str, dict[str, Any]] = {
+    "full": {"participants_per_language": 400, "retests": 100, "n_boot": 500},
+    # Per-PR / laptop size: every step and analysis still runs, with wider intervals.
+    "fast": {"participants_per_language": 120, "retests": 40, "n_boot": 200},
+}
+
 
 @dataclass(slots=True)
 class _Clock:
@@ -400,12 +416,14 @@ def _administrations(
                 for iid, it in items.items()
                 if str(it.get("block")) in ROTATING and str(it.get("block")) != person.block
             )
+            # The administration carries the person's rotating form whenever the instrument has rotating
+            # items (answered or planned missing), so the stored block matches the enrolment's form.
             yield (
                 pid,
                 inst_id,
                 responses,
                 planned,
-                person.block if rotating else "X",
+                person.block if rotating or planned else "X",
                 str(rows[0].get("rater_role") or "self"),
             )
 
@@ -1156,6 +1174,7 @@ def run_demo_pipeline(settings: Settings, config: DemoConfig, *, migrate_first: 
     with session_scope() as db:
         summary["jobs"] = _job_summary(db, started_at)
         summary["failed_jobs"] = _failed_jobs(db, started_at)
+    summary["checks"] = evaluate_checks(summary)
     summary["timings_s"] = clock.steps
     summary["total_s"] = round(time.perf_counter() - clock.started, 1)
     out_dir = Path(settings.data_dir) / "demo"
@@ -1164,6 +1183,62 @@ def run_demo_pipeline(settings: Settings, config: DemoConfig, *, migrate_first: 
     path.write_text(json.dumps(summary, indent=2, default=str), encoding="utf-8")
     summary["summary_file"] = str(path)
     return summary
+
+
+def evaluate_checks(summary: Mapping[str, Any]) -> dict[str, dict[str, Any]]:
+    """Pass/fail checks over a run's summary.
+
+    ``hard`` checks are pipeline correctness (every event accepted, every job and analysis succeeded, gates
+    and the report fail closed); a failed hard check makes ``demo-pipeline`` exit non-zero. ``soft`` checks
+    are statistical expectations of the synthetic design (planted DIF recovered) that depend on sample size.
+    """
+    research = summary.get("research", {})
+    results = research.get("results", {})
+    ingestion = summary.get("ingestion", {})
+    events = ingestion.get("events", {})
+    simulated = summary.get("simulated", {})
+    battery = research.get("gates", {}).get("battery", [])
+    resumed = bool(simulated.get("resumed"))
+    checks: dict[str, dict[str, Any]] = {
+        "events_accepted": {
+            "kind": "hard",
+            "passed": resumed or int(events.get("accepted", 0)) == int(simulated.get("events", -1)),
+            "detail": events,
+        },
+        "no_failed_jobs": {"kind": "hard", "passed": not summary.get("failed_jobs"), "detail": None},
+        "validation_runs_succeeded": {
+            "kind": "hard",
+            "passed": bool(research.get("validation_runs"))
+            and all(r.get("status") == "succeeded" for r in research["validation_runs"].values()),
+            "detail": {a: r.get("status") for a, r in research.get("validation_runs", {}).items()},
+        },
+        "model_trained_with_holdout": {
+            "kind": "hard",
+            "passed": research.get("model", {}).get("status") == "succeeded"
+            and bool(research.get("model", {}).get("n_holdout")),
+            "detail": research.get("model", {}).get("error"),
+        },
+        "gates_fail_closed": {
+            "kind": "hard",
+            "passed": bool(battery) and all(b.get("status") == "closed" for b in battery),
+            "detail": [b.get("status") for b in battery],
+        },
+        "report_fail_closed": {
+            "kind": "hard",
+            "passed": summary.get("operations", {}).get("report", {}).get("report_mode") == "thank_you",
+            "detail": summary.get("operations", {}).get("report", {}).get("report_mode"),
+        },
+        "planted_dif_recovered": {
+            "kind": "soft",
+            "passed": bool(results.get("planted_dif", {}).get("recovered")),
+            "detail": results.get("planted_dif"),
+        },
+    }
+    return checks
+
+
+def failed_hard_checks(summary: Mapping[str, Any]) -> list[str]:
+    return sorted(k for k, c in summary.get("checks", {}).items() if c["kind"] == "hard" and not c["passed"])
 
 
 def _verdict(passed: Any, status: Any) -> str:
@@ -1216,6 +1291,10 @@ def render_summary(summary: Mapping[str, Any]) -> str:
         f"  report for a played session: {summary.get('operations', {}).get('report')}",
         f"  jobs: {summary.get('jobs', {})}",
         f"  failed jobs: {summary.get('failed_jobs', [])}",
+        "  checks: "
+        + ", ".join(
+            f"{k}={'pass' if c['passed'] else 'FAIL'}({c['kind']})" for k, c in summary.get("checks", {}).items()
+        ),
         f"  provenance: git {r.get('provenance', {}).get('git_sha')}, snapshot sha256 {snap.get('sha256')}, "
         f"dictionary {r.get('provenance', {}).get('dictionary_sha256')}",
         f"  timings {summary.get('timings_s')}; total {summary.get('total_s')}s",
@@ -1224,7 +1303,16 @@ def render_summary(summary: Mapping[str, Any]) -> str:
     return "\n".join(lines)
 
 
-__all__ = ["DemoConfig", "render_summary", "run_demo_pipeline", "simulate", "upload_events"]
+__all__ = [
+    "PRESETS",
+    "DemoConfig",
+    "evaluate_checks",
+    "failed_hard_checks",
+    "render_summary",
+    "run_demo_pipeline",
+    "simulate",
+    "upload_events",
+]
 
 
 def _shard_main(path: str) -> int:

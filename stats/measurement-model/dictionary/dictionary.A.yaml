@@ -740,7 +740,7 @@ indicators:
     episode_id: road_home
     task: road_home.errands
     phases:
-    - main
+    - shift_pre
     slot: false
   event_inputs:
   - trial_start
@@ -779,7 +779,9 @@ indicators:
   convergent_criteria:
   - bfi2_s.organization
   - gdms.rational
-  notes: null
+  notes: >-
+    Amendment 2026-10-wave2 (A3): the Road Home errand maps are the pre-reversal baseline block (content phase
+    shift_pre, also used by stability.shift_slope_reversal), so the selection is shift_pre, not main.
 - id: task_organisation.revisits
   construct: task_organisation
   role: secondary
@@ -791,7 +793,7 @@ indicators:
     episode_id: road_home
     task: road_home.errands
     phases:
-    - main
+    - shift_pre
     slot: false
   event_inputs:
   - route_step
@@ -826,7 +828,9 @@ indicators:
   expected_r_lower_bound: 0.1
   convergent_criteria:
   - bfi2_s.organization
-  notes: null
+  notes: >-
+    Amendment 2026-10-wave2 (A3): the Road Home errand maps are the pre-reversal baseline block (content phase
+    shift_pre, also used by stability.shift_slope_reversal), so the selection is shift_pre, not main.
 - id: task_organisation.idle_time
   construct: task_organisation
   role: secondary
@@ -838,7 +842,7 @@ indicators:
     episode_id: road_home
     task: road_home.errands
     phases:
-    - main
+    - shift_pre
     slot: false
   event_inputs:
   - route_step
@@ -874,7 +878,9 @@ indicators:
   expected_r_lower_bound: 0.1
   convergent_criteria:
   - bfi2_s.organization
-  notes: null
+  notes: >-
+    Amendment 2026-10-wave2 (A3): the Road Home errand maps are the pre-reversal baseline block (content phase
+    shift_pre, also used by stability.shift_slope_reversal), so the selection is shift_pre, not main.
 - id: task_organisation.resource_allocation_efficiency
   construct: task_organisation
   role: secondary
@@ -886,7 +892,7 @@ indicators:
     episode_id: road_home
     task: road_home.resource_planning
     phases:
-    - main
+    - shift_pre
     slot: false
   event_inputs:
   - route_step
@@ -923,7 +929,9 @@ indicators:
   convergent_criteria:
   - bfi2_s.organization
   - gdms.rational
-  notes: null
+  notes: >-
+    Amendment 2026-10-wave2 (A3): the Road Home errand maps are the pre-reversal baseline block (content phase
+    shift_pre, also used by stability.shift_slope_reversal), so the selection is shift_pre, not main.
 - id: decisiveness.time_to_commit
   construct: decisiveness
   role: primary
@@ -935,7 +943,8 @@ indicators:
     episode_id: weighing_post
     task: weighing_post.decisions
     phases:
-    - main
+    - shift_pre
+    - shift_post
     slot: false
   event_inputs:
   - trial_start
@@ -980,7 +989,10 @@ indicators:
   expected_r_lower_bound: 0.1
   convergent_criteria:
   - gdms.avoidant
-  notes: null
+  notes: >-
+    Amendment 2026-10-wave2 (A3): the weigh decisions sit in the blocks before and after the new market rule
+    (content phases shift_pre / shift_post, 7 + 7 planned, 6 + 6 protected); the minimum of 12 needs both, so
+    the selection is shift_pre + shift_post, not main.
 - id: decisiveness.reversals_before_confirm
   construct: decisiveness
   role: secondary
@@ -992,7 +1004,8 @@ indicators:
     episode_id: weighing_post
     task: weighing_post.decisions
     phases:
-    - main
+    - shift_pre
+    - shift_post
     slot: false
   event_inputs:
   - response
@@ -1026,7 +1039,10 @@ indicators:
   expected_r_lower_bound: 0.1
   convergent_criteria:
   - gdms.avoidant
-  notes: null
+  notes: >-
+    Amendment 2026-10-wave2 (A3): the weigh decisions sit in the blocks before and after the new market rule
+    (content phases shift_pre / shift_post, 7 + 7 planned, 6 + 6 protected); the minimum of 12 needs both, so
+    the selection is shift_pre + shift_post, not main.
 - id: decisiveness.info_gathered
   construct: decisiveness
   role: secondary
@@ -1038,7 +1054,8 @@ indicators:
     episode_id: weighing_post
     task: weighing_post.decisions
     phases:
-    - main
+    - shift_pre
+    - shift_post
     slot: false
   event_inputs:
   - response
@@ -1073,7 +1090,10 @@ indicators:
   expected_r_lower_bound: 0.1
   convergent_criteria:
   - gdms.avoidant
-  notes: null
+  notes: >-
+    Amendment 2026-10-wave2 (A3): the weigh decisions sit in the blocks before and after the new market rule
+    (content phases shift_pre / shift_post, 7 + 7 planned, 6 + 6 protected); the minimum of 12 needs both, so
+    the selection is shift_pre + shift_post, not main.
 - id: decisiveness.commit_rvi
   construct: decisiveness
   role: exploratory
@@ -1085,7 +1105,8 @@ indicators:
     episode_id: weighing_post
     task: weighing_post.decisions
     phases:
-    - main
+    - shift_pre
+    - shift_post
     slot: false
   event_inputs:
   - trial_start
@@ -1129,7 +1150,10 @@ indicators:
   sensitivity: standard
   expected_r_lower_bound: null
   convergent_criteria: []
-  notes: null
+  notes: >-
+    Amendment 2026-10-wave2 (A3): the weigh decisions sit in the blocks before and after the new market rule
+    (content phases shift_pre / shift_post, 7 + 7 planned, 6 + 6 protected); the minimum of 12 needs both, so
+    the selection is shift_pre + shift_post, not main.
 - id: adaptability.post_reversal_errors
   construct: adaptability
   role: primary
@@ -1757,6 +1781,7 @@ indicators:
     task: stall.dont_serve
     phases:
     - main
+    - pressure
     slot: false
   event_inputs:
   - input.raw_tap
@@ -1772,7 +1797,7 @@ indicators:
   reliability_method: split_half_permutation
   level_rule: fixed_level_only
   min_valid_trials:
-    count: 20
+    count: 30
     unit: trials
     basis: val02_pending
   exclusions:
@@ -1792,9 +1817,11 @@ indicators:
   expected_r_lower_bound: null
   convergent_criteria: []
   notes: >-
-    VAL-02 / indicator review (2026-10): the minimum (30) exceeded the 20 trials of the only selected block
-    (Stall service, phase main), so the indicator could never be scored; lowered to the scheduled 20
-    (exploratory, val02_pending).
+    Amendment 2026-10-wave2 (A2): selects the same Stall serving trials as the sibling expressive-restraint
+    indicators (phases main + pressure; 38 planned, 34 protected) and restores the original minimum of 30 instead
+    of the 20 set by the VAL-02 review; inter-tap intervals are formed and detrended within each block so the
+    timed-rush pace does not inflate the RVI. Exploratory, val02_pending.
+
 - id: teamwork.mean_contribution
   construct: teamwork
   role: primary
@@ -2235,7 +2262,7 @@ indicators:
     episode_id: road_home
     task: road_home.route_planning
     phases:
-    - main
+    - shift_pre
     slot: false
   event_inputs:
   - trial_start
@@ -2272,7 +2299,9 @@ indicators:
   expected_r_lower_bound: 0.1
   convergent_criteria:
   - tol_board.excess_moves
-  notes: null
+  notes: >-
+    Amendment 2026-10-wave2 (A3): the Road Home errand maps are the pre-reversal baseline block (content phase
+    shift_pre, also used by stability.shift_slope_reversal), so the selection is shift_pre, not main.
 - id: problem_solving.replan_quality
   construct: problem_solving
   role: secondary
@@ -2536,7 +2565,7 @@ indicators:
     episode_id: road_home
     task: road_home.optional
     phases:
-    - main
+    - shift_pre
     slot: false
   event_inputs:
   - response
@@ -2575,7 +2604,9 @@ indicators:
   convergent_criteria:
   - bfi2_xs.conscientiousness
   - grit_s.total
-  notes: null
+  notes: >-
+    Amendment 2026-10-wave2 (A3): the Road Home errand maps are the pre-reversal baseline block (content phase
+    shift_pre, also used by stability.shift_slope_reversal), so the selection is shift_pre, not main.
 - id: initiative.route_planning_time
   construct: initiative
   role: secondary
@@ -2587,7 +2618,7 @@ indicators:
     episode_id: road_home
     task: road_home.route_planning
     phases:
-    - main
+    - shift_pre
     slot: false
   event_inputs:
   - stimulus_onset
@@ -2627,7 +2658,9 @@ indicators:
   expected_r_lower_bound: 0.1
   convergent_criteria:
   - bfi2_xs.conscientiousness
-  notes: null
+  notes: >-
+    Amendment 2026-10-wave2 (A3): the Road Home errand maps are the pre-reversal baseline block (content phase
+    shift_pre, also used by stability.shift_slope_reversal), so the selection is shift_pre, not main.
 - id: risk_preference.gamble_rate
   construct: risk_preference
   role: exploratory

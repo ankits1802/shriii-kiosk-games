@@ -166,6 +166,17 @@ const EXTRA_ROUTES: readonly { readonly href: string; readonly requires: Require
   { href: '/design-system', requires: {} },
 ];
 
+/**
+ * Deeper pages that need more than the nav item owning them (checked before the nav table).
+ * Researcher-administered mode writes battery responses, so read-only roles must not open it.
+ */
+const ROUTE_OVERRIDES: readonly { readonly pattern: RegExp; readonly requires: Requirement }[] = [
+  {
+    pattern: /^\/research\/instruments\/[^/]+\/administer\/?$/,
+    requires: { all: ['instruments.read', 'responses.write'] },
+  },
+];
+
 function matches(pathname: string, href: string): boolean {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
@@ -185,6 +196,8 @@ export function navItemFor(pathname: string): NavItem | null {
 
 /** The requirement guarding `pathname`, or null when the path is not a known console route. */
 export function routeRequirement(pathname: string): Requirement | null {
+  const override = ROUTE_OVERRIDES.find((r) => r.pattern.test(pathname));
+  if (override) return override.requires;
   const item = navItemFor(pathname);
   if (item) return item.requires;
   let best: { href: string; requires: Requirement } | null = null;

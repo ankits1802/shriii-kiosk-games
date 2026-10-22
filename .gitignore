@@ -28,3 +28,4 @@ uv.lock.bak
 .hypothesis/
 # Run artefacts: load-test results are uploaded as CI artifacts (loadtest.yml), never committed.
 tools/loadtest/results/
+frontend/apps/kiosk/dist-e2e/
