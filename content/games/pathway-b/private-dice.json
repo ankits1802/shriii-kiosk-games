@@ -18,56 +18,68 @@
   "slot": true,
   "scorable": true,
   "budget": {
-    "intro_ms": 7000,
-    "outro_ms": 1500,
-    "target_ms_l2": 75300,
-    "soft_cap_ms": 85000,
-    "hard_cap_ms": 86000
+    "intro_ms": 8500,
+    "outro_ms": 2500,
+    "target_ms_l2": 85900,
+    "soft_cap_ms": 93000,
+    "hard_cap_ms": 94000
   },
   "levels": {
     "L1": {
       "timing": {
         "reveal_ms": 2600,
-        "report_window_ms": 6000
+        "report_window_ms": 6000,
+        "roll_autostart_ms": 3500,
+        "shake_ms": 600,
+        "iti_ms": 300,
+        "probe_window_ms": 6000
       },
       "seconds_per_trial": {
-        "median": 5.9,
-        "slow": 6.2
+        "median": 6.15,
+        "slow": 6.4
       },
       "estimated_duration_ms": {
-        "median": 77300,
-        "slow": 80300,
-        "slow_trimmed": 80300
+        "median": 87900,
+        "slow": 90400,
+        "slow_trimmed": 90400
       }
     },
     "L2": {
       "timing": {
         "reveal_ms": 2400,
-        "report_window_ms": 5500
+        "report_window_ms": 5500,
+        "roll_autostart_ms": 3500,
+        "shake_ms": 600,
+        "iti_ms": 300,
+        "probe_window_ms": 5500
       },
       "seconds_per_trial": {
-        "median": 5.7,
-        "slow": 6.1
+        "median": 5.95,
+        "slow": 6.2
       },
       "estimated_duration_ms": {
-        "median": 75300,
-        "slow": 79300,
-        "slow_trimmed": 79300
+        "median": 85900,
+        "slow": 88400,
+        "slow_trimmed": 88400
       }
     },
     "L3": {
       "timing": {
         "reveal_ms": 2200,
-        "report_window_ms": 5000
+        "report_window_ms": 5000,
+        "roll_autostart_ms": 3500,
+        "shake_ms": 600,
+        "iti_ms": 300,
+        "probe_window_ms": 5000
       },
       "seconds_per_trial": {
-        "median": 5.5,
-        "slow": 5.9
+        "median": 5.75,
+        "slow": 6.0
       },
       "estimated_duration_ms": {
-        "median": 73300,
-        "slow": 77300,
-        "slow_trimmed": 77300
+        "median": 83900,
+        "slow": 86400,
+        "slow_trimmed": 86400
       }
     }
   },
@@ -108,7 +120,7 @@
       "condition_id": "probe",
       "trials": 4,
       "min_trials": 4,
-      "budget_trial_ms": 1200,
+      "budget_trial_ms": 2600,
       "scorable": true,
       "conditions": {
         "timer": false,
@@ -128,7 +140,11 @@
     "integrity_dice_mode": "a",
     "true_outcome_logged": false,
     "voice_forbidden": true,
-    "headset_required_open_public": true
+    "headset_required_open_public": true,
+    "faces": 6,
+    "onlooker_button": true,
+    "probe_safe_counts": [2, 3, 4, 3],
+    "probe_risky_sides": ["right", "left", "right", "left"]
   },
   "context_shift": null,
   "forms": ["form_1"],
@@ -139,5 +155,5 @@
     "private_dice.replay"
   ],
   "requires_numeracy": false,
-  "notes": "Slot module. Mode (a): the true outcome is never logged; outputs feed group-level estimates only (MG-06). Never voiced through speakers."
+  "notes": "Slot module. Mode (a): the true outcome is never logged; outputs feed group-level estimates only (MG-06). Never voiced through speakers. A trial is roll + shake + private peek + picture report."
 }

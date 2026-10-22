@@ -28,8 +28,16 @@ private-report estimates), matching, a frozen snapshot, every validation analysi
 the registered primary hypotheses), a registered model with an untouched holdout cohort, provisional norms, gate
 evaluation (evaluate-only), a fail-closed release pack and report, kiosk health and a retention dry run. It prints a
 digest (`--json` for everything) and writes the full summary to `DATA_DIR/demo/<study>.json`. Options:
-`--participants-per-language`, `--languages`, `--retests`, `--seed`, `--workers` (processes for upload, criterion and
-jobs), `--models`, `--n-boot`. Point `DATABASE_URL`/`IDENTITY_DATABASE_URL` at a scratch database.
+`--preset full|fast` (`--fast` for short: 120 per language + 40 retests and 200 bootstraps instead of 400 + 100 and
+500), `--participants-per-language`, `--languages` (at least two), `--retests`/`--retest`, `--n-boot` (these three
+override the preset), `--seed`, `--workers` (processes for upload, criterion and jobs), `--models`. Point
+`DATABASE_URL`/`IDENTITY_DATABASE_URL` at a scratch database.
+
+The summary ends with `checks`: hard checks (every event accepted, no failed job, every analysis succeeded, the model
+trained with a holdout, gates and the player report fail closed) make the command exit 1; the soft check
+`planted_dif_recovered` is a statistical expectation that depends on sample size and is only reported. CI runs a small
+version in `tests/test_demo_pipeline.py` on every build; `.github/workflows/nightly-sim.yml` runs the full size nightly
+(`workflow_dispatch` takes `demo_preset`) and uploads the summary.
 
 To run the tests: `uv run pytest backend/api/tests`. They need a reachable Postgres, either from `SHRIII_TEST_DATABASE_URL` or found on localhost:5432 or localhost:55432. The tests create their own `shriii_api_test*` databases. If no server is reachable, the tests are skipped, unless `SHRIII_REQUIRE_DB=1` is set.
 

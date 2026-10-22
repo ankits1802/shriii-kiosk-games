@@ -222,7 +222,14 @@
     "quantities_shown_as": "needle_and_pans",
     "spoken_quantities": true,
     "bribe_size_as_pictured_quantity": true,
-    "luck_tokens_group_only": true
+    "luck_tokens_group_only": true,
+    "true_outcome_logged": false,
+    "luck_token_faces": 6,
+    "gamble_catch_probability": 0.5,
+    "gamble_safe_coins": 2,
+    "gamble_win_coins": 4,
+    "probe_safe_items": [2, 2, 1, 2],
+    "probe_risky_items": [4, 5, 4, 6]
   },
   "context_shift": {
     "kind": "new_market_rule",

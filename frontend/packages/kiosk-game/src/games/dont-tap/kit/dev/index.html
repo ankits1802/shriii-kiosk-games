@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Micro-game harness</title>
+    <style>
+      html, body { margin: 0; height: 100%; background: #1b1838; overflow: hidden; }
+      #host { position: fixed; inset: 0; }
+      #err { position: fixed; left: 12px; bottom: 12px; color: #fff; font: 14px monospace; white-space: pre; }
+    </style>
+  </head>
+  <body>
+    <div id="host"></div>
+    <div id="err"></div>
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>

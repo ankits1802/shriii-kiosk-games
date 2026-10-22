@@ -24,59 +24,68 @@
   "slot": true,
   "scorable": true,
   "budget": {
-    "intro_ms": 5500,
-    "outro_ms": 1500,
-    "target_ms_l2": 76280,
-    "soft_cap_ms": 85000,
-    "hard_cap_ms": 86000
+    "intro_ms": 9000,
+    "outro_ms": 2500,
+    "target_ms_l2": 84540,
+    "soft_cap_ms": 93000,
+    "hard_cap_ms": 94000
   },
   "levels": {
     "L1": {
       "timing": {
         "target_ms": 700,
         "isi_ms": 480,
-        "distractor_ms": 300
+        "distractor_ms": 300,
+        "block_intro_ms": 1800,
+        "hold_wait_ms": 4000,
+        "probe_window_ms": 6000
       },
       "seconds_per_trial": {
-        "median": 1.18,
-        "slow": 1.18
+        "median": 1.22,
+        "slow": 1.24
       },
       "estimated_duration_ms": {
-        "median": 84960,
-        "slow": 84960,
-        "slow_trimmed": 75520
+        "median": 92660,
+        "slow": 93820,
+        "slow_trimmed": 88860
       }
     },
     "L2": {
       "timing": {
         "target_ms": 600,
         "isi_ms": 440,
-        "distractor_ms": 250
+        "distractor_ms": 250,
+        "block_intro_ms": 1800,
+        "hold_wait_ms": 4000,
+        "probe_window_ms": 5500
       },
       "seconds_per_trial": {
-        "median": 1.04,
-        "slow": 1.04
+        "median": 1.08,
+        "slow": 1.1
       },
       "estimated_duration_ms": {
-        "median": 76280,
-        "slow": 76280,
-        "slow_trimmed": 67960
+        "median": 84540,
+        "slow": 85700,
+        "slow_trimmed": 81300
       }
     },
     "L3": {
       "timing": {
         "target_ms": 520,
         "isi_ms": 400,
-        "distractor_ms": 200
+        "distractor_ms": 200,
+        "block_intro_ms": 1800,
+        "hold_wait_ms": 4000,
+        "probe_window_ms": 5000
       },
       "seconds_per_trial": {
-        "median": 0.92,
-        "slow": 0.92
+        "median": 0.96,
+        "slow": 0.98
       },
       "estimated_duration_ms": {
-        "median": 68840,
-        "slow": 68840,
-        "slow_trimmed": 61480
+        "median": 77580,
+        "slow": 78740,
+        "slow_trimmed": 74820
       }
     }
   },
@@ -100,7 +109,7 @@
       "block_id": "free",
       "phase": "main",
       "condition_id": "free",
-      "trials": 30,
+      "trials": 28,
       "min_trials": 26,
       "budget_trial_ms": null,
       "scorable": true,
@@ -115,7 +124,7 @@
       "block_id": "held",
       "phase": "main",
       "condition_id": "held",
-      "trials": 30,
+      "trials": 28,
       "min_trials": 26,
       "budget_trial_ms": null,
       "scorable": true,
@@ -132,7 +141,7 @@
       "condition_id": "probe",
       "trials": 4,
       "min_trials": 4,
-      "budget_trial_ms": 1200,
+      "budget_trial_ms": 2600,
       "scorable": true,
       "conditions": {
         "timer": false,
@@ -147,13 +156,16 @@
     "held": 26
   },
   "planned_counts": {
-    "free": 30,
-    "held": 30
+    "free": 28,
+    "held": 28
   },
   "constraints": {
     "counterbalanced_block_order": true,
     "distractor_share": 0.3,
-    "fixed_paced": true
+    "fixed_paced": true,
+    "distractor_kinds": ["firework", "sky_lantern", "bell"],
+    "probe_safe_counts": [2, 3, 4, 3],
+    "probe_risky_sides": ["right", "left", "right", "left"]
   },
   "context_shift": {
     "kind": "held_block",
@@ -168,5 +180,5 @@
     "steady_hands.replay"
   ],
   "requires_numeracy": false,
-  "notes": "Slot module. Counterbalanced free and held blocks with distractors (MG-08)."
+  "notes": "Slot module. Counterbalanced free and held blocks with distractors (MG-08). intro_ms includes the two announced block switches (block_intro_ms each); a trial is ISI + target window."
 }

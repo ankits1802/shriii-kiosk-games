@@ -151,7 +151,15 @@
   },
   "constraints": {
     "titration": "seeded_bisection",
-    "delay_units": "sun_moon_cycles"
+    "delay_units": "sun_moon_cycles",
+    "delay_ll_amount": 10,
+    "delay_cycles": [1, 2, 4, 8],
+    "delay_repeats": 2,
+    "delay_order": "seeded",
+    "effort_hard_amount": 10,
+    "effort_hold_multipliers": [1, 1, 1, 1],
+    "practice_ss_amount": 3,
+    "practice_delay_cycles": 1
   },
   "context_shift": null,
   "forms": ["form_1", "form_2"],

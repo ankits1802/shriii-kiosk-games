@@ -210,7 +210,10 @@
     "customer_tone_levels": [0, 1, 2, 3, 4],
     "tone_is_stimulus_property": true,
     "tone_options": ["warm", "neutral", "firm"],
-    "exactly_one_shift": true
+    "exactly_one_shift": true,
+    "serve_items": ["mango", "banana", "laddoo", "jalebi", "samosa", "guava"],
+    "dont_serve_reasons": ["spoiled"],
+    "probe_options": ["safe", "risky"]
   },
   "context_shift": {
     "kind": "rude_customer_run",
@@ -228,5 +231,5 @@
     "stall.rush_cue"
   ],
   "requires_numeracy": false,
-  "notes": "Episode 1, Table for One (EPI-01). Target 3.3 +- 0.3 min. Customer tone is a recorded stimulus property, never sensing of the player."
+  "notes": "Episode 1, Table for One (EPI-01). Target 3.3 +- 0.3 min. Customer tone is a recorded stimulus property, never sensing of the player. serve_items is the pictured stall catalogue (one-to-one with the paradigm's item draws); dont_serve_reasons limits no-go items to spoiled food (rot, flies) because out-of-turn customers cannot be taught or perceived reliably without reading; probe_options are the cross-episode probe codes (safe / risky)."
 }

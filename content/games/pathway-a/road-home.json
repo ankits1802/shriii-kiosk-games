@@ -56,7 +56,11 @@
         "map_nodes": 9,
         "fuel_units": 12,
         "step_window_ms": 8000,
-        "hold_required_ms": 2000
+        "hold_required_ms": 2000,
+        "optional_window_ms": 3500,
+        "fuel_window_ms": 14000,
+        "uphill_window_ms": 9000,
+        "rest_cap_ms": 22000
       },
       "seconds_per_trial": {
         "median": 4.15,
@@ -73,7 +77,11 @@
         "map_nodes": 11,
         "fuel_units": 12,
         "step_window_ms": 7000,
-        "hold_required_ms": 2500
+        "hold_required_ms": 2500,
+        "optional_window_ms": 3000,
+        "fuel_window_ms": 12000,
+        "uphill_window_ms": 8000,
+        "rest_cap_ms": 20000
       },
       "seconds_per_trial": {
         "median": 4.0,
@@ -90,7 +98,11 @@
         "map_nodes": 13,
         "fuel_units": 11,
         "step_window_ms": 6000,
-        "hold_required_ms": 3000
+        "hold_required_ms": 3000,
+        "optional_window_ms": 2500,
+        "fuel_window_ms": 10000,
+        "uphill_window_ms": 7000,
+        "rest_cap_ms": 18000
       },
       "seconds_per_trial": {
         "median": 3.8,
@@ -230,7 +242,50 @@
     "solver_verified_maps": true,
     "idle_gap_log_ms": 3000,
     "no_audio_cue_for_reversal": true,
-    "partner_scripted_error": true
+    "partner_scripted_error": true,
+    "errand_block_pattern": [
+      "errand_map",
+      "optional_opportunity",
+      "fork_choice",
+      "fork_choice",
+      "errand_map",
+      "optional_opportunity",
+      "fork_choice",
+      "optional_opportunity",
+      "fork_choice",
+      "errand_map",
+      "optional_opportunity",
+      "fork_choice",
+      "fork_choice",
+      "optional_opportunity"
+    ],
+    "blocked_block_pattern": [
+      "blocked_route",
+      "fork_choice",
+      "fork_choice",
+      "fork_choice",
+      "blocked_route",
+      "fork_choice"
+    ],
+    "blocked_event_kinds": ["fallen_tree", "flooded_river"],
+    "optional_kinds": [
+      "stranded_traveller",
+      "shrine_lamp",
+      "spilled_mangoes",
+      "thirsty_calf",
+      "fallen_signpost"
+    ],
+    "errands_per_map": 3,
+    "blocked_map_errands": 1,
+    "edge_cost_range": [1, 3],
+    "fork_max_same_side": 3,
+    "endowment_tokens": 6,
+    "pot_multiplier": 2,
+    "cooperative_share": 0.8,
+    "free_rider_max_tokens": 1,
+    "error_tokens": 0,
+    "fuel_free_rider_rounds": 3,
+    "fuel_error_round_window": [2, 3]
   },
   "context_shift": {
     "kind": "rule_reversal",
