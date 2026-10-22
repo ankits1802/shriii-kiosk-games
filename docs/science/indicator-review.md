@@ -172,7 +172,7 @@ The trial-budget waiver for `choice_consistency` is still needed, because the sh
 
 ```bash
 uv run pytest stats/scoring/tests/test_glmm.py stats/simulator/tests/test_val02.py   # fast checks
-SHRIII_RUN_SLOW=1 uv run pytest stats/simulator/tests/test_recovery.py              # n = 800 recovery
+SHRIII_RUN_SLOW=1 uv run pytest stats/simulator/tests/test_recovery.py              # n = 400 x 3 seeds
 uv run python -m shriii_simulator.val02 --profile local                             # smoke-size study (~10 min)
 ```
 

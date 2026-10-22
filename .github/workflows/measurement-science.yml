@@ -1,7 +1,7 @@
 # Measurement science stream (VAL-02 trial requirements, SCR indicator review, estimator comparisons).
 #
 # * Pull requests touching scoring / simulator / measurement-model / docs/science: lint, type-check and the fast
-#   tests of those packages, the slow parameter-recovery suite (n = 800 per pathway) and a smoke-size VAL-02 run.
+#   tests of those packages, the slow parameter-recovery suite (n = 400 per pathway, 3 replicate seeds) and a smoke-size VAL-02 run.
 # * workflow_dispatch, nightly, or a pull request labelled `val02-full`: the full-size VAL-02 study
 #   (docs/science/VAL-02-trial-requirements.md), one job per pathway plus the effort-discounting design study;
 #   results (JSON + Markdown) are uploaded as artifacts and appended to the job summary.
@@ -76,7 +76,7 @@ jobs:
           enable-cache: true
           python-version: ${{ env.PYTHON_VERSION }}
       - run: uv sync --all-packages
-      - name: Parameter recovery (n = 800 per pathway, both occasions)
+      - name: Parameter recovery (n = 400 x 3 seeds per pathway, both occasions)
         env:
           SHRIII_RUN_SLOW: "1"
         run: uv run pytest stats/simulator/tests/test_recovery.py -q
