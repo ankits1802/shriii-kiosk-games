@@ -47,4 +47,20 @@ describe('readConfig', () => {
       devPin: '2468',
     });
   });
+
+  it('honours bridge overrides only in dev or VITE_E2E_BRIDGE builds', () => {
+    const env = {
+      VITE_KIOSK_ID: 'kiosk-001',
+      VITE_DEVICE_TOKEN: 'tok',
+    } as ImportMetaEnv;
+    const prod = readConfig(env, false, '?arm=A_narrative');
+    expect(prod).toMatchObject({ bridge: false, arm: 'B_fixed', kioskId: null, deviceToken: null });
+    const e2e = readConfig({ ...env, VITE_E2E_BRIDGE: 'true' }, false, '?arm=A_narrative');
+    expect(e2e).toMatchObject({
+      bridge: true,
+      arm: 'A_narrative',
+      kioskId: 'kiosk-001',
+      deviceToken: 'tok',
+    });
+  });
 });
