@@ -178,16 +178,37 @@ function probeCodesOf(config: GameConfig): ProbeCode[] {
 }
 
 /**
- * Cloth colourways used for customers (0 = original clothes, then two kit colourways). Kept small so
+ * Cloth colourways used for customers (0 = original clothes, then kit colourways 1..5). Kept small so
  * every look in a session can be pre-baked before the first trial (no texture baking mid-trial).
  */
-const CLOTH_VARIANTS = 3;
+const CLOTH_VARIANTS = 6;
+/** Body variants of the customer rig. */
+const BODY_VARIANTS = 8;
+/**
+ * Customers visible together (the one at the counter plus the waiting queue). Within this window no
+ * two customers share a body variant or a colourway, so the queue never repeats the counter
+ * customer's outfit (e.g. a run of identical red-and-green customers behind the rude customer).
+ */
+const VISIBLE_WINDOW = 4;
 
-function lookFor(spec: GameTrialSpec, fallbackVariant: number): CustomerLook {
+function lookFor(
+  spec: GameTrialSpec,
+  fallbackVariant: number,
+  recent: readonly CustomerLook[],
+): CustomerLook {
   const p = spec.params as Record<string, unknown>;
-  const variant = typeof p.customer_variant === 'number' ? p.customer_variant : fallbackVariant;
-  const seed = typeof p.variant === 'number' ? p.variant : 0;
-  return { variant, cloth: seed % CLOTH_VARIANTS };
+  const drawn = typeof p.customer_variant === 'number' ? p.customer_variant : fallbackVariant;
+  const seed = typeof p.variant === 'number' ? Math.abs(Math.trunc(p.variant)) : 0;
+  const usedBodies = new Set(recent.map((l) => l.variant));
+  const usedCloths = new Set(recent.map((l) => l.cloth));
+  let variant = ((drawn % BODY_VARIANTS) + BODY_VARIANTS) % BODY_VARIANTS;
+  for (let k = 0; k < BODY_VARIANTS && usedBodies.has(variant); k++) {
+    variant = (variant + 3) % BODY_VARIANTS;
+  }
+  const cloths = [...Array(CLOTH_VARIANTS).keys()].filter((c) => !usedCloths.has(c));
+  const cloth =
+    cloths.length > 0 ? (cloths[seed % cloths.length] as number) : seed % CLOTH_VARIANTS;
+  return { variant, cloth };
 }
 
 /**
@@ -219,18 +240,16 @@ export function buildStallPlan(
   const schedule = scheduler.build(config, level, rng, formId);
   const blocks = new Map(config.blocks.map((b) => [b.block_id, b] as const));
   const trials: StallTrial[] = [];
-  let prevLook: CustomerLook | null = null;
+  const recentLooks: CustomerLook[] = [];
   let probeOrdinal = 0;
   for (const spec of schedule.trials) {
     const block = blocks.get(spec.block_id);
     if (!block) throw new StallPlanError(`unknown block ${spec.block_id}`);
     const withinBlock = Number(spec.trial_id.split('.').pop());
     const p = spec.params as Record<string, unknown>;
-    let look = lookFor(spec, withinBlock % 8);
-    if (prevLook && prevLook.variant === look.variant && prevLook.cloth === look.cloth) {
-      look = { variant: look.variant, cloth: (look.cloth + 1) % CLOTH_VARIANTS };
-    }
-    prevLook = look;
+    const look = lookFor(spec, withinBlock % BODY_VARIANTS, recentLooks);
+    recentLooks.push(look);
+    if (recentLooks.length >= VISIBLE_WINDOW) recentLooks.shift();
     const contextShift = p.context_shift === true;
     const base = { spec, block, withinBlock, contextShift, customer: look };
 
@@ -295,6 +314,7 @@ export function buildStallPlan(
           paradigm_item: drawn,
           dont_serve_reason: reason,
           ...(nogo && drawnReason !== reason ? { paradigm_dont_serve_reason: drawnReason } : {}),
+          customer_variant: look.variant,
           customer_cloth: look.cloth,
         },
       });
@@ -319,6 +339,7 @@ export function buildStallPlan(
         params: {
           ...p,
           line_id: lineForTone(toneLevel),
+          customer_variant: look.variant,
           customer_cloth: look.cloth,
           collected_item: item,
         },
@@ -348,6 +369,7 @@ export function buildStallPlan(
           repeat_group_id: repeatGroupId,
           probe_sure_coins: sureCoins,
           customer_tone_level: 0,
+          customer_variant: look.variant,
           customer_cloth: look.cloth,
         },
       });

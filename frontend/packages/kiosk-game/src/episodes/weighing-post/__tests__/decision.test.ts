@@ -115,6 +115,23 @@ describe('runChoice', () => {
     expect(s.inspectStates).toEqual([false, true]);
   });
 
+  it('listens to the inspect target again once a re-weigh finishes (second re-weigh)', async () => {
+    const s = setup();
+    await flush();
+    expect(await s.input.tap('inspect')).toBe(true);
+    s.finishReweigh();
+    await flush();
+    // No other tap in between: the live wait must already include the re-enabled inspect target.
+    expect(await s.input.tap('inspect')).toBe(true);
+    s.finishReweigh();
+    await flush();
+    expect(await s.input.tap('o.fine')).toBe(true);
+    expect(await s.input.tap('confirm')).toBe(true);
+    const out = await s.promise;
+    expect(out.inspections).toBe(2);
+    expect(s.inspectStates).toEqual([false, true, false, true]);
+  });
+
   it('does not re-enable inspect when a re-weigh finishes after the commit', async () => {
     const s = setup();
     await flush();

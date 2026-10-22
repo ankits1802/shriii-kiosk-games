@@ -159,7 +159,12 @@ export async function runChoice<C extends string>(
         req.setInspectEnabled?.(false);
         void pending.finally(() => {
           inspecting = false;
-          if (!settled && !req.signal.aborted) req.setInspectEnabled?.(true);
+          if (!settled && !req.signal.aborted) {
+            req.setInspectEnabled?.(true);
+            // Restart the live wait so it listens to the re-enabled inspect target again (the
+            // pending waitForTap was opened without it).
+            current?.abort();
+          }
         });
       }
       continue;

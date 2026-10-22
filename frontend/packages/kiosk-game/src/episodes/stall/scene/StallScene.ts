@@ -80,6 +80,24 @@ const BEAT_TIME: Readonly<Record<StallBeat | 'intro' | 'outro', number>> = {
 const CUSTOMER_BAKE_SCALE_LANDSCAPE = 2.2;
 const CUSTOMER_BAKE_SCALE_PORTRAIT = 2.9;
 
+/**
+ * Hide the rig's rising steam puffs (labels `steam0..3` in its `symbols` layer). Against the bright
+ * fair sky their light-tinted fill vanishes and only the outlines remain, reading as stray ghost rings
+ * near the top of the frame. The anger mark, the face, the gesture and the storm balloon still carry
+ * the tone level, so no tone cue is lost. The layer rebuilds its children on change, hence every frame.
+ */
+function hideSteamPuffs(root: Container): void {
+  const stack: Container[] = [root];
+  while (stack.length > 0) {
+    const c = stack.pop() as Container;
+    if (c.label === 'symbols') {
+      for (const s of c.children) if (s.label.startsWith('steam')) s.visible = false;
+      return;
+    }
+    for (const ch of c.children) stack.push(ch as Container);
+  }
+}
+
 /** A villager in the queue / at the counter: a scalable wrapper around a rig character. */
 class Actor {
   readonly root = new Container();
@@ -411,6 +429,7 @@ export class StallScene implements StallView {
     if (this.destroyed) return;
     this.elapsed += dt;
     this.timer?.flicker(this.elapsed);
+    if (this.current) hideSteamPuffs(this.current.rig.view);
     // Slow ambient camera drift (parallax only; the stimulus layers never move).
     if (!this.reduced && this.backdrop)
       this.backdrop.setParallax(Math.sin(this.elapsed * 0.07) * 0.08);

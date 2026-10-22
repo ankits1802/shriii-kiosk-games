@@ -12,6 +12,13 @@ import { MELA } from '../../../art/palettes.ts';
 import { BullockCart, createSack } from '../../../art/props/index.ts';
 import type { EpisodeArt } from './art.ts';
 
+/**
+ * Partner's spot on the near verge, behind the cart (rig units x, screen units y). Far enough back that
+ * the figure stays clear of the cart wheel (rim reaches about -150 rig units from the cart origin).
+ */
+const PARTNER_X = -262;
+const PARTNER_Y = 38;
+
 export class JourneyCart {
   /** Positioned at the wheel contact point on the road. */
   readonly view = new Container();
@@ -69,7 +76,7 @@ export class JourneyCart {
     const shadow = new Graphics();
     softShadow(shadow, 40 * art.unit, 0, 300 * this.k * art.unit, 14 * art.unit, MELA.ink, 0.25);
     this.view.addChild(shadow, this.dust, this.rig, this.partner.view);
-    this.partner.view.position.set(-175 * art.unit * this.k, 34 * art.unit);
+    this.partner.view.position.set(PARTNER_X * art.unit * this.k, PARTNER_Y * art.unit);
     art.ticker.add(this.tick);
   }
 
@@ -84,7 +91,7 @@ export class JourneyCart {
   /** Bring the partner back beside the cart. */
   reclaimPartner(): void {
     this.view.addChild(this.partner.view);
-    this.partner.view.position.set(-175 * this.art.unit * this.k, 34 * this.art.unit);
+    this.partner.view.position.set(PARTNER_X * this.art.unit * this.k, PARTNER_Y * this.art.unit);
     this.partner.setFacing('right');
     this.partner.setView('side', true);
   }

@@ -59,6 +59,8 @@ export class MapScene {
   readonly view = new Container();
   private readonly terrain = new Container();
   private readonly lights = new Container();
+  /** Dusk/night wash over the ground (under the lamp glows, bubbles and the token). */
+  private readonly nightWash = new Graphics();
   private readonly overlay = new Container();
   private readonly rings = new Container();
   private readonly tokenLayer = new Container();
@@ -83,8 +85,11 @@ export class MapScene {
   constructor(private readonly art: EpisodeArt) {
     this.view.label = 'map';
     this.view.eventMode = 'none';
+    this.nightWash.eventMode = 'none';
+    this.nightWash.alpha = 0;
     this.view.addChild(
       this.terrain,
+      this.nightWash,
       this.lights,
       this.overlay,
       this.rings,
@@ -718,7 +723,7 @@ export class MapScene {
   errandDone(node: string): void {
     const b = this.bubbles.get(node);
     const p = this.pos(node);
-    this.art.burst(this.fx, 'sparkle', { x: p.x, y: p.y - this.placeSize * 0.5 }, 18, 1800);
+    this.art.burst(this.fx, 'sparkle', { x: p.x, y: p.y - this.placeSize * 0.75 }, 9, 1600);
     if (b) {
       gsap.to(b.scale, { x: 1.3, y: 1.3, duration: 0.18, yoyo: true, repeat: 1 });
       gsap.to(b, { alpha: 0, y: b.y - 30 * this.art.unit, duration: 0.5, delay: 0.3 });
@@ -764,10 +769,21 @@ export class MapScene {
 
   apply(p: RoadPalette): void {
     this.palette = p;
-    this.terrain.tint = mixColor(p.mapTint, 0xffffff, 0.12);
+    // Match the road scenes' light (the story clock runs sunset -> dusk -> night): the map takes a
+    // warm sunset cast from the low sky, then cools and darkens to violet dusk and a moonlit indigo
+    // night, so the greens never read as daytime. Lamp glows, bubbles and the token sit above the wash.
+    const n = Math.min(1, Math.max(0, p.night));
+    const dusk = Math.min(1, n / 0.3);
+    const deep = Math.min(1, Math.max(0, (n - 0.3) / 0.45));
+    const warm = mixColor(p.mapTint, 0xffd2a0, 0.35 * (1 - dusk));
+    this.terrain.tint = mixColor(warm, 0x323a84, dusk * 0.32 + deep * 0.4);
+    if (this.nightWash.width === 0)
+      this.nightWash.rect(0, 0, this.art.w, this.art.h).fill(0xffffff);
+    this.nightWash.tint = mixColor(mixColor(p.skyLow, 0x7a4a9a, dusk), 0x0b1442, deep);
+    this.nightWash.alpha = 0.16 + dusk * 0.12 + deep * 0.22;
     const water = this.waterG;
     if (water) water.tint = mixColor(p.water, p.waterLit, 0.18);
-    for (const l of this.lamps) l.alpha = p.lights * 0.85;
+    for (const l of this.lamps) l.alpha = Math.min(1, Math.max(p.lights, dusk) * 0.95);
   }
 
   update(dt: number): void {
