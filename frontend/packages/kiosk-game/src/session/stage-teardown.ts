@@ -57,7 +57,8 @@ export function installTweenSafeDestroy(): void {
     original.call(this, options);
   };
   // A tween created after its target was destroyed (e.g. a gesture step chained from a callback
-  // during teardown) throws when GSAP initialises it on the next tick. Kill such tweens instead.
+  // during teardown) throws when GSAP initialises it on the next tick, and a delayed call can fire
+  // after its scene was destroyed. Kill such tweens instead of crashing the session.
   const tweenProto = gsap.core.Tween.prototype as unknown as {
     render(this: gsap.core.Tween, ...args: unknown[]): unknown;
   };
@@ -72,6 +73,12 @@ export function installTweenSafeDestroy(): void {
       const targets = this.targets() as { destroyed?: boolean }[];
       if (targets.some((t) => t !== null && typeof t === 'object' && t.destroyed === true)) {
         this.kill();
+        return this;
+      }
+      // A delayed call or tween callback that fires after its scene was torn down.
+      if (isDestroyedAccess(err)) {
+        this.kill();
+        console.warn('[kiosk] animation callback stopped after touching a destroyed object', err);
         return this;
       }
       throw err;

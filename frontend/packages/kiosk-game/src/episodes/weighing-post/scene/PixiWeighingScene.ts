@@ -1466,6 +1466,7 @@ export class PixiWeighingScene implements WeighingScene {
         this.camera(1.12, (pos.x + g.width / 2) / 2, (pos.y + g.height / 2) / 2, 1.2),
       );
       gsap.delayedCall(1.4, () => {
+        if (p.view.destroyed) return;
         p.turnTo(rule);
         this.audio.playSfx('card_flip', { volume: 0.7 });
         this.burst('sparkle', { x: pos.x, y: pos.y }, 18);

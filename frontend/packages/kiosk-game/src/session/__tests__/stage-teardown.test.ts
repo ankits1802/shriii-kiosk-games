@@ -60,4 +60,14 @@ describe('tween-safe teardown', () => {
     expect(calls).toBe(1);
     ticker.destroy();
   });
+
+  it('stops a delayed call that touches a destroyed object instead of throwing', () => {
+    const c = new Container();
+    c.destroy();
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const call = gsap.delayedCall(0.1, () => c.getGlobalPosition());
+    expect(() => call.progress(1)).not.toThrow();
+    expect(warn).toHaveBeenCalled();
+    warn.mockRestore();
+  });
 });
