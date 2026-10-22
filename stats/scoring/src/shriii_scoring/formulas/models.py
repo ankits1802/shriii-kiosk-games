@@ -6,9 +6,11 @@
   against statsmodels MixedLM). Each person's estimate is the
   fixed slope plus the BLUP; its posterior SD is the conditional SD of the BLUP; the partition's
   model-based reliability is ``1 - mean(posterior variance) / tau^2``. A simple descriptive delta
-  (person mean at x = 1 minus x = 0) is written alongside. Binary outcomes use the linear-probability
-  mixed model (documented deviation from a logistic GLMM; an R/glmmTMB adapter can replace it later).
-  If the mixed model fails, person OLS slopes are shrunk by empirical Bayes (flag ``model_fallback_eb``).
+  (person mean at x = 1 minus x = 0) is written alongside. Binary outcomes (pressure accuracy) use the
+  logistic mixed model (:mod:`shriii_scoring.glmm`, Laplace / PIRLS, slopes on the logit scale) when
+  ``models.binary_outcome_model`` is ``logistic_glmm``; ``lpm`` keeps the linear-probability mixed model
+  (also the fallback when the GLMM fails, flag ``glmm_fallback_lpm``). If the mixed model fails, person
+  OLS slopes are shrunk by empirical Bayes (flag ``model_fallback_eb``).
 * Delay and effort discounting: hyperbolic chooser fitted per person by penalised likelihood under an
   empirical-Bayes population prior on log k (re-estimated until convergence) - a hierarchical model
   fitted by iterated MAP / Laplace approximation.
@@ -41,10 +43,11 @@ from shriii_scoring.formulas.base import (
 from shriii_scoring.formulas.executive import gng_correct
 from shriii_scoring.formulas.social import tone_ordinal
 from shriii_scoring.formulas.style import probe_segments
+from shriii_scoring.glmm import fit_random_slope_glmm
 from shriii_scoring.lmm import fit_random_slope_lmm
 from shriii_scoring.numerics import eb_normal_shrinkage, fisher_z, fit_hyperbolic_map
 
-__all__ = ["SlopeFit", "fit_random_slopes"]
+__all__ = ["SlopeFit", "fit_discounting_eb", "fit_random_slopes"]
 
 Row = tuple[float, float, Sequence[float]]  # (y, x, covariates)
 
@@ -96,8 +99,48 @@ def _ols_slope(rows: Sequence[Row]) -> tuple[float, float]:
     return float(beta[1]), var
 
 
-def fit_random_slopes(data: Mapping[str, Sequence[Row]], maxiter: int = 200) -> SlopeFit:
-    """Fit ``y ~ 1 + x + covariates + (1 + x | person)`` by REML and return person slopes (fixed + BLUP)."""
+def _fit_logistic_slopes(  # noqa: PLR0917 - mirrors the REML path's locals
+    persons: Sequence[str],
+    ys: Sequence[float],
+    exog: np.ndarray,
+    xc: np.ndarray,
+    groups: Sequence[str],
+    deltas: Mapping[str, float],
+    maxiter: int,
+) -> SlopeFit:
+    """Logistic random-slope fit (logit scale); same boundary handling as the REML path."""
+    caught: list[str] = []
+    yv = np.asarray(ys, dtype=float)
+    fit = fit_random_slope_glmm(yv, exog, xc, list(groups), maxiter=maxiter)
+    g = fit.g
+    rho = float(g[0, 1] / math.sqrt(g[0, 0] * g[1, 1])) if g[0, 0] > 0 and g[1, 1] > 0 else 0.0
+    if abs(rho) > 0.95:
+        caught.append(f"random_effect_correlation_boundary(rho={rho:.3f}); refit_independent")
+        fit = fit_random_slope_glmm(yv, exog, xc, list(groups), maxiter=maxiter, independent=True)
+    tau2 = float(fit.g[1, 1])
+    fixed = float(fit.beta[1])
+    if not np.isfinite(tau2) or not np.isfinite(fixed):
+        raise FloatingPointError("non-finite mixed-model estimates")
+    index = {gid: i for i, gid in enumerate(fit.groups)}
+    est = {p: fixed + float(fit.blups[index[p], 1]) for p in persons}
+    psd = {p: math.sqrt(max(float(fit.blup_cov[index[p], 1, 1]), 0.0)) for p in persons}
+    if tau2 > 1e-8:
+        rel: float = float(min(1.0, max(0.0, 1.0 - float(np.mean([s * s for s in psd.values()])) / tau2)))
+    else:
+        rel = 0.0
+        caught.append("zero_slope_variance")
+    if not fit.converged:
+        caught.append("glmm_not_converged")
+    method = "glmm_laplace_logit_random_slope"
+    return SlopeFit(est, psd, deltas, fixed, tau2, rel, method, fit.converged, tuple(caught), len(persons))
+
+
+def fit_random_slopes(data: Mapping[str, Sequence[Row]], maxiter: int = 200, *, family: str = "gaussian") -> SlopeFit:
+    """Fit ``y ~ 1 + x + covariates + (1 + x | person)`` and return person slopes (fixed + BLUP).
+
+    ``family="gaussian"``: REML linear mixed model. ``family="binomial"``: logistic mixed model (Laplace);
+    if it fails the linear-probability REML fit is used and ``glmm_fallback_lpm`` is recorded.
+    """
     persons = sorted(data)
     deltas = {p: _delta(data[p]) for p in persons}
     ys: list[float] = []
@@ -115,6 +158,13 @@ def fit_random_slopes(data: Mapping[str, Sequence[Row]], maxiter: int = 200) -> 
     xc = np.asarray(xs, dtype=float) - float(np.mean(xs))
     exog = np.column_stack([np.ones(len(ys)), xc, *([np.array([c[j] for c in covs]) for j in range(k)])])
     caught: list[str] = []
+    if family == "binomial":
+        try:
+            return _fit_logistic_slopes(persons, ys, exog, xc, groups, deltas, maxiter * 2)
+        except (np.linalg.LinAlgError, ValueError, FloatingPointError, IndexError) as exc:
+            caught.extend([f"glmm_failed: {type(exc).__name__}", "glmm_fallback_lpm"])
+    elif family != "gaussian":
+        raise ValueError(f"unknown mixed-model family {family!r}")
     try:
         fit = fit_random_slope_lmm(np.asarray(ys), exog, xc, groups, maxiter=maxiter * 2)
         g = fit.g
@@ -163,9 +213,15 @@ RowBuilder = Callable[[BatchUnit, BatchContext], tuple[list[Row], int, str | Non
 
 
 def _slope_indicator(
-    units: Sequence[BatchUnit], ctx: BatchContext, builder: RowBuilder, sign: float = 1.0
+    units: Sequence[BatchUnit],
+    ctx: BatchContext,
+    builder: RowBuilder,
+    sign: float = 1.0,
+    *,
+    binary: bool = False,
 ) -> dict[str, IndicatorValue]:
-    """Shared driver: build rows per session, fit, and package person estimates."""
+    """Shared driver: build rows per session, fit, and package person estimates. ``binary`` outcomes use
+    the model named by ``models.binary_outcome_model`` (``logistic_glmm`` or ``lpm``)."""
     min_persons = ctx.params.i("models.min_persons")
     out: dict[str, IndicatorValue] = {}
     data: dict[str, list[Row]] = {}
@@ -187,7 +243,13 @@ def _slope_indicator(
             out[sid] = IndicatorValue.empty(counts[sid], "too_few_persons_for_model", status="model_failed")
         ctx.partition_details.update({"method": "not_estimated", "n_persons": len(data)})
         return out
-    fit = fit_random_slopes(data, ctx.params.i("models.mixedlm_maxiter"))
+    family = "gaussian"
+    if binary:
+        choice = str(ctx.params.get("models.binary_outcome_model"))
+        if choice not in ("logistic_glmm", "lpm"):
+            raise ValueError(f"models.binary_outcome_model must be logistic_glmm or lpm, not {choice!r}")
+        family = "binomial" if choice == "logistic_glmm" else "gaussian"
+    fit = fit_random_slopes(data, ctx.params.i("models.mixedlm_maxiter"), family=family)
     ctx.partition_details.update(
         {
             "method": fit.method,
@@ -199,7 +261,7 @@ def _slope_indicator(
             "n_persons": fit.n_persons,
         }
     )
-    flags = tuple(f for f in ("model_fallback_eb",) if f in fit.warnings)
+    flags = tuple(f for f in ("model_fallback_eb", "glmm_fallback_lpm") if f in fit.warnings)
     for sid in data:
         out[sid] = IndicatorValue(
             value=sign * fit.estimates[sid],
@@ -227,6 +289,8 @@ def _cells_ok(rows: Sequence[Row], ctx: BatchContext) -> bool:
 
 def _pressure_rows(u: BatchUnit, ctx: BatchContext, rt: bool) -> tuple[list[Row], int, str | None]:
     rows: list[Row] = []
+    accuracy_types = frozenset(ctx.params.strs("models.pressure_accuracy_trial_types")) if not rt else frozenset()
+    trial_type_effect = bool(ctx.params.get("models.pressure_accuracy_trial_type_effect"))
     for t in u.trials:
         x = 1.0 if t.phase == "pressure" else 0.0
         if rt:
@@ -234,8 +298,12 @@ def _pressure_rows(u: BatchUnit, ctx: BatchContext, rt: bool) -> tuple[list[Row]
             if t.trial_type != "go" or not gng_correct(t) or lat is None or lat <= 0:
                 continue
             rows.append((math.log(lat), x, (_position(t),)))
-        else:
-            rows.append((1.0 if gng_correct(t) else 0.0, x, (_position(t),)))
+        elif t.trial_type in accuracy_types:
+            # Trial type (no-go = 1) is a fixed effect: go and no-go accuracy have very different baselines.
+            covs: tuple[float, ...] = (_position(t),)
+            if len(accuracy_types) > 1 and trial_type_effect:
+                covs = (*covs, 1.0 if t.trial_type == "nogo" else 0.0)
+            rows.append((1.0 if gng_correct(t) else 0.0, x, covs))
     if not _cells_ok(rows, ctx):
         return [], len(rows), "missing_pressure_contrast"
     return rows, len(rows), None
@@ -243,8 +311,10 @@ def _pressure_rows(u: BatchUnit, ctx: BatchContext, rt: bool) -> tuple[list[Row]
 
 @batch_formula("hier.pressure_slope_accuracy")
 def pressure_slope_accuracy(units: Sequence[BatchUnit], ctx: BatchContext) -> dict[str, IndicatorValue]:
-    """Person random slope of accuracy on pressure (off = 0, on = 1), detrended on block position."""
-    return _slope_indicator(units, ctx, lambda u, c: _pressure_rows(u, c, rt=False))
+    """Person random slope of accuracy on pressure (off = 0, on = 1), detrended on block position, with
+    trial type as a fixed effect; logistic mixed model (logit scale) unless ``models.binary_outcome_model``
+    is ``lpm``. Trial types come from ``models.pressure_accuracy_trial_types``."""
+    return _slope_indicator(units, ctx, lambda u, c: _pressure_rows(u, c, rt=False), binary=True)
 
 
 @batch_formula("hier.pressure_slope_rt")
@@ -390,11 +460,17 @@ def _standardised_shift_rows(
     u: BatchUnit, ctx: BatchContext, components: Sequence[str]
 ) -> tuple[list[Row], int, str | None]:
     by_mod: dict[str, list[tuple[float, float, Trial]]] = defaultdict(list)
+    window = ctx.params.get("models.shift_window_trials")
     for t in u.trials:
         y = _performance(t, ctx)
         if y is None:
             continue
-        by_mod[t.module_id].append((y, _shift_x(t), t))
+        x = _shift_x(t)
+        # Optional early-window contrast: only the first `window` trials after each shift count as "post"
+        # (shift effects in the paradigms are transient; later post-shift trials dilute the contrast).
+        if window is not None and x >= 0.5 and t.trials_since_shift is not None and t.trials_since_shift >= window:
+            continue
+        by_mod[t.module_id].append((y, x, t))
     rows: list[Row] = []
     contrasts = 0
     for j, mod in enumerate(components):
@@ -454,7 +530,10 @@ def shift_slope(units: Sequence[BatchUnit], ctx: BatchContext) -> dict[str, Indi
 # ---------------------------------------------------------------- discounting (hierarchical log k)
 
 
-def _discount_data(u: BatchUnit, kind: str) -> tuple[list[float], list[float], list[float], list[float], list[int]]:
+DiscountData = tuple[list[float], list[float], list[float], list[float], list[int]]
+
+
+def _discount_data(u: BatchUnit, kind: str) -> DiscountData:
     sa: list[float] = []
     sc: list[float] = []
     la: list[float] = []
@@ -481,20 +560,20 @@ def _discount_data(u: BatchUnit, kind: str) -> tuple[list[float], list[float], l
     return sa, sc, la, lc, y
 
 
-def _fit_discounting(units: Sequence[BatchUnit], ctx: BatchContext, kind: str) -> dict[str, Any]:
-    key = f"discount:{kind}"
-    if key in ctx.cache:
-        return dict(ctx.cache[key])
-    p = ctx.params
+def fit_discounting_eb(data: Mapping[str, DiscountData], params: Any) -> dict[str, Any]:
+    """Hierarchical hyperbolic discounting: per-person MAP of (log k, log beta) under a population prior on
+    log k that is re-estimated (empirical Bayes) until it converges. ``data`` maps person -> (small amount,
+    small cost, large amount, large cost, chose large); ``params`` is the scoring parameter document.
+
+    Shared by the engine and by design simulations (stats/simulator, VAL-02)."""
+    p = params
     lk_bounds = tuple(float(v) for v in p.get("discounting.log_k_bounds"))
     lb_bounds = tuple(float(v) for v in p.get("discounting.log_beta_bounds"))
     beta_prior = (p.f("discounting.log_beta_prior_mean"), p.f("discounting.log_beta_prior_sd"))
     mu = p.f("discounting.initial_log_k_prior_mean")
     sd = p.f("discounting.initial_log_k_prior_sd")
-    data = {u.session.session_id: _discount_data(u, kind) for u in units}
-    # Fit every person with at least two choices; each indicator applies its own minimum afterwards (the
-    # fit is cached per partition and shared by log k and choice consistency).
-    data = {s: d for s, d in data.items() if len(d[4]) >= 2}
+    # Fit every person with at least two choices; each indicator applies its own minimum afterwards.
+    usable = {s: d for s, d in data.items() if len(d[4]) >= 2}
     fits: dict[str, Any] = {}
     iterations = 0
     for _ in range(p.i("discounting.eb_max_iter")):
@@ -510,7 +589,7 @@ def _fit_discounting(units: Sequence[BatchUnit], ctx: BatchContext, kind: str) -
                 log_beta_bounds=(lb_bounds[0], lb_bounds[1]),
                 start=None if s not in fits else (fits[s].log_k, fits[s].log_beta),
             )
-            for s, d in sorted(data.items())
+            for s, d in sorted(usable.items())
         }
         if len(fits) < 2:
             break
@@ -522,7 +601,24 @@ def _fit_discounting(units: Sequence[BatchUnit], ctx: BatchContext, kind: str) -
             mu, sd = mu_new, sd_new
             break
         mu, sd = mu_new, sd_new
-    result = {"fits": fits, "data": data, "prior_mean": mu, "prior_sd": sd, "iterations": iterations}
+    sds = [f.log_k_sd for f in fits.values() if np.isfinite(f.log_k_sd)]
+    prior_var = sd**2
+    rel = float(max(0.0, 1.0 - float(np.mean(np.square(sds))) / prior_var)) if sds and prior_var > 0 else None
+    return {
+        "fits": fits,
+        "data": usable,
+        "prior_mean": mu,
+        "prior_sd": sd,
+        "iterations": iterations,
+        "model_reliability": rel,
+    }
+
+
+def _fit_discounting(units: Sequence[BatchUnit], ctx: BatchContext, kind: str) -> dict[str, Any]:
+    key = f"discount:{kind}"
+    if key in ctx.cache:
+        return dict(ctx.cache[key])
+    result = fit_discounting_eb({u.session.session_id: _discount_data(u, kind) for u in units}, ctx.params)
     ctx.cache[key] = result
     return result
 
@@ -530,9 +626,7 @@ def _fit_discounting(units: Sequence[BatchUnit], ctx: BatchContext, kind: str) -
 def _discount_values(units: Sequence[BatchUnit], ctx: BatchContext, kind: str) -> dict[str, IndicatorValue]:
     res = _fit_discounting(units, ctx, kind)
     fits = res["fits"]
-    sds = [f.log_k_sd for f in fits.values() if np.isfinite(f.log_k_sd)]
-    prior_var = float(res["prior_sd"]) ** 2
-    rel = float(max(0.0, 1.0 - float(np.mean(np.square(sds))) / prior_var)) if sds and prior_var > 0 else None
+    rel = res["model_reliability"]
     ctx.partition_details.update(
         {
             "method": "hyperbolic_map_empirical_bayes",

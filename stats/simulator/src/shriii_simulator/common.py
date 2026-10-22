@@ -20,7 +20,9 @@ __all__ = [
     "hold",
     "jitter",
     "probe_block",
+    "scaled",
     "sigmoid",
+    "staircase_step",
     "tone_choice",
 ]
 
@@ -70,6 +72,23 @@ class Occasion:
     index: int = 1
     practice_log_rt: float = 0.0
     form_id: str = "form_1"
+
+
+def scaled(prm: SimParams, key: str) -> int:
+    """Design count ``design.<key>`` multiplied by ``design.scale`` (rounded, at least 1)."""
+    return max(1, round(prm.f("design." + key) * prm.f("design.scale")))
+
+
+def staircase_step(
+    amount: float, step: float, last_direction: int, went_hard: bool, *, lo: float, hi: float
+) -> tuple[float, float, int]:
+    """Adjusting-amount staircase: a hard choice lowers the next hard offer, an easy choice raises it; the
+    step halves at each reversal of direction (so the staircase can travel the whole [lo, hi] range before it
+    starts to converge). Returns (next amount, next step, direction)."""
+    direction = -1 if went_hard else 1
+    if last_direction not in (0, direction):
+        step /= 2.0
+    return min(hi, max(lo, amount + direction * step)), step, direction
 
 
 def sigmoid(x: float) -> float:

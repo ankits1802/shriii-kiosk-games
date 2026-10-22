@@ -231,6 +231,12 @@ road_home:
   fork_accuracy_logit: 2.2
   forget_errand_logit: -1.8
   forget_errand_task_organisation: 0.9
+  # Reversal block: perseveration on the old rule (previously hard-coded in modules_a.road_home).
+  reversal_perseveration_logit: 0.2
+  reversal_perseveration_adaptability: 1.1
+  reversal_perseveration_stability: 0.3
+  reversal_decay_trials: 2.5
+  reversal_decay_adaptability: 0.3
 
 coplay:
   wait_logit: 1.0
@@ -276,6 +282,34 @@ criterion:
   card_sort_perseverative_rate: 8.0
   card_sort_adaptability: 0.6
   attention_key: {attention_checks.i01: 5, attention_checks.i02: 1, attention_checks.i03: 3}
+
+design:
+  # Trial schedule of the simulated modules. Defaults mirror the L2 schedules in content/games (read-only
+  # for this package); VAL-02 (docs/science/VAL-02-trial-requirements.md) changes them through
+  # SimParams.with_overrides to study reliability as a function of trial count. `scale` multiplies the
+  # scored block lengths of the modules listed here (rounded, at least 1 trial per cell).
+  scale: 1.0
+  dont_tap: {go_per_block: 25, nogo_per_block: 11}
+  card_sort: {initial_rule: 12, switch_1: 14, reversal: 14}
+  balloon: {balloons_per_colour: 8}
+  steady_hands: {trials_per_block: 30, distractors_per_block: 9}
+  four_stalls: {choices: 30}
+  stall: {service_go: 14, service_nogo: 6, rush_go: 13, rush_nogo: 5}
+  wait_or_now:
+    delay_choices: 8              # delays cycle through discounting delays below (titrated per delay)
+    delays: [1, 2, 4, 8]
+    # Effort discounting design: fixed (the v0 schedule: one choice per discounting.effort_amounts entry)
+    # or titrated (adjusting-amount staircase on the hard option, see effort_titration). VAL-02 found log k
+    # unidentifiable under the fixed 4-choice design (docs/science/indicator-review.md).
+    effort_design: fixed
+    effort_titration:
+      trials: 6
+      start_amount: 6.0
+      start_step: 2.0
+      min_amount: 2.5
+      max_amount: 12.0
+      easy_amount: 2.0
+      hard_effort: 2.5
 
 retest:
   default_stability: 0.70

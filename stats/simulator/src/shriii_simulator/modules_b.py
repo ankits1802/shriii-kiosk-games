@@ -15,7 +15,9 @@ from shriii_simulator.common import (
     jitter,
     option_xy,
     probe_block,
+    scaled,
     sigmoid,
+    staircase_step,
     tone_choice,
 )
 from shriii_simulator.params import SimParams
@@ -54,7 +56,7 @@ def dont_tap(
         ("main", "main", "standard", False, 520),
         ("pressure", "pressure", "pressure", True, 440),
     ):
-        types = ["nogo"] * 11 + ["go"] * 25
+        types = ["nogo"] * scaled(prm, "dont_tap.nogo_per_block") + ["go"] * scaled(prm, "dont_tap.go_per_block")
         order = _no_long_runs(rng, types, "nogo", 2)
         if pressure:
             w.context_shift("dont_tap", "pressure_on", True, w.trial_counters["dont_tap"])
@@ -103,9 +105,9 @@ def card_sort(
     r1, r2 = str(rules[0]), str(rules[1])
     plan: list[tuple[str, str, str, str | None, int]] = [
         ("practice", "practice", r1, None, 3),
-        ("initial_rule", "shift_pre", r1, None, 12),
-        ("switch_1", "shift_post", r2, r1, 14),
-        ("reversal", "shift_post", r1, r2, 14),
+        ("initial_rule", "shift_pre", r1, None, scaled(prm, "card_sort.initial_rule")),
+        ("switch_1", "shift_post", r2, r1, scaled(prm, "card_sort.switch_1")),
+        ("reversal", "shift_post", r1, r2, scaled(prm, "card_sort.reversal")),
     ]
     z_ad = p.z("adaptability")
     z_st = p.z("stability")
@@ -182,7 +184,7 @@ def balloon(
 ) -> None:
     b = "balloon."
     w.module_start("balloon", "micro", ["bart"])
-    colours = ["low_risk", "high_risk"] * 8
+    colours = ["low_risk", "high_risk"] * scaled(prm, "balloon.balloons_per_colour")
     colours = [str(x) for x in rng.permutation(colours)]
     sd = prm.f(b + "noise_log_sd") * math.exp(-prm.f(b + "noise_consistency") * p.z("response_consistency"))
     adjust = prm.f(b + "post_loss_adjust") * math.exp(-prm.f(b + "post_loss_persistence") * p.z("persistence_of_style"))
@@ -415,7 +417,8 @@ def wait_or_now(
         + float(rng.normal(0, prm.f(d + "log_k_noise_sd")))
     )
     beta = prm.f(d + "beta")
-    delays = [1, 2, 4, 8, 1, 2, 4, 8]
+    cycle = [int(v) for v in prm.get("design.wait_or_now.delays")]
+    delays = [cycle[i % len(cycle)] for i in range(scaled(prm, "wait_or_now.delay_choices"))]
     ss_by_delay = dict.fromkeys(set(delays), 5.0)
     step_by_delay = dict.fromkeys(set(delays), 2.5)
     for dl in delays:
@@ -448,20 +451,39 @@ def wait_or_now(
         ss_by_delay[dl] = min(10.0, ss + step_by_delay[dl]) if chose_ll else max(0.0, ss - step_by_delay[dl])
         step_by_delay[dl] /= 2.0
     log_ke = prm.f(d + "effort_log_k") - prm.f(d + "effort_log_k_self_control") * p.z("self_control")
-    for amount in prm.get(d + "effort_amounts"):
+    design = str(prm.get("design.wait_or_now.effort_design"))
+    tit = "design.wait_or_now.effort_titration."
+    schedule: list[float] | None = None
+    if design == "fixed":
+        fixed_amounts = [float(a) for a in prm.get(d + "effort_amounts")]
+        schedule = fixed_amounts
+        n_effort = len(fixed_amounts)
+        easy_amount, hard_effort = 2.0, 2.5
+    elif design == "titrated":
+        n_effort = int(prm.f(tit + "trials"))
+        easy_amount, hard_effort = prm.f(tit + "easy_amount"), prm.f(tit + "hard_effort")
+    else:
+        raise ValueError(f"unknown effort design {design!r}")
+    amount = prm.f(tit + "start_amount")
+    step = prm.f(tit + "start_step")
+    direction = 0
+    for i in range(n_effort):
+        if schedule is not None:
+            amount = schedule[i]
+        offer = round(amount, 2)
         cond = w.condition("main", "effort")
         h = w.start_trial(
             "wait_or_now",
             "effort",
             "effort_choice",
             cond,
-            params={"easy_amount": 2, "easy_effort": 0.0, "hard_amount": amount, "hard_effort": 2.5},
+            params={"easy_amount": easy_amount, "easy_effort": 0.0, "hard_amount": offer, "hard_effort": hard_effort},
             response_window_ms=7000,
             audio_prompt="wait_or_now.effort_offer",
             audio_ms=1800,
         )
-        v_hard = amount / (1.0 + math.exp(log_ke) * 2.5)
-        hard = rng.random() < sigmoid(beta * (v_hard - 2.0) / amount)
+        v_hard = offer / (1.0 + math.exp(log_ke) * hard_effort)
+        hard = rng.random() < sigmoid(beta * (v_hard - easy_amount) / offer)
         code = "hard" if hard else "easy"
         w.respond(
             h,
@@ -473,9 +495,13 @@ def wait_or_now(
             tap_target=f"wait_or_now.{code}",
         )
         if hard:
-            hold(w, h, rng, p, prm, target="wait_or_now.hold_pad", required_ms=2500.0)
+            hold(w, h, rng, p, prm, target="wait_or_now.hold_pad", required_ms=hard_effort * 1000.0)
         w.end_trial(h, "not_applicable", None, 1)
         w.advance(700)
+        if schedule is None:
+            amount, step, direction = staircase_step(
+                amount, step, direction, hard, lo=prm.f(tit + "min_amount"), hi=prm.f(tit + "max_amount")
+            )
     _probe(w, p, rng, prm, style=style, module="wait_or_now")
     w.module_end("wait_or_now")
 
@@ -495,7 +521,9 @@ def steady_hands(
                 True,
                 w.trial_counters["steady_hands"],
             )
-        distractors = [True] * 9 + [False] * 21
+        n_block = scaled(prm, "steady_hands.trials_per_block")
+        n_dist = min(n_block - 1, scaled(prm, "steady_hands.distractors_per_block"))
+        distractors = [True] * n_dist + [False] * (n_block - n_dist)
         for dist in rng.permutation(distractors):
             cond = w.condition("main", block, shift_active=block == "held")
             h = w.start_trial(
@@ -562,7 +590,8 @@ def four_stalls(
     n_groups = int(prm.f(f + "repeat_groups"))
     n_pres = int(prm.f(f + "repeat_presentations"))
     repeat_slots = [f"stalls_repeat_{g}" for g in range(n_groups) for _ in range(n_pres)]
-    kinds: list[str | None] = [*repeat_slots, *([None] * (30 - len(repeat_slots)))]
+    n_choices = max(scaled(prm, "four_stalls.choices"), len(repeat_slots))
+    kinds: list[str | None] = [*repeat_slots, *([None] * (n_choices - len(repeat_slots)))]
     kinds = [None if k is None else str(k) for k in rng.permutation(np.array(kinds, dtype=object))]
     situation = {f"stalls_repeat_{g}": rng.normal(0, 0.6, 4) for g in range(n_groups)}
     for gid in kinds:

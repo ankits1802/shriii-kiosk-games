@@ -27,7 +27,9 @@ scales = score_criterion(responses, attention_key=key)  # criterion-scale-score.
    evaluator of `shared.yaml` rules; latency-only rules mask latency instead of dropping the trial), run
    the registered formula (`formulas/`), enforce `min_valid_trials`, apply the transformation.
 4. **Batch model step** per partition (`models.partition_keys`, default pathway x language x calibration
-   level): person random slopes (REML LMM, `lmm.py`, parity-tested against statsmodels), hierarchical
+   level): person random slopes (REML LMM, `lmm.py`, parity-tested against statsmodels; binary outcomes such
+   as pressure accuracy use the Laplace logistic mixed model in `glmm.py`, switchable with
+   `models.binary_outcome_model`), hierarchical
    hyperbolic discounting (empirical-Bayes MAP), location-scale residual SD, cross-segment style
    correlations. Model-based reliability and posterior SDs are written.
 5. **Group-level estimators** (private dice / luck tokens) go to `GroupIndicatorRow`s, which have no

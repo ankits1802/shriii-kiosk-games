@@ -1,0 +1,151 @@
+# Measurement science stream (VAL-02 trial requirements, SCR indicator review, estimator comparisons).
+#
+# * Pull requests touching scoring / simulator / measurement-model / docs/science: lint, type-check and the fast
+#   tests of those packages, the slow parameter-recovery suite (n = 400 per pathway, 3 replicate seeds) and a smoke-size VAL-02 run.
+# * workflow_dispatch, nightly, or a pull request labelled `val02-full`: the full-size VAL-02 study
+#   (docs/science/VAL-02-trial-requirements.md), one job per pathway plus the effort-discounting design study;
+#   results (JSON + Markdown) are uploaded as artifacts and appended to the job summary.
+name: Measurement science
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, labeled]
+    paths:
+      - "stats/scoring/**"
+      - "stats/simulator/**"
+      - "stats/measurement-model/**"
+      - "docs/science/**"
+      - ".github/workflows/measurement-science.yml"
+  schedule:
+    - cron: "41 21 * * *" # 03:11 IST
+  workflow_dispatch:
+    inputs:
+      profile:
+        description: VAL-02 profile (data/val02.yaml)
+        required: false
+        default: full
+        type: choice
+        options: [full, local]
+      n:
+        description: Persons per simulated study (empty = profile default)
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+concurrency:
+  group: measurement-science-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  UV_FROZEN: "1"
+  PYTHON_VERSION: "3.14"
+
+jobs:
+  checks:
+    name: Lint, types, fast tests
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+          python-version: ${{ env.PYTHON_VERSION }}
+      - run: uv sync --all-packages
+      - name: Ruff
+        run: |
+          uv run ruff check --output-format=github stats/scoring stats/simulator stats/measurement-model
+          uv run ruff format --check stats/scoring stats/simulator stats/measurement-model
+      - name: Mypy
+        run: uv run mypy
+      - name: Fast tests (scoring, simulator, measurement model)
+        run: uv run pytest stats/scoring/tests stats/simulator/tests stats/measurement-model/tests -q
+
+  recovery:
+    name: Slow recovery suite
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+          python-version: ${{ env.PYTHON_VERSION }}
+      - run: uv sync --all-packages
+      - name: Parameter recovery (n = 400 x 3 seeds per pathway, both occasions)
+        env:
+          SHRIII_RUN_SLOW: "1"
+        run: uv run pytest stats/simulator/tests/test_recovery.py -q
+
+  val02-smoke:
+    name: VAL-02 smoke run
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+          python-version: ${{ env.PYTHON_VERSION }}
+      - run: uv sync --all-packages
+      - name: VAL-02 (local profile)
+        run: uv run python -m shriii_simulator.val02 --profile local --out val02-smoke > /dev/null
+      - name: Summary
+        if: always()
+        run: cat val02-smoke/*.md >> "$GITHUB_STEP_SUMMARY" || true
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: val02-smoke
+          path: val02-smoke/
+          retention-days: 14
+
+  val02-full:
+    name: VAL-02 full study (${{ matrix.part }})
+    if: github.event_name != 'pull_request' || contains(github.event.pull_request.labels.*.name, 'val02-full')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 340
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - part: B
+            args: "--pathways B --no-effort-designs"
+          - part: A
+            args: "--pathways A --no-effort-designs"
+          - part: effort-designs
+            args: "--effort-designs-only"
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+          python-version: ${{ env.PYTHON_VERSION }}
+      - run: uv sync --all-packages
+      - name: VAL-02 study
+        env:
+          PROFILE: ${{ inputs.profile || 'full' }}
+          N: ${{ inputs.n || '' }}
+        run: |
+          [[ "$PROFILE" =~ ^(full|local)$ ]] || { echo "::error::profile must be full or local"; exit 1; }
+          extra=()
+          if [ -n "$N" ]; then
+            [[ "$N" =~ ^[0-9]+$ ]] || { echo "::error::n must be an integer"; exit 1; }
+            extra=(--n "$N")
+          fi
+          uv run python -m shriii_simulator.val02 --profile "$PROFILE" ${{ matrix.args }} "${extra[@]}" \
+            --out "val02-${{ matrix.part }}" > /dev/null
+      - name: Summary
+        if: always()
+        run: cat val02-${{ matrix.part }}/*.md >> "$GITHUB_STEP_SUMMARY" || true
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: val02-${{ matrix.part }}
+          path: val02-${{ matrix.part }}/
+          retention-days: 90
