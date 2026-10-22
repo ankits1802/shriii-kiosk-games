@@ -179,7 +179,6 @@
     "error_round_window": [4, 6],
     "seeded_partners": true,
     "pot_multiplier": 2,
-    "cooperative_share": 0.8,
     "free_rider_max_tokens": 1,
     "error_tokens": 0,
     "tone_options": ["warm", "neutral", "firm"],

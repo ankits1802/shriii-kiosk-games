@@ -170,7 +170,7 @@
   "context_shift": {
     "kind": "held_block",
     "announced": true,
-    "window": [32, 32]
+    "window": [30, 30]
   },
   "forms": ["form_1", "form_2"],
   "audio_keys": [

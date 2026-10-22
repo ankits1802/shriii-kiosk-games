@@ -27,7 +27,12 @@ describe('go/no-go streams', () => {
     if (!main || !pressure) throw new Error('config blocks missing');
     const m = goNoGoBlockOptions(dontTap, 'L2', main);
     const p = goNoGoBlockOptions(dontTap, 'L2', pressure);
-    expect(m).toMatchObject({ trials: 36, nogoShare: 0.3, minNogo: 11, maxConsecutiveNogo: 2 });
+    expect(m).toMatchObject({
+      trials: main.trials,
+      nogoShare: 0.3,
+      minNogo: dontTap.planned_counts.nogo_per_block,
+      maxConsecutiveNogo: 2,
+    });
     expect(m.isiMs).toBe(dontTap.levels.L2.timing.isi_ms);
     expect(p.isiMs).toBe(dontTap.levels.L2.timing.pressure_isi_ms);
     expect(m.isiJitterMs).toBe(dontTap.levels.L2.timing.isi_jitter_ms);

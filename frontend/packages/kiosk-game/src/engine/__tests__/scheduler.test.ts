@@ -70,7 +70,11 @@ describe('DataDrivenTrialScheduler', () => {
         expect(seq.filter((t) => t === 'nogo').length).toBe(cfg.planned_counts.nogo_per_block);
       }
       expect(r.counts.go).toBe(cfg.planned_counts.go);
-      expect(r.contextShiftIndex).toBe(40);
+      // The pressure block starts after practice + main (trial index of the first pressure trial).
+      const before = cfg.blocks
+        .filter((b) => b.block_id === 'practice' || b.block_id === 'main')
+        .reduce((a, b) => a + b.trials, 0);
+      expect(r.contextShiftIndex).toBe(before);
       expect(r.trials.filter((t) => t.anchor_trial && t.block_id !== 'probe').length).toBe(
         cfg.constraints.anchor_trials,
       );
@@ -149,8 +153,17 @@ describe('DataDrivenTrialScheduler', () => {
       expect(r.blockLengths.initial_rule).toBeGreaterThanOrEqual(8);
       expect(r.blockLengths.initial_rule).toBeLessThanOrEqual(12);
     }
-    expect([...starts].every((s) => s >= 11 && s <= 15)).toBe(true);
-    expect(starts.size).toBe(5);
+    // The switch lands on a block boundary inside the configured window: practice + an initial_rule
+    // length between its minimum and its planned count.
+    const cfg = content.get('card_sort');
+    const practice = cfg.blocks.find((b) => b.block_id === 'practice')?.trials ?? 0;
+    const initial = cfg.blocks.find((b) => b.block_id === 'initial_rule');
+    if (!initial) throw new Error('initial_rule block missing');
+    const [w0, w1] = cfg.context_shift?.window ?? [0, 0];
+    const lo = Math.max(w0, practice + initial.min_trials);
+    const hi = Math.min(w1, practice + initial.trials);
+    expect([...starts].every((s) => s >= lo && s <= hi)).toBe(true);
+    expect(starts.size).toBe(hi - lo + 1);
   });
 
   it('fixes the Tower problem order per form across sessions', () => {

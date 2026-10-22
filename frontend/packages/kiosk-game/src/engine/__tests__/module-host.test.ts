@@ -254,7 +254,11 @@ describe('ModuleHost (ENG-05)', () => {
     const shift = ev.find(
       (e) => e.event_type === 'context_shift' && e.task?.module_id === 'dont_tap',
     );
-    expect(shift?.payload).toMatchObject({ kind: 'pressure_on', shift_index: 40 });
+    const dontTap = content.get('dont_tap');
+    const pressureAt = dontTap.blocks
+      .filter((b) => b.block_id === 'practice' || b.block_id === 'main')
+      .reduce((a, b) => a + b.trials, 0);
+    expect(shift?.payload).toMatchObject({ kind: 'pressure_on', shift_index: pressureAt });
     const practice = ev.filter(
       (e) => e.condition?.phase === 'practice' || e.condition?.phase === 'warmup',
     );

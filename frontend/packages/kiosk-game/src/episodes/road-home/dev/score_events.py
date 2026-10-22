@@ -64,11 +64,7 @@ def main(export_dir: str, software_gl: bool = False) -> int:
     engine = IndicatorEngine(pathways=("A",), allow_synthetic=True)
     result = engine.score(events, params)
     dictionary = load_dictionary("A")
-    road = {
-        i.id: i
-        for i in dictionary.indicators.values()
-        if i.module_id in ("road_home", "cross_episode")
-    }
+    road = {i.id: i for i in dictionary.indicators.values() if i.module_id in ("road_home", "cross_episode")}
     rows = {r.indicator_id: r for r in result.rows}
     failures: list[str] = []
     print(f"{'indicator':52s} {'status':22s} {'n':>4s}  value")
@@ -89,7 +85,9 @@ def main(export_dir: str, software_gl: bool = False) -> int:
                 failures.append(f"{ind_id}: {r.status}")
             continue
         if ind_id == "teamwork.response_to_partner_error":
-            if r.status not in ("ok", "unscorable_individual") or (r.status == "ok" and (val is None or not math.isfinite(val))):
+            if r.status not in ("ok", "unscorable_individual") or (
+                r.status == "ok" and (val is None or not math.isfinite(val))
+            ):
                 failures.append(f"{ind_id}: {r.status} {val}")
             continue
         if r.status != "ok" or val is None or not math.isfinite(val):

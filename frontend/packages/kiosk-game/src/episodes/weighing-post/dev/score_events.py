@@ -58,7 +58,9 @@ def load(path: Path) -> list[dict[str, Any]]:
         return [json.loads(line) for line in fh if line.strip()]
 
 
-def clone(events: list[dict[str, Any]], params: Mapping[str, Any], n: int) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+def clone(
+    events: list[dict[str, Any]], params: Mapping[str, Any], n: int
+) -> tuple[list[dict[str, Any]], dict[str, Any]]:
     out = list(events)
     out_params: dict[str, Any] = dict(params)
     base_sid = events[0]["session_id"]
