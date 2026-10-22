@@ -1,5 +1,5 @@
 /**
- * Tower scene: the potter's courtyard on a bright morning. A potter works at his wheel beside drying
+ * Tower scene: the potter's courtyard at golden hour. A potter works at his wheel beside drying
  * racks of fresh pots; three wooden pegs stand on brick plinths (their height shows how many pots fit);
  * the goal is painted on the potter's easel. Lifting a pot raises it with a soft glow; setting it down
  * gives a satisfying clay "tok" with a little dust; a full peg gently bounces the pot back. When a
@@ -58,7 +58,7 @@ export class TowerView implements KitView, TowerViewSurface {
     this.u = Math.min(ctx.layout.width, ctx.layout.height) / 1080;
     this.stage = new FairStage(ctx, {
       scene: 'tower_courtyard',
-      timeOfDay: 'morning',
+      timeOfDay: 'golden_hour',
       music: 'hub',
       ambience: 'market_day',
       guide: { at: () => this.g.guide, scale: this.g.characterScale, facing: 'right' },
@@ -71,9 +71,11 @@ export class TowerView implements KitView, TowerViewSurface {
       godRays: true,
       rayColor: 0xfff1c8,
     });
+    // Warm late afternoon (just before golden hour): in the warm arc the neighbouring games share,
+    // and still bright enough for the pot colours and shapes to read crisply.
     void (
       this.stage.backdrop as { setTimeValue?: (t: number, ms: number) => Promise<void> }
-    ).setTimeValue?.(0.55, 0);
+    ).setTimeValue?.(1.8, 0);
     this.buildPotter();
     this.buildRacks();
     this.board.addChild(this.pegLayer, this.potLayer);

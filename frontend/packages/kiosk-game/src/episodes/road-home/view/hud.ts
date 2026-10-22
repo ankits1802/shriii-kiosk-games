@@ -113,6 +113,7 @@ export class FodderTray {
   private readonly bundles: Container[] = [];
   private readonly sack = new Container();
   private level: number;
+  private lastTwinkle = -Infinity;
 
   constructor(
     private readonly art: EpisodeArt,
@@ -181,18 +182,24 @@ export class FodderTray {
     });
     this.level = n;
     if (reserve) {
+      // One soft gold twinkle per top-up (not a fresh white burst on every move while dry).
+      const now = performance.now();
+      const twinkle = now - this.lastTwinkle > 2500;
+      if (twinkle) this.lastTwinkle = now;
       gsap.fromTo(
         this.sack.scale,
         { x: 1, y: 1 },
         { x: 1.25, y: 1.25, duration: 0.2, yoyo: true, repeat: 1 },
       );
-      this.art.burst(
-        this.view,
-        'sparkle',
-        { x: this.sack.x, y: this.sack.y + 20 * this.art.unit },
-        10,
-        1500,
-      );
+      if (twinkle)
+        this.art.burst(
+          this.view,
+          'sparkle',
+          { x: this.sack.x, y: this.sack.y + 20 * this.art.unit },
+          5,
+          1500,
+          0xffd27a,
+        );
     }
   }
 

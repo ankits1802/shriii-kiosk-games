@@ -64,16 +64,21 @@ import {
   propTint,
 } from './props.ts';
 
-/** Continuous time of day per beat (0 morning .. 1 midday .. 2 golden hour .. 3 dusk). */
+/**
+ * Continuous time of day per beat (0 morning .. 1 midday .. 2 golden hour .. 3 dusk). Pathway A is one
+ * evening: the Stall opens in the warm late afternoon and closes at golden hour, the Weighing Post
+ * carries golden hour on towards sunset, and the Road Home runs sunset -> dusk -> night. The Stall
+ * must therefore end before the Weighing Post begins (its first value is STALL_END_TIME).
+ */
 const BEAT_TIME: Readonly<Record<StallBeat | 'intro' | 'outro', number>> = {
-  intro: 1.05,
-  practice: 1.1,
-  service: 1.18,
-  tone_calm: 1.35,
-  timed_rush: 1.62,
+  intro: 1.5,
+  practice: 1.54,
+  service: 1.6,
+  tone_calm: 1.68,
+  timed_rush: 1.8,
   rude_run: 1.95,
-  probe: 2.55,
-  outro: 2.85,
+  probe: 2.08,
+  outro: 2.16,
 };
 
 /** Rig scale used when creating customers (display scales <= this keep the bake crisp). */

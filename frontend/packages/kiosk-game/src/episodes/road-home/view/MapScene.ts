@@ -723,7 +723,14 @@ export class MapScene {
   errandDone(node: string): void {
     const b = this.bubbles.get(node);
     const p = this.pos(node);
-    this.art.burst(this.fx, 'sparkle', { x: p.x, y: p.y - this.placeSize * 0.75 }, 9, 1600);
+    this.art.burst(
+      this.fx,
+      'sparkle',
+      { x: p.x, y: p.y - this.placeSize * 0.75 },
+      9,
+      1600,
+      0xffe39a,
+    );
     if (b) {
       gsap.to(b.scale, { x: 1.3, y: 1.3, duration: 0.18, yoyo: true, repeat: 1 });
       gsap.to(b, { alpha: 0, y: b.y - 30 * this.art.unit, duration: 0.5, delay: 0.3 });
@@ -775,12 +782,14 @@ export class MapScene {
     const n = Math.min(1, Math.max(0, p.night));
     const dusk = Math.min(1, n / 0.3);
     const deep = Math.min(1, Math.max(0, (n - 0.3) / 0.45));
-    const warm = mixColor(p.mapTint, 0xffd2a0, 0.35 * (1 - dusk));
-    this.terrain.tint = mixColor(warm, 0x323a84, dusk * 0.32 + deep * 0.4);
+    // Sunset: a clear amber cast (the road scene's low sun). Night: the terrain multiplies down to a
+    // moonlit indigo and a deep-blue wash settles over it, so the warm lamp glows carry the frame.
+    const warm = mixColor(p.mapTint, 0xffb878, 0.5 * (1 - dusk) ** 2);
+    this.terrain.tint = mixColor(warm, 0x2a3480, dusk * 0.44 + deep * 0.4);
     if (this.nightWash.width === 0)
       this.nightWash.rect(0, 0, this.art.w, this.art.h).fill(0xffffff);
-    this.nightWash.tint = mixColor(mixColor(p.skyLow, 0x7a4a9a, dusk), 0x0b1442, deep);
-    this.nightWash.alpha = 0.16 + dusk * 0.12 + deep * 0.22;
+    this.nightWash.tint = mixColor(mixColor(p.skyLow, 0x3c3c9a, dusk), 0x081040, deep);
+    this.nightWash.alpha = 0.2 + dusk * 0.16 + deep * 0.3;
     const water = this.waterG;
     if (water) water.tint = mixColor(p.water, p.waterLit, 0.18);
     for (const l of this.lamps) l.alpha = Math.min(1, Math.max(p.lights, dusk) * 0.95);

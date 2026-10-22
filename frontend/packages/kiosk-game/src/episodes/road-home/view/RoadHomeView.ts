@@ -486,8 +486,9 @@ export class RoadHomeView implements RoadHomePresenter {
     if (errands > 0) {
       this.chit = new ErrandChit(this.art, errands);
       const b = this.chit.view.getLocalBounds();
+      // Landscape: just right of the replay button (top-left, 22 mm at 6 mm in), never over it.
       this.chit.view.position.set(
-        this.art.portrait ? (w - b.width) / 2 - w * 0.16 : w * 0.03,
+        this.art.portrait ? (w - b.width) / 2 - w * 0.16 : this.art.mm(6 + 22 + 5),
         h * 0.012,
       );
       this.hudLayer.addChild(this.chit.view);

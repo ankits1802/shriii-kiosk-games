@@ -154,7 +154,7 @@ export class PixiWeighingScene implements WeighingScene {
   private unsubLayout: (() => void) | null = null;
   private readonly tick = (t: Ticker): void => this.update(Math.min(0.05, t.deltaMS / 1000));
   private destroyed = false;
-  private timeValue = 2.0;
+  private timeValue = 2.16;
   /** Pictured amounts for the next token row (coins, items). */
   private pictogramData: PictogramData = {};
 
@@ -395,8 +395,9 @@ export class PixiWeighingScene implements WeighingScene {
   }
 
   setProgress(fraction: number): void {
-    // Late golden afternoon sliding towards sunset as the work goes on.
-    const target = 2.02 + Math.max(0, Math.min(1, fraction)) * 0.36;
+    // Golden hour sliding towards sunset as the work goes on: it picks up where the Stall's outro
+    // left the light (2.16) and hands over to the Road Home's sunset.
+    const target = 2.18 + Math.max(0, Math.min(1, fraction)) * 0.47;
     if (Math.abs(target - this.timeValue) < 0.004) return;
     this.timeValue = target;
     void this.backdrop?.setTimeValue(target, 2400);
@@ -522,15 +523,17 @@ export class PixiWeighingScene implements WeighingScene {
       .lineTo(-10, 0)
       .lineTo(-80, 0)
       .closePath()
-      .fill({ color: 0xfff6d0, alpha: 0.5 });
+      .fill({ color: 0xfff6d0, alpha: 0.3 });
     g.blendMode = 'add';
+    // The sweep stays over the beam and pans (about +-200 u): wider, it crossed the guide and the
+    // customer as a pale vertical bar.
     const sx = this.geo.scaleBase.x;
-    g.position.set(sx - 380 * this.geo.u, this.geo.scaleBase.y);
+    g.position.set(sx - 200 * this.geo.u, this.geo.scaleBase.y);
     g.alpha = 0;
     this.fxLayer.addChild(g);
     const tl = gsap.timeline({ delay: delayS, onComplete: () => g.destroy() });
     tl.to(g, { alpha: 1, duration: 0.15 })
-      .to(g, { x: sx + 380 * this.geo.u, duration: 0.9, ease: 'power2.inOut' }, '<')
+      .to(g, { x: sx + 220 * this.geo.u, duration: 0.9, ease: 'power2.inOut' }, '<')
       .to(g, { alpha: 0, duration: 0.25 }, '-=0.25');
   }
 
@@ -670,8 +673,9 @@ export class PixiWeighingScene implements WeighingScene {
     const u = g.u;
     // Open on the sky and the swaying lanterns, then tilt down onto the weighing post.
     this.camera(1.32, g.width * 0.5, g.height * 0.2, 0);
-    void this.backdrop?.setTimeValue(1.92, 0);
-    void this.backdrop?.setTimeValue(2.02, 3000);
+    // Picks up the light where the Stall's outro left it (2.16), see setProgress.
+    void this.backdrop?.setTimeValue(2.08, 0);
+    void this.backdrop?.setTimeValue(2.16, 3000);
     gsap.delayedCall(0.15, () => this.camera(1, g.width / 2, g.height / 2, 2.6, 'power3.inOut'));
     this.audio.playSfx('transition', { volume: 0.5 });
     this.burst('petals', { x: g.width * 0.3, y: -10 * u }, 18);
@@ -706,8 +710,8 @@ export class PixiWeighingScene implements WeighingScene {
     const g = this.geo;
     this.hideChoices();
     this.setInspectVisible(false, false);
-    this.timeValue = 2.6;
-    void this.backdrop?.setTimeValue(2.6, 2600);
+    this.timeValue = 2.72;
+    void this.backdrop?.setTimeValue(2.72, 2600);
     const guide = this.guide;
     if (guide) {
       if (this.atCounter !== guide) this.stepUp(guide, 0.7);

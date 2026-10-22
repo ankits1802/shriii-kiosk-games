@@ -109,7 +109,14 @@ export class EpisodeArt {
   }
 
   /** A one-shot particle burst added to `parent` (auto-destroys after `lifeMs`). */
-  burst(parent: Container, kind: ParticleKind, origin: Point, count?: number, lifeMs = 3500): void {
+  burst(
+    parent: Container,
+    kind: ParticleKind,
+    origin: Point,
+    count?: number,
+    lifeMs = 3500,
+    tint?: number,
+  ): void {
     const e = new PooledEmitter(
       { kind, origin, ...(count !== undefined ? { count } : {}) },
       this.cache,
@@ -117,6 +124,7 @@ export class EpisodeArt {
       this.profile,
       this.unit,
     );
+    if (tint !== undefined) e.view.tint = tint;
     parent.addChild(e.view);
     // The emitter goes with its parent (a set piece may be released before the burst ends).
     const end = (): void => e.destroy();

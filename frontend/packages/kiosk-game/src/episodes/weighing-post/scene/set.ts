@@ -374,8 +374,9 @@ export class WeighingSet {
     const tint = mixColor(p.lightTint, 0xffffff, 0.5);
     this.counter.tint = tint;
     this.canopy.tint = mixColor(p.lightTint, 0xffffff, 0.4);
+    // Kept subtle: the backdrop already carries god rays, and stacked shafts wash the people out.
     this.shaftG.alpha =
-      Math.max(0, Math.min(1, p.godrays * 0.9 + p.dust * 0.3)) * (1 - p.lights * 0.7);
+      Math.max(0, Math.min(1, p.godrays * 0.65 + p.dust * 0.2)) * (1 - p.lights * 0.75);
     this.diyaGlow.alpha = 0.2 + p.lights * 0.8;
   }
 

@@ -28,6 +28,8 @@ interface KindConfig {
   readonly additive: boolean;
   readonly flutter: boolean;
   readonly grow: number;
+  /** Peak opacity (default 1). Soft kinds stay translucent so overlapping dots never pile up white. */
+  readonly peakAlpha?: number;
 }
 
 const KINDS: Readonly<Record<ParticleKind, KindConfig>> = {
@@ -73,7 +75,7 @@ const KINDS: Readonly<Record<ParticleKind, KindConfig>> = {
   },
   dust: {
     texture: 'soft_dot',
-    colors: [0xe8c89a, 0xd9b07a, 0xf6e3bf],
+    colors: [0xd6b07e, 0xc29464, 0xe6cda2],
     count: 24,
     speed: [40, 140],
     angle: -Math.PI / 2,
@@ -82,10 +84,11 @@ const KINDS: Readonly<Record<ParticleKind, KindConfig>> = {
     drag: 2.5,
     spin: 0,
     life: [0.8, 1.6],
-    scale: [0.6, 1.4],
+    scale: [0.5, 1.1],
     additive: false,
     flutter: false,
-    grow: 0.8,
+    grow: 0.6,
+    peakAlpha: 0.55,
   },
   petals: {
     texture: 'petal',
@@ -253,7 +256,7 @@ export class PooledEmitter implements ParticleEmitter {
     );
     s.rotation = r.range(0, Math.PI * 2);
     s.scale.set(p.baseScale);
-    s.alpha = 1;
+    s.alpha = c.peakAlpha ?? 1;
     s.visible = true;
     this.view.addChild(s);
     this.live.push(p);
@@ -290,7 +293,7 @@ export class PooledEmitter implements ParticleEmitter {
       const sc = p.baseScale * (1 + c.grow * k);
       if (c.flutter) s.scale.set(sc * Math.abs(Math.cos(p.age * 5 + p.phase)) * 0.8 + sc * 0.2, sc);
       else s.scale.set(sc);
-      s.alpha = k < 0.7 ? 1 : 1 - (k - 0.7) / 0.3;
+      s.alpha = (c.peakAlpha ?? 1) * (k < 0.7 ? 1 : 1 - (k - 0.7) / 0.3);
     }
   }
 

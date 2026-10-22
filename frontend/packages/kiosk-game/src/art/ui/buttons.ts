@@ -210,6 +210,9 @@ export class IconButton implements UiButton {
 
   pulse(): void {
     this.stopPulse();
+    // A screen can ask for a pulse in the same tick it tears the button down (voice cue racing a
+    // hand-off): a destroyed button has nothing to animate.
+    if (this.body.destroyed) return;
     if (this.reducedMotion) {
       this.setSelected(this.selected);
       return;
@@ -234,7 +237,7 @@ export class IconButton implements UiButton {
   private stopPulse(): void {
     this.pulseTl?.kill();
     this.pulseTl = null;
-    this.body.scale.set(this.selected ? 1.06 : 1);
+    if (!this.body.destroyed) this.body.scale.set(this.selected ? 1.06 : 1);
   }
 
   /** Programmatic press feedback (e.g. when a voice answer commits this option). */
