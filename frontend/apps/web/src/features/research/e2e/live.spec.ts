@@ -55,7 +55,14 @@ test('models page shows the trained comparison', async ({ page }) => {
 test('analytics distributions render from live indicator values', async ({ page }) => {
   const failures = watchApi(page);
   await signIn(page, 'analyst', { next: '/research/analytics' });
-  await expect(page.getByText(/Distribution ·/)).toBeVisible();
+  await expect(page.getByText('All measures (baseline occasion)')).toBeVisible();
+  // At least one indicator row with a non-zero N from the live snapshot.
+  const firstRow = page
+    .getByRole('row')
+    .filter({ hasText: /indicator/ })
+    .first();
+  // Columns: measure, layer, N, ...
+  await expect(firstRow.getByRole('cell').nth(2)).toHaveText(/^\s*[1-9]\d*\s*$/);
   await page.screenshot({ path: test.info().outputPath('analytics.png'), fullPage: true });
   expect(failures).toEqual([]);
 });

@@ -15,7 +15,7 @@
 //
 // Usage:
 //   node frontend/apps/kiosk/e2e/full-session.mjs --url http://127.0.0.1:4173 --pathway A \
-//     [--out e2e-artifacts/pathway-a] [--size 1280x720] [--seed 7] [--cap-s 900] [--api]
+//     [--out e2e-artifacts/pathway-a] [--size 1280x720] [--seed 7] [--cap-s 900] [--api] [--partial-play]
 // --api additionally waits until the outbox has uploaded everything (kiosk built with VITE_API_BASE).
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -36,6 +36,7 @@ const [W, H] = String(arg('size', '1280x720')).split('x').map(Number);
 const capS = Number(arg('cap-s', 900));
 const waitUpload = arg('api', false) === true;
 const verbose = arg('verbose', false) === true;
+const partialPlay = arg('partial-play', false) === true;
 let seed = Number(arg('seed', 7)) >>> 0 || 7;
 const rand = () => {
   // mulberry32: reproducible bot choices
@@ -283,7 +284,10 @@ const planned =
   pathway === 'A'
     ? ['stall', 'weighing_post', 'road_home']
     : ['dont_tap', 'card_sort', 'balloon', 'tower', 'share_pot'];
-for (const m of planned) check(modules.includes(m), `module ${m} ran trials`);
+// --partial-play: the session must complete, but the play ceiling may end it before every module ran
+// (kiosk -> API job: the API shares the runner's CPU with the software renderer).
+if (!partialPlay) for (const m of planned) check(modules.includes(m), `module ${m} ran trials`);
+else check(modules.includes(planned[0]), `module ${planned[0]} ran trials`);
 const summary = {
   pathway,
   sessionId,

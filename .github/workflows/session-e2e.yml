@@ -139,7 +139,7 @@ jobs:
       - name: Play a session that uploads to the API
         run: |
           node frontend/apps/kiosk/e2e/full-session.mjs --url http://127.0.0.1:4180 --pathway B \
-            --seed 23 --out e2e-artifacts/kiosk-api --cap-s 900 --api
+            --seed 23 --out e2e-artifacts/kiosk-api --cap-s 900 --api --partial-play
       - name: Run the job worker (validation, eligibility, feature extraction)
         run: uv run shriii-api worker --once
       - name: Check events (accepted, gapless) and indicators via the API
