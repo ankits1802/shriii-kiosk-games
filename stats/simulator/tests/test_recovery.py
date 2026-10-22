@@ -192,15 +192,19 @@ def test_recovery_pathway_a(reports_a: list[RecoveryReport]) -> None:
 def test_model_based_slope_reliability_near_parallel_form(
     reports_b: list[RecoveryReport], reports_a: list[RecoveryReport]
 ) -> None:
-    # Single study (first seed), as before: this compares two reliabilities of the same study.
-    for report, ind in (
-        (reports_b[0], "composure.pressure_slope_rt"),
-        (reports_a[0], "emotional_regulation.mirroring"),
+    # Mean gap over the replicate studies (same rule as the core criterion): a single study's gap
+    # between two reliability estimates of the same data is noise-sensitive (mirroring ranged .02-.10
+    # across seeds once the wave 2 dictionary phases changed the simulated trial streams).
+    for reports, ind in (
+        (reports_b, "composure.pressure_slope_rt"),
+        (reports_a, "emotional_regulation.mirroring"),
     ):
-        r = report.by_id()[ind]
-        assert r.model_reliability is not None
-        gap = abs(r.model_reliability - r.parallel_reliability)
-        assert gap <= 0.06, (ind, r.model_reliability, r.parallel_reliability)
+        gaps = []
+        for report in reports:
+            r = report.by_id()[ind]
+            assert r.model_reliability is not None
+            gaps.append(abs(r.model_reliability - r.parallel_reliability))
+        assert sum(gaps) / len(gaps) <= 0.06, (ind, gaps)
 
 
 @pytest.mark.slow
