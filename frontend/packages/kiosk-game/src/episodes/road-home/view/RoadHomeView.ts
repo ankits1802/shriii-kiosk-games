@@ -194,7 +194,8 @@ export class RoadHomeView implements RoadHomePresenter {
 
   private layoutReplay(): void {
     const mm = this.art.mm(22);
-    const x = this.art.w - mm / 2 - this.art.mm(6);
+    // Top-left: the kiosk's persistent hand (exit) control owns the top-right corner (ONB-06).
+    const x = mm / 2 + this.art.mm(6);
     const y = mm / 2 + this.art.mm(5);
     if (!this.replay) {
       this.replay = createReplayButton(this.art);

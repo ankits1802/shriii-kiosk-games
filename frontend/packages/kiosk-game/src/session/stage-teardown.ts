@@ -35,7 +35,8 @@ let installed = false;
 /**
  * Make every `Container.destroy()` kill the GSAP tweens on that object first (idempotent). Pixi
  * destroys children through their own `destroy()`, so one patch covers whole trees, including objects
- * a module destroys itself before its stage is released.
+ * a module destroys itself before its stage is released. Tweens created on an already destroyed
+ * object are killed when GSAP first renders them.
  */
 export function installTweenSafeDestroy(): void {
   if (installed) return;
@@ -54,5 +55,26 @@ export function installTweenSafeDestroy(): void {
       gsap.killTweensOf(targets);
     }
     original.call(this, options);
+  };
+  // A tween created after its target was destroyed (e.g. a gesture step chained from a callback
+  // during teardown) throws when GSAP initialises it on the next tick. Kill such tweens instead.
+  const tweenProto = gsap.core.Tween.prototype as unknown as {
+    render(this: gsap.core.Tween, ...args: unknown[]): unknown;
+  };
+  const render = tweenProto.render;
+  tweenProto.render = function renderUnlessDestroyed(
+    this: gsap.core.Tween,
+    ...args: unknown[]
+  ): unknown {
+    try {
+      return render.apply(this, args);
+    } catch (err) {
+      const targets = this.targets() as { destroyed?: boolean }[];
+      if (targets.some((t) => t !== null && typeof t === 'object' && t.destroyed === true)) {
+        this.kill();
+        return this;
+      }
+      throw err;
+    }
   };
 }
