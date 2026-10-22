@@ -262,7 +262,11 @@ export class DontTapModule extends MicroGame<DontTapView> {
       { durationMs: t.stimMs, version: 'dont_tap.fruit.1' },
     );
     // Stimulus offset exactly at stimulus_ms (independent of any response animation).
+    // Also cancelled when the module is aborted (cap, walkaway, exit) so it never fires into a
+    // torn-down view.
     const offsetTimer = new AbortController();
+    const cancelOffset = () => offsetTimer.abort();
+    this.ctx.signal.addEventListener('abort', cancelOffset, { once: true });
     void this.ctx.clock
       .delay(
         Math.max(0, onset.presentedOnsetMs + t.stimMs - this.ctx.clock.now()),
@@ -271,7 +275,8 @@ export class DontTapModule extends MicroGame<DontTapView> {
       .then(
         () => this.view.hideFruit(),
         () => undefined,
-      );
+      )
+      .finally(() => this.ctx.signal.removeEventListener('abort', cancelOffset));
     if (bot) this.scheduleBot(kind, t);
     const r = await this.ctx.input.waitForTap([target.id], {
       anchorMs: onset.presentedOnsetMs,

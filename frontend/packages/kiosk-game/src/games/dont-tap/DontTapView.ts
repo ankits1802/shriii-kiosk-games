@@ -378,6 +378,11 @@ export class DontTapView implements KitView, DontTapViewSurface {
     markStimulus(null);
     const f = this.fruit;
     if (!f) return;
+    if (f.view.destroyed) {
+      // The view was torn down (module end) while the offset timer was pending.
+      this.fruit = null;
+      return;
+    }
     // Offset: the fruit drops back into the pedestal (quick, never lingering past the stimulus).
     if (this.stage.reducedMotion) {
       this.clearFruit();
@@ -606,6 +611,7 @@ export class DontTapView implements KitView, DontTapViewSurface {
     for (const c of this.crowd) c.destroy();
     this.customer?.destroy();
     this.stage.destroy();
+    this.fruit = null;
   }
 }
 
