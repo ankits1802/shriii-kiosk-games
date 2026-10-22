@@ -484,6 +484,11 @@ export class FlySwarm {
   }
 
   private update(dt: number): void {
+    // The swarm can be destroyed with its parent (item or plate) without destroy() being called.
+    if (this.view.destroyed) {
+      this.ticker.remove(this.onTick);
+      return;
+    }
     this.t += dt;
     for (const f of this.flies) {
       const a = f.phase + this.t * f.speed;

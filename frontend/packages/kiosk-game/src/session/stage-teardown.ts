@@ -5,7 +5,7 @@
  * properties of null") and would end the session as a crash; the engine guarantees it cannot.
  */
 import { gsap } from 'gsap';
-import { Container } from 'pixi.js';
+import { Container, Ticker } from 'pixi.js';
 
 export function killTweensInTree(root: Container): void {
   const stack: Container[] = [root];
@@ -76,5 +76,62 @@ export function installTweenSafeDestroy(): void {
       }
       throw err;
     }
+  };
+  installSafeTickerListeners();
+}
+
+/** A TypeError from touching a destroyed Pixi object (its transform/position was nulled). */
+function isDestroyedAccess(err: unknown): boolean {
+  return err instanceof TypeError && /of null|of undefined/.test(err.message);
+}
+
+type TickerFn = (this: unknown, ticker: Ticker) => unknown;
+
+/**
+ * A ticker listener left running after its objects were destroyed throws on every frame and would
+ * end the session as a crash. Such a listener is removed (with a warning) instead; any other error
+ * still propagates. `remove()` keeps working with the original function.
+ */
+function installSafeTickerListeners(): void {
+  const proto = Ticker.prototype as unknown as {
+    add(fn: TickerFn, context?: unknown, priority?: number): Ticker;
+    addOnce(fn: TickerFn, context?: unknown, priority?: number): Ticker;
+    remove(fn: TickerFn, context?: unknown): Ticker;
+  };
+  const wrappers = new WeakMap<TickerFn, Map<unknown, TickerFn>>();
+  const wrap = (ticker: Ticker, fn: TickerFn, context: unknown): TickerFn => {
+    let byCtx = wrappers.get(fn);
+    if (!byCtx) {
+      byCtx = new Map();
+      wrappers.set(fn, byCtx);
+    }
+    const existing = byCtx.get(context);
+    if (existing) return existing;
+    const safe: TickerFn = function safeTickerListener(this: unknown, t: Ticker): unknown {
+      try {
+        return fn.call(this, t);
+      } catch (err) {
+        if (!isDestroyedAccess(err)) throw err;
+        ticker.remove(fn as never, context);
+        console.warn('[kiosk] ticker listener removed after touching a destroyed object', err);
+        return undefined;
+      }
+    };
+    byCtx.set(context, safe);
+    return safe;
+  };
+  const add = proto.add;
+  const addOnce = proto.addOnce;
+  const remove = proto.remove;
+  proto.add = function (this: Ticker, fn, context, priority) {
+    return add.call(this, wrap(this, fn, context), context, priority);
+  };
+  proto.addOnce = function (this: Ticker, fn, context, priority) {
+    return addOnce.call(this, wrap(this, fn, context), context, priority);
+  };
+  proto.remove = function (this: Ticker, fn, context) {
+    const safe = wrappers.get(fn)?.get(context);
+    if (safe) remove.call(this, safe, context);
+    return remove.call(this, fn, context);
   };
 }

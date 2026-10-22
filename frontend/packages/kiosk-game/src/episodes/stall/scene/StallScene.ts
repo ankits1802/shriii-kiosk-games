@@ -126,6 +126,8 @@ class Actor {
     view: RigView,
     ease = 'sine.inOut',
   ): Promise<void> {
+    // A walk requested after the scene tore down (module end) has nothing to move.
+    if (this.root.destroyed || this.rig.view.destroyed) return Promise.resolve();
     killTweensDeep(this.root);
     const reduced = motionSettings.reducedMotion;
     const dx = x - this.root.x;

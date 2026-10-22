@@ -1,6 +1,6 @@
 import { gsap } from 'gsap';
-import { Container } from 'pixi.js';
-import { describe, expect, it } from 'vitest';
+import { Container, Ticker } from 'pixi.js';
+import { describe, expect, it, vi } from 'vitest';
 import { destroyStage, installTweenSafeDestroy } from '../stage-teardown.ts';
 
 describe('tween-safe teardown', () => {
@@ -23,5 +23,41 @@ describe('tween-safe teardown', () => {
     c.destroy();
     const t = gsap.to(c, { y: 5, duration: 1 });
     expect(() => t.progress(0.5)).not.toThrow();
+  });
+
+  it('removes a ticker listener that touches a destroyed object instead of throwing', () => {
+    const ticker = new Ticker();
+    ticker.autoStart = false;
+    const c = new Container();
+    let calls = 0;
+    const fn = (): void => {
+      calls += 1;
+      c.position.set(1, 1);
+    };
+    ticker.add(fn);
+    ticker.update(16);
+    c.destroy();
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    expect(() => ticker.update(32)).not.toThrow();
+    expect(() => ticker.update(48)).not.toThrow();
+    expect(calls).toBe(2);
+    expect(warn).toHaveBeenCalledTimes(1);
+    warn.mockRestore();
+    ticker.destroy();
+  });
+
+  it('keeps remove() working with the original listener', () => {
+    const ticker = new Ticker();
+    ticker.autoStart = false;
+    let calls = 0;
+    const fn = (): void => {
+      calls += 1;
+    };
+    ticker.add(fn);
+    ticker.update(16);
+    ticker.remove(fn);
+    ticker.update(32);
+    expect(calls).toBe(1);
+    ticker.destroy();
   });
 });
