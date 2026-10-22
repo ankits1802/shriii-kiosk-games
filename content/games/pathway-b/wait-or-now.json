@@ -29,8 +29,8 @@
     "intro_ms": 6000,
     "outro_ms": 1500,
     "target_ms_l2": 77300,
-    "soft_cap_ms": 85000,
-    "hard_cap_ms": 86000
+    "soft_cap_ms": 93000,
+    "hard_cap_ms": 94000
   },
   "levels": {
     "L1": {
@@ -40,12 +40,12 @@
       },
       "seconds_per_trial": {
         "median": 5.2,
-        "slow": 5.6
+        "slow": 6.3
       },
       "estimated_duration_ms": {
         "median": 79700,
-        "slow": 84500,
-        "slow_trimmed": 84500
+        "slow": 92900,
+        "slow_trimmed": 92900
       }
     },
     "L2": {
@@ -55,12 +55,12 @@
       },
       "seconds_per_trial": {
         "median": 5.0,
-        "slow": 5.4
+        "slow": 6.3
       },
       "estimated_duration_ms": {
         "median": 77300,
-        "slow": 82100,
-        "slow_trimmed": 82100
+        "slow": 92900,
+        "slow_trimmed": 92900
       }
     },
     "L3": {
@@ -70,12 +70,12 @@
       },
       "seconds_per_trial": {
         "median": 4.8,
-        "slow": 5.2
+        "slow": 6.3
       },
       "estimated_duration_ms": {
         "median": 74900,
-        "slow": 79700,
-        "slow_trimmed": 79700
+        "slow": 92900,
+        "slow_trimmed": 92900
       }
     }
   },
@@ -170,5 +170,5 @@
     "wait_or_now.replay"
   ],
   "requires_numeracy": false,
-  "notes": "Slot module (planned missingness). Delay as sun/moon cycles, effort as hold-to-earn (MG-07)."
+  "notes": "Slot module (planned missingness). Delay as sun/moon cycles, effort as hold-to-earn (MG-07). Slow seconds per trial (6.3) is the mix of 8 delay choices (~5.2 s) and 4 effort choices where a slow player picks the churn (~8.5 s: choice, churn opening, hold, rest); caps match the other slot modules (94 s) so slow players are not cut off mid-effort."
 }

@@ -2,6 +2,7 @@ import { checkSessionSequence } from '@shriii/contracts';
 import { describe, expect, it } from 'vitest';
 import { staticLayout } from '../../../art/layout.ts';
 import { CSS_PX_PER_MM } from '../../../input/metrics.ts';
+import { MEDIAN_PERSONA } from '../../dont-tap/kit/bot.ts';
 import { runHeadless } from '../../dont-tap/kit/testing/headless.ts';
 import { waitOrNowGeometry } from '../geometry.ts';
 import { createWaitOrNow } from '../WaitOrNowModule.ts';
@@ -70,6 +71,38 @@ describe('Wait-or-Now (MG-07) headless bot playthrough', () => {
     expect(r.durationMs).toBeGreaterThan(55_000);
     expect(r.durationMs).toBeLessThan(r.result.durationMs + 1000);
     expect(r.durationMs).toBeLessThan(85_000);
+  }, 120_000);
+
+  it('logs an explicit non-start when the churn is chosen but never pressed', async () => {
+    const r = await runHeadless({
+      moduleId: 'wait_or_now',
+      factory: () =>
+        createWaitOrNow({ persona: { ...MEDIAN_PERSONA, patience: 0.95, effortNonStart: 1 } }),
+      seed: 77,
+      level: 'L2',
+    });
+    expect(r.result.endedReason).toBe('completed');
+    expect(r.invalidEvents).toBe(0);
+    const hard = r.events
+      .filter(
+        (e) =>
+          e.event_type === 'response' &&
+          (e.payload as { response_value: string | null }).response_value === 'hard',
+      )
+      .map((e) => e.task?.trial_id);
+    expect(hard.length).toBeGreaterThan(0);
+    for (const id of hard) {
+      const holds = r.events.filter(
+        (e) => e.event_type === 'input.hold' && e.task?.trial_id === id,
+      );
+      expect(holds).toHaveLength(1);
+      expect(holds[0]?.payload).toMatchObject({ hold_ms: 0, completed: false });
+      // The non-start lands inside the trial (before its trial_end).
+      const end = r.events.findIndex(
+        (e) => e.event_type === 'trial_end' && e.task?.trial_id === id,
+      );
+      expect(r.events.indexOf(holds[0] as (typeof r.events)[number])).toBeLessThan(end);
+    }
   }, 120_000);
 
   it('titrates: the next offer on a track moves toward the choice made', async () => {

@@ -27,6 +27,11 @@ export interface BotPersona {
   readonly patience: number;
   /** Deliberation before self-paced choices. */
   readonly thinkMs: number;
+  /**
+   * Probability of choosing an effortful option and then never starting the hold (Wait-or-Now churn).
+   * Default: derived from patience (about 2% at the median persona).
+   */
+  readonly effortNonStart?: number;
 }
 
 /** Median scripted player used by the playthrough checks. */

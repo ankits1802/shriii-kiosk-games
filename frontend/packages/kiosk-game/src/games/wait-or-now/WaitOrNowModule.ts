@@ -14,7 +14,8 @@
  *
  * Hold-to-earn: after a `hard` choice the churn pad opens inside the same trial; the input layer logs
  * `input.hold` (`hold_ms`, `required_hold_ms = hold_required_ms x multiplier`, `completed`) on the
- * trial-scoped logger, which `persistence.effort_completion_rate` reads. Letting go early is never
+ * trial-scoped logger, which `persistence.effort_completion_rate` reads. A hard choice whose churn is
+ * never pressed logs an explicit non-start (`hold_ms: 0`, `completed: false`). Letting go early is never
  * shamed: the churn simply rests and the halwai keeps the plate.
  */
 import type { GameConfig } from '@shriii/contracts';
@@ -424,11 +425,15 @@ export class WaitOrNowModule extends MicroGame<WaitOrNowView> {
     ctx.signal.addEventListener('abort', onAbort, { once: true });
     if (this.bot) {
       const bot = this.bot;
-      const finish = bot.chance(Math.min(0.97, 0.45 + 0.5 * bot.persona.patience));
-      const holdMs = finish
-        ? requiredMs + bot.latency(260, 80)
-        : requiredMs * (0.3 + 0.5 * bot.rng.next());
-      void bot.holdAfter(centreOf(g.churn), bot.latency(650, 300), holdMs);
+      const nonStart =
+        bot.persona.effortNonStart ?? Math.max(0, Math.min(1, 0.35 - 0.6 * bot.persona.patience));
+      if (!bot.chance(nonStart)) {
+        const finish = bot.chance(Math.min(0.97, 0.45 + 0.5 * bot.persona.patience));
+        const holdMs = finish
+          ? requiredMs + bot.latency(260, 80)
+          : requiredMs * (0.3 + 0.5 * bot.rng.next());
+        void bot.holdAfter(centreOf(g.churn), bot.latency(650, 300), holdMs);
+      }
     }
     const safetyMs = this.choiceWindowMs + requiredMs + 2500;
     let safetyFired = false;
@@ -463,6 +468,14 @@ export class WaitOrNowModule extends MicroGame<WaitOrNowView> {
       });
       return { completed: true, heldMs };
     }
+    // Chosen but never pressed inside the window: an explicit non-start (hold_ms 0, not completed) so
+    // `persistence.effort_completion_rate` counts this chosen hold as incomplete instead of omitting it.
+    this.rec.current?.log.log('input.hold', {
+      target_id: pad.id,
+      hold_ms: 0,
+      required_hold_ms: requiredMs,
+      completed: false,
+    });
     return null;
   }
 

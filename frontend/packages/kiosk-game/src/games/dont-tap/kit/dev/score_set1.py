@@ -28,6 +28,9 @@ SET1 = ("dont_tap", "card_sort", "balloon", "tower", "wait_or_now")
 #: Statuses acceptable in a verification run of single-module synthetic sessions.
 ACCEPTABLE = {"ok", "planned_missing", "group_only", "unscorable_individual"}
 
+#: Statuses tolerated for the known gaps below (a hard-capped slow bot session is `module_incomplete`).
+GAP_STATUSES = {"insufficient_trials", "module_absent", "module_incomplete"}
+
 #: Indicators whose dictionary minimum cannot be met by the module config as specified (raised with the
 #: measurement-model owners). They are reported, never silently passed: `insufficient_trials` is the
 #: only status tolerated for them, and the run prints the reason.
@@ -37,7 +40,8 @@ KNOWN_DICTIONARY_GAPS = {
     "self_control.choice_consistency": "min_valid_trials 12 delay choices; MG-07 config has 8 delay + 4 effort "
     "choices (12 in total) and the formula reads delay choices only",
     "persistence.effort_completion_rate": "min_valid_trials 4 chosen holds; the effort block has 4 trials, so the "
-    "indicator exists only when every effort choice is 'hard'",
+    "indicator exists only when every effort choice is 'hard' (a chosen churn never pressed counts as incomplete "
+    "via an explicit hold_ms 0 record)",
 }
 
 
@@ -85,7 +89,7 @@ def main(argv: list[str]) -> int:
         if "error" in st:
             failures.append(f"{ind}: error rows {st}")
         if not set(st) & ACCEPTABLE:
-            if ind in KNOWN_DICTIONARY_GAPS and set(st) <= ACCEPTABLE | {"insufficient_trials", "module_absent"}:
+            if ind in KNOWN_DICTIONARY_GAPS and set(st) <= ACCEPTABLE | GAP_STATUSES:
                 gaps.append(f"{ind}: {st} -- {KNOWN_DICTIONARY_GAPS[ind]}")
             else:
                 failures.append(f"{ind}: never ok {st}")
