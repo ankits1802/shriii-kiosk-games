@@ -204,7 +204,15 @@ def _one_factor_ml(cov: FloatArray, max_iter: int = 2000) -> tuple[FloatArray, F
     """One-factor ML loadings/uniquenesses on a covariance matrix (Joreskog's iteration via scipy)."""
     p = cov.shape[0]
     sd = np.sqrt(np.diag(cov))
+    # A constant item (e.g. in a small bootstrap resample) has no correlation: not estimable, so the
+    # caller drops this draw instead of LAPACK failing on a NaN matrix.
+    if not np.all(np.isfinite(sd)) or np.any(sd <= 0):
+        nan = np.full(p, np.nan)
+        return nan, nan, False
     corr = cov / np.outer(sd, sd)
+    if not np.all(np.isfinite(corr)):
+        nan = np.full(p, np.nan)
+        return nan, nan, False
     w, v = np.linalg.eigh(corr)
     lam0 = v[:, -1] * math.sqrt(max(w[-1], 1e-6))
     if lam0.sum() < 0:
@@ -239,8 +247,11 @@ def _assumptions(x: FloatArray) -> tuple[list[AssumptionCheck], list[str]]:
     checks: list[AssumptionCheck] = []
     warnings: list[str] = []
     corr = np.corrcoef(x, rowvar=False)
-    eig = np.sort(np.linalg.eigvalsh(corr))[::-1]
-    ratio = float(eig[0] / eig[1]) if eig.size > 1 and eig[1] > 0 else math.inf
+    if np.all(np.isfinite(corr)):
+        eig = np.sort(np.linalg.eigvalsh(corr))[::-1]
+        ratio = float(eig[0] / eig[1]) if eig.size > 1 and eig[1] > 0 else math.inf
+    else:  # a constant item: the correlation matrix is undefined
+        ratio = math.nan
     checks.append(
         AssumptionCheck(
             "unidimensionality_eigen_ratio",
