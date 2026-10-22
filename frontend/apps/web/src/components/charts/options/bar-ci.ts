@@ -116,7 +116,14 @@ export function barCiOption(input: BarCiInput, tokens: ChartTokens): EChartsOpti
       tokens,
       `Bar chart of ${input.valueLabel} across ${input.categories.length} categories with confidence intervals.`,
     ),
-    grid: { left: 16, right: 16, top: k > 1 ? 36 : 16, bottom: 24, containLabel: true },
+    grid: {
+      left: 16,
+      right: 16,
+      top: k > 1 ? 36 : 16,
+      bottom: 8,
+      outerBoundsMode: 'same',
+      outerBoundsContain: 'all',
+    },
     legend:
       k > 1
         ? {

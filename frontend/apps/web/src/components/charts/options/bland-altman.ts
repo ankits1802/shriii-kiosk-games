@@ -61,7 +61,14 @@ export function blandAltmanOption(input: BlandAltmanInput, tokens: ChartTokens):
         ? `Bland–Altman plot for ${input.measure}, n = ${result.n}. Bias ${formatNumber(result.bias.estimate, 2)}, ${pct}% limits of agreement ${formatNumber(result.lowerLimit.estimate, 2)} to ${formatNumber(result.upperLimit.estimate, 2)}.`
         : `Bland–Altman plot for ${input.measure}: not enough pairs.`,
     ),
-    grid: { left: 16, right: 24, top: 16, bottom: 40, containLabel: true },
+    grid: {
+      left: 16,
+      right: 24,
+      top: 16,
+      bottom: 8,
+      outerBoundsMode: 'same',
+      outerBoundsContain: 'all',
+    },
     xAxis: valueAxis(tokens, `Mean of test and retest (${input.measure})`, { nameGap: 28 }),
     yAxis: valueAxis(tokens, 'Retest − test', { nameGap: 40 }),
     tooltip: {

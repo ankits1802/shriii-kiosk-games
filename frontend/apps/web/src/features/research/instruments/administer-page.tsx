@@ -409,8 +409,11 @@ export function AdministerPage({ instrumentId }: { readonly instrumentId: string
                   {plan.audioAssisted ? 'audio-assisted' : 'no audio'}
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  {plan.items.filter((i) => i.attentionCheck).length} attention check(s) · form{' '}
-                  {plan.block} · device {deviceId}
+                  {plan.items.filter((i) => i.attentionCheck).length} attention check(s) ·{' '}
+                  {['A', 'B', 'C'].includes(plan.block)
+                    ? `rotating form ${plan.block}`
+                    : `block ${plan.block} (common items; this instrument has no rotating forms)`}{' '}
+                  · device {deviceId}
                 </p>
               </div>
             )}

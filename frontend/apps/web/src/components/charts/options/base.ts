@@ -85,7 +85,13 @@ export function referenceMarkLines(
     silent: true,
     symbol: 'none',
     animation: false,
-    label: { color: tokens.inkSecondary, fontSize: 11, position: 'insideEndTop' },
+    // Horizontal lines (y values): label at the left start, above the line, so it never sits on the
+    // last bar group. Vertical lines (x values): label at the top end, clear of short tail bars.
+    label: {
+      color: tokens.inkSecondary,
+      fontSize: 11,
+      position: axis === 'y' ? 'insideStartTop' : 'insideEndTop',
+    },
     data: lines.map((l) => ({
       [axis === 'x' ? 'xAxis' : 'yAxis']: l.value,
       name: l.label,

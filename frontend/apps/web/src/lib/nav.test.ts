@@ -117,6 +117,17 @@ describe.skipIf(!matrix)('role-aware navigation (against the real API matrix)', 
     expect(canOpen(p, '/research/participants/P1')).toBe(false);
   });
 
+  it('researcher-administered mode needs responses.write, not just instruments.read', () => {
+    const route = '/research/instruments/bscs/administer';
+    expect(routeRequirement(route)).toEqual({ all: ['instruments.read', 'responses.write'] });
+    expect(canOpen(principalFor('administrator'), route)).toBe(true);
+    expect(canOpen(principalFor('researcher'), route)).toBe(true);
+    expect(canOpen(principalFor('analyst'), route)).toBe(false);
+    expect(canOpen(principalFor('analyst'), '/research/instruments/bscs')).toBe(
+      canOpen(principalFor('analyst'), '/research/instruments'),
+    );
+  });
+
   it('lands each role on its first permitted page', () => {
     expect(defaultLanding(principalFor('analyst'))).toBe('/research');
     expect(defaultLanding(principalFor('administrator'))).toBe('/research');

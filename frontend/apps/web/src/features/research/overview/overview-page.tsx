@@ -190,9 +190,13 @@ export function ResearchOverviewPage() {
           label="Game sessions"
           value={canSessions ? formatInteger(sessionSummary?.total) : '—'}
           sub={
-            sessionSummary
-              ? `${formatInteger(sessionSummary.completed)} completed · ${formatInteger(sessionSummary.linked)} linked to a pid`
-              : 'Needs sessions.read'
+            !canSessions
+              ? 'Needs sessions.read'
+              : sessionSummary
+                ? `${formatInteger(sessionSummary.completed)} completed · ${formatInteger(sessionSummary.linked)} linked to a pid`
+                : sessions.isError
+                  ? 'Could not load sessions'
+                  : 'Loading…'
           }
         />
         <StatTile

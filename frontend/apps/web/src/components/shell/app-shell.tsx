@@ -70,10 +70,14 @@ export function AppShell({ children }: { readonly children: ReactNode }) {
       >
         Skip to content
       </a>
-      <aside className="sticky top-0 hidden h-dvh w-60 shrink-0 flex-col overflow-y-auto border-r bg-sidebar lg:flex">
-        <Brand />
-        <SidebarNav />
-      </aside>
+      {/* The coloured rail stretches with the page (so full-page captures and long pages keep the
+          sidebar background); the nav inside stays sticky at viewport height. */}
+      <div className="hidden w-60 shrink-0 border-r bg-sidebar lg:block">
+        <aside className="sticky top-0 flex h-dvh flex-col overflow-y-auto">
+          <Brand />
+          <SidebarNav />
+        </aside>
+      </div>
       <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
         <SheetContent side="left" className="w-64 bg-sidebar p-0">
           <SheetTitle className="sr-only">Navigation</SheetTitle>
