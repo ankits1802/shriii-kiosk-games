@@ -5,7 +5,8 @@
  * so the kiosk stays fully playable (and fully offline) on its own.
  */
 import type { BatteryArm, CalibrationPolicy, SessionMode, SiteMode } from '@shriii/contracts';
-import { Application, Container } from 'pixi.js';
+import { gsap } from 'gsap';
+import { Application, Container, Ticker } from 'pixi.js';
 // CSP-safe shader/uniform paths (no `new Function`), required by the Electron shell's strict CSP.
 import 'pixi.js/unsafe-eval';
 import type {
@@ -77,6 +78,12 @@ export interface KioskRuntimeOptions {
   readonly deviceToken?: string | null;
   /** Wrap the module host in the Pathway B carousel hub (fair-map bridges; default true). */
   readonly hub?: boolean;
+  /**
+   * Animations on wall-clock time even when frames are slow (GSAP lag smoothing off, Pixi ticker
+   * delta uncapped). For software-rendered test runs: there frames can exceed 500 ms, and lag
+   * smoothing would stretch every awaited tween (bridges, intros) many times over.
+   */
+  readonly wallClockAnimations?: boolean;
 }
 
 export interface KioskRuntime {
@@ -170,6 +177,11 @@ export async function createKioskRuntime(
   app.canvas.style.inset = '0';
   app.canvas.style.touchAction = 'none';
   host.appendChild(app.canvas);
+  if (options.wallClockAnimations) {
+    gsap.ticker.lagSmoothing(0);
+    app.ticker.minFPS = 1;
+    Ticker.shared.minFPS = 1;
+  }
   const moduleLayer = new Container();
   const screenLayer = new Container();
   const overlayLayer = new Container();

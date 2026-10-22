@@ -59,6 +59,8 @@ export function App({ config }: { readonly config: KioskConfig }): ReactElement 
       audioFactory: AUDIO_FACTORY,
       ...(config.kioskId ? { device: { kioskId: config.kioskId } } : {}),
       ...(config.deviceToken ? { deviceToken: config.deviceToken } : {}),
+      // Test bridge builds run on software GL in CI: keep animations on wall-clock time.
+      ...(config.bridge ? { wallClockAnimations: true } : {}),
       ...(config.pxPerMm ? { pxPerMm: config.pxPerMm } : {}),
       ...(validate ? { validate } : {}),
     }),
