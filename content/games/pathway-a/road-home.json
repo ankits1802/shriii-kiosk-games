@@ -48,7 +48,7 @@
     "outro_ms": 3000,
     "target_ms_l2": 187800,
     "soft_cap_ms": 194000,
-    "hard_cap_ms": 196000
+    "hard_cap_ms": 200000
   },
   "levels": {
     "L1": {
@@ -301,5 +301,5 @@
     "road_home.block_cue"
   ],
   "requires_numeracy": false,
-  "notes": "Episode 3, MindShift (EPI-03). Unannounced reversal; partner shares the fuel pot and makes a scripted error. Uphill effort beat is an iteration-1 design decision."
+  "notes": "Episode 3, MindShift (EPI-03). Unannounced reversal; partner shares the fuel pot and makes a scripted error. Uphill effort beat is an iteration-1 design decision. Amendment 2026-10-wave2 (A6): caps 194/200 s (slow-player headroom; the soft-to-hard gap covers the 3 s outro)."
 }

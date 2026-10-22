@@ -61,14 +61,33 @@ def rvi_pumps(trials: Sequence[Trial], ctx: FormulaContext) -> IndicatorValue:
 
 @session_formula("style.rvi_inter_tap_interval")
 def rvi_iti(trials: Sequence[Trial], ctx: FormulaContext) -> IndicatorValue:
-    """RVI of intervals between consecutive on-target taps (exploratory restraint style indicator)."""
-    taps = sorted(tp.pointer_t_ms for t in trials for tp in t.taps if tp.classification == "on_target")
-    itis = [b - a for a, b in pairwise(taps) if b > a]
-    if len(itis) < ctx.params.i("rvi.min_values"):
+    """RVI of intervals between consecutive on-target taps (exploratory restraint style indicator).
+
+    Intervals are formed within a block only (no interval spans a block break) and each block's intervals are
+    detrended and re-centred on the pooled mean, so a block-level pace change (e.g. the timed pressure block)
+    does not inflate the variability (amendment 2026-10-wave2, A2). With a single block this equals the plain
+    detrended RVI.
+    """
+    by_block: dict[str, list[float]] = defaultdict(list)
+    for t in trials:
+        by_block[str(t.block)].extend(tp.pointer_t_ms for tp in t.taps if tp.classification == "on_target")
+    per_block = []
+    for taps in by_block.values():
+        ordered = sorted(taps)
+        itis = [b - a for a, b in pairwise(ordered) if b > a]
+        if itis:
+            per_block.append(itis)
+    n_itis = sum(len(v) for v in per_block)
+    if n_itis < ctx.params.i("rvi.min_values"):
         return IndicatorValue.empty(len(trials))
+    grand = float(np.mean([x for v in per_block for x in v]))
+    centred: list[float] = []
+    for v in per_block:
+        d = detrend(v)
+        centred.extend(float(x) - float(np.mean(d)) + grand for x in d)
     upper = ctx.params.f("rvi.inter_tap_upper_ms")
-    rvi = relative_variability_index(list(detrend(itis)), 0.0, max(upper, *itis))
-    return IndicatorValue(value=None if math.isnan(rvi) else rvi, n_valid=len(trials))
+    rvi = relative_variability_index(centred, min(0.0, *centred), max(upper, *centred))
+    return IndicatorValue(value=None if math.isnan(rvi) else rvi, n_valid=len(trials), details={"n_itis": n_itis})
 
 
 @session_formula("style.choice_entropy_repeats")

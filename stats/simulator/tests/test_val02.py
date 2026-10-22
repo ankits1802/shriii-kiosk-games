@@ -57,9 +57,9 @@ def test_config_has_targets_and_profiles() -> None:
 def test_scheduled_seconds_use_content_configs() -> None:
     engine = StudyEngine(pathways=("B",))
     trials, seconds = scheduled_seconds(engine, "B", "self_control.nogo_commission_rate", "L2")
-    # Don't-Tap main + pressure blocks: 72 trials at 1.06 s (L2 median, content/games/pathway-b/dont-tap.json).
-    assert trials == 72
-    assert seconds == pytest.approx(72 * 1.06)
+    # Don't-Tap main + pressure blocks: 68 trials at 1.17 s (L2 median, content/games/pathway-b/dont-tap.json).
+    assert trials == 68
+    assert seconds == pytest.approx(68 * 1.17)
 
 
 def test_summarise_requirements_verdicts() -> None:
@@ -77,7 +77,7 @@ def test_summarise_requirements_verdicts() -> None:
     assert req.rho == pytest.approx(rho, abs=1e-3)
     assert req.required["0.6"] == math.ceil(required_units(0.6, rho))
     assert req.verdict["0.6"] == "needs_more_trials"
-    assert req.seconds_per_unit == pytest.approx(72 * 1.06 / 22)
+    assert req.seconds_per_unit == pytest.approx(68 * 1.17 / 22)
     md = render_markdown(
         {
             "profile": "test",

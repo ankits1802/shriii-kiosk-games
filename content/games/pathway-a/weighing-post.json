@@ -42,8 +42,8 @@
     "intro_ms": 9000,
     "outro_ms": 3000,
     "target_ms_l2": 192400,
-    "soft_cap_ms": 194000,
-    "hard_cap_ms": 196000
+    "soft_cap_ms": 200000,
+    "hard_cap_ms": 204000
   },
   "levels": {
     "L1": {
@@ -246,5 +246,5 @@
     "weighing_post.quantity_prefix"
   ],
   "requires_numeracy": false,
-  "notes": "Episode 2, Weighmaster (EPI-02). Decisions approve/warn/fine with inspect more; >= 3 dilemmas per type; requires_numeracy false on every decision."
+  "notes": "Episode 2, Weighmaster (EPI-02). Decisions approve/warn/fine with inspect more; >= 3 dilemmas per type; requires_numeracy false on every decision. Amendment 2026-10-wave2 (A6): caps 200/204 s (slow-player headroom; the soft-to-hard gap covers the 3 s outro)."
 }

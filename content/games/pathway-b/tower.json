@@ -34,8 +34,8 @@
     "intro_ms": 6000,
     "outro_ms": 1500,
     "target_ms_l2": 95500,
-    "soft_cap_ms": 99000,
-    "hard_cap_ms": 100000
+    "soft_cap_ms": 106000,
+    "hard_cap_ms": 108000
   },
   "levels": {
     "L1": {
@@ -152,5 +152,5 @@
   "forms": ["form_1", "form_2"],
   "audio_keys": ["tower.intro", "tower.practice", "tower.outro", "tower.replay", "tower.skip_hint"],
   "requires_numeracy": false,
-  "notes": "4 solvable problems (2-5 minimum moves) and 2 unsolvable items; skip icon after 15 s (MG-04). T2 uses a different unsolvable identity (ENG-14)."
+  "notes": "4 solvable problems (2-5 minimum moves) and 2 unsolvable items; skip icon after 15 s (MG-04). T2 uses a different unsolvable identity (ENG-14). Amendment 2026-10-wave2 (A5): caps 106/108 s so slow, deliberate players still reach the end-of-module probe block."
 }

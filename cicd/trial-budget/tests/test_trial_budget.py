@@ -124,8 +124,8 @@ def test_inflated_module_breaks_scored_play_and_caps(repo: Path) -> None:
         g["blocks"][1]["trials"] += 150
         g["blocks"][1]["min_trials"] += 150
         if raise_caps:
-            g["budget"]["soft_cap_ms"] = 290_000
-            g["budget"]["hard_cap_ms"] = 300_000
+            g["budget"]["soft_cap_ms"] = 340_000
+            g["budget"]["hard_cap_ms"] = 350_000
 
     path = repo / "content/games/pathway-b/dont-tap.json"
     original = path.read_text(encoding="utf-8")

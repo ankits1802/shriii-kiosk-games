@@ -35,9 +35,9 @@
   "budget": {
     "intro_ms": 8500,
     "outro_ms": 1500,
-    "target_ms_l2": 91120,
-    "soft_cap_ms": 99000,
-    "hard_cap_ms": 100000
+    "target_ms_l2": 99040,
+    "soft_cap_ms": 107000,
+    "hard_cap_ms": 108000
   },
   "levels": {
     "L1": {
@@ -49,13 +49,13 @@
         "pressure_isi_ms": 480
       },
       "seconds_per_trial": {
-        "median": 1.16,
-        "slow": 1.16
+        "median": 1.27,
+        "slow": 1.27
       },
       "estimated_duration_ms": {
-        "median": 98320,
-        "slow": 98320,
-        "slow_trimmed": 96000
+        "median": 106240,
+        "slow": 106240,
+        "slow_trimmed": 103700
       }
     },
     "L2": {
@@ -67,13 +67,13 @@
         "pressure_isi_ms": 440
       },
       "seconds_per_trial": {
-        "median": 1.06,
-        "slow": 1.06
+        "median": 1.17,
+        "slow": 1.17
       },
       "estimated_duration_ms": {
-        "median": 91120,
-        "slow": 91120,
-        "slow_trimmed": 89000
+        "median": 99040,
+        "slow": 99040,
+        "slow_trimmed": 96700
       }
     },
     "L3": {
@@ -85,13 +85,13 @@
         "pressure_isi_ms": 380
       },
       "seconds_per_trial": {
-        "median": 0.92,
-        "slow": 0.92
+        "median": 1.01,
+        "slow": 1.01
       },
       "estimated_duration_ms": {
-        "median": 81040,
-        "slow": 81040,
-        "slow_trimmed": 79200
+        "median": 87520,
+        "slow": 87520,
+        "slow_trimmed": 85500
       }
     }
   },
@@ -188,5 +188,5 @@
     "dont_tap.pressure_cue"
   ],
   "requires_numeracy": false,
-  "notes": "Fixed-paced: median and slow bots take the same time. Pressure block is the second half (MG-02); SSRT removed. Main and pressure blocks are 34 trials (76 trials, 22 no-go) so the module fits its 100 s hard cap with the recorded narration; intro_ms (8.5 s) covers the intro and practice narration that is not concurrent with trials; the main block is never trimmed (fixed shift index 38) and the pressure block keeps >= 10 no-go under wrap-up."
+  "notes": "Fixed-paced: median and slow bots take the same time. Pressure block is the second half (MG-02); SSRT removed. Main and pressure blocks are 34 trials (76 trials, 22 no-go) so the module fits its 100 s hard cap with the recorded narration; intro_ms (8.5 s) covers the intro and practice narration that is not concurrent with trials; the main block is never trimmed (fixed shift index 38) and the pressure block keeps >= 10 no-go under wrap-up. Amendment 2026-10-wave2 (A5): fixed-pace seconds per trial from measured play (L2 1.163 s; L1/L3 scaled); caps 107/108 s so the pressure block is no longer trimmed."
 }
