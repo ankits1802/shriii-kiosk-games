@@ -111,7 +111,14 @@ export class ScreenKit {
         height: sa.y + sa.height - Math.max(sa.y, this.height * 0.42),
       };
     const left = this.width * 0.3;
-    return { x: left, y: sa.y, width: sa.x + sa.width - left, height: sa.height };
+    // Keep clear of the persistent hand (exit) control in the top-right corner (ONB-06, 22 mm + gap).
+    const exitClear = this.mm(32);
+    return {
+      x: left,
+      y: sa.y,
+      width: Math.max(1, sa.x + sa.width - left - exitClear),
+      height: sa.height,
+    };
   }
 
   /**

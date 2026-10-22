@@ -19,6 +19,7 @@ import {
 import { installGlobalCrashHandlers } from '../crash-handlers.ts';
 import type { KioskRuntime, KioskRuntimeOptions } from '../runtime.ts';
 import type { KioskSessionView, SessionControllerEvent } from '../session-controller.ts';
+import { STAGE_SCREEN_STATES } from '../stage-screens.ts';
 import {
   ExitControl,
   FALLBACK_CSS,
@@ -58,6 +59,14 @@ const SESSION_STATES_WITH_EXIT = new Set([
   'survey',
   'contactOptIn',
 ]);
+
+/** The stage screens draw these states on the Pixi stage: no React screen on top. */
+function StageOwned(): null {
+  return null;
+}
+const STAGE_BLANKS: ScreenMap = Object.fromEntries(
+  [...STAGE_SCREEN_STATES].map((s) => [s, StageOwned]),
+) as ScreenMap;
 
 export function KioskRuntimeView({
   options,
@@ -124,7 +133,11 @@ export function KioskRuntimeView({
     [runtime],
   );
 
-  const all = { ...FALLBACK_SCREENS, ...screens };
+  const all: ScreenMap = {
+    ...FALLBACK_SCREENS,
+    ...(runtime?.stageScreens ? STAGE_BLANKS : {}),
+    ...screens,
+  };
   const Screen = view ? all[view.state] : undefined;
   const pxPerMm = runtime?.layout.metrics.pxPerMm ?? 3.78;
 

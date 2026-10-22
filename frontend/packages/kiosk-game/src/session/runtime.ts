@@ -26,9 +26,10 @@ import { loadGameContent } from '../engine/content.ts';
 import { BasicArtKit } from '../engine/fallbacks/basic-art.ts';
 import { genericModuleFallback } from '../engine/fallbacks/generic-module.ts';
 import { SilentAudioService, SilentVoiceService } from '../engine/fallbacks/silent-audio.ts';
-import { ModuleHost } from '../engine/module-host.ts';
+import { ModuleHost, type ModuleRunner } from '../engine/module-host.ts';
 import { moduleRegistry } from '../engine/registry.ts';
 import { measureRefreshHz } from '../engine/timing.ts';
+import { CarouselHubRunner } from '../games/hub/CarouselHubRunner.ts';
 import { DomInputService } from '../input/input-service.ts';
 import { CSS_PX_PER_MM, physicalMetrics } from '../input/metrics.ts';
 import type { EventValidator } from '../logging/event-logger.ts';
@@ -39,6 +40,8 @@ import { recoverInterruptedSessions } from '../logging/recovery.ts';
 import { BatchUploader } from '../logging/uploader.ts';
 import { developmentDeviceConfig, type KioskDeviceConfig } from './device.ts';
 import { SessionController } from './session-controller.ts';
+import { isOnboardingArt, StageScreens } from './stage-screens.ts';
+import { destroyStage, installTweenSafeDestroy } from './stage-teardown.ts';
 
 export interface KioskRuntimeOptions {
   /** API base URL; empty/undefined = offline only (the queue persists). */
@@ -65,6 +68,15 @@ export interface KioskRuntimeOptions {
   /** Strict event validation (dev builds). */
   readonly validate?: EventValidator;
   readonly offerContactOptIn?: boolean;
+  /**
+   * Run the Pixi onboarding/report/survey screens on the stage (default true; needs an art kit with
+   * the onboarding extras, i.e. the Mela art kit). False keeps the icon-only React fallbacks.
+   */
+  readonly stageScreens?: boolean;
+  /** Kiosk device token for the batch uploader (`Authorization: Bearer ...`). */
+  readonly deviceToken?: string | null;
+  /** Wrap the module host in the Pathway B carousel hub (fair-map bridges; default true). */
+  readonly hub?: boolean;
 }
 
 export interface KioskRuntime {
@@ -77,6 +89,8 @@ export interface KioskRuntime {
   readonly audio: AudioService;
   readonly voice: VoiceService;
   readonly device: KioskDeviceConfig;
+  /** True when the stage screens own attract/onboarding/report/survey (no React fallbacks there). */
+  readonly stageScreens: boolean;
   dispose(): void;
 }
 
@@ -133,6 +147,7 @@ export async function createKioskRuntime(
   host: HTMLElement,
   options: KioskRuntimeOptions,
 ): Promise<KioskRuntime> {
+  installTweenSafeDestroy();
   const content = loadGameContent();
   const store = new LocalStorageKeyValueStore();
   const device = developmentDeviceConfig(store, {
@@ -156,8 +171,9 @@ export async function createKioskRuntime(
   app.canvas.style.touchAction = 'none';
   host.appendChild(app.canvas);
   const moduleLayer = new Container();
+  const screenLayer = new Container();
   const overlayLayer = new Container();
-  app.stage.addChild(moduleLayer, overlayLayer);
+  app.stage.addChild(moduleLayer, screenLayer, overlayLayer);
   const onResize = (): void => layout.refresh();
   app.renderer.on('resize', onResize);
 
@@ -185,30 +201,44 @@ export async function createKioskRuntime(
     ...(options.validate ? { validate: options.validate } : {}),
   });
   if (recovery.failed.length > 0) console.error('[kiosk] crash recovery failed', recovery.failed);
-  const uploader = new BatchUploader({ outbox, apiBase: options.apiBase ?? null });
-  const runner = new ModuleHost({
+  const token = options.deviceToken ?? null;
+  const uploader = new BatchUploader({
+    outbox,
+    apiBase: options.apiBase ?? null,
+    ...(token ? { headers: () => ({ authorization: `Bearer ${token}` }) } : {}),
+  });
+  const playServices = {
+    app,
+    layout,
+    audio,
+    voice,
+    input,
+    art,
+    createStage: () => {
+      const c = new Container();
+      moduleLayer.addChild(c);
+      return c;
+    },
+    releaseStage: (c: Container) => destroyStage(c),
+  };
+  const moduleHost = new ModuleHost({
     content,
     registry: options.registry ?? moduleRegistry,
     dev: options.dev,
     fallback: genericModuleFallback(content),
-    services: {
-      app,
-      layout,
-      audio,
-      voice,
-      input,
-      art,
-      createStage: () => {
-        const c = new Container();
-        moduleLayer.addChild(c);
-        return c;
-      },
-      releaseStage: (c) => {
-        moduleLayer.removeChild(c);
-        c.destroy({ children: true });
-      },
-    },
+    services: playServices,
   });
+  // MG-10: the carousel hub plays the fair-map bridge before each Pathway B module (it does nothing
+  // for Pathway A, so it can always wrap the host).
+  const runner: ModuleRunner =
+    options.hub === false
+      ? moduleHost
+      : new CarouselHubRunner({
+          inner: moduleHost,
+          services: playServices,
+          plan: content.plan,
+          headless: options.dev.headless,
+        });
   const controller = new SessionController({
     content,
     outbox,
@@ -238,6 +268,24 @@ export async function createKioskRuntime(
   });
   uploader.start();
 
+  const useStage = options.stageScreens !== false && isOnboardingArt(art);
+  const stageScreens = useStage
+    ? new StageScreens({
+        controller,
+        content,
+        device,
+        app,
+        layer: screenLayer,
+        layout,
+        art,
+        audio,
+        voice,
+        input,
+        runtimeClock,
+        unlockAudio: () => void audio.unlock(),
+      })
+    : null;
+
   return {
     controller,
     outbox,
@@ -248,7 +296,9 @@ export async function createKioskRuntime(
     audio,
     voice,
     device,
+    stageScreens: useStage,
     dispose() {
+      stageScreens?.dispose();
       unsub();
       controller.dispose();
       uploader.stop();

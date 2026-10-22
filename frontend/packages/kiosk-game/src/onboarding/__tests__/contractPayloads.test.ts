@@ -65,8 +65,8 @@ async function run(rig: TestRig, screen: (kit: ScreenKit) => Promise<unknown>): 
 describe('onboarding and report events satisfy the event-envelope contract', () => {
   it('language selection', async () => {
     const rig = makeRig((ids) =>
-      ids.includes('lang.hi-IN')
-        ? 'lang.hi-IN'
+      ids.includes('lang.hi_in')
+        ? 'lang.hi_in'
         : ids.includes('lang.confirm')
           ? 'lang.confirm'
           : null,

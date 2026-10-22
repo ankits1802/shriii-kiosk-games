@@ -123,7 +123,7 @@ const ROUTES: RouteDef[] = [
       runner: (k) => runLanguageSelect(k),
       autoplay: (ids) => {
         if (done) return null;
-        const face = ids.find((id) => id === 'lang.hi-IN');
+        const face = ids.find((id) => id === 'lang.hi_in');
         if (face) done = true;
         return face ?? null;
       },

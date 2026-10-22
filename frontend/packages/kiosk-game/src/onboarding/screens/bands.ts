@@ -174,10 +174,14 @@ export async function runBands(kit: ScreenKit): Promise<WithGlobe<BandsResult>> 
     );
     // Grid of picture tiles.
     const n = q.options.length;
-    const maxPerRow = kit.portrait ? 3 : n > 6 ? 4 : n;
-    const rows = Math.ceil(n / maxPerRow);
     const gapMm = 10;
-    const availW = area.width / kit.mm(1);
+    // The replay button owns the top-right corner: the grid keeps >= 8 mm clear of it.
+    const gridW = Math.max(kit.mm(60), area.width - kit.mm(38));
+    const availW = gridW / kit.mm(1);
+    // Wrap onto more rows when minimum-size (26 mm) tiles would not fit across.
+    const fitPerRow = Math.max(1, Math.floor((availW + gapMm) / (26 + gapMm)));
+    const maxPerRow = Math.min(kit.portrait ? 3 : n > 6 ? 4 : n, fitPerRow);
+    const rows = Math.ceil(n / maxPerRow);
     const availH = area.height / kit.mm(1) - 44;
     const sizeMm = Math.max(
       26,
@@ -194,7 +198,7 @@ export async function runBands(kit: ScreenKit): Promise<WithGlobe<BandsResult>> 
       const row = Math.floor(i / maxPerRow);
       const col = i % maxPerRow;
       const inRow = Math.min(maxPerRow, n - row * maxPerRow);
-      const x = area.x + area.width / 2 + (col - (inRow - 1) / 2) * (px + gap);
+      const x = area.x + gridW / 2 + (col - (inRow - 1) / 2) * (px + gap);
       const y = area.y + kit.mm(16) + px / 2 + row * (px + gap);
       const pic = option.picto(services.art, px);
       kit.adopt(pic.characters);

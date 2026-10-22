@@ -111,6 +111,25 @@ describe('DomInputService (ENG-06, KSK-05)', () => {
     ).not.toThrow();
   });
 
+  it('makes a target registered disabled hittable after setEnabled(true)', async () => {
+    const { clock, input, tap } = setup();
+    const h = input.registerTarget({
+      id: 'later',
+      bounds: { x: 400, y: 400, width: 200, height: 200 },
+      audioKey: 'later',
+      kind: 'tap',
+      enabled: false,
+    });
+    expect(input.liveTargets().map((t) => t.id)).toEqual([]);
+    h.setEnabled(true);
+    expect(input.liveTargets().map((t) => t.id)).toEqual(['later']);
+    const wait = input.waitForTap(['later'], { anchorMs: clock.now(), windowMs: 1000 });
+    vi.advanceTimersByTime(100);
+    tap(500, 500);
+    const r = await wait;
+    expect(r.kind).toBe('tap');
+  });
+
   it('measures latency from the anchor, records premature and extra taps, never debounced', async () => {
     const { clock, input, tap, events } = setup();
     input.registerTarget({
