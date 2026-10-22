@@ -286,7 +286,7 @@ export function changeControlIssues(
     const measured = findRule(MEASUREMENT_FIELDS, c.path);
     if (measured) {
       const level = c.path.split('/')[2] ?? '';
-      const label = measured.pattern.replace('*', level);
+      const label = measured.pattern.replaceAll('*', level);
       if (reported.has(label)) continue;
       reported.add(label);
       out.push({

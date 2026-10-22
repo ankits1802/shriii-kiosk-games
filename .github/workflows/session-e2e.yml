@@ -36,7 +36,7 @@ jobs:
         pathway: [A, B]
     steps:
       - uses: actions/checkout@v5
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1  # v4
       - uses: actions/setup-node@v5
         with:
           node-version-file: package.json
@@ -101,12 +101,12 @@ jobs:
       LOG_LEVEL: WARNING
     steps:
       - uses: actions/checkout@v5
-      - uses: astral-sh/setup-uv@v6
+      - uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e  # v6
         with:
           enable-cache: true
           python-version: ${{ env.PYTHON_VERSION }}
       - run: uv sync --all-packages
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1  # v4
       - uses: actions/setup-node@v5
         with:
           node-version-file: package.json
@@ -186,12 +186,12 @@ jobs:
       LOG_LEVEL: WARNING
     steps:
       - uses: actions/checkout@v5
-      - uses: astral-sh/setup-uv@v6
+      - uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e  # v6
         with:
           enable-cache: true
           python-version: ${{ env.PYTHON_VERSION }}
       - run: uv sync --all-packages
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1  # v4
       - uses: actions/setup-node@v5
         with:
           node-version-file: package.json

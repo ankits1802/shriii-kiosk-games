@@ -65,8 +65,10 @@ export const BASE_RULE: WeighRule = { id: 'base', ...WEIGHING_DEFAULTS.baseRule 
  * odd forms tighten short-weight tolerance; even forms make under-declaring an offence too.
  */
 export function newRuleForForm(formId: string): WeighRule {
-  const m = /(\d+)$/.exec(formId);
-  const k = m ? Number(m[1]) : 1;
+  // Trailing digits of the form id (`form_2` -> 2), scanned without a backtracking regex.
+  let i = formId.length;
+  while (i > 0 && formId.charCodeAt(i - 1) >= 48 && formId.charCodeAt(i - 1) <= 57) i -= 1;
+  const k = i < formId.length ? Number(formId.slice(i)) : 1;
   if (k % 2 === 1) return { id: 'new_rule.zero_tolerance', ...WEIGHING_DEFAULTS.newRule };
   return { id: 'new_rule.both_directions', ...WEIGHING_DEFAULTS.baseRule, shortWeightOnly: false };
 }
