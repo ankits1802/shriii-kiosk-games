@@ -85,7 +85,9 @@ jobs:
         run: |
           uv run shriii-api migrate
           uv run shriii-api seed --demo > /dev/null
-          nohup uv run shriii-api serve --host 127.0.0.1 --port 8077 > api.log 2>&1 &
+          # Run the venv entry point, not `uv run`: a long-lived `uv run` holds the uv cache lock, so the
+          # setup-uv post step (cache prune) waits on it and fails after 300 s.
+          nohup .venv/bin/shriii-api serve --host 127.0.0.1 --port 8077 > api.log 2>&1 &
           for _ in $(seq 1 60); do curl -fsS "$LOADTEST_BASE_URL/readyz" > /dev/null && break; sleep 1; done
           curl -fsS "$LOADTEST_BASE_URL/readyz"
       - name: Provision fleet and build corpus

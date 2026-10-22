@@ -1,0 +1,34 @@
+#!/bin/sh
+# Start the Electron kiosk under Ubuntu Frame once the device is enrolled.
+#
+# Until enrolment writes kiosk-config.json, Frame shows its idle background and this service waits (the
+# Electron runtime refuses to start without a provisioned kiosk id in packaged builds, by design).
+set -eu
+# shellcheck source=../share/lib.sh
+. "$SNAP/share/lib.sh"
+
+if ! is_enrolled; then
+  log "device not enrolled; waiting for $CONFIG_FILE"
+  wait_for_file "$CONFIG_FILE"
+fi
+
+mkdir -p "$SHRIII_ROOT/userdata" "$KIOSK_HOME" "$XDG_CACHE_HOME" "$XDG_CONFIG_HOME" "$XDG_DATA_HOME"
+chmod 700 "$SHRIII_ROOT/userdata" "$KIOSK_HOME"
+
+export SHRIII_KIOSK_CONFIG="$CONFIG_FILE"
+# Outbox, device KEK and logs live in $SNAP_COMMON so a snap revert never rolls back unsent data.
+export SHRIII_KIOSK_USER_DATA="$SHRIII_ROOT/userdata"
+# Chromium reads client certificates from $HOME/.pki/nssdb (imported by enrol / cert-renew).
+export HOME="$KIOSK_HOME"
+# Printer from config only; never from the inherited environment.
+unset SHRIII_PRINTER SHRIII_KIOSK_DEV_URL SHRIII_PLAINTEXT_OUTBOX SHRIII_ALLOW_HTTP_API
+
+# The renderer runs inside the snap's AppArmor/seccomp sandbox; Chromium's own sandbox cannot start as
+# root (see snapcraft.yaml).
+exec "$SNAP/opt/shriii-kiosk/shriii-kiosk" \
+  --ozone-platform=wayland \
+  --enable-features=UseOzonePlatform \
+  --disable-dev-shm-usage \
+  --no-sandbox \
+  --disable-crash-reporter \
+  --noerrdialogs

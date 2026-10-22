@@ -404,7 +404,8 @@ indicators:
   - condition.noise
   formula:
     ref: hier.pressure_slope_accuracy
-    description: Person random slope of serving accuracy on the timed rush (off vs on).
+    description: Person random slope of serving accuracy on the timed rush (off vs on) from a logistic mixed model
+      (logit scale; trial type and block position as fixed effects).
   unit: slope
   direction: higher_more
   transformation: none
@@ -432,7 +433,11 @@ indicators:
   convergent_criteria:
   - bfi2_xs.negative_emotionality
   - ders16.total
-  notes: null
+  notes: >-
+    Indicator review (2026-10): v0 scored this with a linear-probability mixed model (r with the planted latent
+    .04 in simulation). The logistic model (scoring_params models.binary_outcome_model) is now the default. The
+    Stall schedules only 6 + 5 no-go trials around the rush, so the slope stays weak; see
+    docs/science/indicator-review.md.
 - id: composure.pressure_slope_rt
   construct: composure
   role: secondary
@@ -618,6 +623,9 @@ indicators:
     task: cross_episode.rt_trials
     phases:
     - main
+    - pressure
+    - shift_pre
+    - shift_post
     slot: false
   event_inputs:
   - trial_start
@@ -662,7 +670,11 @@ indicators:
   expected_r_lower_bound: 0.1
   convergent_criteria:
   - bfi2_xs.conscientiousness
-  notes: null
+  notes: >-
+    VAL-02 / indicator review (2026-10): with phases [main] only the Stall service go trials (~14) entered, so
+    the 40-trial minimum was never met. All scored RT blocks now enter; the location model removes each
+    module block's mean and linear trend and scales residuals by the block's pooled SD, so pressure and
+    shift blocks do not inflate the person scale.
 - id: response_consistency.choice_entropy_repeats
   construct: response_consistency
   role: secondary
@@ -1466,7 +1478,7 @@ indicators:
     episode_id: stall
     task: stall.rude_run
     phases:
-    - shift_pre
+    - main
     - shift_post
     slot: false
   event_inputs:
@@ -1483,7 +1495,8 @@ indicators:
   - timing.scorable
   formula:
     ref: hier.shift_slope_single
-    description: Shift slope for the Stall rude-customer run.
+    description: Shift slope for the Stall rude-customer run (tone choices in the rude run vs the calm-customer
+      baseline block).
   unit: slope
   direction: higher_less
   transformation: none
@@ -1510,7 +1523,11 @@ indicators:
   expected_r_lower_bound: 0.1
   convergent_criteria:
   - bfi2_xs.negative_emotionality
-  notes: null
+  notes: >-
+    VAL-02 / indicator review (2026-10): the v0 phases [shift_pre, shift_post] matched no pre-shift block (the
+    calm-customer baseline block tone_calm has phase main), so the indicator could never be scored. Phases are
+    now [main, shift_post]. The contrast compares tone under rude vs calm customers, so it overlaps tone
+    mirroring and emotional regulation by design (docs/science/indicator-review.md).
 - id: stability.shift_slope_new_rule
   construct: stability
   role: secondary
@@ -1755,7 +1772,7 @@ indicators:
   reliability_method: split_half_permutation
   level_rule: fixed_level_only
   min_valid_trials:
-    count: 30
+    count: 20
     unit: trials
     basis: val02_pending
   exclusions:
@@ -1774,7 +1791,10 @@ indicators:
   sensitivity: standard
   expected_r_lower_bound: null
   convergent_criteria: []
-  notes: null
+  notes: >-
+    VAL-02 / indicator review (2026-10): the minimum (30) exceeded the 20 trials of the only selected block
+    (Stall service, phase main), so the indicator could never be scored; lowered to the scheduled 20
+    (exploratory, val02_pending).
 - id: teamwork.mean_contribution
   construct: teamwork
   role: primary

@@ -1,0 +1,1 @@
+quiet splash loglevel=3 vt.global_cursor_default=0 systemd.getty_auto=0 systemd.show_status=0 panic=10 sysrq_always_enabled=0

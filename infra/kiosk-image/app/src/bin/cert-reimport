@@ -1,0 +1,18 @@
+#!/bin/sh
+# Called by `step ca renew --exec` after each renewal: refresh chain.crt, the NSS DB and the device record.
+# The running kiosk is not restarted (a session may be in progress); Chromium picks the new certificate up
+# on the next client-certificate selection, and uploads only run in attract.
+set -eu
+# shellcheck source=../share/lib.sh
+. "$SNAP/share/lib.sh"
+
+cp -f "$CERT_FILE" "$CHAIN_FILE"
+nss_import_device_cert
+serial=$(step certificate inspect "$CERT_FILE" --format json | jq -r '.serial_number')
+not_after=$(step certificate inspect "$CERT_FILE" --format json | jq -r '.validity.end')
+tmp="$(mktemp "$SHRIII_ROOT/.device.XXXXXX")"
+jq --arg s "$serial" --arg n "$not_after" '.certificate_serial = $s | .certificate_not_after = $n' \
+  "$DEVICE_RECORD_FILE" >"$tmp"
+chmod 644 "$tmp"
+mv -f "$tmp" "$DEVICE_RECORD_FILE"
+log "device certificate renewed: serial $serial, valid until $not_after"

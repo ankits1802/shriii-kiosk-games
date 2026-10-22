@@ -947,6 +947,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/features/batch-scoring": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Enqueue batch scoring of a study x pathway (model-based and group-level indicators) */
+        post: operations["batch_scoring_api_v1_features_batch_scoring_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/features/group-indicators": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Group-level estimates (private reports): partitions only, never individuals; small cells suppressed */
+        get: operations["group_indicators_api_v1_features_group_indicators_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/validation/datasets": {
         parameters: {
             query?: never;
@@ -1079,6 +1113,23 @@ export interface paths {
         get: operations["get_run_api_v1_validation_runs__run_id__get"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/validation/datasets/{snapshot_id}/gate-evaluation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Evaluate trait and battery gates from the snapshot's latest results (evaluate-only, never promotes) */
+        post: operations["gate_evaluation_api_v1_validation_datasets__snapshot_id__gate_evaluation_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -2829,6 +2880,10 @@ export interface components {
             sd: number | null;
             /** N */
             n: number | null;
+            /** Details */
+            details?: {
+                [key: string]: unknown;
+            };
         };
         /**
          * EventIngestResult
@@ -2947,6 +3002,58 @@ export interface components {
             approved_at: string | null;
             /** Source Path */
             source_path: string | null;
+        };
+        /** GateEvaluationIn */
+        GateEvaluationIn: {
+            /** Pathway */
+            pathway: string;
+            /**
+             * Languages
+             * @description Default: every language with results
+             */
+            languages?: string[] | null;
+            /** Site Modes */
+            site_modes?: string[];
+        };
+        /** GroupIndicatorOut */
+        GroupIndicatorOut: {
+            /** Study Id */
+            study_id: string;
+            /** Pathway */
+            pathway: string;
+            /** Partition */
+            partition: {
+                [key: string]: unknown;
+            };
+            /** Indicator Id */
+            indicator_id: string;
+            /** Construct Id */
+            construct_id: string | null;
+            /** Estimate */
+            estimate: number | null;
+            /** Ci Low */
+            ci_low: number | null;
+            /** Ci High */
+            ci_high: number | null;
+            /** N Participants */
+            n_participants: number;
+            /** N Reports */
+            n_reports: number;
+            /** Suppressed */
+            suppressed: boolean;
+            /** Details */
+            details: {
+                [key: string]: unknown;
+            };
+            /** Algorithm Version */
+            algorithm_version: string;
+            /** Scoring Run Id */
+            scoring_run_id: string | null;
+            /**
+             * Computed At
+             * Format: date-time
+             */
+            computed_at: string;
         };
         /** HTTPValidationError */
         HTTPValidationError: {
@@ -3493,10 +3600,11 @@ export interface components {
             features: string[];
             /**
              * Algorithm
+             * @description gradient_boosting is an alias of xgboost
              * @default ridge
              * @enum {string}
              */
-            algorithm: "ridge" | "gradient_boosting";
+            algorithm: "ridge" | "elastic_net" | "random_forest" | "xgboost" | "gradient_boosting";
             /** Params */
             params?: {
                 [key: string]: unknown;
@@ -4075,6 +4183,8 @@ export interface components {
             attention_check: boolean;
             /** Attention Check Failed */
             attention_check_failed: boolean | null;
+            /** Planned Missing Items */
+            planned_missing_items?: string[];
             /** Source */
             source: string;
             /**
@@ -4123,6 +4233,14 @@ export interface components {
             };
             /** Details */
             details: {
+                [key: string]: unknown;
+            };
+            /** Exclusions */
+            exclusions?: {
+                [key: string]: unknown;
+            };
+            /** Provenance */
+            provenance?: {
                 [key: string]: unknown;
             };
         };
@@ -4186,7 +4304,7 @@ export interface components {
             snapshot_id: string;
             /**
              * Analysis
-             * @description One of descriptives, reliability, construct_validity, fairness, factor_structure, measurement_invariance, dif, incremental_validity, mtmm
+             * @description One of descriptives, reliability, construct_validity, mtmm, factor_structure, measurement_invariance, dif, fairness, incremental_validity
              */
             analysis: string;
             /** Params */
@@ -10732,6 +10850,106 @@ export interface operations {
             };
         };
     };
+    batch_scoring_api_v1_features_batch_scoring_post: {
+        parameters: {
+            query: {
+                study_id: string;
+                pathway: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JobRef"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    group_indicators_api_v1_features_group_indicators_get: {
+        parameters: {
+            query: {
+                study_id: string;
+                include_history?: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GroupIndicatorOut"][];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     list_datasets_api_v1_validation_datasets_get: {
         parameters: {
             query: {
@@ -11192,6 +11410,59 @@ export interface operations {
         responses: {
             /** @description Successful Response */
             200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RunOut"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    gate_evaluation_api_v1_validation_datasets__snapshot_id__gate_evaluation_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                snapshot_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GateEvaluationIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
                 headers: {
                     [name: string]: unknown;
                 };

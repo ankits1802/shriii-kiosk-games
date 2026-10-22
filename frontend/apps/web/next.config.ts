@@ -42,6 +42,9 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   transpilePackages: ['@shriii/kiosk-game', '@shriii/contracts'],
   turbopack: { root: repoRoot },
+  // infra/docker/web.Dockerfile ships the self-contained server from .next/standalone; tracing from the repo
+  // root puts it at .next/standalone/frontend/apps/web/server.js with the workspace packages it needs.
+  output: 'standalone',
   outputFileTracingRoot: repoRoot,
   compiler: { define: kioskEnvShims },
   async rewrites() {

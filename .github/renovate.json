@@ -101,7 +101,7 @@
       "enabled": false
     },
     {
-      "description": "Python base image major/minor follows .python-version; review manually.",
+      "description": "Python base image major/minor follows the CI interpreter (PYTHON_VERSION in .github/workflows); review manually.",
       "matchDatasources": ["docker"],
       "matchPackageNames": ["python"],
       "matchUpdateTypes": ["major", "minor"],

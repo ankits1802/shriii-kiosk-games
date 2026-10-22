@@ -1,0 +1,200 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://shriii.local/tools/timing-calibration/capture.v1.schema.json",
+  "title": "TimingCapture",
+  "description": "Host-side log written by the timing-calibration page. All *_ms times are performance.now() milliseconds on the page clock; *_ctx_s times are AudioContext seconds.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "format",
+    "tool_version",
+    "created_at",
+    "device",
+    "visual",
+    "touch",
+    "audio",
+    "frames",
+    "sync"
+  ],
+  "properties": {
+    "format": { "const": "shriii.timing-capture/1" },
+    "tool_version": { "type": "string", "minLength": 1 },
+    "created_at": { "type": "string", "minLength": 1 },
+    "device": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "hardware_sku",
+        "os_build",
+        "firmware",
+        "shell",
+        "user_agent",
+        "refresh_hz_nominal",
+        "screen",
+        "audio"
+      ],
+      "properties": {
+        "hardware_sku": { "type": "string", "pattern": "^[a-z0-9][a-z0-9_.:-]{0,63}$" },
+        "os_build": { "type": "string", "minLength": 1 },
+        "firmware": { "type": "string", "minLength": 1 },
+        "shell": { "type": "string", "minLength": 1 },
+        "user_agent": { "type": "string" },
+        "refresh_hz_nominal": { "type": ["number", "null"], "exclusiveMinimum": 0 },
+        "screen": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["width", "height", "dpr"],
+          "properties": {
+            "width": { "type": "number" },
+            "height": { "type": "number" },
+            "dpr": { "type": "number" }
+          }
+        },
+        "audio": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["sample_rate", "base_latency_ms", "output_latency_ms", "output_device"],
+          "properties": {
+            "sample_rate": { "type": ["number", "null"] },
+            "base_latency_ms": { "type": ["number", "null"] },
+            "output_latency_ms": { "type": ["number", "null"] },
+            "output_device": { "type": "string" }
+          }
+        }
+      }
+    },
+    "visual": {
+      "oneOf": [
+        { "type": "null" },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["patch", "flash_frames", "trials"],
+          "properties": {
+            "patch": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["x", "y", "size"],
+              "properties": {
+                "x": { "type": "number" },
+                "y": { "type": "number" },
+                "size": { "type": "number" }
+              }
+            },
+            "flash_frames": { "type": "integer", "minimum": 1 },
+            "trials": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["i", "requested_ms", "presented_ms"],
+                "properties": {
+                  "i": { "type": "integer", "minimum": 0 },
+                  "requested_ms": { "type": "number" },
+                  "presented_ms": { "type": "number" }
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "touch": {
+      "oneOf": [
+        { "type": "null" },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["taps"],
+          "properties": {
+            "taps": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["i", "event_ts_ms", "handler_ms", "flash_presented_ms", "x", "y"],
+                "properties": {
+                  "i": { "type": "integer", "minimum": 0 },
+                  "event_ts_ms": { "type": "number" },
+                  "handler_ms": { "type": "number" },
+                  "flash_presented_ms": { "type": ["number", "null"] },
+                  "x": { "type": "number" },
+                  "y": { "type": "number" }
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "audio": {
+      "oneOf": [
+        { "type": "null" },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["input_latency_ms", "clock_mapping", "clicks"],
+          "properties": {
+            "input_latency_ms": { "type": ["number", "null"] },
+            "clock_mapping": {
+              "enum": ["output_timestamp", "current_time", "mixed"],
+              "description": "How scheduled_perf_ms was mapped from AudioContext time: output_timestamp (getOutputTimestamp, already includes the reported output latency), current_time (currentTime sampled with performance.now(), render time) or mixed."
+            },
+            "clicks": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["i", "scheduled_ctx_s", "scheduled_perf_ms", "detected_ctx_s"],
+                "properties": {
+                  "i": { "type": "integer", "minimum": 0 },
+                  "scheduled_ctx_s": { "type": "number" },
+                  "scheduled_perf_ms": { "type": "number" },
+                  "detected_ctx_s": { "type": ["number", "null"] }
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "frames": {
+      "oneOf": [
+        { "type": "null" },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["raf_ms"],
+          "properties": {
+            "raf_ms": { "type": "array", "items": { "type": "number" } }
+          }
+        }
+      ]
+    },
+    "sync": {
+      "oneOf": [
+        { "type": "null" },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["pairs"],
+          "properties": {
+            "pairs": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["host_send_ms", "host_recv_ms", "device_ms"],
+                "properties": {
+                  "host_send_ms": { "type": "number" },
+                  "host_recv_ms": { "type": "number" },
+                  "device_ms": { "type": "number" }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

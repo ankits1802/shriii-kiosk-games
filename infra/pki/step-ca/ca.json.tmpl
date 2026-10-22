@@ -1,0 +1,62 @@
+{
+  "root": "${CA_DIR}/certs/root_ca.crt",
+  "federatedRoots": null,
+  "crt": "${CA_DIR}/certs/intermediate_ca.crt",
+  "key": "${INTERMEDIATE_KEY}",
+  "address": "${CA_ADDRESS}",
+  "insecureAddress": "",
+  "dnsNames": ["${CA_DNS}"],
+  "logger": { "format": "json" },
+  "db": {
+    "type": "badgerv2",
+    "dataSource": "${CA_DIR}/db",
+    "badgerFileLoadingMode": ""
+  },
+  "crl": {
+    "enabled": true,
+    "generateOnRevoke": true,
+    "cacheDuration": "10m",
+    "renewPeriod": "5m"
+  },
+  "authority": {
+    "enableAdmin": false,
+    "claims": {
+      "minTLSCertDuration": "5m",
+      "maxTLSCertDuration": "24h",
+      "defaultTLSCertDuration": "24h",
+      "disableRenewal": false,
+      "allowRenewalAfterExpiry": false
+    },
+    "provisioners": [
+      {
+        "type": "JWK",
+        "name": "kiosk-enrolment",
+        "key": {},
+        "encryptedKey": "${PROVISIONER_ENCRYPTED_KEY}",
+        "claims": {
+          "minTLSCertDuration": "5m",
+          "maxTLSCertDuration": "24h",
+          "defaultTLSCertDuration": "24h",
+          "disableRenewal": false,
+          "allowRenewalAfterExpiry": true
+        },
+        "options": {
+          "x509": {
+            "templateFile": "${CA_DIR}/templates/device-leaf.tpl"
+          }
+        }
+      }
+    ],
+    "template": {},
+    "backdate": "1m0s"
+  },
+  "tls": {
+    "cipherSuites": [
+      "TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256",
+      "TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256"
+    ],
+    "minVersion": 1.3,
+    "maxVersion": 1.3,
+    "renegotiation": false
+  }
+}

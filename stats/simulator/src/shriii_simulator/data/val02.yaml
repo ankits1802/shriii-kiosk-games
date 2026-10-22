@@ -1,0 +1,77 @@
+# VAL-02 trial-requirement study (plan VAL-02 item 6; SCR-03 trial-time budget input).
+#
+# For every indicator: parallel-form reliability as a function of the number of valid units, a
+# Spearman-Brown projection fitted to that curve, the minimum number of valid units that reaches each
+# target reliability, and the implied session time at the L2 seconds-per-trial of content/games/*.json.
+# Every threshold of the study lives here (none in code). Run:
+#   uv run python -m shriii_simulator.val02 --profile local --out .cache/val02
+# The full-size profile runs in GitHub Actions (.github/workflows/measurement-science.yml).
+schema: shriii-val02-study
+version: 0.1.0
+
+targets: [0.6, 0.7]
+level: L2
+# Indicators are compared on two parallel occasions with identical latents (stability 1); the reliability
+# is the Spearman correlation between occasions (same statistic as the recovery harness).
+min_paired_persons: 20
+# Spearman-Brown projections beyond this multiple of the largest observed number of valid units are
+# reported as "beyond projection range" instead of a number.
+max_extrapolation_factor: 6.0
+# Single-unit reliabilities at or below this are treated as "no reliable signal" (no projection).
+min_single_unit_reliability: 0.002
+# A recommended minimum more than this multiple of the units the current schedule delivers is flagged
+# infeasible within the session budget (demote / research_only, or a design change).
+infeasible_factor: 3.0
+
+profiles:
+  local:            # ~10 minutes on a laptop: a smoke-size version of the full study (one pathway at a time)
+    n_persons: 40
+    seeds: [11]
+    fractions: [0.5, 1.0]
+    scales: [1.0]
+    pathways: [B]
+    b_slot_forms: [wait_or_now]
+    effort_design_persons: 40
+  full:             # GitHub Actions (workflow_dispatch / nightly); uploads results as an artifact
+    n_persons: 500
+    seeds: [11]
+    fractions: [0.25, 0.5, 0.75, 1.0]
+    scales: [1.0, 2.0]
+    pathways: [B, A]
+    b_slot_forms: [wait_or_now, steady_hands, four_stalls]
+    effort_design_persons: 400
+
+# Estimator comparisons run alongside (scoring parameter overrides, same simulated studies).
+estimator_variants:
+  composure.pressure_slope_accuracy:
+    v0_lpm_no_trial_type: {models.binary_outcome_model: lpm, models.pressure_accuracy_trial_type_effect: false}
+    lpm_trial_type: {models.binary_outcome_model: lpm}
+    logistic_glmm_trial_type: {models.binary_outcome_model: logistic_glmm}
+  stability.shift_slope:
+    all_post_trials: {models.shift_window_trials: null}
+    early_window_6: {models.shift_window_trials: 6}
+    early_window_4: {models.shift_window_trials: 4}
+  stability.shift_slope_rule_switch:
+    all_post_trials: {models.shift_window_trials: null}
+    early_window_6: {models.shift_window_trials: 6}
+    early_window_4: {models.shift_window_trials: 4}
+  stability.shift_slope_pressure:
+    all_post_trials: {models.shift_window_trials: null}
+    early_window_6: {models.shift_window_trials: 6}
+  stability.shift_slope_new_rule:
+    all_post_trials: {models.shift_window_trials: null}
+    early_window_4: {models.shift_window_trials: 4}
+  stability.shift_slope_reversal:
+    all_post_trials: {models.shift_window_trials: null}
+    early_window_6: {models.shift_window_trials: 6}
+
+# Effort-discounting schedules compared by discounting_design.run_design_study (hard option: 2.5 s hold;
+# easy option: 2 coins, no hold). seconds_per_choice is the Wait-or-Now L2 median (content/games).
+effort_designs:
+  fixed4_v0: {kind: fixed, amounts: [5, 6, 8, 10]}
+  fixed8_wide: {kind: fixed, amounts: [2.5, 3, 3.5, 4.5, 5.5, 7, 9, 12]}
+  titrated4: {kind: titrated, trials: 4, start_amounts: [6.0], start_step: 2.0}
+  titrated6: {kind: titrated, trials: 6, start_amounts: [6.0], start_step: 2.0}
+  titrated8: {kind: titrated, trials: 8, start_amounts: [6.0], start_step: 2.0}
+  titrated8_two_staircases: {kind: titrated, trials: 8, staircases: 2, start_amounts: [3.5, 9.0], start_step: 1.5}
+  titrated12_two_staircases: {kind: titrated, trials: 12, staircases: 2, start_amounts: [3.5, 9.0], start_step: 1.5}

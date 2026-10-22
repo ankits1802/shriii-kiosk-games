@@ -15,6 +15,7 @@ from shriii_simulator.common import (
     jitter,
     option_xy,
     probe_block,
+    scaled,
     sigmoid,
     tone_choice,
 )
@@ -61,7 +62,7 @@ def stall(
             pressure=False,
             episode=True,
         )
-    service = ["nogo"] * 6 + ["go"] * 14
+    service = ["nogo"] * scaled(prm, "stall.service_nogo") + ["go"] * scaled(prm, "stall.service_go")
     service = [str(x) for x in rng.permutation(service)]
     feedback_positions = {1, 4, 7, 10, 13, 16}
     drop = prm.f(g + "feedback_drop_logit") - prm.f(g + "feedback_drop_regulation") * p.z("emotional_regulation")
@@ -101,7 +102,8 @@ def stall(
             run_position=None,
             episode=True,
         )
-    rush = [str(x) for x in rng.permutation(["nogo"] * 5 + ["go"] * 13)]
+    rush_types = ["nogo"] * scaled(prm, "stall.rush_nogo") + ["go"] * scaled(prm, "stall.rush_go")
+    rush = [str(x) for x in rng.permutation(rush_types)]
     for tt in rush:
         gng_trial(
             w,
@@ -481,7 +483,12 @@ def road_home(
         )
         if post:
             z_ad = p.z("adaptability")
-            pers = sigmoid(0.2 - 1.1 * z_ad - 0.3 * p.z("stability")) * math.exp(-j / (2.5 * math.exp(-0.3 * z_ad)))
+            rv = "road_home.reversal_"
+            pers = sigmoid(
+                prm.f(rv + "perseveration_logit")
+                - prm.f(rv + "perseveration_adaptability") * z_ad
+                - prm.f(rv + "perseveration_stability") * p.z("stability")
+            ) * math.exp(-j / (prm.f(rv + "decay_trials") * math.exp(-prm.f(rv + "decay_adaptability") * z_ad)))
             choice = old if rng.random() < pers else (rule_option if rng.random() < fork_acc else old)
         else:
             choice = rule_option if rng.random() < fork_acc else old

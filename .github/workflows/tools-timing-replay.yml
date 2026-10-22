@@ -1,0 +1,174 @@
+# Timing calibration (ENG-01/ENG-02) and session replay (ING-07/SCR-13) tools.
+# tools/timing-calibration: standalone uv project (analysis CLI) + standalone pnpm project (web/ page).
+# tools/replay: root uv workspace member (reads contracts, stats/scoring and stats/simulator).
+name: Tools - timing calibration and replay
+
+on:
+  pull_request:
+    paths:
+      - tools/timing-calibration/**
+      - tools/replay/**
+      - contracts/schemas/**
+      - contracts/python/**
+      - stats/scoring/**
+      - stats/simulator/**
+      - stats/measurement-model/**
+      - content/games/**
+      - pyproject.toml
+      - uv.lock
+      - .github/workflows/tools-timing-replay.yml
+  push:
+    branches: [main]
+    paths:
+      - tools/timing-calibration/**
+      - tools/replay/**
+      - contracts/schemas/**
+      - contracts/python/**
+      - stats/scoring/**
+      - stats/simulator/**
+      - stats/measurement-model/**
+      - content/games/**
+      - pyproject.toml
+      - uv.lock
+      - .github/workflows/tools-timing-replay.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tools-timing-replay-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  FORCE_COLOR: "1"
+  PYTHON_VERSION: "3.14"
+
+jobs:
+  timing-analysis:
+    name: Timing calibration - analysis CLI
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: tools/timing-calibration
+    env:
+      UV_FROZEN: "1"
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache-dependency-glob: |
+            tools/timing-calibration/pyproject.toml
+            tools/timing-calibration/uv.lock
+      - run: uv sync
+      - name: Ruff
+        run: |
+          uv run ruff check .
+          uv run ruff format --check .
+      - name: Mypy
+        run: uv run mypy
+      - name: Pytest
+        run: uv run pytest -q
+      - name: Synthetic certification and 50 ms regression demo
+        run: |
+          uv run shriii-timing synth --out demo
+          uv run shriii-timing analyse --capture demo/capture.json --photodiode demo/photodiode.csv \
+            --tapper demo/tapper.csv --audio-rig demo/audio_rig.csv --sync demo/sync.csv --out demo/profile.json
+          uv run shriii-timing synth --out demo-delayed --inject-delay-ms 50
+          uv run shriii-timing analyse --capture demo-delayed/capture.json --photodiode demo-delayed/photodiode.csv \
+            --tapper demo-delayed/tapper.csv --audio-rig demo-delayed/audio_rig.csv --sync demo-delayed/sync.csv \
+            --out demo/profile-delayed.json
+          set +e
+          uv run shriii-timing compare demo/profile.json demo/profile-delayed.json > demo/regression.json
+          rc=$?
+          set -e
+          test "$rc" -eq 4 || { echo "expected the injected 50 ms delay to be flagged (exit 4), got $rc"; exit 1; }
+          {
+            echo '## Synthetic timing profile'
+            echo '```'
+            uv run shriii-timing validate demo/profile.json
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: timing-demo-profile
+          path: tools/timing-calibration/demo/*.json
+          if-no-files-found: ignore
+          retention-days: 7
+
+  timing-page:
+    name: Timing calibration - page (typecheck, test, build, lint)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: tools/timing-calibration/web
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+        with:
+          package_json_file: tools/timing-calibration/web/package.json
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: tools/timing-calibration/web/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck
+      - run: pnpm test
+      - run: pnpm build
+      - name: Biome (repository config)
+        working-directory: .
+        run: pnpm dlx @biomejs/biome@2.5.15 check tools/timing-calibration tools/replay
+      - uses: actions/upload-artifact@v4
+        with:
+          name: timing-calibration-page
+          path: tools/timing-calibration/web/dist
+          retention-days: 7
+
+  replay:
+    name: Session replay - ruff, mypy, pytest, fixture report
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      UV_FROZEN: "1"
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+          python-version: ${{ env.PYTHON_VERSION }}
+      - run: uv sync --all-packages
+      - name: Ruff
+        run: |
+          uv run ruff check tools/replay
+          uv run ruff format --check tools/replay
+      - name: Mypy
+        run: MYPYPATH=tools/replay/src uv run mypy tools/replay/src tools/replay/tests
+      - name: Pytest
+        run: uv run pytest tools/replay/tests -q
+      - name: Replay a simulator session (Pathway A and B)
+        run: |
+          mkdir -p replay-out
+          for spec in "B 11" "A 5"; do
+            set -- $spec
+            uv run shriii-replay fixture --pathway "$1" --seed "$2" --out "replay-out/fx-$1"
+            uv run shriii-replay check "replay-out/fx-$1/upload_batches.json" \
+              --trial-params "replay-out/fx-$1/trial_params.json" \
+              --stored "replay-out/fx-$1/stored_indicators.json" \
+              --html "replay-out/replay-$1.html" --json "replay-out/report-$1.json" | tee -a replay-out/summary.txt
+          done
+          { echo '## Session replay'; echo '```'; cat replay-out/summary.txt; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: session-replay-reports
+          path: |
+            replay-out/*.html
+            replay-out/*.json
+          if-no-files-found: ignore
+          retention-days: 7

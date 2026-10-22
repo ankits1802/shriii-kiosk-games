@@ -41,13 +41,22 @@ infra/         compose/ (local and full stack), docker/ (images), tofu/ (OpenTof
 cicd/          CI gates and helper scripts used by .github/workflows (see cicd/README.md)
 tools/         audio-pipeline/, asr-bakeoff/, i18n/, loadtest/
 docs/          Plan, build decisions, architecture, governance, security, screenshots
+config/        Shared tool config that does not have to sit at the root (tsconfig.base.json)
 ```
+
+The root holds only files a tool requires there: `package.json`, `pnpm-workspace.yaml`, `pnpm-lock.yaml`,
+`turbo.json`, `biome.json`, `pyproject.toml`, `uv.lock`, `.gitignore`, `.gitattributes`, `README.md` and
+`.github/`. Tool caches go to one gitignored `.cache/` directory; `.venv/` and `node_modules/` stay where the
+tools expect them. See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md#the-repository-root) for why each
+root file has to be there.
 
 ## Prerequisites
 
-- Node 24 (`.nvmrc`) and pnpm 12 (`corepack enable` or a global pnpm 12).
-- Python 3.13+ (developed on 3.14) and [uv](https://docs.astral.sh/uv/) (`pip install uv`; if `uv` is not on
-  `PATH`, use `python -m uv`).
+- Node 24 (`engines.node` in `package.json`) and pnpm 12 (`packageManager`; `corepack enable` or a global
+  pnpm 12).
+- Python 3.13+ (`requires-python`; CI and the images use 3.14) and [uv](https://docs.astral.sh/uv/)
+  (`pip install uv`; if `uv` is not on `PATH`, use `python -m uv`). To match CI locally, run
+  `uv python pin 3.14` (writes a gitignored `.python-version`) or set `UV_PYTHON=3.14`.
 - Docker Desktop for PostgreSQL 18.
 
 ## Getting started

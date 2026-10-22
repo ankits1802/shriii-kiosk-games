@@ -1,5 +1,10 @@
 node_modules/
 .venv/
+# Tool caches (ruff, mypy, pytest, hypothesis, turbo) are redirected here by pyproject.toml, turbo.json and the
+# Hypothesis conftests. The per-tool patterns below stay for standalone projects that run from their own dir.
+.cache/
+# Interpreter pin is CI's PYTHON_VERSION plus requires-python; a local `uv python pin` stays local.
+.python-version
 __pycache__/
 *.pyc
 dist/
