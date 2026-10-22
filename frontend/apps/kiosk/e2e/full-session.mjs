@@ -86,38 +86,45 @@ await page.waitForFunction(() => globalThis.__shriiiKiosk?.controller, null, { t
 const states = [];
 let sessionId = null;
 let lastEvents = [];
+let lastRead = 0;
 let lastShot = 0;
 let ended = null;
 
-async function snapshot() {
-  return page.evaluate(async (sid) => {
-    const k = globalThis.__shriiiKiosk;
-    const v = k.controller.snapshot;
-    const targets = k.input.liveTargets();
-    const dom = [...document.querySelectorAll('[data-testid="kiosk-runtime"] [id], [data-target]')]
-      .filter((el) => {
-        const r = el.getBoundingClientRect();
-        return r.width > 0 && r.height > 0;
-      })
-      .map((el) => {
-        const r = el.getBoundingClientRect();
-        return {
-          id: el.id || el.getAttribute('data-target'),
-          x: r.x + r.width / 2,
-          y: r.y + r.height / 2,
-        };
-      });
-    const id = sid ?? (v.sessionId || null);
-    const events = id ? await k.outbox.sessionEvents(id) : [];
-    return {
-      state: v.state,
-      sessionId: v.sessionId || null,
-      module: v.currentModule,
-      targets,
-      dom,
-      events,
-    };
-  }, sessionId);
+async function snapshot(withEvents = false) {
+  return page.evaluate(
+    async ([sid, wantEvents]) => {
+      const k = globalThis.__shriiiKiosk;
+      const v = k.controller.snapshot;
+      const targets = k.input.liveTargets();
+      const dom = [
+        ...document.querySelectorAll('[data-testid="kiosk-runtime"] [id], [data-target]'),
+      ]
+        .filter((el) => {
+          const r = el.getBoundingClientRect();
+          return r.width > 0 && r.height > 0;
+        })
+        .map((el) => {
+          const r = el.getBoundingClientRect();
+          return {
+            id: el.id || el.getAttribute('data-target'),
+            x: r.x + r.width / 2,
+            y: r.y + r.height / 2,
+          };
+        });
+      const id = sid ?? (v.sessionId || null);
+      const events = id && wantEvents ? await k.outbox.sessionEvents(id) : [];
+      return {
+        state: v.state,
+        sessionId: v.sessionId || null,
+        module: v.currentModule,
+        walkaway: v.walkawayStage,
+        targets,
+        dom,
+        events,
+      };
+    },
+    [sessionId, withEvents],
+  );
 }
 
 async function tap(x, y, holdMs) {
@@ -136,7 +143,9 @@ for (;;) {
     ended = 'bot_timeout';
     break;
   }
-  const s = await snapshot();
+  // The outbox copy is read every 20 s (and at the end), not on every step.
+  const s = await snapshot(Date.now() - lastRead > 20_000);
+  if (s.events.length > 0) lastRead = Date.now();
   if (states.at(-1) !== s.state) {
     states.push(s.state);
     console.log(`${elapsed().toFixed(0)}s state=${s.state}`);
@@ -149,9 +158,12 @@ for (;;) {
   if (sessionId && s.events.length > 0) lastEvents = s.events;
   if (Date.now() - lastShot > Number(arg('shot-s', 30)) * 1000) {
     lastShot = Date.now();
-    await page.screenshot({
-      path: join(out, `t${String(Math.round(elapsed())).padStart(4, '0')}-${s.state}.png`),
-    });
+    await page
+      .screenshot({
+        path: join(out, `t${String(Math.round(elapsed())).padStart(4, '0')}-${s.state}.png`),
+        timeout: 10_000,
+      })
+      .catch(() => undefined);
   }
   if (sessionId && (s.state === 'farewell' || s.state === 'wipe' || s.state === 'attract')) {
     ended = s.state;
@@ -161,10 +173,10 @@ for (;;) {
     let fin = s;
     while (fin.state !== 'attract' && Date.now() < until) {
       await page.waitForTimeout(1000);
-      fin = await snapshot();
+      fin = await snapshot(true);
     }
     await page.waitForTimeout(1500);
-    fin = await snapshot();
+    fin = await snapshot(true);
     ended = fin.state === 'attract' ? 'attract' : ended;
     if (fin.events.length > 0) lastEvents = fin.events;
     break;
@@ -175,6 +187,13 @@ for (;;) {
   if (preferred) {
     await page.waitForTimeout(300 + rand() * 500);
     await tap(preferred.x, preferred.y, 80);
+    continue;
+  }
+  // "Are you still there?": a present player touches the screen (any touch is activity). Long
+  // non-interactive intros with the silent dev voice reach the walkaway prompt on slow renderers.
+  if (s.walkaway) {
+    await page.waitForTimeout(400 + rand() * 600);
+    await tap(W / 2, 24, 60);
     continue;
   }
   const live = s.targets.filter((t) => !AVOID.test(t.id));
@@ -211,7 +230,7 @@ if (waitUpload && sessionId) {
     await page.waitForTimeout(1000);
   }
 }
-await page.screenshot({ path: join(out, 'final.png') });
+await page.screenshot({ path: join(out, 'final.png'), timeout: 10_000 }).catch(() => undefined);
 await browser.close();
 
 // ------------------------------------------------------------------------------------- checks
