@@ -12,6 +12,7 @@ from nacl.public import PrivateKey
 from shriii_api.canonical import canonical_sha256 as server_sha256
 from shriii_api.security import decrypt_chunk, unseal_dek
 from shriii_contracts import EVENT_ADAPTER, UploadBatch
+from shriii_loadtest import scenarios
 from shriii_loadtest.batches import KioskIdentity, OutboxSession, build_batch, pack_outbox
 from shriii_loadtest.corpus import Corpus, retarget
 from shriii_loadtest.scenarios import PlanOptions, build_plan
@@ -162,3 +163,21 @@ def test_unknown_scenario_and_short_fleet(corpus: Corpus, kiosks: list[KioskIden
         build_plan("nope", corpus, kiosks, PlanOptions())
     with pytest.raises(ValueError, match="provisioned kiosks"):
         build_plan("saturate", corpus, kiosks[:2], PlanOptions(kiosks=3))
+
+
+def test_plans_from_one_seed_never_share_ids(
+    corpus: Corpus, kiosks: list[KioskIdentity], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """The suite plans every entry from one seed against one database, and ``event_dedup`` is keyed on
+    ``event_id`` alone: a shared id is acknowledged as a duplicate and the second session loses it."""
+    monkeypatch.setattr(scenarios, "_now", lambda: NOW)  # worst case: both plans built in the same ms
+    opts = {"kiosks": 3, "sessions_per_kiosk": 1, "think_s": 2.0}
+    a = build_plan("steady", corpus, kiosks, PlanOptions(**opts))
+    b = build_plan("retry", corpus, kiosks, PlanOptions(**opts))
+
+    def ids(plan: scenarios.Plan) -> set[str]:
+        return {e for k in plan.scripts for s in k.steps for e in s.batch.event_ids}
+
+    assert not ids(a) & ids(b)
+    assert not {e[14:] for e in ids(a)} & {e[14:] for e in ids(b)}  # the random bits too, not just the ms
+    assert not set(a.expected_sessions) & set(b.expected_sessions)

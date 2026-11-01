@@ -50,8 +50,8 @@ jobs:
           - pathway: B
             extra: "--slot-forms"
     steps:
-      - uses: actions/checkout@v5
-      - uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e  # v6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2  # v10.3.3
         with:
           enable-cache: true
           python-version: "3.14"
@@ -75,7 +75,7 @@ jobs:
       - name: Summary
         if: always()
         run: cat "sim-recovery-${{ matrix.pathway }}/summary.md" >> "$GITHUB_STEP_SUMMARY" || true
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
         if: always()
         with:
           name: sim-recovery-${{ matrix.pathway }}
@@ -87,8 +87,8 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 90
     steps:
-      - uses: actions/checkout@v5
-      - uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e  # v6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2  # v10.3.3
         with:
           enable-cache: true
           python-version: "3.14"
@@ -128,8 +128,8 @@ jobs:
       LOG_JSON: "false"
       LOG_LEVEL: WARNING
     steps:
-      - uses: actions/checkout@v5
-      - uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e  # v6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2  # v10.3.3
         with:
           enable-cache: true
           python-version: "3.14"
@@ -150,7 +150,7 @@ jobs:
         if: always()
         run: |
           { echo '### Demo pipeline'; echo '```'; cat demo-summary.txt || true; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
         if: always()
         with:
           name: demo-pipeline
@@ -165,7 +165,7 @@ jobs:
     if: failure() && github.event_name == 'schedule'
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/github-script@v8
+      - uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3  # v9.0.0
         with:
           script: |
             const title = 'Nightly simulation failed';

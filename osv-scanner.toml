@@ -1,0 +1,15 @@
+# OSV-Scanner configuration for the lockfiles in this directory (pnpm-lock.yaml, uv.lock).
+# Every exception is scoped to one package version and expires, so the scheduled scan fails again on review day.
+
+[[PackageOverrides]]
+name = "minimatch"
+version = "3.1.5"
+ecosystem = "npm"
+vulnerability.ignore = true
+effectiveUntil = 2026-12-31
+reason = """GHSA-g3hv-75wg-m249 (globparts DoS) is fixed only in minimatch 11.0.1. minimatch 3 is pulled in by \
+@electron/asar 3.4.1 (pinned exactly by app-builder-lib 26.18.0, the latest electron-builder), dir-compare 4/5 \
+and glob 7, which call minimatch's default export; minimatch 11 has none, so overriding it breaks kiosk \
+packaging. Build-time only: the patterns come from our electron-builder config, never from users. Every \
+other minimatch line is overridden to 11.0.3 in pnpm-workspace.yaml. Remove when electron-builder moves to \
+@electron/asar 4."""
