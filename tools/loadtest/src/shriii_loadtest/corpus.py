@@ -22,7 +22,7 @@ from datetime import UTC, datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
-from shriii_loadtest.ids import pseudonymous_pid, uuid7_from
+from shriii_loadtest.ids import pseudonymous_pid, uuid7
 
 __all__ = ["Corpus", "TemplateSession", "default_cache_dir", "load_or_build_corpus", "retarget"]
 
@@ -142,11 +142,18 @@ def retarget(
     Returns ``(session_id, events)``; events are sorted by ``seq``. Only the fields that change are
     copied (``context``, ``timing``), the rest of each event is shared with the template, which keeps
     building thousands of batches cheap.
+
+    Session and event ids take their random bits from ``os.urandom``, not ``rng``. Every suite entry
+    plans from the same seed against one database, so ids drawn from the seeded stream repeat their
+    random bits across plans; when the millisecond also matches, ``event_dedup`` (keyed on
+    ``event_id`` alone) answers ``duplicate`` for another session's event and the run loses it
+    (``retry-50k`` exactly-once, Load test runs 40042994825 and 40143981246). ``rng`` still drives
+    templates, pids and timing, so a plan's shape stays reproducible for a seed.
     """
     if not template:
         raise ValueError("template session has no events")
     base_ms = int(started_at.timestamp() * 1000)
-    session_id = uuid7_from(rng, base_ms)
+    session_id = uuid7(base_ms)
     pid = pseudonymous_pid(rng)
     first_wall = _parse_wall(template[0]["timing"]["kiosk_t_wall"])
     shift = started_at.astimezone(UTC) - first_wall.astimezone(UTC)
@@ -154,7 +161,7 @@ def retarget(
     for event in template:
         wall = (_parse_wall(event["timing"]["kiosk_t_wall"]) + shift).astimezone(IST)
         copy = dict(event)
-        copy["event_id"] = uuid7_from(rng, int(wall.timestamp() * 1000))
+        copy["event_id"] = uuid7(int(wall.timestamp() * 1000))
         copy["session_id"] = session_id
         context = dict(event["context"])
         context["kiosk_id"] = kiosk_id

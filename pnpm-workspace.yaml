@@ -2,6 +2,14 @@ packages:
   - "frontend/apps/*"
   - "frontend/packages/*"
   - "contracts"
+# Transitive build-tool dependencies held on vulnerable lines by their parents (electron-builder, rimraf,
+# jake): GHSA-3g3m-2fjr-6pw4 (glob >=9 <14.0.2) and GHSA-g3hv-75wg-m249 (minimatch <11.0.1). Every
+# consumer of these lines uses the named exports, which glob 14 and minimatch 11 keep. minimatch 3 is
+# left alone: @electron/asar 3, dir-compare and glob 7 call its default export, which minimatch 11 drops
+# (see osv-scanner.toml).
+overrides:
+  "glob@>=9 <14.0.2": "14.0.3"
+  "minimatch@>=4 <11.0.1": "11.0.3"
 minimumReleaseAgeExclude:
   - "@turbo/darwin-64@2.11.10"
   - "@turbo/darwin-arm64@2.11.10"
