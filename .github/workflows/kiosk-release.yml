@@ -108,7 +108,9 @@ jobs:
         run: |
           if [[ "$GITHUB_REF" == refs/tags/kiosk-v* ]]; then version="${GITHUB_REF#refs/tags/kiosk-v}"; else version="0.0.0-${GITHUB_SHA::12}"; fi
           echo "version=$version" >> "$GITHUB_OUTPUT"
-          echo "SOURCE_DATE_EPOCH=$(git log -1 --format=%ct)" >> "$GITHUB_ENV"
+          # GITHUB_ENV reaches later steps only; the tuple below needs the value in this one too.
+          export SOURCE_DATE_EPOCH="$(git log -1 --format=%ct)"
+          echo "SOURCE_DATE_EPOCH=$SOURCE_DATE_EPOCH" >> "$GITHUB_ENV"
           node -e '
             const fs = require("fs");
             const yaml = (p) => { const m = fs.readFileSync(p, "utf8").match(/^version:\s*([^\s#]+)/m); return m ? m[1].replace(/[\x27"]/g, "") : null; };
