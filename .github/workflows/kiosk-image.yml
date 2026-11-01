@@ -57,8 +57,8 @@ jobs:
     env:
       UV_FROZEN: "1"
     steps:
-      - uses: actions/checkout@v5
-      - uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e  # v6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2  # v10.3.3
         with:
           enable-cache: true
           python-version: ${{ env.PYTHON_VERSION }}
@@ -100,7 +100,7 @@ jobs:
               || { echo "::error::$name has no amd64 channel $channel"; exit 1; }
             echo "ok: $name $id $channel"
           done
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
         if: always()
         with:
           name: provision-pytest
@@ -112,7 +112,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
       - run: |
           shellcheck --version
           shellcheck -s sh -x -P SCRIPTDIR \
@@ -127,8 +127,8 @@ jobs:
     env:
       UV_FROZEN: "1"
     steps:
-      - uses: actions/checkout@v5
-      - uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e  # v6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2  # v10.3.3
         with:
           enable-cache: true
           python-version: ${{ env.PYTHON_VERSION }}
@@ -161,15 +161,15 @@ jobs:
     env:
       CSC_IDENTITY_AUTO_DISCOVERY: "false"
     steps:
-      - uses: actions/checkout@v5
-      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1  # v4
-      - uses: actions/setup-node@v5
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413  # v6.1.0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1  # v7.1.0
         with:
           node-version-file: package.json
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - name: Electron binary cache
-        uses: actions/cache@v4
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9  # v6.1.0
         with:
           path: ~/.cache/electron
           key: electron-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
@@ -178,7 +178,7 @@ jobs:
         run: sh infra/kiosk-image/scripts/prepare-app-build.sh
       - name: snapcraft pack (LXD)
         id: snapcraft
-        uses: canonical/action-build@3bdaa03e1ba6bf59a65f84a751d943d549a54e79  # v1
+        uses: canonical/action-build@3bdaa03e1ba6bf59a65f84a751d943d549a54e79  # v1.3.0
         with:
           path: infra/kiosk-image/app
           build-info: "false"
@@ -209,7 +209,7 @@ jobs:
           sudo snap remove --purge shriii-kiosk
       - name: review-tools (store checks)
         run: sh infra/kiosk-image/scripts/review-snap.sh "${{ steps.snapcraft.outputs.snap }}"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
         with:
           name: shriii-kiosk-snap
           path: |
@@ -223,7 +223,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
       - name: Render gadget.yaml (placeholder brand ids on PRs)
         env:
           KIOSK_SNAP_ID: ${{ vars.KIOSK_SNAP_ID }}
@@ -240,7 +240,7 @@ jobs:
           python3 -c "import sys, yaml; d = yaml.safe_load(open('infra/kiosk-image/gadget/gadget.yaml')); assert d['volumes']['pc']['bootloader'] == 'grub'; print('gadget.yaml parses')"
       - name: snapcraft pack (LXD)
         id: snapcraft
-        uses: canonical/action-build@3bdaa03e1ba6bf59a65f84a751d943d549a54e79  # v1
+        uses: canonical/action-build@3bdaa03e1ba6bf59a65f84a751d943d549a54e79  # v1.3.0
         with:
           path: infra/kiosk-image/gadget
           build-info: "false"
@@ -249,7 +249,7 @@ jobs:
           unsquashfs -ll "${{ steps.snapcraft.outputs.snap }}" | grep -E 'meta/gadget.yaml|shim.efi.signed|grubx64.efi|cmdline.extra|grub.conf'
       - name: review-tools (store checks)
         run: sh infra/kiosk-image/scripts/review-snap.sh "${{ steps.snapcraft.outputs.snap }}"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
         with:
           name: shriii-kiosk-pc-gadget-snap
           path: |
@@ -272,7 +272,7 @@ jobs:
       MODEL_VAR_GADGET_SNAP_ID: ${{ vars.GADGET_SNAP_ID }}
       MODEL_VAR_KIOSK_SNAP_ID: ${{ vars.KIOSK_SNAP_ID }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
       - name: Require brand-store configuration (fail closed)
         run: |
           missing=""
@@ -283,7 +283,7 @@ jobs:
             echo "::error::release needs repository settings:$missing (see infra/kiosk-image/README.md, CI and signing)"
             exit 1
           fi
-      - uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e  # v6
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2  # v10.3.3
         with:
           python-version: ${{ env.PYTHON_VERSION }}
       - name: Render + validate the production model
@@ -301,7 +301,7 @@ jobs:
           snap sign -k "$MODEL_SIGNING_KEY_NAME" model.json > shriii-kiosk-pc-24.model
           ubuntu-image snap shriii-kiosk-pc-24.model --output-dir image
           ls -la image
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
         with:
           name: shriii-kiosk-image
           path: |
